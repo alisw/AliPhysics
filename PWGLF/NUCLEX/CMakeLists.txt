@@ -79,6 +79,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/HypTritYield/pdLd/AliAnalysisTask_pdLd.cxx
   Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd.cxx
   Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd_CreateTrees_PairsOnly.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd_PurityTOF.cxx
   Hypernuclei/Hyp2Body/HypTritYield/pp/AliAnalysisTask_pp_CreateTrees_PairsOnly.cxx
   Hypernuclei/Hyp2Body/HypTritYield/Ld/AliAnalysisTask_Ld_CreateTrees_PairsOnly.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
