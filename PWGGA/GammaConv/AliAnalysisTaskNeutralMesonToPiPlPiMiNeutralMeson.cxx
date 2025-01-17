@@ -150,6 +150,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoNegPionPt(nullptr),
   fHistoPosPionPt(nullptr),
   fHistoPionPionInvMassPt(nullptr),
+  fHistoLowerContrGammaPt(nullptr),
+  fHistoHigherContrGammaPt(nullptr),
   fHistoGammaGammaInvMassPt(nullptr),
   fHistoGammaGammaInvMassPtBeforeCuts(nullptr),
   fHistoSwappingGammaGammaInvMassPt(nullptr),
@@ -591,6 +593,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoNegPionPt(nullptr),
   fHistoPosPionPt(nullptr),
   fHistoPionPionInvMassPt(nullptr),
+  fHistoLowerContrGammaPt(nullptr),
+  fHistoHigherContrGammaPt(nullptr),
   fHistoGammaGammaInvMassPt(nullptr),
   fHistoGammaGammaInvMassPtBeforeCuts(nullptr),
   fHistoSwappingGammaGammaInvMassPt(nullptr),
@@ -994,7 +998,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::InitBack(){
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 
     TString cutstringEvent		= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
-    TString cutstringPion		= ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
+    TString cutstringPion		  = ((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->GetCutNumber();
     TString cutstringConvGamma = "";
     if (fNDMRecoMode < 2)  cutstringConvGamma = ((AliConversionPhotonCuts*)fGammaCutArray->At(iCut))->GetCutNumber();
     TString cutstringCaloGamma = "";
@@ -1437,6 +1441,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoNegPionPt               = new TH1F*[fnCuts];
     fHistoPosPionPt               = new TH1F*[fnCuts];
     fHistoPionPionInvMassPt       = new TH2F*[fnCuts];
+    if( fNDMRecoMode > 0){
+      fHistoHigherContrGammaPt    = new TH1F*[fnCuts];
+      if( fNDMRecoMode == 2)
+        fHistoLowerContrGammaPt   = new TH1F*[fnCuts]; 
+    }
 
     if( fEnableBasicMesonQA ) {
       fHistoNegPionPhi            = new TH1F*[fnCuts];
@@ -1482,20 +1491,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoDalitzPlotNegSubNDM_HighPt          = new TH2F*[fnCuts];
     }
   
-    fHistoAngleHNMesonPiPlPiMi    = new TH2F*[fnCuts];
-    fHistoAngleHNMesonNDM      = new TH2F*[fnCuts];
-    fHistoAngleHNMesonPiPl        = new TH2F*[fnCuts];
-    fHistoAngleHNMesonPiMi        = new TH2F*[fnCuts];
-    fHistoAngleNDMPiMi       = new TH2F*[fnCuts];
-    fHistoAnglePiPlPiMi         = new TH2F*[fnCuts];
-    fHistoAnglePiPlNDM       = new TH2F*[fnCuts];
-    fHistoAngleSum              = new TH2F*[fnCuts];
+    fHistoAngleHNMesonPiPlPiMi      = new TH2F*[fnCuts];
+    fHistoAngleHNMesonNDM           = new TH2F*[fnCuts];
+    fHistoAngleHNMesonPiPl          = new TH2F*[fnCuts];
+    fHistoAngleHNMesonPiMi          = new TH2F*[fnCuts];
+    fHistoAngleNDMPiMi              = new TH2F*[fnCuts];
+    fHistoAnglePiPlPiMi             = new TH2F*[fnCuts];
+    fHistoAnglePiPlNDM              = new TH2F*[fnCuts];
+    fHistoAngleSum                  = new TH2F*[fnCuts];
+
+    fHistoGammaGammaInvMassPt               = new TH2F*[fnCuts];
+    fHistoGammaGammaInvMassPtBeforeCuts     = new TH2F*[fnCuts];
   }
   if (fDoProfileMaterialBudgetWeights){
       fProfileMaterialBudgetWeights       = new TProfile*[fnCuts];
   }
-  fHistoGammaGammaInvMassPt               = new TH2F*[fnCuts];
-  fHistoGammaGammaInvMassPtBeforeCuts     = new TH2F*[fnCuts];
   if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetBackgroundMode() == 7){
     fHistoSwappingGammaGammaInvMassPt       = new TH2F*[fnCuts];
   }
@@ -1729,19 +1739,35 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
       fHistoNegPionPt[iCut]->Sumw2();
-
       fESDList[iCut]->Add(fHistoNegPionPt[iCut]);
+
       fHistoPosPionPt[iCut]         = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt", HistoNPtBins, arrPtBinning);
       fHistoPosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoPosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
       fHistoPosPionPt[iCut]->Sumw2();
-
       fESDList[iCut]->Add(fHistoPosPionPt[iCut]);
+
       fHistoPionPionInvMassPt[iCut] = new TH2F("ESD_PiPlusPiNeg_InvMassPt","ESD_PiPlusPiNeg_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1], HistoNPtBins, arrPtBinning);
       fHistoPionPionInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
       fHistoPionPionInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoPionPionInvMassPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoPionPionInvMassPt[iCut]);
+
+      if( fNDMRecoMode > 0 ){
+        fHistoHigherContrGammaPt[iCut]    = new TH1F("ESD_HigherContributingCaloGamma_Pt","ESD_HigherContributingCaloGamma_Pt", HistoCaloNPtBins, arrCaloPtBinning);
+        fHistoHigherContrGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoHigherContrGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+        fHistoHigherContrGammaPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoHigherContrGammaPt[iCut]);
+
+        if( fNDMRecoMode == 2){
+          fHistoLowerContrGammaPt[iCut]    = new TH1F("ESD_LowerContributingCaloGamma_Pt","ESD_LowerContributingCaloGamma_Pt", HistoCaloNPtBins, arrCaloPtBinning);
+          fHistoLowerContrGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoLowerContrGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+          fHistoLowerContrGammaPt[iCut]->Sumw2();
+          fESDList[iCut]->Add(fHistoLowerContrGammaPt[iCut]);
+        }
+      }
 
       if ( fEnableBasicMesonQA ) {
         fHistoNegPionPhi[iCut]        = new TH1F("ESD_PrimaryNegPions_Phi","ESD_PrimaryNegPions_Phi",360,0,2*TMath::Pi());
@@ -1910,6 +1936,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       }
       //---------------------------------------
       //End of Dalitz
+   
+
       fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
       fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
       fHistoGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -1921,6 +1949,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
+  
     }
 
     if (fDoProfileMaterialBudgetWeights){
@@ -4519,6 +4548,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
         if( ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
           Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
           if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) continue;
+          if( gamma0->E() >= gamma1->E() && !fDoLightOutput ){
+            fHistoHigherContrGammaPt[fiCut]->Fill( gamma0->E(), fWeightJetJetMC*weightMatBudget);
+            fHistoLowerContrGammaPt[fiCut]->Fill( gamma1->E(), fWeightJetJetMC*weightMatBudget);
+          } else if( gamma1->E() > gamma0->E() && !fDoLightOutput ) {
+            fHistoHigherContrGammaPt[fiCut]->Fill( gamma1->E(), fWeightJetJetMC*weightMatBudget);
+            fHistoLowerContrGammaPt[fiCut]->Fill( gamma0->E(), fWeightJetJetMC*weightMatBudget);
+          }
         }
 
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
@@ -5132,7 +5168,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
         if( ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() == 2 ){ // check only calo daughter for the threshold
           Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
-          if( gamma1->E() < minDaughterEnergy ) continue;                    
+          if( gamma1->E() < minDaughterEnergy ) continue;               
+          if( !fDoLightOutput ){
+            fHistoHigherContrGammaPt[fiCut]->Fill( gamma1->E(), fWeightJetJetMC*weightMatBudget);
+          }   
         }
 
         bool NDMisSelected = false; // Delete all NDMcands that are not selected by any mass cut. Change to true when selected by any cut

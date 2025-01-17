@@ -245,14 +245,13 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 
 	// Initialize Cut Histograms for QA (only initialized and filled if function is called)
 
-	TString cutName = "";
+	TString cutName = GetCutNumber().Data();
 	
-	if( cutNumber==""){
-		cutName = GetCutNumber().Data();
-	}
-	else {
-		cutName = cutNumber.Data();
-	} 
+	// if( cutNumber==""){
+	// 	cutName = GetCutNumber().Data();
+	// } else {
+	// 	cutName = cutNumber.Data();
+	// } 
 
 	if(fHistograms != NULL){
 		delete fHistograms;
