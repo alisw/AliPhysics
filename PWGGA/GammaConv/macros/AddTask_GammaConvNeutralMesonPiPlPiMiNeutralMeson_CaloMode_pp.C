@@ -954,13 +954,19 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a6100000000","j453503000000000"); 
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a7100000000","j453503000000000"); 
 
-    // eta minimum pT cut variations
-  } else if(trainConfig == 348){      // EG2
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006e3100000000","j453503000000000"); 
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006f3100000000","j453503000000000"); 
-  } else if(trainConfig == 349)  {    // EG1
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006g3100000000","j453503000000000"); 
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006h3100000000","j453503000000000"); 
+    // eta minimum pT cut variations (on one of the daughters)
+  } else if(trainConfig == 348){      // EG2, default 4.6 GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006e3100000000","j453503000000000"); // e: pT > 4.0 GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006f3100000000","j453503000000000"); // f: pT > 4.2 GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006g3100000000","j453503000000000"); // g: pT > 4.4 GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006h3100000000","j453503000000000"); // h: pT > 4.8 GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h0006i3100000000","j453503000000000"); // h: pT > 5.0 GeV
+  } else if(trainConfig == 349)  {    // EG1, default at 9.6 GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006j3100000000","j453503000000000"); // j: pT > 9.0 GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006k3100000000","j453503000000000"); // k: pT > 9.2 GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006l3100000000","j453503000000000"); // l: pT > 9.4 GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006m3100000000","j453503000000000"); // m: pT > 9.8 GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006n3100000000","j453503000000000"); // n: pT > 10. GeV
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

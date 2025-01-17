@@ -2320,11 +2320,11 @@ Bool_t AliConversionMesonCuts::SetMinPtCutExtended(Int_t PtCut){
     break;
   case 9: // EG2
     fDoGammaMinEnergyCut = 1;
-    fSingleDaughterMinE  = 4.5;
+    fSingleDaughterMinE  = 4.6;
     break;
   case 10: // EG1, a
     fDoGammaMinEnergyCut = 1;
-    fSingleDaughterMinE  = 9.5;
+    fSingleDaughterMinE  = 9.6;
     break;
   case 11: // b, INT7, PCM-EMC - cut only on the contributing calo daughter
     fDoGammaMinEnergyCut = 2;
@@ -2332,43 +2332,91 @@ Bool_t AliConversionMesonCuts::SetMinPtCutExtended(Int_t PtCut){
     break;
   case 12: // c. EG2, PCM-EMC
     fDoGammaMinEnergyCut = 2;
-    fSingleDaughterMinE = 4.5;
+    fSingleDaughterMinE = 4.6;
     break;
   case 13: // d, EG1, PCM-EMC
     fDoGammaMinEnergyCut = 2;
-    fSingleDaughterMinE = 9.5;
+    fSingleDaughterMinE = 9.6;
     break;
   case 14: // e, EG2 variation
     fDoGammaMinEnergyCut = 1;
-    fSingleDaughterMinE = 5.0;
+    fSingleDaughterMinE = 4.0;
     break;
   case 15: // f, EG2 varation
     fDoGammaMinEnergyCut = 1;
-    fSingleDaughterMinE = 5.5;
+    fSingleDaughterMinE = 4.2;
     break;
-  case 16: // g, EG1 variation
+  case 16: // g, EG2 varation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE = 4.4;
+    break;
+  case 17: // h, EG2 varation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE = 4.8;
+    break;
+  case 18: // i, EG2 varation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE = 5.0;
+    break;
+  case 19: // j, EG1 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE  = 9.0;
+    break;
+  case 20: // k, EG1 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE  = 9.2;
+    break;
+  case 21: // l, EG1 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE  = 9.4;
+    break;
+  case 22: // m, EG1 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE  = 9.8;
+    break;
+  case 23: // n, EG1 variation
     fDoGammaMinEnergyCut = 1;
     fSingleDaughterMinE  = 10.0;
     break;
-  case 17: // h, EG1 variation
-    fDoGammaMinEnergyCut = 1;
-    fSingleDaughterMinE  = 10.5;
+  case 24: // o, EG2 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE = 4.0;
     break;
-  case 18: // i, EG2 variation, PCM-EMC
+  case 25: // p, EG2 varation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE = 4.2;
+    break;
+  case 26: // q, EG2 varation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE = 4.4;
+    break;
+  case 27: // r, EG2 varation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE = 4.8;
+    break;
+  case 28: // s, EG2 varation, PCM-EMC
     fDoGammaMinEnergyCut = 2;
     fSingleDaughterMinE = 5.0;
     break;
-  case 19: // j, EG2 varation, PCM-EMC
+  case 29: // t, EG1 variation, PCM-EMC
     fDoGammaMinEnergyCut = 2;
-    fSingleDaughterMinE = 5.5;
+    fSingleDaughterMinE  = 9.0;
     break;
-  case 20: // k, EG1 variation, PCM-EMC
+  case 30: // u, EG1 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE  = 9.2;
+    break;
+  case 31: // v, EG1 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE  = 9.4;
+    break;
+  case 32: // w, EG1 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE  = 9.8;
+    break;
+  case 33: // x, EG1 variation, PCM-EMC
     fDoGammaMinEnergyCut = 2;
     fSingleDaughterMinE  = 10.0;
-    break;
-  case 21: // l, EG1 variation, PCM-EMC
-    fDoGammaMinEnergyCut = 2;
-    fSingleDaughterMinE  = 10.5;
     break;
   default:
     cout<<"Warning: pT cut not defined for eta prime analysis"<<PtCut<<endl;
