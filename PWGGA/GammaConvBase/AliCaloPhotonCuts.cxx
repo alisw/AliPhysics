@@ -5187,7 +5187,6 @@ Bool_t AliCaloPhotonCuts::InitializeCutsFromCutString(const TString analysisCutS
   }
 
   TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
-  analysisCutSelectionLowerCase.ToLower();
   const char *cutSelection = analysisCutSelectionLowerCase.Data();
   #define ASSIGNARRAY(i) \
     fCuts[i] = \
