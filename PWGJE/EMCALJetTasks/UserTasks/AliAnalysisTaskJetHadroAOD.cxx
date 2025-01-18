@@ -79,7 +79,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliFJWrapper.h"
 #include "AliEmcalJet.h"
-#include "AliEmcalJetTask.h"
+//#include "AliEmcalJetTask.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalContainerUtils.h"
 #include <fstream>
@@ -101,7 +101,7 @@ ClassImp(AliAnalysisTaskJetHadroAOD)
 // -----------------------------------------------------------------------
 //________________________________________________________________________
 AliAnalysisTaskJetHadroAOD::AliAnalysisTaskJetHadroAOD()
-: AliAnalysisTaskEmcalJet("JetHadro"), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
+: AliAnalysisTaskEmcalJet("JetHadro", kTRUE), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
 fAOD_FilterBits(0),
 fPIDCombined(0x0),
 fMCStack(0x0),
@@ -437,7 +437,7 @@ fMultTrueFlag(kFALSE)
 
 //________________________________________________________________________
 AliAnalysisTaskJetHadroAOD::AliAnalysisTaskJetHadroAOD(const char *name)
-: AliAnalysisTaskEmcalJet(name), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
+: AliAnalysisTaskEmcalJet(name, kTRUE), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
 fAOD_FilterBits(0),
 fPIDCombined(0x0),
 fMCStack(0x0),
@@ -781,10 +781,11 @@ fMultTrueFlag(kFALSE)
   // ==========================================
   //
   // Define outputs
-  DefineOutput(1, TList::Class());
+
+  DefineOutput(1, TList::Class()); //CHANGE 1->13
+  DefineOutput(2, TList::Class()); //CHANGE 1->13
 
   if (fDoEventTree){
-    DefineOutput(2, TTree::Class());
     DefineOutput(3, TTree::Class());
     DefineOutput(4, TTree::Class());
     DefineOutput(5, TTree::Class());
@@ -795,6 +796,7 @@ fMultTrueFlag(kFALSE)
     DefineOutput(10, TTree::Class());
     DefineOutput(11, TTree::Class());
     DefineOutput(12, TTree::Class());
+    DefineOutput(13, TTree::Class());
   }
 
   // ==========================================
@@ -1018,6 +1020,11 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   Initialize();
   std::cout << " Info::siweyhmi: ===== In the UserCreateOutputObjects ===== " << std::endl;
 
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects(); //CHANGE MAYBE NEEDED TO FIX TTREE 0
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  TH1::AddDirectory(oldStatus); //Try adding this!
+
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
   fFastJetWrapper->Clear();
 
@@ -1080,7 +1087,7 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
   //
-  fEventCuts.AddQAplotsToList(fListHist);
+  //fEventCuts.AddQAplotsToList(fListHist); //Try changing this?
 
   Float_t tpc_mom_bins[58] = {};
   for (int i=0; i < (57+1); i++){
@@ -1689,21 +1696,22 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   //   Send output objects to container
   // ************************************************************************
   //
-  PostData(1, fListHist);
+  PostData(1, fOutput); //CHANGE 1-> 13
+  PostData(2, fListHist); //CHANGE 1-> 13 //THIS PROBABLY CAN STILL WORK BY MARTINS
 
   if (fDoEventTree){
-    PostData(2, fTreejetsEMCconst);
-    PostData(3, fTreejetsEMCBGconst);
-    PostData(4, fTreejetsFJ);
-    PostData(5, fTreejetsFJBG);
-    PostData(6, fTreejetsFJconst);
-    PostData(7, fTreejetsFJBGconst);
-    PostData(8, fTreejetEvents);
-    PostData(9, fTreejetsEMC);
-    PostData(10, fTreejetsEMCBG);
-    PostData(11, fTreeMC);
-    PostData(12, fTreeCuts);
-  } 
+    PostData(3, fTreejetsEMCconst);
+    PostData(4, fTreejetsEMCBGconst);
+    PostData(5, fTreejetsFJ);
+    PostData(6, fTreejetsFJBG);
+    PostData(7, fTreejetsFJconst);
+    PostData(8, fTreejetsFJBGconst);
+    PostData(9, fTreejetEvents);
+    PostData(10, fTreejetsEMC);
+    PostData(11, fTreejetsEMCBG);
+    PostData(12, fTreeMC);
+    PostData(13, fTreeCuts);
+  }
 
   std::cout << " Info::siweyhmi: ===== Out of UserCreateOutputObjects ===== " << std::endl;
 
