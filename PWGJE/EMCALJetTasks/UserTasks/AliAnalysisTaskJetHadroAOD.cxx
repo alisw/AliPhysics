@@ -782,8 +782,8 @@ fMultTrueFlag(kFALSE)
   //
   // Define outputs
 
-  DefineOutput(1, TList::Class()); //CHANGE 1->13
-  DefineOutput(2, TList::Class()); //CHANGE 1->13
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 
   if (fDoEventTree){
     DefineOutput(3, TTree::Class());
@@ -1020,10 +1020,10 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   Initialize();
   std::cout << " Info::siweyhmi: ===== In the UserCreateOutputObjects ===== " << std::endl;
 
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects(); //CHANGE MAYBE NEEDED TO FIX TTREE 0
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  TH1::AddDirectory(oldStatus); //Try adding this!
+  TH1::AddDirectory(oldStatus);
 
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
   fFastJetWrapper->Clear();
@@ -1087,7 +1087,6 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
   //
-  //fEventCuts.AddQAplotsToList(fListHist); //Try changing this?
 
   Float_t tpc_mom_bins[58] = {};
   for (int i=0; i < (57+1); i++){
@@ -1696,8 +1695,8 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   //   Send output objects to container
   // ************************************************************************
   //
-  PostData(1, fOutput); //CHANGE 1-> 13
-  PostData(2, fListHist); //CHANGE 1-> 13 //THIS PROBABLY CAN STILL WORK BY MARTINS
+  PostData(1, fOutput);
+  PostData(2, fListHist);
 
   if (fDoEventTree){
     PostData(3, fTreejetsEMCconst);
@@ -1722,6 +1721,7 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   //
   // main event loop
   //
+
   if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the UserExec ===== " << std::endl;
   //
   // Check Monte Carlo information and other access first:
@@ -1755,7 +1755,6 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   {
     //
     // Init magnetic filed for golden chi2 cut
-    fAOD->InitMagneticField();
     //
     // event selection
       if ( (fPassIndex==3 || fPassIndex==2) && fYear>2013){
@@ -1926,9 +1925,9 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
 
     if (fUseCouts) cout << "num_reco_jets_w_multiple_matches over all events is " <<  fall_reco_jets_w_multiple_matches << endl;
     if (fUseCouts) cout << "num_reco_jets_w_matches over all events is " <<  fall_reco_jets_w_matches << endl;
-
     return kTRUE;
   }
+
   return kTRUE;
 
 }
