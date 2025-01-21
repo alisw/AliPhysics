@@ -125,17 +125,9 @@ protected:
     Float_t                             GetJetMass(AliEmcalJet *jet,Int_t jetContNb);
     Float_t                             Angularity(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             Coronna(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             GetJetCoronna(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             PTD(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             Circularity(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             LeSub(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetNumberOfConstituents(AliEmcalJet *jet,Int_t jetContNb);
-    Float_t                             GetSigma2(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             Sigma2(AliEmcalJet *jet, Int_t jetContNb);
     
     Int_t                               SelectTrigger(Float_t minpT, Float_t maxpT);
     Double_t                            RelativePhi(Double_t mphi, Double_t vphi);
@@ -159,7 +151,7 @@ protected:
     JetShapeType                        fJetShapeType;           // jet type to be used
     JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
     JetSelectionType                    fJetSelection;           // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[26];          // jet shapes used for the tagging
+    Float_t                             fShapesVar[20];          // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
     Int_t                               fSelectedShapes;         //chose set of shapes
