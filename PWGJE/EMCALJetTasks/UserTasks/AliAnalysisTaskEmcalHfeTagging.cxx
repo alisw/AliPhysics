@@ -158,8 +158,6 @@ fptJetPE(0),
 fptJetHFE(0),
 fptRecPE(0),
 fptTruePE(0),
-fptTruePEdcal(0),
-fptRecPEdcal(0),
 fPtTrack(0),
 fPhiTrack(0x0),
 fEtaTrack(0x0),
@@ -176,7 +174,6 @@ fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
-fnEovPelecTPCDCalcut(0x0),
 fnEovPbackg(0x0),
 fnClsE(0x0),
 fnM20(0x0),
@@ -222,7 +219,6 @@ fTreeObservableTagging(0)
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffTPCTOF[i] = NULL;
         fptTrueHFEeffEMCal[i] = NULL;
-        fptTrueHFEeffDCal[i] = NULL;
         fnEovPelecTPCsscut[i] = NULL;
     }
     
@@ -249,18 +245,12 @@ fTreeObservableTagging(0)
             fTotPEAng[i][j] = NULL;
             fULSptAng[i][j] = NULL;
             fLSptAng[i][j] = NULL;
-            
-            fRecPEAngDcal[i][j] = NULL;
-            fTotPEAngDcal[i][j] = NULL;
         }
         for(Int_t j=0;j<6;j++){
             fRecPEDisp[i][j] = NULL;
             fTotPEDisp[i][j] = NULL;
             fULSptDisp[i][j] = NULL;
             fLSptDisp[i][j] = NULL;
-            
-            fRecPEDispDcal[i][j] = NULL;
-            fTotPEDispDcal[i][j] = NULL;
         }
     }
     
@@ -369,8 +359,6 @@ fptJetPE(0),
 fptJetHFE(0),
 fptRecPE(0),
 fptTruePE(0),
-fptTruePEdcal(0),
-fptRecPEdcal(0),
 fPtTrack(0),
 fPhiTrack(0x0),
 fEtaTrack(0x0),
@@ -387,7 +375,6 @@ fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
-fnEovPelecTPCDCalcut(0x0),
 fnEovPbackg(0x0),
 fnClsE(0x0),
 fnM20(0x0),
@@ -433,7 +420,6 @@ fTreeObservableTagging(0)
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffTPCTOF[i] = NULL;
         fptTrueHFEeffEMCal[i] = NULL;
-        fptTrueHFEeffDCal[i] = NULL;
         fnEovPelecTPCsscut[i] = NULL;
     }
     
@@ -458,18 +444,12 @@ fTreeObservableTagging(0)
             fTotPEAng[i][j] = NULL;
             fULSptAng[i][j] = NULL;
             fLSptAng[i][j] = NULL;
-            
-            fRecPEAngDcal[i][j] = NULL;
-            fTotPEAngDcal[i][j] = NULL;
         }
         for(Int_t j=0;j<6;j++){
             fRecPEDisp[i][j] = NULL;
             fTotPEDisp[i][j] = NULL;
             fULSptDisp[i][j] = NULL;
             fLSptDisp[i][j] = NULL;
-            
-            fRecPEDispDcal[i][j] = NULL;
-            fTotPEDispDcal[i][j] = NULL;
         }
     }
     
@@ -658,13 +638,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
             fLSptAng[i][j] = new TH1F(Form("fLSptAng%d%d",i,j), Form("fLSptAng%d%d",i,j), 33,ptRange);
             fOutput->Add(fLSptAng[i][j]);
-            
-            
-            fRecPEAngDcal[i][j] = new TH1F(Form("fRecPEAngDcal%d%d",i,j), Form("fRecPEAngDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fRecPEAngDcal[i][j]);
-
-            fTotPEAngDcal[i][j] = new TH1F(Form("fTotPEAngDcal%d%d",i,j), Form("fTotPEAngDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fTotPEAngDcal[i][j]);
         }
         
         for(Int_t j=0;j<6;j++){
@@ -679,13 +652,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
             
             fLSptDisp[i][j] = new TH1F(Form("fLSptDisp%d%d",i,j), Form("fLSptDisp%d%d",i,j), 33,ptRange);
             fOutput->Add(fLSptDisp[i][j]);
-            
-            
-            fRecPEDispDcal[i][j] = new TH1F(Form("fRecPEDispDcal%d%d",i,j), Form("fRecPEDispDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fRecPEDispDcal[i][j]);
-            
-            fTotPEDispDcal[i][j] = new TH1F(Form("fTotPEDispDcal%d%d",i,j), Form("fTotPEDispDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fTotPEDispDcal[i][j]);
         }
     }
     
@@ -709,12 +675,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fptTruePE= new TH1F("fptTruePE", "fptTruePE", 33,ptRange);
     fOutput->Add(fptTruePE);
     
-    fptTruePEdcal= new TH1F("fptTruePEdcal", "fptTruePEdcal", 33,ptRange);
-    fOutput->Add(fptTruePEdcal);
-    
-    fptRecPEdcal= new TH1F("fptRecPEdcal", "fptRecPEdcal", 33,ptRange);
-    fOutput->Add(fptRecPEdcal);
-    
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffTPCTOF[i] = new TH1F(Form("fptTrueHFEeffTPCTOF%d",i), Form("fptTrueHFEeffTPCTOF%d",i), 33,ptRange);
         fOutput->Add(fptTrueHFEeffTPCTOF[i]);
@@ -736,10 +696,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffEMCal[i] = new TH1F(Form("fptTrueHFEeffEMCal%d",i), Form("fptTrueHFEeffEMCal%d",i), 33,ptRange);
         fOutput->Add(fptTrueHFEeffEMCal[i]);
-        
-        fptTrueHFEeffDCal[i] = new TH1F(Form("fptTrueHFEeffDCal%d",i), Form("fptTrueHFEeffDCal%d",i), 33,ptRange);
-        fOutput->Add(fptTrueHFEeffDCal[i]);
-        
     }
     
     for(Int_t i=0;i<2;i++){
@@ -802,9 +758,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnEovPelecTPCEMCalcut = new TH2F("fnEovPelecTPCEMCalcut", "fnEovPelecTPCEMCalcut", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPelecTPCEMCalcut);
     
-    fnEovPelecTPCDCalcut = new TH2F("fnEovPelecTPCDCalcut", "fnEovPelecTPCDCalcut", 100, 0, 100,40,0,2);
-    fOutput->Add(fnEovPelecTPCDCalcut);
-
     for(Int_t i=0;i<5;i++){
         fnEovPelecTPCsscut[i] = new TH2F(Form("fnEovPelecTPCsscut%d",i), Form("fnEovPelecTPCsscut%d",i), 33,ptRange,40,0,2);
         fOutput->Add(fnEovPelecTPCsscut[i]);
@@ -1511,13 +1464,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             Double_t clsE = -9., m02 = -9., m20 = -9., clsTime = -9, EovP = -9.;
             
-            Double_t emcalphimin = 1.39;
-            Double_t emcalphimax = 3.265;
-            
-            Double_t dcalphimin = 4.53;
-            Double_t dcalphimax = 5.708;
-            
-            Bool_t isDCalCluster = kFALSE;
+            Double_t emcphimim = 1.39;
+            Double_t emcphimax = 3.265;
             
             Int_t clsId = track->GetEMCALcluster();
             AliVCluster* cluster=0x0;
@@ -1537,16 +1485,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                     
                     if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
                     
-                    if ((emcphi>emcalphimin && emcphi<emcalphimax) ||
-                        (emcphi>dcalphimin && emcphi<dcalphimax)){
+                    if (emcphi>emcphimim && emcphi<emcphimax){
                         clsE = cluster->GetNonLinCorrEnergy();
                         m20 = cluster->GetM20();
                         m02 = cluster->GetM02();
                         clsTime = cluster->GetTOF()*1e+9; // ns
                         
                         EovP = clsE/p;
-                        
-                        if(emcphi>dcalphimin && emcphi<dcalphimax) isDCalCluster = kTRUE;
                     }
                 }
             }
@@ -1558,9 +1503,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut){
                 fnEovPelecTPCEMCalcut->Fill(pt,EovP);
-                
-                if(isDCalCluster) fnEovPelecTPCDCalcut->Fill(pt,EovP);
-                
                 
                 for (Int_t l=0;l<5;l++){// pt jet range
                     if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]) fnEovPelecTPCsscut[l]->Fill(pt,EovP);
@@ -1665,13 +1607,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             
             Double_t EovP = -9., clsE = -9., m20 = -9.;
             
-            Double_t emcalphimin = 1.39;
-            Double_t emcalphimax = 3.265;
-            
-            Double_t dcalphimin = 4.53;
-            Double_t dcalphimax = 5.708;
-            
-            Bool_t isDCalCluster = kFALSE;
+            Double_t emcphimim = 1.39;
+            Double_t emcphimax = 3.265;
             
             Int_t clsId = track->GetEMCALcluster();
             
@@ -1683,23 +1620,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
 
                 cluster = clusterCont->GetCluster(clsId);
                 
-                if(cluster && cluster->IsEMCAL()){
-                    
-                    Float_t  emcx[3]; // cluster pos
-                    cluster->GetPosition(emcx);
-                    TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
-                    Double_t emcphi = clustpos.Phi();
-                    
-                    if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
-                    
-                    if ((emcphi>emcalphimin && emcphi<emcalphimax) ||
-                        (emcphi>dcalphimin && emcphi<dcalphimax)){
-                    
-                        clsE = cluster->GetNonLinCorrEnergy();
-                        m20 = cluster->GetM20();
-                        
-                      if(emcphi>dcalphimin && emcphi<dcalphimax) isDCalCluster = kTRUE;
-                    }
+                if(cluster && cluster->IsEMCAL() && phi > emcphimim && phi < emcphimax){
+                    clsE = cluster->GetNonLinCorrEnergy();
+                    m20 = cluster->GetM20();
                 }
             }
             
@@ -1798,7 +1721,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         if ((partPDG==11) && isFromHFdecay && nHFE<2){
                             fptTrueHFEeffTPCTOF[0]->Fill(pt);
                             fptTrueHFEeffEMCal[0]->Fill(pt);
-                            if(isDCalCluster) fptTrueHFEeffDCal[0]->Fill(pt);
                             
                             fptTrueHFEeffTPCTOFang[0]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
                             fptTrueHFEeffEMCalang[0]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
@@ -1814,7 +1736,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         if ((partPDG==11) && isFromHFdecay  && nHFE<2){
                             fptTrueHFEeffTPCTOF[1]->Fill(pt);
                             fptTrueHFEeffEMCal[1]->Fill(pt);
-                            if(isDCalCluster) fptTrueHFEeffDCal[1]->Fill(pt);
                             
                             if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3)
                                 fptTrueHFEeffTPCTOF[2]->Fill(pt);
@@ -1831,18 +1752,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut)
                                 fptTrueHFEeffEMCal[2]->Fill(pt);
-                                if(isDCalCluster) fptTrueHFEeffDCal[2]->Fill(pt);
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut)
                                 fptTrueHFEeffEMCal[3]->Fill(pt);
-                                if(isDCalCluster) fptTrueHFEeffDCal[3]->Fill(pt);
-                            
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut){
                                 
                                 fptTrueHFEeffEMCal[4]->Fill(pt);
-                                if(isDCalCluster) fptTrueHFEeffDCal[4]->Fill(pt);
-                                
                                 fptTrueHFEeffEMCalang[1]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
                                 fptTrueHFEeffEMCaldisp[1]->Fill(pt,jet->Pt(),GetJetpTD(jet,0));
                             }
@@ -1857,7 +1773,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,iDecay,MCweight);
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
-                        
                             
                             for (Int_t l=0;l<5;l++){// pt jet range
                                 if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
@@ -1886,42 +1801,20 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
                             
-                            if(isDCalCluster){
-                                if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPEdcal->Fill(pt,MCweight);
-                                if (iDecay>0 && iDecay<7) fptTruePEdcal->Fill(pt,MCweight);
-                            }
-                            
                             for (Int_t l=0;l<5;l++){// pt jet range
                                 if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
                                     
                                     for (Int_t m=0;m<5;m++){// angularity
                                         if (ang>=angRange[m] && ang<angRange[m+1]){
-                                            if (iDecay>0 && iDecay<7)
-                                                fTotPEAng[l][m]->Fill(pt,MCweight);
+                                            if (iDecay>0 && iDecay<7) fTotPEAng[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l][m]->Fill(pt,MCweight);
-                                            
-                                            if(isDCalCluster){
-                                                if (iDecay>0 && iDecay<7)
-                                                    fTotPEAngDcal[l][m]->Fill(pt,MCweight);
-                                                if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAngDcal[l][m]->Fill(pt,MCweight);
-                                            }
-                                            
-                                            
                                         }
                                     }
                                     
                                     for (Int_t m=0;m<6;m++){// dispersion
                                         if (disp>=dispRange[m] && disp<dispRange[m+1]){
-                                            if (iDecay>0 && iDecay<7)
-                                                fTotPEDisp[l][m]->Fill(pt,MCweight);
+                                            if (iDecay>0 && iDecay<7) fTotPEDisp[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l][m]->Fill(pt,MCweight);
-                                            
-                                            if(isDCalCluster){
-                                                if (iDecay>0 && iDecay<7)
-                                                    fTotPEDispDcal[l][m]->Fill(pt,MCweight);
-                                                if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDispDcal[l][m]->Fill(pt,MCweight);
-                                            }
-                                            
                                         }
                                     }
                                 }
