@@ -488,10 +488,10 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         9,10,11,12,13,14,15,16,18,20};
     
     Double_t bin_JetPt[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t bin_g[9] = {0.,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.12};//g
+    Double_t bin_g[9] = {0.,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.24};//g
     Double_t bin_ptd[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};//pTD
     
-    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};//for syst.
+    Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};//for syst.
     
     fNeventV0 = new TH1F("fNeventV0","Number of Events (V0)",5,-0.5,4.5);
     fOutput->Add(fNeventV0);
@@ -1524,7 +1524,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
     
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};
+    Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
@@ -1871,7 +1871,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
     Int_t sub = -1;
     
     Double_t ptJetRange[6] = {5,20,40,60,80,120};
-    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};
+    Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Double_t jetPt = jet->Pt();
