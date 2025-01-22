@@ -131,6 +131,8 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHistMCGen_XiPlus_Pt; //!<! Pt distribution of Xi+ at gen. level
         TH1F*                   fHistMCGen_XiMinus_Pt_wYcut; //!<! Pt distribution of Xi- at gen. level
         TH1F*                   fHistMCGen_XiPlus_Pt_wYcut; //!<! Pt distribution of Xi+ at gen. level
+        TH1F*                   fHistMCGen_Xic0_Pt_wMatchToXiPi; //!<! Pt distribution of prompt Xic0 at gen. level with match to Xi and pion
+        TH1F*                   fHistMCGen_Xic0_Pt_wFullMatch; //!<! Pt distribution of prompt Xic0 at gen. level with full match
         TH1F*                   fCounterGen_Cuts_XiMinus; //!<! 1D counter for Xi- (Cuts)
         TH1F*                   fCounterGen_Cuts_XiPlus; //!<! 1D counter for Xi+ (Cuts)
         TH1F*                   fCounterRecMC_Cuts_XiMinus; //!<! 1D counter for Xi- (Cuts)
@@ -415,7 +417,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 13);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 14);
 };
 
 #endif
