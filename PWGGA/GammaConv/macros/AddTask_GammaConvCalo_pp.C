@@ -4105,6 +4105,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dl00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // RBins    min = 72,     max = 95
     cuts.AddCutPCMCalo("00010113","0dg00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // RBins    min = 95,     max = 180
 
+  } else if ( trainConfig == 3522){
+    cuts.AddCutPCMCalo("00010113","05m00009f9730000dge0404000","422790109fe309v0000","0r63103100000010"); // eta < 0.5
+    cuts.AddCutPCMCalo("00010113","07m00009f9730000dge0404000","466790109fe309v0000","0r63103100000010"); // eta < 0.3
+    cuts.AddCutPCMCalo("00010113","0em00009f9730000dge0404000","444790109fe309v0000","0r63103100000010"); // eta < 0.13
 
   } else if ( trainConfig == 3530){//alpha, std 3 == <=1.0 (for smearing studies)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","0r6310a100000010"); //a: alpha meson variation 1 0<alpha<0.2

@@ -2348,6 +2348,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010013","411790109fe309v0000","0s631031000000d0"); // pileup not removed
     cuts.AddCutCalo("00010313","411790109fe309v0000","0s631031000000d0"); // +-100\ns no other interaction
     cuts.AddCutCalo("00010513","411790109fe309v0000","0s631031000000d0"); // +-1.075\mus no other interaction
+    //--------  INT7 Eta cut variations
+    } else if (trainConfig == 1902){  // pp 13 TeV eta cut variation
+    cuts.AddCutCalo("00010113","422790109fe309v0000","0s631031000000d0"); // eta < 0.5
+    cuts.AddCutCalo("00010113","477790109fe309v0000","0s631031000000d0"); // eta < 0.4
+    cuts.AddCutCalo("00010113","466790109fe309v0000","0s631031000000d0"); // eta < 0.3
+    cuts.AddCutCalo("00010113","444790109fe309v0000","0s631031000000d0"); // eta < 0.13
 
     //--------  INT7 Meson cut variations
   } else if (trainConfig == 1905){ // pp 13 TeV variations: background
