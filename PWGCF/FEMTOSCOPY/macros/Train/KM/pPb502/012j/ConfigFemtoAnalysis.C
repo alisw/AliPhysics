@@ -40,8 +40,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   const char *spart[2] = {"Kp", "Km"};
   const int zar[2]={+1,-1};
 
-  const double S_T_MIMA[2]={0.0,1.0};//all events
-  //const double S_T_MIMA[2]={0.0,0.3};//jetty events
+  //const double S_T_MIMA[2]={0.0,1.0};//all events
+  const double S_T_MIMA[2]={0.0,0.3};//jetty events
   //const double S_T_MIMA[2]={0.7,1.0};//sperical events
   const double DCA[2] = {0.135,0.130};//xy,z in mm
 
