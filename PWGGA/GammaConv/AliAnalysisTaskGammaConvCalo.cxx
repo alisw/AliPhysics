@@ -2927,27 +2927,25 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
             fHistoTruePrimaryPi0MCPtResolPt[iCut]                   = new TH2F("ESD_TruePrimaryPi0_MCPt_ResolPt", "ESD_TruePrimaryPi0_ResolPt_MCPt", 500, 0.03, 25, 1000, -1., 1.);
             fHistoTruePrimaryPi0MCPtResolPt[iCut]->SetXTitle("#pi^{0}p_{T,MC}(GeV/c)");
-            fHistoTruePrimaryPi0MCPtResolPt[iCut]->SetYTitle("#pi^{0}(p_{T,rec}-p_{T,MC})/p_{T,MC}()");
-            fHistoTruePrimaryPi0MCPtResolPt[iCut]->Sumw2();
+            fHistoTruePrimaryPi0MCPtResolPt[iCut]->SetYTitle("#pi^{0}(p_{T,rec}-p_{T,MC})/p_{T,MC}()");            
             SetLogBinningXTH2(fHistoTruePrimaryPi0MCPtResolPt[iCut]);
             fTrueList[iCut]->Add(fHistoTruePrimaryPi0MCPtResolPt[iCut]);
 
             fHistoTruePrimaryEtaMCPtResolPt[iCut]                   = new TH2F("ESD_TruePrimaryEta_MCPt_ResolPt", "ESD_TruePrimaryEta_ResolPt_MCPt", 500, 0.03, 25, 1000, -1., 1.);
             fHistoTruePrimaryEtaMCPtResolPt[iCut]->SetXTitle("#eta p_{T,MC}(GeV/c)");
             fHistoTruePrimaryEtaMCPtResolPt[iCut]->SetYTitle("#eta (p_{T,rec}-p_{T,MC})/p_{T,MC}()");
-            fHistoTruePrimaryEtaMCPtResolPt[iCut]->Sumw2();
             SetLogBinningXTH2(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
             fTrueList[iCut]->Add(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
 
             fHistoTruePrimaryPi0MCPtVsRecPt[iCut]                   = new TH2F("ESD_TruePrimaryPi0_MCPt_RecPt", "ESD_TruePrimaryPi0_MCPt_RecPt", nBinsPt, arrPtBinning, nBinsPt, arrPtBinning);
             fHistoTruePrimaryPi0MCPtVsRecPt[iCut]->SetXTitle("#pi^{0}p_{T,rec}(GeV/c)");
             fHistoTruePrimaryPi0MCPtVsRecPt[iCut]->SetYTitle("#pi^{0}p_{T,MC}(GeV/c)");
-            fHistoTruePrimaryPi0MCPtVsRecPt[iCut]->Sumw2();
+            fTrueList[iCut]->Add(fHistoTruePrimaryPi0MCPtVsRecPt[iCut]);
 
             fHistoTruePrimaryEtaMCPtVsRecPt[iCut]                   = new TH2F("ESD_TruePrimaryEta_MCPt_RecPt", "ESD_TruePrimaryEta_MCPt_RecPt", nBinsPt, arrPtBinning, nBinsPt, arrPtBinning);
             fHistoTruePrimaryEtaMCPtVsRecPt[iCut]->SetXTitle("#eta p_{T,rec}(GeV/c)");
             fHistoTruePrimaryEtaMCPtVsRecPt[iCut]->SetYTitle("#eta p_{T,MC}(GeV/c)");
-            fHistoTruePrimaryEtaMCPtVsRecPt[iCut]->Sumw2();
+            fTrueList[iCut]->Add(fHistoTruePrimaryEtaMCPtVsRecPt[iCut]);
 
             fHistoTrueK0sWithPi0DaughterMCPt[iCut]                  = new TH1F("ESD_TrueK0sWithPi0Daughter_MCPt", "ESD_TrueK0sWithPi0Daughter_MCPt", nBinsPt, arrPtBinning);
             fHistoTrueK0sWithPi0DaughterMCPt[iCut]->SetXTitle("K^{0}_{s}p_{MC,T}(GeV/c) for K^{0}_{s}where #pi^{0}rec ");
