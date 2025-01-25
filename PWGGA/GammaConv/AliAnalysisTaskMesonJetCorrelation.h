@@ -102,6 +102,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool IsJetInAcc(unsigned int accType, double r, double eta, double phi);
   bool IsInEMCalAcc(double r, double eta, double phi);
   bool IsInDCalAcc(double r, double eta, double phi);
+  bool IsJetAtEMCSupermoduleBorder(double phi);
 
   // Helper functions
   void MakeBinning();
@@ -441,6 +442,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH3F*> fHistoJetTrackPtRadialProfile;   //! vector of 3d histos with Jet pt, fractional momentum and distance of particle to jet axis
   std::vector<TH3F*> fHistoJetClusterPtRadialProfile; //! vector of 3d histos with Jet pt, fractional momentum and distance of cluster to jet axis
 
+  // SM border study
+  std::vector<TH1F*> fHistoPtJetSMBorder;             //! vector of histos with jet pt for jets with jet-axis close to SM borders
+  std::vector<TH1F*> fHistoTruePtJetSMBorder;         //! vector of histos with true jet pt for jets with true jet-axis close to SM borders
+  std::vector<TH2F*> fHistoTruevsRecJetPtAtBorder;    //! Jet response matrix for jets close to SM border
+
   //-------------------------------
   // True meson histograms
   //-------------------------------
@@ -574,7 +580,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 26);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 27);
 };
 
 #endif

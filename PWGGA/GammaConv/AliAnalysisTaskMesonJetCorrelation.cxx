@@ -223,6 +223,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoGenLeadParticleInJetMomFrac({}),
                                                                              fHistoJetTrackPtRadialProfile({}),
                                                                              fHistoJetClusterPtRadialProfile({}),
+                                                                             fHistoPtJetSMBorder({}),
+                                                                             fHistoTruePtJetSMBorder({}),
+                                                                             fHistoTruevsRecJetPtAtBorder({}),
                                                                              // true meson histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -519,6 +522,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoGenLeadParticleInJetMomFrac({}),
                                                                                            fHistoJetTrackPtRadialProfile({}),
                                                                                            fHistoJetClusterPtRadialProfile({}),
+                                                                                           fHistoPtJetSMBorder({}),
+                                                                                           fHistoTruePtJetSMBorder({}),
+                                                                                           fHistoTruevsRecJetPtAtBorder({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -821,6 +827,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoJetClusterPtRadialProfile.resize(fnCuts);
     if(fDoWeightGenParticles>0){
       fHistoGenParticleInJetWeighted.resize(fnCuts);
+    }
+    fHistoPtJetSMBorder.resize(fnCuts);
+    if (fIsMC) {
+      fHistoTruePtJetSMBorder.resize(fnCuts);
+      fHistoTruevsRecJetPtAtBorder.resize(fnCuts);
     }
   }
   if (fIsMC) {
@@ -1492,6 +1503,15 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
       fHistoJetClusterPtRadialProfile[iCut] = new TH3F("RadialProfile_JetPt_FracMom_Cluster", "RadialProfile_JetPt_FracMom_Cluster", vecRadiusXax.size()-1, vecRadiusXax.data(), fVecBinsFragment.size()-1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fJetList[iCut]->Add(fHistoJetClusterPtRadialProfile[iCut]);
+
+      fHistoPtJetSMBorder[iCut] = new TH1F("JetPt_SMBorder", "JetPt_SMBorder", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fJetList[iCut]->Add(fHistoPtJetSMBorder[iCut]);
+      if (fIsMC) {
+        fHistoTruePtJetSMBorder[iCut] = new TH1F("TrueJetPt_SMBorder", "TrueJetPt_SMBorder", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fTrueJetList[iCut]->Add(fHistoTruePtJetSMBorder[iCut]);
+        fHistoTruevsRecJetPtAtBorder[iCut] = new TH2F("TrueJetVsRecJetPt_SMBorder", "TrueJetVsRecJetPt_SMBorder", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtAtBorder[iCut]);
+      }
       
     }
 
@@ -2329,6 +2349,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           float fracMom = ptclus/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
           fHistoJetClusterPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
         }
+
+        if(IsJetAtEMCSupermoduleBorder(jetPhi)){
+          fHistoPtJetSMBorder[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
+        }
       }
 
       if (fIsMC > 0 && fConvJetReader->GetNJets() > 0 && fConvJetReader->GetTrueNJets() > 0) {
@@ -2360,6 +2384,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           if(fDoJetQA){
             fHistoTruevsRecJetPtVsLeadingPart[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), GetParticleIndex(LeadingPartPDG), fWeightJetJetMC);
             fHistoTrueMatchedJetPtVsLeadingPart[fiCut]->Fill(fTrueVectorJetPt.at(match), GetParticleIndex(LeadingPartPDG), fWeightJetJetMC);
+            // jet resolution at SM border
+            if(IsJetAtEMCSupermoduleBorder(fTrueVectorJetPhi.at(match))){
+              fHistoTruevsRecJetPtAtBorder[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), fWeightJetJetMC);
+            }
           }
           if(fDoWeightGenParticles>0){
             fHistoTruevsRecJetPtWeighted[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), fTrueVectorJetWeight.at(match)*fWeightJetJetMC);
@@ -2369,6 +2397,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           // Fill response matrix in case that no corresponding true jet was found
           if (!fDoLightOutput) {
             fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(fVectorJetPt.at(i), 0.5, fWeightJetJetMC);
+          }
+          if(fDoJetQA){
+            if(IsJetAtEMCSupermoduleBorder(fTrueVectorJetPhi.at(match))){
+              fHistoTruevsRecJetPtAtBorder[fiCut]->Fill(fVectorJetPt.at(i), 0.5, fWeightJetJetMC);
+            }
           }
         }
       }
@@ -2408,6 +2441,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
       }
       if (!fDoLightOutput) {
         fHistoNPartInTrueJetVsJetPt[fiCut]->Fill(fTrueVectorJetNPart.at(i), fTrueVectorJetPt.at(i));
+      }
+      if(fDoJetQA){
+        if(IsJetAtEMCSupermoduleBorder(fTrueVectorJetPhi.at(i))){
+          fHistoTruePtJetSMBorder[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
+        }
       }
 
       // lambda to find the index of the rec. jet corresponding to the true jet
@@ -2517,6 +2555,23 @@ bool AliAnalysisTaskMesonJetCorrelation::IsInDCalAcc(double r, double eta, doubl
     if (phi < 5.7270731 - r && phi > 4.5378561 + r) {
       return true;
     }
+  }
+  return false;
+}
+
+//_____________________________________________________________________________
+bool AliAnalysisTaskMesonJetCorrelation::IsJetAtEMCSupermoduleBorder(double phi){
+  if(phi < 0){
+    phi += 2*TMath::Pi();
+  }
+  const double angle = TMath::Pi()/9.; // twenty degree
+  const double angleDiff = TMath::Pi()/60.; // 3 degrees
+  // Calculate the remainder when dividing by 20
+  double remainder = fmod(phi, angle);
+
+  // Check if it's within the range ±angleDiff
+  if (remainder <= angleDiff || (angle - remainder) <= angleDiff) {
+      return true;
   }
   return false;
 }
