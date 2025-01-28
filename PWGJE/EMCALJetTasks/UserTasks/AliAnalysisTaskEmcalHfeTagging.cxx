@@ -254,6 +254,18 @@ fTreeObservableTagging(0)
         }
     }
     
+	for(Int_t i = 0; i < 5; i++){
+        fPtSemiInclJet[i] = NULL;
+        fAngSemiInclJet[i] = NULL;
+		fDispSemiInclJet[i] = NULL;
+		fRMPtSemiInclJet[i] = NULL; 
+		fRMAngSemiInclJet[i] = NULL; 
+		fRMDispSemiInclJet[i] = NULL; 
+		fRMUWPtSemiInclJet[i] = NULL; 
+		fRMUWAngSemiInclJet[i] = NULL; 
+		fRMUWDispSemiInclJet[i] = NULL; 
+    }
+    
     
     SetMakeGeneralHistograms(kTRUE);
     DefineOutput(1, TList::Class());
@@ -452,6 +464,18 @@ fTreeObservableTagging(0)
             fLSptDisp[i][j] = NULL;
         }
     }
+	
+	for(Int_t i = 0; i < 5; i++){
+        fPtSemiInclJet[i] = NULL;
+        fAngSemiInclJet[i] = NULL;
+		fDispSemiInclJet[i] = NULL;
+		fRMPtSemiInclJet[i] = NULL; 
+		fRMAngSemiInclJet[i] = NULL; 
+		fRMDispSemiInclJet[i] = NULL; 
+		fRMUWPtSemiInclJet[i] = NULL; 
+		fRMUWAngSemiInclJet[i] = NULL; 
+		fRMUWDispSemiInclJet[i] = NULL; 
+    }
     
     SetMakeGeneralHistograms(kTRUE);
     DefineOutput(1, TList::Class());
@@ -493,6 +517,18 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};//for syst.
     
+	Int_t nbin_jetptRM[2] = {24, 24};
+	Double_t max_jetptRM[2] = {120., 120};
+   	Double_t min_jetptRM[2] = {0., 0.};
+
+	Int_t nbin_gRM[4] = {24, 24, 20, 20};
+	Double_t max_gRM[4] = {120., 120., 0.4, 0.4};
+	Double_t min_gRM[4] = {0., 0., 0., 0.};
+	
+	Int_t nbin_ptdRM[4] = {24, 24, 20, 20};
+	Double_t max_ptdRM[4] = {120., 120., 1., 1.};
+	Double_t min_ptdRM[4] = {0., 0., 0., 0.};
+
     fNeventV0 = new TH1F("fNeventV0","Number of Events (V0)",5,-0.5,4.5);
     fOutput->Add(fNeventV0);
     
@@ -867,6 +903,36 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fDispGluon = new TH2F("fDispGluon", "fDispGluon", 5, bin_JetPt, 6, bin_ptd);
     fOutput->Add(fDispGluon);
+
+	// Inclusive and semi-inclusive histograms
+    for(Int_t i = 0; i < 5; i++){
+        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 12, 0., 60.);
+		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
+						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
+		fRMUWPtSemiInclJet[i] = new THnSparseF(Form("fRMUWPtSemiInclJet%d", i), Form("fRMUWPtSemiInclJet%d", i), 2, 
+						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
+        fOutput->Add(fPtSemiInclJet[i]);
+        fOutput->Add(fRMPtSemiInclJet[i]);
+        fOutput->Add(fRMUWPtSemiInclJet[i]);
+
+        fAngSemiInclJet[i] = new TH2F(Form("fAngSemiInclJet%d",i), Form("fAngSemiInclJet%d",i), 5, bin_JetPt, 8, bin_g);
+		fRMAngSemiInclJet[i] = new THnSparseF(Form("fRMAngSemiInclJet%d", i), Form("fRMAngSemiInclJet%d", i), 4, 
+						                    nbin_gRM, min_gRM, max_gRM);
+		fRMUWAngSemiInclJet[i] = new THnSparseF(Form("fRMUWAngSemiInclJet%d", i), Form("fRMUWAngSemiInclJet%d", i), 4, 
+						                    nbin_gRM, min_gRM, max_gRM);
+        fOutput->Add(fAngSemiInclJet[i]);
+        fOutput->Add(fRMAngSemiInclJet[i]);
+        fOutput->Add(fRMUWAngSemiInclJet[i]);
+        
+		fDispSemiInclJet[i] = new TH2F(Form("fDispSemiInclJet%d",i), Form("fDispSemiInclJet%d",i), 5, bin_JetPt, 6, bin_ptd);
+		fRMDispSemiInclJet[i] = new THnSparseF(Form("fRMDispSemiInclJet%d", i), Form("fRMDispSemiInclJet%d", i), 4, 
+						                    nbin_ptdRM, min_ptdRM, max_ptdRM);
+		fRMUWDispSemiInclJet[i] = new THnSparseF(Form("fRMUWDispSemiInclJet%d", i), Form("fRMUWDispSemiInclJet%d", i), 4, 
+						                    nbin_ptdRM, min_ptdRM, max_ptdRM);
+        fOutput->Add(fDispSemiInclJet[i]);
+        fOutput->Add(fRMDispSemiInclJet[i]);
+        fOutput->Add(fRMUWDispSemiInclJet[i]);
+    }
     
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -1094,8 +1160,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
         
         while((jet1 = jetCont->GetNextAcceptJet())) {
             if (!jet1) continue;
-            AliEmcalJet* jet2 = 0x0;
-            AliEmcalJet* jet3 = 0x0;
+            AliEmcalJet* jet2 = 0x0;  // Matched unsubtracted jet
+            AliEmcalJet* jet3 = 0x0;  // Mateched particle-level jet
             fPtJet->Fill(jet1->Pt());
             fPhiJet->Fill(jet1->Pt(),jet1->Phi());
             fEtaJet->Fill(jet1->Pt(),jet1->Eta());
@@ -1195,7 +1261,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                 }
             }
             
-            Double_t ptSubtracted = 0;
+            Double_t ptSubtracted = 0, jet1ang = -1, jet1ptd = 1;
             if (fJetShapeSub==kConstSub) ptSubtracted= jet1->Pt();
             
             else if (fJetShapeSub==kDerivSub)  {
@@ -1213,10 +1279,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), ptSubtracted);
             if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
             
+			jet1ptd = GetJetpTD(jet1, 0);
+			jet1ang = GetJetAngularity(jet1,0); 
+
             fShapesVar[1] = ptSubtracted;
-            fShapesVar[2] = GetJetpTD(jet1,0);
+            fShapesVar[2] = jet1ptd;
             fShapesVar[3] = GetJetMass(jet1,0);
-            fShapesVar[4] = GetJetAngularity(jet1,0);
+            fShapesVar[4] = jet1ang;
             
             Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.;
             Int_t kMatched = 0;
@@ -1271,17 +1340,36 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             GetNumberOfElectrons(jet1, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
             
-            fAngChargPart->Fill(jet1->Pt(),GetJetAngularity(jet1,0));
-            fDispChargPart->Fill(jet1->Pt(),GetJetpTD(jet1,0));
+            fAngChargPart->Fill(ptSubtracted, jet1ang);
+            fDispChargPart->Fill(ptSubtracted, jet1ptd);
+
+			Double_t ptRMvalues[2] = {ptSubtracted, ptMatch};
+			Double_t angRMvalues[4] = {ptSubtracted, ptMatch, jet1ang, angulMatch};
+			Double_t ptdRMvalues[4] = {ptSubtracted, ptMatch, jet1ptd, ptDMatch};
+
+			for (int sibin = MaxPtBinForSemiInclusiveJet(jet1, 0); sibin >= 0; sibin--) {
+				fPtSemiInclJet[sibin] -> Fill(ptSubtracted);
+				fAngSemiInclJet[sibin] -> Fill(ptSubtracted, jet1ang);
+				fDispSemiInclJet[sibin] -> Fill(ptSubtracted, jet1ptd);
+
+				fRMPtSemiInclJet[sibin] -> Fill(ptRMvalues, kWeight);
+				fRMUWPtSemiInclJet[sibin] -> Fill(ptRMvalues, 1.);
+				
+				fRMAngSemiInclJet[sibin] -> Fill(angRMvalues, kWeight);
+				fRMUWAngSemiInclJet[sibin] -> Fill(angRMvalues, 1.);
+				
+				fRMDispSemiInclJet[sibin] -> Fill(ptdRMvalues, kWeight);
+				fRMUWDispSemiInclJet[sibin] -> Fill(ptdRMvalues, 1.);
+			}	
             
             if(nInclusiveElectrons==1){
-                fAngIncElec->Fill(jet1->Pt(),GetJetAngularity(jet1,0));
-                fDispIncElec->Fill(jet1->Pt(),GetJetpTD(jet1,0));
+                fAngIncElec->Fill(ptSubtracted, jet1ang);
+                fDispIncElec->Fill(ptSubtracted, jet1ptd);
             }
             
             if(!hasElectrons){
-                fAngHadron->Fill(jet1->Pt(),GetJetAngularity(jet1,0));
-                fDispHadron->Fill(jet1->Pt(),GetJetpTD(jet1,0));
+                fAngHadron->Fill(ptSubtracted, jet1ang);
+                fDispHadron->Fill(ptSubtracted, jet1ptd);
             }
             
             
@@ -2286,6 +2374,42 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetNumberOfConstituents(AliEmcalJet *
         else
             return jet->GetNumberOfTracks();
     
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb=0){
+    // Give the bin with max value for minimum pT bin for semi-inclusive observables due to the 
+	// transverse mass rescaling of charged pions, i.e. min(pT pion)^2 = min(pT e)^2 + m_e^2 - m_pion^2
+	// Using m_e = 0.0005 GeV, m_pion = 0.13957 GeV and min(pT e) = [0.5, 1.0, 2.0, 3.0] GeV
+	
+	double minpTpion[5] = {0, 0.4802, 0.9902, 1.9951, 2.9968};	
+    
+    AliJetContainer *jetCont = GetJetContainer(jetContNb);
+    if (!jet->GetNumberOfTracks()) return -1;
+
+	// Get largest constituent pt
+	double largestpt = 0.;
+    AliVParticle *vp1 = 0x0;
+    for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
+        vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+        
+        if (!vp1){
+            Printf("AliVParticle associated to constituent not found");
+            continue;
+        }
+        
+        if (vp1 -> Pt() > largestpt) largestpt = vp1 -> Pt();
+    }
+
+	// If there is a particle with pt > min pt[j], the jet should populate all the bins previous
+	// to j (inclusive) 
+	for (int j = 4; j > 0; j--) {
+    	if (largestpt > minpTpion[j]) {
+        	return j;
+        }
+	}
+	
+	return 0;
 }
 
 //________________________________________________________________________

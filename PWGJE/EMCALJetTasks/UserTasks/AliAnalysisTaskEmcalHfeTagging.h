@@ -25,6 +25,7 @@ class AliAODMCHeader;
 class AliAnalysisUtils;
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include <THnSparse.h>
 
 
 
@@ -128,8 +129,8 @@ protected:
     Float_t                             PTD(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetNumberOfConstituents(AliEmcalJet *jet,Int_t jetContNb);
-    
-    Int_t                               SelectTrigger(Float_t minpT, Float_t maxpT);
+	Int_t 								MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb);
+	Int_t								SelectTrigger(Float_t minpT, Float_t maxpT);
     Double_t                            RelativePhi(Double_t mphi, Double_t vphi);
     
     AliAODEvent                         *fAOD;                  //! AOD object
@@ -305,6 +306,18 @@ protected:
     TH2F                                *fDispGluon;
     TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
+	// (Semi-)inclusive observables and response matrices
+	TH1F								*fPtSemiInclJet[5];
+	TH2F								*fAngSemiInclJet[5];
+	TH2F								*fDispSemiInclJet[5];
+	THnSparseF							*fRMPtSemiInclJet[5];
+	THnSparseF						    *fRMAngSemiInclJet[5];
+	THnSparseF						    *fRMDispSemiInclJet[5];
+	// Unweighted response matrices
+	THnSparseF							*fRMUWPtSemiInclJet[5];
+	THnSparseF						    *fRMUWAngSemiInclJet[5];
+	THnSparseF						    *fRMUWDispSemiInclJet[5];
+
 private:
     AliAnalysisTaskEmcalHfeTagging(const AliAnalysisTaskEmcalHfeTagging&);            // not implemented
     AliAnalysisTaskEmcalHfeTagging &operator=(const AliAnalysisTaskEmcalHfeTagging&); // not implemented
