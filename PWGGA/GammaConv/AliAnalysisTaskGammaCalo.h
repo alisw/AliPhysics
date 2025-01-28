@@ -309,6 +309,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTrueSecondaryPi0InvMassPt;                      //! array of histos with validated secondary mothers, invMass, pt
     TH2F**                fHistoTruePrimaryPi0RecPtMCPt;                        //! array of histos with valdiated pi0 reconstructed vs. generated momentum
     TH2F**                fHistoTruePrimaryEtaRecPtMCPt;                        //! array of histos with valdiated eta reconstructed vs. generated momentum
+    TH3F**                fHistoTruePrimaryPi0RecPtMCPtVsMass;                  //! array of histos with valdiated pi0 reconstructed vs. generated momentum vs. invariant mass
+    TH3F**                fHistoTruePrimaryEtaRecPtMCPtVsMass;                  //! array of histos with valdiated eta reconstructed vs. generated momentum vs. invariant mass
     TH2F**                fHistoTrueSecondaryPi0FromK0sInvMassPt;               //! array of histos with validated secondary mothers from K0s, invMass, pt
     TH1F**                fHistoTrueK0sWithPi0DaughterMCPt;                     //! array of histos with K0s with reconstructed pi0 as daughter, pt
     TH2F**                fHistoTrueSecondaryPi0FromK0lInvMassPt;               //! array of histos with validated secondary mothers from K0l, invMass, pt
