@@ -1116,9 +1116,52 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
 Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 {
     // Fill histograms.
-    //cout<<"base container"<<endl;
-    AliEmcalJet* jet1 = NULL;
-    AliJetContainer *jetCont = GetJetContainer(0);
+
+	// Always load all possible 4 containers
+	// Order will change depending on JetShapeType and Sub, but main is always first
+    AliJetContainer* jetCont = GetJetContainer(0);
+    if (!jetCont) return 0;
+	
+    AliJetContainer* jetContExtra1 = GetJetContainer(1);
+    AliJetContainer* jetContExtra2 = GetJetContainer(2);
+    AliJetContainer* jetContExtra3 = GetJetContainer(3);
+    
+	AliJetContainer* jetContTrue = nullptr;
+	AliJetContainer* jetContUS = nullptr;
+	AliJetContainer* jetContPartLevel = nullptr;
+		
+	// Determine extra jet containers 
+	// No need to do anything if kMCTrue, kData or kGenOnTheFly as they only use first
+	if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
+		jetContTrue = jetContExtra1;
+		if (fJetShapeSub == kConstSub) {
+			jetContUS = jetContExtra2;			
+			jetContPartLevel = jetContExtra3;			
+		} else {
+			jetContPartLevel = jetContExtra2;			
+		}
+	}
+	
+	// Determine container for jet matching
+	Int_t kMatched = 0;
+    if (fJetShapeType == kPythiaDef) {
+        if (fJetShapeSub == kConstSub) {
+			kMatched = 3;
+		} else {
+    		kMatched = 1;
+		}
+	} else if (fJetShapeType == kDetEmbPartPythia) {
+        if (fJetShapeSub == kConstSub) {
+			kMatched = 3;
+		/* } else if (fJetShapeSub == kDerivSub) { */
+		} else {
+			kMatched = 2;
+		}
+	}
+
+
+
+    AliEmcalJet* jetbase = nullptr;
     
     Float_t kWeight=1;
     if (fCentSelectOn)
@@ -1141,188 +1184,176 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
         }
     }
     
-    Float_t rhoVal=0, rhoMassVal = 0.;
     
-    if(jetCont) {
-        jetCont->ResetCurrentID();
-        if ((fJetShapeSub==kConstSub) || (fJetShapeSub==kDerivSub)){
-            //rho
-            AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoSparseR020"));
-            if (!rhoParam) {
-                Printf("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data());
-            } else rhoVal = rhoParam->GetVal();
-            //rhom
-            AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMassSparseR020"));
-            if (!rhomParam) {
-                Printf("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data());
-            } else rhoMassVal = rhomParam->GetVal();
-        }
+    if (jetCont) {
+        jetCont -> ResetCurrentID();
         
-        while((jet1 = jetCont->GetNextAcceptJet())) {
-            if (!jet1) continue;
-            AliEmcalJet* jet2 = 0x0;  // Matched unsubtracted jet
-            AliEmcalJet* jet3 = 0x0;  // Mateched particle-level jet
-            fPtJet->Fill(jet1->Pt());
-            fPhiJet->Fill(jet1->Pt(),jet1->Phi());
-            fEtaJet->Fill(jet1->Pt(),jet1->Eta());
-            if (jet1->Pt() > 5.) fEtaPhiJet->Fill(jet1->Phi(),jet1->Eta());
-            fAreaJet->Fill(jet1->Pt(),jet1->Area());
-            AliEmcalJet *jetUS = NULL;
-            Int_t ifound=0, ilab=-1;
-            
-            fShapesVar[0] = 0.;
-            if(fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kDetEmbPartPythia){
-                //AliJetContainer *jetContTrue = GetJetContainer(1);
-                AliJetContainer *jetContUS = GetJetContainer(2);
-                
-                if(fJetShapeSub == AliAnalysisTaskEmcalHfeTagging::kConstSub){
-                    for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
-                        jetUS = jetContUS->GetJet(i);
-                        if(jetUS->GetLabel()==jet1->GetLabel()) {
-                            ifound++;
-                            if(ifound==1) ilab = i;
+		// Determine Rho if subtracted container
+    	Float_t rhoVal = 0., rhoMassVal = 0.;
+    	if ((fJetShapeSub==kConstSub) || (fJetShapeSub==kDerivSub)){
+    	    //rho
+    	    AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoSparseR020"));
+    	    if (!rhoParam) {
+    	        Printf("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data());
+
+			} else {
+				rhoVal = rhoParam->GetVal();
+			}
+
+    	    //rhom
+    	    AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMassSparseR020"));
+    	    
+			if (!rhomParam) {
+    	        Printf("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data());
+
+		   	} else {
+					rhoMassVal = rhomParam->GetVal();
+			}
+    	}
+
+        while ((jetbase = jetCont -> GetNextAcceptJet())) {
+            if (!jetbase) continue;
+
+            AliEmcalJet* jettrue = nullptr;  // Matched unsubtracted jet
+            AliEmcalJet* jetpartlevel = nullptr;  // Matched particle-level jet
+            AliEmcalJet* jetUS = nullptr;
+									  
+			// Fill kinematics histograms
+            fPtJet->Fill(jetbase->Pt());
+            fPhiJet->Fill(jetbase->Pt(),jetbase->Phi());
+            fEtaJet->Fill(jetbase->Pt(),jetbase->Eta());
+            if (jetbase->Pt() > 5.) fEtaPhiJet->Fill(jetbase->Phi(),jetbase->Eta());
+            fAreaJet->Fill(jetbase->Pt(),jetbase->Area());
+
+			// Jet matching
+			// If kConstSub, get match to equivalent unsubtracted jet jetUS by jettrue
+			// Particle level jet will be described by jetpartlevel
+            if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kDetEmbPartPythia){
+                Double_t fractionpt = 0;  // For min pt shared cut
+
+                if (fJetShapeSub == AliAnalysisTaskEmcalHfeTagging::kConstSub){
+					// Original logic
+                    for(Int_t i = 0; i < jetContUS -> GetNJets(); i++) {
+                        if(jetContUS -> GetJet(i) -> GetLabel() == jetbase -> GetLabel()) {
+                    		jetUS = jetContUS -> GetJet(i);
+							break;
                         }
                     }
-                    if(ilab==-1) continue;
-                    jetUS=jetContUS->GetJet(ilab);
-                    jet2=jetUS->ClosestJet();
-                }
+
+					if (!jetUS) {
+                    	/* Printf("Equivalent unsubtracted jet (jetUS) not found, returning"); */
+						continue;
+					}
+
+            		jettrue = GetClosestOnOtherJetContainer(jetUS, jetContTrue);
+					fractionpt = GetFractionSharedPtBetweenJets(jetUS, jettrue);
+
+                } else {
+            		jettrue = GetClosestOnOtherJetContainer(jetbase, jetContTrue);
+					fractionpt = GetFractionSharedPtBetweenJets(jetbase, jettrue);
+				}
                 
-                if(!(fJetShapeSub == AliAnalysisTaskEmcalHfeTagging::kConstSub)) jet2 = jet1->ClosestJet();
-                if (!jet2) {
-                    Printf("jet2 does not exist, returning");
+				// Min pt shared cut
+				if (fractionpt < fMinFractionShared) continue;
+                
+                if (!jettrue) {
+                    Printf("jettrue does not exist, returning");
                     continue;
                 }
+                    	    
+                jetpartlevel = GetClosestOnOtherJetContainer(jettrue, jetContPartLevel);
                 
-                //AliJetContainer *jetContPart=GetJetContainer(3);
-                jet3=jet2->ClosestJet();
-                
-                if(!jet3){
-                    Printf("jet3 does not exist, returning");
+                if(!jetpartlevel){
+                    Printf("jetpartlevel does not exist, returning");
                     continue;
                 }
-                //cout<<"jet 3 exists"<<jet3->Pt()<<endl;
-                
-                
-                fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());
-                
-                Double_t fraction=0;
-                if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
-                if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
-                //if (fraction > 0.1) cout<<"***** hey a jet matched with fraction"<<fraction<<"  "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
-                
-                if(fraction<fMinFractionShared) continue;
-                //InputEvent()->Print();
-                
+					
+                fh2ResponseUW->Fill(jetbase->Pt(),jettrue->Pt());
             }
             
             if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kPythiaDef){
-                jet3 = jet1->ClosestJet();
-                if (!jet3) continue;
+                jetpartlevel = GetClosestOnOtherJetContainer(jetbase, jetContPartLevel);
+                if(!jetpartlevel){
+                    Printf("jetpartlevel does not exist, returning");
+                    continue;
+                }
                 
-                fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
+                fh2ResponseUW->Fill(jetbase->Pt(),jetpartlevel->Pt());
                 
                 Double_t probDensDetPart = -999., probDensPartDet = -999.;
                 
-                if (jet1->Pt()>0) probDensPartDet = (jet3->Pt()-jet1->Pt())/jet1->Pt();
-                if (jet3->Pt()>0) probDensDetPart = (jet1->Pt()-jet3->Pt())/jet3->Pt();
+                if (jetbase->Pt()>0) probDensPartDet = (jetpartlevel->Pt()-jetbase->Pt())/jetbase->Pt();
+                if (jetpartlevel->Pt()>0) probDensDetPart = (jetbase->Pt()-jetpartlevel->Pt())/jetpartlevel->Pt();
                 
-                fJetProbDensityDetPart->Fill(probDensDetPart,jet3->Pt());
-                fJetProbDensityPartDet->Fill(probDensPartDet,jet1->Pt());
+                fJetProbDensityDetPart->Fill(probDensDetPart,jetpartlevel->Pt());
+                fJetProbDensityPartDet->Fill(probDensPartDet,jetbase->Pt());
                 
             }
             
+            fShapesVar[0] = 0.;
             if (fJetShapeType == kGenOnTheFly){
                 const AliEmcalPythiaInfo *partonsInfo = 0x0;
                 partonsInfo = GetPythiaInfo();
-                Double_t jp1=RelativePhi(jet1->Phi(),partonsInfo->GetPartonPhi6());
-                Double_t detap1=(jet1->Eta())-(partonsInfo->GetPartonEta6());
+                Double_t jp1=RelativePhi(jetbase->Phi(),partonsInfo->GetPartonPhi6());
+                Double_t detap1=(jetbase->Eta())-(partonsInfo->GetPartonEta6());
                 kWeight=partonsInfo->GetPythiaEventWeight();
-                fh2ResponseW->Fill(jet1->Pt(),jet1->Pt(),kWeight);
+                fh2ResponseW->Fill(jetbase->Pt(),jetbase->Pt(),kWeight);
                 
                 Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
-                fEtaJetCorr6->Fill(jet1->Eta(), partonsInfo->GetPartonEta6());
-                fPhiJetCorr6->Fill(jet1->Phi(), partonsInfo->GetPartonPhi6());
+                fEtaJetCorr6->Fill(jetbase->Eta(), partonsInfo->GetPartonEta6());
+                fPhiJetCorr6->Fill(jetbase->Phi(), partonsInfo->GetPartonPhi6());
                 if(dRp1 < fRMatching) {
                     fShapesVar[0] = partonsInfo->GetPartonFlag6();
-                    fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jet1->Pt());
+                    fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jetbase->Pt());
                 }
                 else {
-                    jp1=RelativePhi(jet1->Phi(),partonsInfo->GetPartonPhi7());
-                    detap1=(jet1->Eta())-(partonsInfo->GetPartonEta7());
+                    jp1=RelativePhi(jetbase->Phi(),partonsInfo->GetPartonPhi7());
+                    detap1=(jetbase->Eta())-(partonsInfo->GetPartonEta7());
                     dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
-                    fEtaJetCorr7->Fill(jet1->Eta(), partonsInfo->GetPartonEta7());
-                    fPhiJetCorr7->Fill(jet1->Phi(), partonsInfo->GetPartonPhi7());
+                    fEtaJetCorr7->Fill(jetbase->Eta(), partonsInfo->GetPartonEta7());
+                    fPhiJetCorr7->Fill(jetbase->Phi(), partonsInfo->GetPartonPhi7());
                     if(dRp1 < fRMatching) {
                         fShapesVar[0] = partonsInfo->GetPartonFlag7();
-                        fPtJetCorr->Fill(partonsInfo->GetPartonPt7(), jet1->Pt());
+                        fPtJetCorr->Fill(partonsInfo->GetPartonPt7(), jetbase->Pt());
                     }
                     else fShapesVar[0]=0;
                 }
             }
             
-            Double_t ptSubtracted = 0, jet1ang = -1, jet1ptd = 1;
-            if (fJetShapeSub==kConstSub) ptSubtracted= jet1->Pt();
-            
-            else if (fJetShapeSub==kDerivSub)  {
-                ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
+			// Pt subtraction procedure
+            Double_t ptSubtracted = 0., jetbaseang = -1., jetbaseptd = -1.;
+            if (fJetShapeSub == kConstSub) { 
+				ptSubtracted = jetbase -> Pt();
+
+			} else if (fJetShapeSub == kDerivSub)  {
+                ptSubtracted = jetbase -> Pt() -GetRhoVal(0) * jetbase -> Area();
+
+            } else if (fJetShapeSub==kNoSub) {
+                if ((fJetShapeType == kData) || (fJetShapeType == kDetEmbPartPythia)) ptSubtracted = jetbase -> Pt() - GetRhoVal(0) * jetbase -> Area();
+
+                else if ((fJetShapeType == kPythiaDef) || (fJetShapeType == kMCTrue) || (fJetShapeType == kGenOnTheFly)) ptSubtracted = jetbase -> Pt();
             }
             
-            else if (fJetShapeSub==kNoSub) {
-                if ((fJetShapeType==kData) || (fJetShapeType==kDetEmbPartPythia)) ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
-                else if ((fJetShapeType==kPythiaDef) || (fJetShapeType==kMCTrue) || (fJetShapeType==kGenOnTheFly)) ptSubtracted= jet1->Pt();
-            }
-            
-            //Printf("ptSubtracted=%f,fPtThreshold =%f ", ptSubtracted, fPtThreshold);
             if (ptSubtracted < fPtThreshold) continue;
             
-            if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), ptSubtracted);
-            if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+            if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jetbase,0), ptSubtracted);
+            if ((fCentSelectOn == kFALSE) && (jetbase->GetNumberOfTracks() <= 1)) continue;
             
-			jet1ptd = GetJetpTD(jet1, 0);
-			jet1ang = GetJetAngularity(jet1,0); 
+			jetbaseptd = GetJetpTD(jetbase, 0);
+			jetbaseang = GetJetAngularity(jetbase, 0); 
 
             fShapesVar[1] = ptSubtracted;
-            fShapesVar[2] = jet1ptd;
-            fShapesVar[3] = GetJetMass(jet1,0);
-            fShapesVar[4] = jet1ang;
+            fShapesVar[2] = jetbaseptd;
+            fShapesVar[3] = GetJetMass(jetbase, 0);
+            fShapesVar[4] = jetbaseang;
             
             Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.;
-            Int_t kMatched = 0;
             
-            if (fJetShapeType==kPythiaDef) {
-                kMatched =1;
-                if(fJetShapeSub==kConstSub) kMatched = 3;
-                
-                if (!jet3) {
-                    Printf("jet3 does not exist, returning");
-                    continue;
-                }
-                
-                ptMatch=jet3->Pt();
-                ptDMatch=GetJetpTD(jet3, kMatched);
-                massMatch=GetJetMass(jet3,kMatched);
-                angulMatch=GetJetAngularity(jet3, kMatched);
-            }
-            
-            if (fJetShapeType==kDetEmbPartPythia) {
-                if(fJetShapeSub==kConstSub) kMatched = 3;
-                if(fJetShapeSub==kDerivSub) kMatched = 2;
-                ptMatch=jet3->Pt();
-                ptDMatch=GetJetpTD(jet3, kMatched);
-                massMatch=GetJetMass(jet3,kMatched);
-                angulMatch=GetJetAngularity(jet3, kMatched);
-            }
-            
-            
-            
-            if (fJetShapeType == kMCTrue || fJetShapeType == kData || fJetShapeType == kGenOnTheFly) {
-                kMatched = 0;
-                ptMatch=0.;
-                ptDMatch=0.;
-                massMatch=0.;
-                angulMatch=0.;
-                
+            if (kMatched != 0) {
+                ptMatch = jetpartlevel -> Pt();
+                ptDMatch = GetJetpTD(jetpartlevel, kMatched);
+                massMatch = GetJetMass(jetpartlevel, kMatched);
+                angulMatch = GetJetAngularity(jetpartlevel, kMatched);
             }
             
             fShapesVar[5] = ptMatch;
@@ -1332,25 +1363,25 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             fShapesVar[9] = kWeight;
             fShapesVar[10] = rhoVal;
             fShapesVar[11] = rhoMassVal;
-            fShapesVar[12] = jet1->Pt();
+            fShapesVar[12] = jetbase->Pt();
             
             Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC= 0, nTrueHFElecMC= 0;
             Double_t pElec = 0., ptElec = 0.;
             Bool_t hasElectrons = kFALSE;
             
-            GetNumberOfElectrons(jet1, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
+            GetNumberOfElectrons(jetbase, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
             
-            fAngChargPart->Fill(ptSubtracted, jet1ang);
-            fDispChargPart->Fill(ptSubtracted, jet1ptd);
+            fAngChargPart->Fill(ptSubtracted, jetbaseang);
+            fDispChargPart->Fill(ptSubtracted, jetbaseptd);
 
 			Double_t ptRMvalues[2] = {ptSubtracted, ptMatch};
-			Double_t angRMvalues[4] = {ptSubtracted, ptMatch, jet1ang, angulMatch};
-			Double_t ptdRMvalues[4] = {ptSubtracted, ptMatch, jet1ptd, ptDMatch};
+			Double_t angRMvalues[4] = {ptSubtracted, ptMatch, jetbaseang, angulMatch};
+			Double_t ptdRMvalues[4] = {ptSubtracted, ptMatch, jetbaseptd, ptDMatch};
 
-			for (int sibin = MaxPtBinForSemiInclusiveJet(jet1, 0); sibin >= 0; sibin--) {
+			for (int sibin = MaxPtBinForSemiInclusiveJet(jetbase, 0); sibin >= 0; sibin--) {
 				fPtSemiInclJet[sibin] -> Fill(ptSubtracted);
-				fAngSemiInclJet[sibin] -> Fill(ptSubtracted, jet1ang);
-				fDispSemiInclJet[sibin] -> Fill(ptSubtracted, jet1ptd);
+				fAngSemiInclJet[sibin] -> Fill(ptSubtracted, jetbaseang);
+				fDispSemiInclJet[sibin] -> Fill(ptSubtracted, jetbaseptd);
 
 				fRMPtSemiInclJet[sibin] -> Fill(ptRMvalues, kWeight);
 				fRMUWPtSemiInclJet[sibin] -> Fill(ptRMvalues, 1.);
@@ -1363,13 +1394,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			}	
             
             if(nInclusiveElectrons==1){
-                fAngIncElec->Fill(ptSubtracted, jet1ang);
-                fDispIncElec->Fill(ptSubtracted, jet1ptd);
+                fAngIncElec->Fill(ptSubtracted, jetbaseang);
+                fDispIncElec->Fill(ptSubtracted, jetbaseptd);
             }
             
             if(!hasElectrons){
-                fAngHadron->Fill(ptSubtracted, jet1ang);
-                fDispHadron->Fill(ptSubtracted, jet1ptd);
+                fAngHadron->Fill(ptSubtracted, jetbaseang);
+                fDispHadron->Fill(ptSubtracted, jetbaseptd);
             }
             
             
@@ -1383,10 +1414,10 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             if(fMCarray){
                 
-                GetNumberOfTrueElectrons(jet1, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC, ptTrueHFE);
+                GetNumberOfTrueElectrons(jetbase, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC, ptTrueHFE);
                 
-                for(UInt_t i = 0; i < jet1->GetNumberOfTracks(); i++) {
-                    vp1 = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+                for(UInt_t i = 0; i < jetbase->GetNumberOfTracks(); i++) {
+                    vp1 = static_cast<AliVParticle*>(jetbase->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
                     
                     if (!vp1){
                         Printf("AliVParticle associated to constituent not found");
@@ -1396,7 +1427,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                     pdgCode = vp1->PdgCode();
                     if (TMath::Abs(pdgCode)==11) elecCounter++;
                 }
-                if (elecCounter==1) fPtGenJet->Fill(jet1->Pt());
+                if (elecCounter==1) fPtGenJet->Fill(jetbase->Pt());
             }
             
             fShapesVar[13] = ptTrueHFE;
@@ -2547,6 +2578,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::InclElecTrackCuts(const AliVVertex *pViet
     return kTRUE;
     
 }
+
 //_________________________________________
 Bool_t AliAnalysisTaskEmcalHfeTagging::PhotElecTrackCuts(const AliVVertex *pVaetx,AliAODTrack *aetrack,Int_t nMother, Double_t listMother[])
 {
@@ -2563,6 +2595,68 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::PhotElecTrackCuts(const AliVVertex *pVaet
     
 }
 
+//_________________________________________
+/* Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifferenceJet(AliEmcalJet* jet1, AliEmcalJet* jet2) { */
+Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifferenceJet(AliVParticle* jet1, AliVParticle* jet2) {
+  Double_t phi1 = jet1 -> Phi(), eta1 = jet1 -> Eta();
+  Double_t phi2 = jet2 -> Phi(), eta2 = jet2 -> Eta();
+
+  Double_t deltaeta = eta1 - eta2, deltaphi = RelativePhi(phi1, phi2);
+
+  if (deltaphi > TMath::Pi()) deltaphi -= 2 * TMath::Pi();
+  if (deltaphi < -TMath::Pi()) deltaphi += 2 * TMath::Pi();
+
+  return TMath::Sqrt(deltaphi * deltaphi + deltaeta * deltaeta);
+}
+
+AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer) {
+    AliEmcalJet* closestjet = nullptr;
+	AliEmcalJet* jet2 = nullptr;
+	// If distance is always higher than pi, return null;
+	Double_t distmin = TMath::Pi();
+
+	for (Int_t i = 0; i < othercontainer -> GetNJets(); i++) {
+		jet2 = othercontainer -> GetJet(i);
+		Double_t dist = AngularDifferenceJet(jet1, jet2);
+		/* cout << "dist: " << dist << endl; */
+
+		if (dist < distmin) {
+			distmin = dist;
+			closestjet = jet2;
+		}
+	}
+
+	return closestjet;
+}
+
+Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched) {
+	// Similar to AliJetContainer::GetFractionSharedPt() but using any two jets instead of closest and geometric matching
+	// The angular distance threshold is set as 0.02 and 2% for pT matching
+	
+	if (!jet1 || !jetmatched) return -1;
+	
+	Double_t jetmatchedpt = jetmatched -> Pt(), sumpt = 0.;
+	if (jetmatchedpt < 0. || jet1 -> Pt() < 0) return -1;
+
+	AliVParticle* p1 = nullptr, *p2 = nullptr;
+	
+	for (Int_t ic2 = 0; ic2 < jetmatched -> GetNumberOfTracks(); ic2++) {
+		p2 = jetmatched -> Track(ic2);
+		if (!p2) continue;
+		
+		for (Int_t ic1 = 0; ic1 < jet1 -> GetNumberOfTracks(); ic1++) {
+			p1 = jet1 -> Track(ic1);
+			if (!p1) continue;
+
+			if (AngularDifferenceJet(p1, p2) < 0.02 && abs((p1 -> Pt() - p2 -> Pt()) / p2 -> Pt()) < 0.02) {
+				sumpt += p2 -> Pt();
+				break;
+			}
+		}
+	}
+
+	return sumpt / jetmatchedpt;
+}
 //_______________________________________________________________________
 void AliAnalysisTaskEmcalHfeTagging::Terminate(Option_t *)
 {
