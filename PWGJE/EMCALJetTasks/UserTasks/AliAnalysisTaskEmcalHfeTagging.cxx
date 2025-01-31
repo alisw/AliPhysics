@@ -512,17 +512,17 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         9,10,11,12,13,14,15,16,18,20};
     
     Double_t bin_JetPt[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t bin_g[9] = {0.,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.24};//g
+    Double_t bin_g[9] = {0., 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.6};//g
     Double_t bin_ptd[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};//pTD
     
-    Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};//for syst.
+    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};//for syst.
     
 	Int_t nbin_jetptRM[2] = {24, 24};
 	Double_t max_jetptRM[2] = {120., 120};
    	Double_t min_jetptRM[2] = {0., 0.};
 
 	Int_t nbin_gRM[4] = {24, 24, 20, 20};
-	Double_t max_gRM[4] = {120., 120., 0.4, 0.4};
+	Double_t max_gRM[4] = {120., 120., 1., 1.};
 	Double_t min_gRM[4] = {0., 0., 0., 0.};
 	
 	Int_t nbin_ptdRM[4] = {24, 24, 20, 20};
@@ -1352,7 +1352,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             if (kMatched != 0) {
                 ptMatch = jetpartlevel -> Pt();
-                ptDMatch = GetJetpTD(jetpartlevel, kMatched);5                massMatch = GetJetMass(jetpartlevel, kMatched);
+                ptDMatch = GetJetpTD(jetpartlevel, kMatched);
+				massMatch = GetJetMass(jetpartlevel, kMatched);
                 angulMatch = GetJetAngularity(jetpartlevel, kMatched);
             }
             
@@ -1666,7 +1667,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
     
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};
+    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
@@ -2013,7 +2014,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
     Int_t sub = -1;
     
     Double_t ptJetRange[6] = {5,20,40,60,80,120};
-    Double_t angRange[6] = {0.,0.04,0.08,0.12,0.16,0.24};
+    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Double_t jetPt = jet->Pt();
@@ -2351,8 +2352,10 @@ void AliAnalysisTaskEmcalHfeTagging::GetWeightAndDecay(AliAODMCParticle *particl
 Float_t AliAnalysisTaskEmcalHfeTagging::Angularity(AliEmcalJet *jet, Int_t jetContNb = 0){
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
+	Double_t jetradius = jetCont -> GetJetRadius();
+
+    if (!jet->GetNumberOfTracks()) return 0;
+
     Double_t den=0.;
     Double_t num = 0.;
     AliVParticle *vp1 = 0x0;
@@ -2370,15 +2373,18 @@ Float_t AliAnalysisTaskEmcalHfeTagging::Angularity(AliEmcalJet *jet, Int_t jetCo
         num=num+vp1->Pt()*dr;
         den=den+vp1->Pt();
     }
-    return num/den;
+
+    return num / (den * jetradius);
 }
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalHfeTagging::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0){
+    AliJetContainer *jetCont = GetJetContainer(jetContNb);
+	Double_t jetradius = jetCont -> GetJetRadius();
     
     if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
-        else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
+        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity() / jetradius;
+        else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity() / jetradius;
         else
             return Angularity(jet, jetContNb);
     
@@ -2388,8 +2394,8 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetAngularity(AliEmcalJet *jet, Int_t
 Float_t AliAnalysisTaskEmcalHfeTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0){
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
+    if (!jet->GetNumberOfTracks()) return 0;
+
     Double_t den=0.;
     Double_t num = 0.;
     AliVParticle *vp1 = 0x0;
@@ -2404,6 +2410,7 @@ Float_t AliAnalysisTaskEmcalHfeTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 
         num=num+vp1->Pt()*vp1->Pt();
         den=den+vp1->Pt();
     }
+
     return TMath::Sqrt(num)/den;
 }
 
