@@ -132,8 +132,7 @@ protected:
 	Int_t 								MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb);
 	Int_t								SelectTrigger(Float_t minpT, Float_t maxpT);
     Double_t                            RelativePhi(Double_t mphi, Double_t vphi);
-	/* Double_t 							AngularDifferenceJet(AliEmcalJet* jet1, AliEmcalJet* jet2); */
-	Double_t 							AngularDifferenceJet(AliVParticle* jet1, AliVParticle* jet2);
+	Double_t 							AngularDifference(AliVParticle* jet1, AliVParticle* jet2);
 	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
 	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
     
@@ -156,7 +155,7 @@ protected:
     JetShapeType                        fJetShapeType;           // jet type to be used
     JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
     JetSelectionType                    fJetSelection;           // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[20];          // jet shapes used for the tagging
+    Float_t                             fShapesVar[21];          // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
     Int_t                               fSelectedShapes;         //chose set of shapes

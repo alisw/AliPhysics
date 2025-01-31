@@ -212,7 +212,7 @@ fDispGluon(0x0),
 fTreeObservableTagging(0)
 
 {
-    for(Int_t i=0;i<20;i++){
+    for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
     }
     
@@ -425,7 +425,7 @@ fDispGluon(0x0),
 fTreeObservableTagging(0)
 {
     // Standard constructor.
-    for(Int_t i=0;i<20;i++){
+    for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
     }
     
@@ -947,7 +947,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     
     TH1::AddDirectory(oldStatus);
-    const Int_t nVar = 20;
+    const Int_t nVar = 21;
     
     fTreeObservableTagging = new TTree(GetOutputSlot(2)->GetContainer()->GetName(), GetOutputSlot(2)->GetContainer()->GetName());
     
@@ -976,6 +976,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[17] = "hasElec";
     fShapesVarNames[18] = "nTrueElectronsMC";
     fShapesVarNames[19] = "nTrueHFElecMC";
+    fShapesVarNames[20] = "pdgOnlyOneTrueElectron";
     
     
     for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -1351,8 +1352,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             if (kMatched != 0) {
                 ptMatch = jetpartlevel -> Pt();
-                ptDMatch = GetJetpTD(jetpartlevel, kMatched);
-                massMatch = GetJetMass(jetpartlevel, kMatched);
+                ptDMatch = GetJetpTD(jetpartlevel, kMatched);5                massMatch = GetJetMass(jetpartlevel, kMatched);
                 angulMatch = GetJetAngularity(jetpartlevel, kMatched);
             }
             
@@ -1407,26 +1407,45 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             // generated HFE jets
             
-            AliVParticle *vp1 = 0x0;
-            Int_t pdgCode = 0;
+            AliVParticle* vp1 = nullptr;
+			AliAODMCParticle* mcparticle = nullptr, *mcmother = nullptr;
+            Int_t pdgCode = 0, pdgMother = 0, motherIndex = -1;
             Int_t elecCounter = 0;
             Double_t ptTrueHFE = -1.;
             
             if(fMCarray){
-                
                 GetNumberOfTrueElectrons(jetbase, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC, ptTrueHFE);
-                
-                for(UInt_t i = 0; i < jetbase->GetNumberOfTracks(); i++) {
-                    vp1 = static_cast<AliVParticle*>(jetbase->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-                    
-                    if (!vp1){
-                        Printf("AliVParticle associated to constituent not found");
-                        continue;
-                    }
-                    
-                    pdgCode = vp1->PdgCode();
-                    if (TMath::Abs(pdgCode)==11) elecCounter++;
+               
+				if (jetContPartLevel) {
+					/* partCont = jetContPartLevel -> GetParticleContainer(); */
+                	for(UInt_t i = 0; i < jetbase -> GetNumberOfTracks(); i++) {
+                        /* vp1 = static_cast<AliVParticle*>(jetbase->TrackAt(i, jetContPartLevel->GetParticleContainer()->GetArray())); */
+                        vp1 = jetbase -> Track(i);
+                        
+                        if (!vp1){
+                            Printf("AliVParticle associated to constituent not found");
+                            continue;
+                        }
+                        	
+				        /* mcparticle = static_cast<AliAODMCParticle*>(fMCarr  ay -> At(vp1 -> GetLabel())); */
+						mcparticle = static_cast<AliAODMCParticle*>(jetContPartLevel -> GetParticleContainer() -> GetParticle(vp1 -> GetLabel())); 
+                        if (!mcparticle) continue;
+
+				        pdgCode = mcparticle -> PdgCode();
+                        
+                        if (TMath::Abs(pdgCode)==11) {
+				        	elecCounter++;
+
+				        	if (nTrueElectronsMC == 1) {
+				        		motherIndex = mcparticle -> GetMother();
+				        		mcmother = static_cast<AliAODMCParticle*>(fMCarray -> At(motherIndex));
+
+				        		if (mcmother) pdgMother = mcmother -> PdgCode();
+				        	}
+				        }
+				    }
                 }
+
                 if (elecCounter==1) fPtGenJet->Fill(jetbase->Pt());
             }
             
@@ -1437,8 +1456,12 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             fShapesVar[17] = hasElectrons;
             fShapesVar[18] = nTrueElectronsMC;
             fShapesVar[19] = nTrueHFElecMC;
+            fShapesVar[20] = pdgMother;
             
-            fTreeObservableTagging->Fill();
+			// Only fill tree if electron candidate or MC electron is found, ignore soft jets
+			if ((nInclusiveElectrons > 0 || nTrueElectronsMC > 0) && ptSubtracted > 5.) {
+            	fTreeObservableTagging->Fill();
+			}
             
             
         }//jet loop
@@ -2596,8 +2619,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::PhotElecTrackCuts(const AliVVertex *pVaet
 }
 
 //_________________________________________
-/* Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifferenceJet(AliEmcalJet* jet1, AliEmcalJet* jet2) { */
-Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifferenceJet(AliVParticle* jet1, AliVParticle* jet2) {
+Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifference(AliVParticle* jet1, AliVParticle* jet2) {
   Double_t phi1 = jet1 -> Phi(), eta1 = jet1 -> Eta();
   Double_t phi2 = jet2 -> Phi(), eta2 = jet2 -> Eta();
 
@@ -2609,6 +2631,7 @@ Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifferenceJet(AliVParticle* jet1
   return TMath::Sqrt(deltaphi * deltaphi + deltaeta * deltaeta);
 }
 
+//_________________________________________
 AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer) {
     AliEmcalJet* closestjet = nullptr;
 	AliEmcalJet* jet2 = nullptr;
@@ -2617,7 +2640,7 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEm
 
 	for (Int_t i = 0; i < othercontainer -> GetNJets(); i++) {
 		jet2 = othercontainer -> GetJet(i);
-		Double_t dist = AngularDifferenceJet(jet1, jet2);
+		Double_t dist = AngularDifference(jet1, jet2);
 		/* cout << "dist: " << dist << endl; */
 
 		if (dist < distmin) {
@@ -2629,9 +2652,10 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEm
 	return closestjet;
 }
 
+//_________________________________________
 Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched) {
 	// Similar to AliJetContainer::GetFractionSharedPt() but using any two jets instead of closest and geometric matching
-	// The angular distance threshold is set as 0.02 and 2% for pT matching
+	// The angular distance threshold is set as 0.02 and 5% for pT matching
 	
 	if (!jet1 || !jetmatched) return -1;
 	
@@ -2648,7 +2672,7 @@ Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcal
 			p1 = jet1 -> Track(ic1);
 			if (!p1) continue;
 
-			if (AngularDifferenceJet(p1, p2) < 0.02 && abs((p1 -> Pt() - p2 -> Pt()) / p2 -> Pt()) < 0.02) {
+			if (AngularDifference(p1, p2) < 0.02 && abs((p1 -> Pt() - p2 -> Pt()) / p2 -> Pt()) < 0.05) {
 				sumpt += p2 -> Pt();
 				break;
 			}
@@ -2657,6 +2681,7 @@ Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcal
 
 	return sumpt / jetmatchedpt;
 }
+
 //_______________________________________________________________________
 void AliAnalysisTaskEmcalHfeTagging::Terminate(Option_t *)
 {
