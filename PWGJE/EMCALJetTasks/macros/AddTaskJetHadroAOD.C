@@ -142,10 +142,10 @@ AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFil
   //
   // Output containers
   coutput1  = mgr->CreateContainer(combinedName+"_EMCalFWhistos",  TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  mgr->ConnectOutput (task,  1, coutput1); //change 1, 13
+  mgr->ConnectOutput (task,  1, coutput1);
   
   coutput2  = mgr->CreateContainer(listName, TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  mgr->ConnectOutput (task,  2, coutput2); //change 1, 13
+  mgr->ConnectOutput (task,  2, coutput2);
 
   if (postTrees){
     coutput3  = mgr->CreateContainer(combinedName+"_jetsEMCconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
