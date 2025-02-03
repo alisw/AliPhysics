@@ -2085,9 +2085,10 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         
         if(recg.GetNDF()<1) continue;
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
         
-        openingAngle = ge1.GetAngle(ge2);
+		if (TMath::Abs(chi2recg) > 3.) continue;
+        
+        /* openingAngle = ge1.GetAngle(ge2); */
         //if(openingAngle > fOpeningAngleCut) continue;
         
         Int_t MassCorrect=-9;
