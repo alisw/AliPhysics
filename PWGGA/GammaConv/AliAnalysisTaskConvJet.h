@@ -37,7 +37,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
     const char* nclusters = "usedefault",
     const char* ncells = "usedefault",
     const char* suffix = "",
-    double distToEMCBorder = 0.
+    const double distToEMCBorder = 0.,
+    const double distToSMEdges = 0.
     );
 
   Double_t GetNJets() { return fNJets; }
@@ -94,7 +95,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void FindPartonsJet(TClonesArray* arrMCPart);
 
   void SetDistToEMCBorder(const double tmp) {fDistToEMCBorder = tmp;}
-  double GetDistToEMCBorder() {return fDistToEMCBorder;}
+  double GetDistToEMCBorder() const {return fDistToEMCBorder;}
+
+  void SetDistToEMCSMEdge(const double tmp, const int mode) {fDistEMCSMEdge = tmp; fEMCSMEdgesMode = mode;}
+  double GetDistToEMCSMEdge() const {return fDistEMCSMEdge;}
 
  protected:
   void ExecOnce();
@@ -146,6 +150,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   UInt_t fAccTypeMC;
   
   double fDistToEMCBorder;      // distance cut to the border of the EMCal, (if set to 0.4, jet with R=0.4 is fully on the EMCal)
+  int fEMCSMEdgesMode;          // Mode 1 = cut away the edges, Mode 2 = keep the edges
+  double fDistEMCSMEdge;        // distance cut to SM Edges. If jet axis is near that, cut it away (or the other way around)
 
  private:
   bool IsJetAccepted(const AliEmcalJet *jet);
@@ -153,7 +159,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 18);
+  ClassDef(AliAnalysisTaskConvJet, 19);
   /// \endcond
 };
 #endif
