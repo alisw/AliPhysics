@@ -119,6 +119,7 @@ set(SRCS
 if(FASTJET_FOUND)
    set(SRCS ${SRCS}
     AliAnalysisTaskGammaPureMC.cxx
+    AliAnalysisTaskGammaJetsPureMC.cxx
    )
 endif(FASTJET_FOUND)
 
