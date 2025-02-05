@@ -1385,7 +1385,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fJetList[iCut]->Add(fHistoPtJet[iCut]);
     fHistoJetEta[iCut] = new TH1F("JetEta", "JetEta", 100, -1, 1);
     fJetList[iCut]->Add(fHistoJetEta[iCut]);
-    fHistoJetPhi[iCut] = new TH1F("JetPhi", "JetPhi", 70, 0, 7);
+    fHistoJetPhi[iCut] = new TH1F("JetPhi", "JetPhi", 360, 0, 2*TMath::Pi());
     fJetList[iCut]->Add(fHistoJetPhi[iCut]);
     fHistoJetArea[iCut] = new TH1F("JetArea", "JetArea", 50, 0, 1);
     fJetList[iCut]->Add(fHistoJetArea[iCut]);
