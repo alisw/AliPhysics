@@ -2096,10 +2096,22 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         if (!aodTrack) continue; // Should not happen
         // Skip MUON tracks and constrained tracks
         if (aodTrack->IsMuonTrack()) continue;
-        if (aodTrack->IsTPCConstrained()) continue;
-        if (aodTrack->IsGlobalConstrained()) continue;
-        if (aodTrack->IsHybridGlobalConstrainedGlobal()) continue;
-        if (aodTrack->IsHybridTPCConstrainedGlobal()) continue;
+        // if (aodTrack->IsTPCConstrained()) {
+        //   std::cout << "is a TPC constrained track" << std::endl;
+        //   continue;
+        // }
+        // if (aodTrack->IsGlobalConstrained()) {
+        //   std::cout << "is a global constrained track" << std::endl;
+        //   continue;
+        // }
+        // if (aodTrack->IsHybridGlobalConstrainedGlobal()) {
+        //   std::cout << "is a hybrid global constrained track" << std::endl;
+        //   continue;
+        // }
+        // if (aodTrack->IsHybridTPCConstrainedGlobal()) {
+        //   std::cout << "is a hybrid TPC constrained track" << std::endl;
+        //   continue;
+        // }
 
         track = new AliESDtrack(aodVTrack);
         deleteTrack = kTRUE; // Since we use new, we have to delete at the end
