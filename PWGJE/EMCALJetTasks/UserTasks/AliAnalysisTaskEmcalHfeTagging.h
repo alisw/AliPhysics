@@ -247,6 +247,7 @@ protected:
     TH1F                                *fptJetIE;               // pT of jets containing IE
     TH1F                                *fptJetPE;               // pT of jets containing PE
     TH1F                                *fptJetHFE;              // pT of jets containing HFE
+    TH1F                                *fptJetHadron;              // pT of jets not containing electrons
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
     TH1F                                *fptTrueHFEeffTPCTOF[5];

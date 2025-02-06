@@ -156,6 +156,7 @@ fPtP(0),
 fptJetIE(0),
 fptJetPE(0),
 fptJetHFE(0),
+fptJetHadron(0),
 fptRecPE(0),
 fptTruePE(0),
 fPtTrack(0),
@@ -369,6 +370,7 @@ fPtP(0),
 fptJetIE(0),
 fptJetPE(0),
 fptJetHFE(0),
+fptJetHadron(0),
 fptRecPE(0),
 fptTruePE(0),
 fPtTrack(0),
@@ -704,6 +706,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fptJetHFE= new TH1F("fptJetHFE", "fptJetHFE", 100, 0, 200);
     fOutput->Add(fptJetHFE);
+	
+	fptJetHadron = new TH1F("fptJetHadron", "fptJetHadron", 24, 0., 120.);
+    fOutput -> Add(fptJetHadron);
     
     fptRecPE= new TH1F("fptRecPE", "fptRecPE", 33,ptRange);
     fOutput->Add(fptRecPE);
@@ -1394,14 +1399,15 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 				fRMUWDispSemiInclJet[sibin] -> Fill(ptdRMvalues, 1.);
 			}	
             
-            if(nInclusiveElectrons==1){
-                fAngIncElec->Fill(ptSubtracted, jetbaseang);
-                fDispIncElec->Fill(ptSubtracted, jetbaseptd);
+            if (nInclusiveElectrons == 1) {
+                fAngIncElec -> Fill(ptSubtracted, jetbaseang);
+                fDispIncElec -> Fill(ptSubtracted, jetbaseptd);
             }
             
-            if(!hasElectrons){
-                fAngHadron->Fill(ptSubtracted, jetbaseang);
-                fDispHadron->Fill(ptSubtracted, jetbaseptd);
+            if (!hasElectrons) {
+                fptJetHadron -> Fill(ptSubtracted);
+                fAngHadron -> Fill(ptSubtracted, jetbaseang);
+                fDispHadron -> Fill(ptSubtracted, jetbaseptd);
             }
             
             
