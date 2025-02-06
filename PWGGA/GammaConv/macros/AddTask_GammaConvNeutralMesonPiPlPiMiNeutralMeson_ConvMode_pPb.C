@@ -143,7 +143,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>1) task->SetLightOutput(kTRUE);
+  // if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
 
   // ******************************************************************************************************
