@@ -84,7 +84,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW  EMCALUtils PHOSUtils PWGJETFW PWGCFCorrelationsJCORRAN PWGHFvertexingHF)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW  EMCALUtils PHOSUtils PWGJETFW PWGCFCorrelationsJCORRAN)
 
 # Generate the ROOT map
 # Dependecies
