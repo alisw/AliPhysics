@@ -159,11 +159,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>=2) {
-      task->SetLightOutput(2);
-  } else if(runLightOutput>=1) {
-      task->SetLightOutput(1);
-  }
+  // if(runLightOutput>=2) {
+  //     task->SetLightOutput(2);
+  // } else if(runLightOutput>=1) {
+  //     task->SetLightOutput(1);
+  // }
   task->SetTolerance(tolerance);
 
   if(enableMLBckRedStudy && !isMC){

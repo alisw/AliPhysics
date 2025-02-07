@@ -28,9 +28,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     Int_t     isMC                        = 0,                        //run MC
     TString   photonCutNumberV0Reader     = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
     Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
-    Int_t     enableQAMesonTask           = 1,                        // enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson; 0: no QA, 1: general meson QA, 2: background QA, 3: 3D histogram, 4: Dalitz plots, 5: trees, 23: enable background calculations; 
-                                                                      //    combinations: 6: 1+2, 7: 1+2+3, 8: 1+2+3+5, 9: 2+3, 10: 2+3+5, 11: 1+2+3+4+5
-                                                                      //    QA can't be run with light output! 
+    Int_t     enableQAMesonTask           = 1,                        // enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson; 0: no QA, 1: general meson QA, 2: advanced meson QA, 3: background QA, 4: 3D histogram, 5: Dalitz plots, 6: trees
+                                                                      //                             + 10 to a flag adds general meson QA histos
     Int_t     enableExtMatchAndQA         = 0,                        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
     Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
@@ -40,7 +39,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     TString   generatorName               = "HIJING",
     Double_t  tolerance                   = -1,
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
-    Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Int_t     runLightOutput              = 0,                        // run light output, disables basic QA histograms for QA flags > 1, doesn't nothing without QA flag
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     Bool_t    enableMLBckRedStudy         = kFALSE,                   // enable saving the output as tree for ML reduction study
@@ -221,11 +220,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>=2) {
-      task->SetLightOutput(2);
-  } else if(runLightOutput>=1) {
-      task->SetLightOutput(1);
-  }
+  // if(runLightOutput>=2) {
+  //     task->SetLightOutput(2);
+  // } else if(runLightOutput>=1) {
+  //     task->SetLightOutput(1);
+  // }
   task->SetTolerance(tolerance);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   task->SetCorrectionTaskSetting(corrTaskSetting);
