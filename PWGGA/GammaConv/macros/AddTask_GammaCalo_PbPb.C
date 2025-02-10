@@ -2466,7 +2466,29 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 6002){ // EMCAL+DCal clusters for MC testing
     cuts.AddCutCalo("60310e13","411790105ke30220000","01331031000000d0"); //  00-15%
 
-
+  // LHC18qr LHC15o MC with cent in 10% steps
+  } else if (trainConfig == 7000){ // EMCAL clusters -standard PbPb TM for secondaries
+    cuts.AddCutCalo("10110e13","411790105ke30220000","01331031000000d0"); //  0-10%
+    cuts.AddCutCalo("11210e13","411790105ke30220000","01331031000000d0"); // 10-20%
+    cuts.AddCutCalo("12310e13","411790105ke30220000","01331031000000d0"); // 20-30%
+    cuts.AddCutCalo("17810e13","411790105ke30220000","01331031000000d0"); // 70-80%
+    cuts.AddCutCalo("18910e13","411790105ke30220000","01331031000000d0"); // 80-90%
+  } else if (trainConfig == 7001){ // EMCAL clusters -standard PbPb TM for secondaries
+    cuts.AddCutCalo("13410e13","411790105ke30220000","01331031000000d0"); // 30-40%
+    cuts.AddCutCalo("14510e13","411790105ke30220000","01331031000000d0"); // 40-50%
+    cuts.AddCutCalo("15610e13","411790105ke30220000","01331031000000d0"); // 50-60%
+    cuts.AddCutCalo("16710e13","411790105ke30220000","01331031000000d0"); // 60-70%
+  } else if (trainConfig == 7100){ // EMCAL clusters -no TM
+    cuts.AddCutCalo("10130e13","4117901050e30220000","01331031000000d0"); //  0-10%
+    cuts.AddCutCalo("11210e13","4117901050e30220000","01331031000000d0"); // 10-20%
+    cuts.AddCutCalo("12310e13","4117901050e30220000","01331031000000d0"); // 20-30%
+    cuts.AddCutCalo("18910e13","4117901050e30220000","01331031000000d0"); // 80-90%
+    cuts.AddCutCalo("17810e13","4117901050e30220000","01331031000000d0"); // 70-80%
+  } else if (trainConfig == 7101){ // EMCAL clusters -no TM
+    cuts.AddCutCalo("13410e13","4117901050e30220000","01331031000000d0"); // 30-40%
+    cuts.AddCutCalo("14510e13","4117901050e30220000","01331031000000d0"); // 40-50%
+    cuts.AddCutCalo("15610e13","4117901050e30220000","01331031000000d0"); // 50-60%
+    cuts.AddCutCalo("16710e13","4117901050e30220000","01331031000000d0"); // 60-70%
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
