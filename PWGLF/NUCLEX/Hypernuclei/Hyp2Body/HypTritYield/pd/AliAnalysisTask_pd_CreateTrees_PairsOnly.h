@@ -70,6 +70,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fProton_DCAxy;
     Float_t   fProton_DCAz;
     Float_t   fProton_Event_Centrality;
+    Float_t   fProton_Event_PrimaryVertexX;
+    Float_t   fProton_Event_PrimaryVertexY;
     Float_t   fProton_Event_PrimaryVertexZ;
     Bool_t    fProton_Event_BField;
     UShort_t  fProton_TPC_nCrossedRows;
@@ -92,6 +94,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fProton_Event_TimeStamp;
     UInt_t  fProton_Event_RandomCrossCheckNumber;
     Int_t     fProton_ID;
+    Float_t     fProton_x;
+    Float_t     fProton_y;
+    Float_t     fProton_z;
 
 
     TTree *fSaveTree_Deuteron;
@@ -114,6 +119,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fDeuteron_DCAxy;
     Float_t   fDeuteron_DCAz;
     Float_t   fDeuteron_Event_Centrality;
+    Float_t   fDeuteron_Event_PrimaryVertexX;
+    Float_t   fDeuteron_Event_PrimaryVertexY;
     Float_t   fDeuteron_Event_PrimaryVertexZ;
     Bool_t    fDeuteron_Event_BField;
     UShort_t  fDeuteron_TPC_nCrossedRows;
@@ -136,6 +143,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fDeuteron_Event_TimeStamp;
     UInt_t  fDeuteron_Event_RandomCrossCheckNumber;
     Int_t     fDeuteron_ID;
+    Float_t     fDeuteron_x;
+    Float_t     fDeuteron_y;
+    Float_t     fDeuteron_z;
 
 
     TTree *fSaveTree_AntiProton;
@@ -158,6 +168,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fAntiProton_DCAxy;
     Float_t   fAntiProton_DCAz;
     Float_t   fAntiProton_Event_Centrality;
+    Float_t   fAntiProton_Event_PrimaryVertexX;
+    Float_t   fAntiProton_Event_PrimaryVertexY;
     Float_t   fAntiProton_Event_PrimaryVertexZ;
     Bool_t    fAntiProton_Event_BField;
     UShort_t  fAntiProton_TPC_nCrossedRows;
@@ -180,6 +192,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fAntiProton_Event_TimeStamp;
     UInt_t  fAntiProton_Event_RandomCrossCheckNumber;
     Int_t     fAntiProton_ID;
+    Float_t     fAntiProton_x;
+    Float_t     fAntiProton_y;
+    Float_t     fAntiProton_z;
 
 
     TTree *fSaveTree_AntiDeuteron;
@@ -202,6 +217,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fAntiDeuteron_DCAxy;
     Float_t   fAntiDeuteron_DCAz;
     Float_t   fAntiDeuteron_Event_Centrality;
+    Float_t   fAntiDeuteron_Event_PrimaryVertexX;
+    Float_t   fAntiDeuteron_Event_PrimaryVertexY;
     Float_t   fAntiDeuteron_Event_PrimaryVertexZ;
     Bool_t    fAntiDeuteron_Event_BField;
     UShort_t  fAntiDeuteron_TPC_nCrossedRows;
@@ -224,6 +241,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fAntiDeuteron_Event_TimeStamp;
     UInt_t  fAntiDeuteron_Event_RandomCrossCheckNumber;
     Int_t     fAntiDeuteron_ID;
+    Float_t     fAntiDeuteron_x;
+    Float_t     fAntiDeuteron_y;
+    Float_t     fAntiDeuteron_z;
 
 
     ClassDef(AliAnalysisTask_pd_CreateTrees_PairsOnly,1);
