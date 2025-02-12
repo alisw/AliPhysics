@@ -3021,7 +3021,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           double minvEta=vecInvMassEta.back();
           while(minvEta < 0.7){
             minvEta+=0.02;
-            vecInvMassEta.push_back(minvPi0);
+            vecInvMassEta.push_back(minvEta);
           }
           fHistoTruePrimaryEtaRecPtMCPtVsMass[iCut]       = new TH3F("ESD_TruePrimaryEta_RecPt_MCPt_InvMass", "ESD_TruePrimaryEta_RecPt_MCPt_InvMass", arrPtBinningCourse.size()-1, arrPtBinningCourse.data(), arrPtBinningCourse.size()-1, arrPtBinningCourse.data(), vecInvMassEta.size()-1, vecInvMassEta.data());
           fHistoTruePrimaryEtaRecPtMCPtVsMass[iCut]->SetXTitle("p_{T, rec.} (GeV/c)");
