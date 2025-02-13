@@ -74,7 +74,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fAccTypeMC(0),
                                                    fDistToEMCBorder(0),
                                                    fEMCSMEdgesMode(0),
-                                                   fDistEMCSMEdge(0)
+                                                   fDistEMCSMEdge(0),
+                                                   fApplyEnergyWeight(false),
+                                                   funcEnergyWeights(nullptr)
 {
 }
 
@@ -110,7 +112,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fAccTypeMC(0),
                                                                    fDistToEMCBorder(0),
                                                                    fEMCSMEdgesMode(0),
-                                                                   fDistEMCSMEdge(0)
+                                                                   fDistEMCSMEdge(0),
+                                                                   fApplyEnergyWeight(false),
+                                                                   funcEnergyWeights(nullptr)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -177,11 +181,15 @@ void AliAnalysisTaskConvJet::DoJetLoop()
           continue;
         if (!IsJetAccepted(jet))
           continue;
+        double jetEnergyWeight = 1.;
+        if(fApplyEnergyWeight){
+          jetEnergyWeight = funcEnergyWeights->Eval(jet->Pt());
+        }
         count++;
-        fVectorJetPt.push_back(jet->Pt());
-        fVectorJetPx.push_back(jet->Px());
-        fVectorJetPy.push_back(jet->Py());
-        fVectorJetPz.push_back(jet->Pz());
+        fVectorJetPt.push_back(jet->Pt()*jetEnergyWeight);
+        fVectorJetPx.push_back(jet->Px()*jetEnergyWeight);
+        fVectorJetPy.push_back(jet->Py()*jetEnergyWeight);
+        fVectorJetPz.push_back(jet->Pz()*jetEnergyWeight);
         fVectorJetEta.push_back(jet->Eta());
         fVectorJetPhi.push_back(jet->Phi());
         fVectorJetR.push_back(jet->Area());
@@ -529,4 +537,10 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   mgr->ConnectOutput(sampleTask, 1, coutput1);
 
   return sampleTask;
+}
+
+
+void AliAnalysisTaskConvJet::setWeightEnergyJets(const char * formula){
+  fApplyEnergyWeight = true;
+  funcEnergyWeights = new TF1("funcEnergyWeightsJets", formula, 0, 10000);
 }
