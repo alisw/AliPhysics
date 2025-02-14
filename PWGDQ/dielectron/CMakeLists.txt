@@ -51,6 +51,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                    )
 
+
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
+
 # Sources in alphabetical order
 set(SRCS
       BtoJPSI/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
@@ -134,8 +141,6 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase)
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
-set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
@@ -161,6 +166,14 @@ if(DATE_FOUND)
     set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")
     set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${DATE_LIBS}")
 endif(DATE_FOUND)
+
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
+set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
 
 # Additional compilation and linking flags
 set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
