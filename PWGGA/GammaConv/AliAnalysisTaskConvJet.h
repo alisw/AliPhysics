@@ -100,6 +100,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void SetDistToEMCSMEdge(const double tmp, const int mode) {fDistEMCSMEdge = tmp; fEMCSMEdgesMode = mode;}
   double GetDistToEMCSMEdge() const {return fDistEMCSMEdge;}
 
+  void setWeightEnergyJets(const char * formula);
+
  protected:
   void ExecOnce();
   Bool_t FillHistograms();
@@ -153,13 +155,16 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   int fEMCSMEdgesMode;          // Mode 1 = cut away the edges, Mode 2 = keep the edges
   double fDistEMCSMEdge;        // distance cut to SM Edges. If jet axis is near that, cut it away (or the other way around)
 
+  bool fApplyEnergyWeight;
+  TF1* funcEnergyWeights;
+
  private:
   bool IsJetAccepted(const AliEmcalJet *jet);
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&);
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 19);
+  ClassDef(AliAnalysisTaskConvJet, 20);
   /// \endcond
 };
 #endif
