@@ -311,8 +311,7 @@ protected:
     TH2F                                *fDispBeauty;
     TH2F                                *fDispQuark;
     TH2F                                *fDispGluon;
-    TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
-    
+
 	// (Semi-)inclusive observables and response matrices
 	TH1F								*fPtSemiInclJet[5];
 	TH2F								*fAngSemiInclJet[5];
@@ -324,6 +323,14 @@ protected:
 	THnSparseF							*fRMUWPtSemiInclJet[5];
 	THnSparseF						    *fRMUWAngSemiInclJet[5];
 	THnSparseF						    *fRMUWDispSemiInclJet[5];
+
+	// No electron methodology
+	TH2F								*fptJetNoElectrons;
+	TH3F								*fAngJetNoElectrons;
+	TH3F								*fDispJetNoElectrons;
+    
+	TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
+    
 
 private:
     AliAnalysisTaskEmcalHfeTagging(const AliAnalysisTaskEmcalHfeTagging&);            // not implemented

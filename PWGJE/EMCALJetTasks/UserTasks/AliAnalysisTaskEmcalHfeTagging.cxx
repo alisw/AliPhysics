@@ -213,8 +213,10 @@ fDispCharm(0x0),
 fDispBeauty(0x0),
 fDispQuark(0x0),
 fDispGluon(0x0),
+fptJetNoElectrons(0),
+fAngJetNoElectrons(0),
+fDispJetNoElectrons(0),
 fTreeObservableTagging(0)
-
 {
     for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
@@ -430,6 +432,9 @@ fDispCharm(0x0),
 fDispBeauty(0x0),
 fDispQuark(0x0),
 fDispGluon(0x0),
+fptJetNoElectrons(0),
+fAngJetNoElectrons(0),
+fDispJetNoElectrons(0),
 fTreeObservableTagging(0)
 {
     // Standard constructor.
@@ -953,7 +958,18 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fRMDispSemiInclJet[i]);
         fOutput->Add(fRMUWDispSemiInclJet[i]);
     }
+
+	// No electrons 3D methodology
+    fptJetNoElectrons = new TH2F("fptJetNoElectrons", "fptJetNoElectrons", 33, ptRange, 5, bin_JetPt);
+	fOutput -> Add(fptJetNoElectrons);
+
+    fAngJetNoElectrons = new TH3F("fAngJetNoElectrons", "fAngJetNoElectrons", 33, ptRange, 5, bin_JetPt, 8, bin_g);
+	fOutput -> Add(fAngJetNoElectrons);
+
+    fDispJetNoElectrons = new TH3F("fDispJetNoElectrons", "fDispJetNoElectrons", 33, ptRange, 5, bin_JetPt, 6, bin_ptd);
+	fOutput -> Add(fDispJetNoElectrons);
     
+
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
         TH1 *h = dynamic_cast<TH1*>(fOutput->At(i));
@@ -1423,6 +1439,15 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                 fptJetHadron -> Fill(ptSubtracted);
                 fAngHadron -> Fill(ptSubtracted, jetbaseang);
                 fDispHadron -> Fill(ptSubtracted, jetbaseptd);
+
+				// Choose one constituent to act as a random tagger
+				int randomtaggernumber = gRandom -> Integer(jetbase -> GetNumberOfTracks());
+				AliVParticle* randomtagger = jetbase -> Track(randomtaggernumber);
+				if (randomtagger) {
+					fptJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted);
+					fAngJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseang);
+					fDispJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseptd);
+				}
             }
             
             
