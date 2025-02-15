@@ -146,6 +146,9 @@ fnIncSubPhotElecPerJet(0),
 fnTrueElecPerJet(0),
 fnTrueHFElecPerJet(0),
 fnTruePElecPerJet(0),
+fnTrueElecPerJetPt(0),
+fnTrueHFElecPerJetPt(0),
+fnTruePElecPerJetPt(0),
 fPi0PtGen(0),
 fPi0PtEnh(0),
 fEtaPtGen(0),
@@ -360,6 +363,9 @@ fnIncSubPhotElecPerJet(0),
 fnTrueElecPerJet(0),
 fnTrueHFElecPerJet(0),
 fnTruePElecPerJet(0),
+fnTrueElecPerJetPt(0),
+fnTrueHFElecPerJetPt(0),
+fnTruePElecPerJetPt(0),
 fPi0PtGen(0),
 fPi0PtEnh(0),
 fEtaPtGen(0),
@@ -641,8 +647,17 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnTrueHFElecPerJet=new TH1F("fnTrueHFElecPerJet", "fnTrueHFElecPerJet", 50,0,50);
     fOutput->Add(fnTrueHFElecPerJet);
     
-    fnTruePElecPerJet=new TH1F("fnTruePElecPerJet", "fnTruePElecPerJet", 50,0,50);
+	fnTruePElecPerJet=new TH1F("fnTruePElecPerJet", "fnTruePElecPerJet", 50,0,50);
     fOutput->Add(fnTruePElecPerJet);
+    
+	fnTrueElecPerJetPt = new TH2F("fnTrueElecPerJetPt", "fnTrueElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fOutput->Add(fnTrueElecPerJetPt);
+    
+    fnTrueHFElecPerJetPt = new TH2F("fnTrueHFElecPerJetPt", "fnTrueHFElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fOutput->Add(fnTrueHFElecPerJetPt);
+    
+	fnTruePElecPerJetPt = new TH2F("fnTruePElecPerJetPt", "fnTruePElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fOutput->Add(fnTruePElecPerJetPt);
     
     fPi0PtGen = new TH1F("fPi0PtGen","fPi0PtGen",nbin,xbins);
     fOutput->Add(fPi0PtGen);
@@ -1670,6 +1685,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nRecIE=0, nHFE=0, nPE=0, nPairs=0, iDecay = 0, nDmeson = 0, nBmeson = 0, nElecFromB = 0, nElecFromD = 0, nElecFromDfromB = 0, nQuark = 0, nGluon = 0, nBeauty = 0, nCharm = 0;
+	Int_t nIEptmin = 0, nHFEptmin = 0, nPEptmin = 0;
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
     
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
@@ -1838,6 +1854,12 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             
                             if (isFromHFdecay) nHFE++;
                             if (iDecay>0 && iDecay<7) nPE++;
+
+							if (pte > 0.5) {
+								nIEptmin++;
+                            	if (isFromHFdecay) nHFEptmin++;
+                            	if (iDecay>0 && iDecay<7) nPEptmin++;
+							}
                         }
                         
                         if ((partPDG==11) && isFromHFdecay && nHFE<2){
@@ -1955,6 +1977,10 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     fnTrueElecPerJet->Fill(nIE);
     fnTrueHFElecPerJet->Fill(nHFE);
     fnTruePElecPerJet->Fill(nPE);
+    
+	if (nIEptmin > 0) fnTrueElecPerJetPt -> Fill(jet -> Pt(), nIEptmin);
+    if (nHFEptmin > 0) fnTrueHFElecPerJetPt -> Fill(jet -> Pt(), nHFEptmin);
+    if (nPEptmin > 0) fnTruePElecPerJetPt -> Fill(jet -> Pt(), nPEptmin);
     
     nTrueElec = nIE;
     nTrueHFElec = nHFE;

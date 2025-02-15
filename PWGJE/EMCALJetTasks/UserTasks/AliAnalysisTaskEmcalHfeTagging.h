@@ -229,6 +229,9 @@ protected:
     TH1F                                *fnTrueElecPerJet;
     TH1F                                *fnTrueHFElecPerJet;
     TH1F                                *fnTruePElecPerJet;
+    TH2F                                *fnTrueElecPerJetPt;
+    TH2F                                *fnTrueHFElecPerJetPt;
+    TH2F                                *fnTruePElecPerJetPt;
     TH1F                                *fPi0PtGen;
     TH1F                                *fPi0PtEnh;
     TH1F                                *fEtaPtGen;
