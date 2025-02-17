@@ -3813,6 +3813,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoBGProbability            = kFALSE;
     fBackgroundUseLikeSign      = kTRUE;
     fBackgroundUseSideband      = kFALSE;
+    fBackgroundMode             = 5;
     break;
   case 11: // b same event pi0 sideband candidates (right side of pi0 peak)
     fBackgroundMode             = 6;
@@ -3847,7 +3848,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingRightLow          = 0.180;
     fSidebandMixingRightHigh         = 0.220;
     break;
-  case 14: //e same event with pi0 sideband candidates (right side of pi0 peak)
+  case 14: //e same event with eta sideband candidates (right side of eta peak)
     fBackgroundMode             = 6;
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
@@ -3857,7 +3858,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.600;
     fSidebandMixingHigh         = 0.650;
     break;
-  case 15: //f same event with pi0 sideband candidates (left side of pi0 peak)
+  case 15: //f same event with eta sideband candidates (left side of eta peak)
     fBackgroundMode             = 6;
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
@@ -3867,7 +3868,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.42;
     fSidebandMixingHigh         = 0.47;
     break;
-  case 16: //g same event with pi0 sideband candidates (both sides of pi0 peak)
+  case 16: //g same event with eta sideband candidates (both sides of eta peak)
     fBackgroundMode                  = 6;
     fUseRotationMethodInBG           = kFALSE;
     fUseTrackMultiplicityForBG       = kFALSE;
