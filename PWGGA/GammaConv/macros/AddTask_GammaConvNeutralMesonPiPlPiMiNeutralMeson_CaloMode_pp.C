@@ -698,7 +698,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if( trainConfig == 264 ) {
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","0103603l00000000","0453503000000000"); // EG1
 
-  // same as default, but with mixed events
+  // same as default, but with mixed events, default
   } else if(trainConfig == 275) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","i153503000000000"); // INT7, pT cut on eta
   } else if(trainConfig == 276){
@@ -706,6 +706,53 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 277)  { 
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","i153503000000000"); // EG1, pT cut on one eta daugher
 
+  // same as default, but with rotation
+} else if(trainConfig == 278) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","ir53503000000000"); // INT7, pT cut on eta
+} else if(trainConfig == 279){
+  cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","ir53503000000000"); // EG2, pT cut on one eta daugher
+} else if(trainConfig == 280)  { 
+  cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","ir53503000000000"); // EG1, pT cut on one eta daugher
+
+  // same as default, but with mixed events, likesign
+} else if(trainConfig == 281) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","ia53503000000000"); // INT7, pT cut on eta
+} else if(trainConfig == 282){
+  cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","ia53503000000000"); // EG2, pT cut on one eta daugher
+} else if(trainConfig == 283)  { 
+  cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","ia53503000000000"); // EG1, pT cut on one eta daugher
+
+  // same as default, but with mixed events, pi+pi- same event
+} else if(trainConfig == 284) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","io53503000000000"); // INT7, pT cut on eta
+} else if(trainConfig == 285){
+  cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","io53503000000000"); // EG2, pT cut on one eta daugher
+} else if(trainConfig == 286)  { 
+  cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","io53503000000000"); // EG1, pT cut on one eta daugher
+
+  // same as default, but with mixed events, sideband right side of eta
+} else if(trainConfig == 287) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","ie53503000000000"); // INT7, pT cut on eta
+} else if(trainConfig == 288){
+  cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","ie53503000000000"); // EG2, pT cut on one eta daugher
+} else if(trainConfig == 289)  { 
+  cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","ie53503000000000"); // EG1, pT cut on one eta daugher
+
+  // same as default, but with mixed events, sideband left side of eta
+} else if(trainConfig == 290) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","if53503000000000"); // INT7, pT cut on eta
+} else if(trainConfig == 291){
+  cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","if53503000000000"); // EG2, pT cut on one eta daugher
+} else if(trainConfig == 292)  { 
+  cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","if53503000000000"); // EG1, pT cut on one eta daugher
+
+  // same as default, but with mixed events, sideband both side of eta
+} else if(trainConfig == 293) { // possible new defaults, EDC 13 TeV, 2 sigma for mass cut
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","ig53503000000000"); // INT7, pT cut on eta
+} else if(trainConfig == 294){
+  cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","ig53503000000000"); // EG2, pT cut on one eta daugher
+} else if(trainConfig == 295)  { 
+  cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","ig53503000000000"); // EG1, pT cut on one eta daugher
 
   // Eta Prime, 13 TeV, Systematics
 

@@ -7791,7 +7791,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
   * Mode 2 => pi+ and pi0 from same event
   * Mode 3 => pi- and pi0 from same event
   * Mode 4 => no pions from same event (default)
-  * Mode 5 => Ligesign mixing
+  * Mode 5 => Likesign mixing
   * Mode 6 => Sideband
   * Mode 7 => Rotation around pi0
   */
