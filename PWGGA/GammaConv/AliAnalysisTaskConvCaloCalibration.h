@@ -213,6 +213,7 @@ protected:
   TH1F***                 fHistoClusHighPtTrackdEtaSM;                        //! array of histos with dEta between track (above 5GeV) and cluster
   TH1F***                 fHistoClusHighPtTrackdPhiSM;                        //! array of histos with dPhi between track (above 5GeV) and cluster
   TH2F**                  fHistoEVsM02;                                       //! array of histos with cluster E vs M02
+  TH3F**                  fHistoEVsM02VsNCell;                                //! array of histos with cluster E vs M02 vs NCells
   TH2F**                  fHistoEVsM02NCell4;                                 //! array of histos with cluster E vs M02 for NCell > 4
   TH2F**                  fHistoClusterLeadingFractionVsEClus;                //! array of histos with cluster E vs fraction of leading cell in the cluster to total energy of the cluster
   TH2F**                  fHistoClusterSigmaVsEClus;                          //! array of histos with cluster E vs sigma of the cluster (similar to M02 but accounting for both axes)
