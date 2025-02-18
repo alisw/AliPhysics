@@ -28,9 +28,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     Int_t     isMC                          = 0,                        //run MC
     TString   photonCutNumberV0Reader       = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
     Int_t     selectHeavyNeutralMeson       = 0,                        // run eta prime instead of omega
-    Int_t     enableQAMesonTask             = 1,                        // enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson; 0: no QA, 1: general meson QA, 2: background QA, 3: 3D histogram, 4: Dalitz plots, 5: trees, 23: enable background calculations; 
-                                                                        //    combinations: 6: 1+2, 7: 1+2+3, 8: 1+2+3+5, 9: 2+3, 10: 2+3+5, 11: 1+2+3+4+5
-                                                                        //    QA can't be run with light output! 
+    Int_t     enableQAMesonTask             = 1,                        // enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson; 0: no QA, 1: general meson QA, 2: advanced meson QA, 3: background QA, 4: 3D histogram, 5: Dalitz plots, 6: trees
+                                                                        //    runLightOutput = 0 -> all QA flags are run with general meson QA histograms
+                                                                        //    runLightOutput > 0 -> just the histos from given QA flag
     Int_t     enableExtMatchAndQA           = 0,                        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
     Int_t     enableTriggerMimicking        = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection
@@ -42,17 +42,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     TString   fileNameExternalInputs        = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                   = kFALSE,                   //enable Weighting
     Bool_t    enableElecDeDxPostCalibration = kFALSE,                   // enable post calibration of elec pos dEdX
-    TString   generatorName               = "HIJING",
-    Double_t  tolerance                   = -1,
-    TString   periodNameV0Reader          = "",                       // period Name for V0Reader
-    Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
-    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
-    Int_t     enableMatBudWeightsPi0      = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
-    Bool_t    enableMLBckRedStudy         = kFALSE,                   // enable saving the output as tree for ML reduction study
-    Int_t     MLBckRedStudyCutOff         = 10,                       // every which case that is not true meson should be saved
-    Bool_t    setOptimizedRuntime         = kFALSE,                   // allow to skip event if no pi0/eta reconstructed
-    TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
+    TString   generatorName                 = "HIJING",
+    Double_t  tolerance                     = -1,
+    TString   periodNameV0Reader            = "",                       // period Name for V0Reader
+    Int_t     runLightOutput                = 0,                        // run light output, disables basic QA histograms for QA flags > 1, doesn't nothing without QA flag
+    Int_t     prefilterRunFlag              = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
+    Bool_t    enableSortingMCLabels         = kTRUE,                    // enable sorting for MC cluster labels
+    Int_t     enableMatBudWeightsPi0        = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
+    Bool_t    enableMLBckRedStudy           = kFALSE,                   // enable saving the output as tree for ML reduction study
+    Int_t     MLBckRedStudyCutOff           = 10,                       // every which case that is not true meson should be saved
+    Bool_t    setOptimizedRuntime           = kFALSE,                   // allow to skip event if no pi0/eta reconstructed
+    TString   additionalTrainConfig         = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   AliCutHandlerPCM cuts(13);
@@ -221,11 +221,11 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>=2) {
-      task->SetLightOutput(2);
-  } else if(runLightOutput>=1) {
-      task->SetLightOutput(1);
-  }
+  // if(runLightOutput>=2) {
+  //     task->SetLightOutput(2);
+  // } else if(runLightOutput>=1) {
+  //     task->SetLightOutput(1);
+  // }
   task->SetTolerance(tolerance);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   task->SetCorrectionTaskSetting(corrTaskSetting);
@@ -732,7 +732,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190wa01cc00000","32c510700","0103603l00000000","0453503000000000"); // INT7
     cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190wa01cc00000","32c510700","0103603l00000000","0453503000000000"); // PHI7
 
-    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed events
+    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event (all particles from diff event, default)
   } else if(trainConfig == 275)  { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","j153503000000000"); // INT7, pT cut on eta
   } else if(trainConfig == 276)  { 
@@ -740,7 +740,54 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 277)  { 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","j153503000000000"); // EG1, pT cut on one eta daugher
 
+    // possible new default pp 13 TeV, 2 sigmas mass cut, rotation
+  } else if(trainConfig == 278)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","jr53503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 279)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","jr53503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 280)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","jr53503000000000"); // EG1, pT cut on one eta daugher
   
+    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event likesign
+  } else if(trainConfig == 281)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","ja53503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 282)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","ja53503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 283)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","ja53503000000000"); // EG1, pT cut on one eta daugher
+  
+    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event, pi+pi- same event
+  } else if(trainConfig == 284)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","jo53503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 285)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","jo53503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 286)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","jo53503000000000"); // EG1, pT cut on one eta daugher
+
+    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event, sideband right side of eta
+  } else if(trainConfig == 287)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","je53503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 288)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","je53503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 289)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","je53503000000000"); // EG1, pT cut on one eta daugher
+
+    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event, sideband left side of eta
+  } else if(trainConfig == 290)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","jf53503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 291)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","jf53503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 292)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","jf53503000000000"); // EG1, pT cut on one eta daugher
+
+    // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event, sideband both sides of eta
+  } else if(trainConfig == 293)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","jf53503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 294)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","jf53503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 295)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","jf53503000000000"); // EG1, pT cut on one eta daugher
+
   // Eta Prime, 13 TeV, Systematics
 
   // based on cutstrings:
@@ -989,12 +1036,18 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d7600000000","j453503000000000"); 
 
     // eta minimum pT cut variations
-  } else if(trainConfig == 348){      // EG2
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006i3600000000","j453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006j3600000000","j453503000000000"); 
-  } else if(trainConfig == 349)  {    //EG1
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006k3600000000","j453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006l3600000000","j453503000000000"); 
+  } else if(trainConfig == 348){      // EG2, default at 4.6 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006o3600000000","j453503000000000"); // o: pT > 4.0 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006p3600000000","j453503000000000"); // p: pT > 4.2 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006q3600000000","j453503000000000"); // q: pT > 4.4 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006r3600000000","j453503000000000"); // r: pT > 4.8 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006s3600000000","j453503000000000"); // s: pT > 5.0 GeV
+  } else if(trainConfig == 349)  {    // EG1, default at 9.6 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006t3600000000","j453503000000000"); // t: pT > 9.0 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006u3600000000","j453503000000000"); // u: pT > 9.2 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006v3600000000","j453503000000000"); // v: pT > 9.4 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006w3600000000","j453503000000000"); // w: pT > 9.8 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006x3600000000","j453503000000000"); // x: pT > 10. GeV
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

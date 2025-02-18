@@ -236,7 +236,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
     Int_t    GetBackgroundMode() const {return fBackgroundMode;}
     Int_t    DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
-    Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
+    Float_t  GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
     Double_t GetDefaultMassWindowLow()  { return fDefaultMassWindowLow;}
@@ -384,7 +384,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,57)
+    ClassDef(AliConversionMesonCuts,58)
     /// \endcond
 };
 

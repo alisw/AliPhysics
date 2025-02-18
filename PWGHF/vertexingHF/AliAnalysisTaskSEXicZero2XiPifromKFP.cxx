@@ -118,6 +118,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fHistMCGen_XiPlus_Pt(0),
   fHistMCGen_XiMinus_Pt_wYcut(0),
   fHistMCGen_XiPlus_Pt_wYcut(0),
+  fHistMCGen_Xic0_Pt_wMatchToXiPi(0),
+  fHistMCGen_Xic0_Pt_wFullMatch(0),
   fCounterGen_Cuts_XiMinus(0),
   fCounterGen_Cuts_XiPlus(0),
   fCounterRecMC_Cuts_XiMinus(0),
@@ -440,6 +442,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fHistMCGen_XiPlus_Pt(0),
   fHistMCGen_XiMinus_Pt_wYcut(0),
   fHistMCGen_XiPlus_Pt_wYcut(0),
+  fHistMCGen_Xic0_Pt_wMatchToXiPi(0),
+  fHistMCGen_Xic0_Pt_wFullMatch(0),
   fCounterGen_Cuts_XiMinus(0),
   fCounterGen_Cuts_XiPlus(0),
   fCounterRecMC_Cuts_XiMinus(0),
@@ -871,7 +875,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   fHistMCGen_XiPlus_Pt = new TH1F("fHistMCGen_XiPlus_Pt", "#it{p}_{T} distribution of #Xi^{+}", 20, 0., 20.);
   fHistMCGen_XiMinus_Pt_wYcut = new TH1F("fHistMCGen_XiMinus_Pt_wYcut", "#it{p}_{T} distribution of #Xi^{-}", 20, 0., 20.);
   fHistMCGen_XiPlus_Pt_wYcut = new TH1F("fHistMCGen_XiPlus_Pt_wYcut", "#it{p}_{T} distribution of #Xi^{+}", 20, 0., 20.);
-
+  fHistMCGen_Xic0_Pt_wMatchToXiPi = new TH1F("fHistMCGen_Xic0_Pt_wMatchToXiPi", "#it{p}_{T} distribution of #Xi_{c}^{0}", 20, 0., 20.);
+  fHistMCGen_Xic0_Pt_wFullMatch = new TH1F("fHistMCGen_Xic0_Pt_wFullMatch", "#it{p}_{T} distribution of #Xi_{c}^{0}", 20, 0., 20.);
 
   fCounterGen_Cuts_Lambda = new TH1F("fCounterGen_Cuts_Lambda", "Counter of #Lambda (Gen)", 6, 0.5, 6.5);
   fCounterGen_Cuts_Lambda->GetXaxis()->SetBinLabel(1,"inclusive #Lambda");
@@ -1277,6 +1282,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
     fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Gen);
     fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Rec);
     fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Gen);
+  }
+  if (!fIsAnaOmegac0) {
+    fOutputList->Add(fHistMCGen_Xic0_Pt_wMatchToXiPi);
+    fOutputList->Add(fHistMCGen_Xic0_Pt_wFullMatch);
   }
   /*
   fOutputList->Add(fHTrigger);
@@ -2023,6 +2032,14 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
         if (TMath::Abs(mcDau_Xic0->GetPdgCode())==211) pifromXic0_flag = kTRUE; // 211: pion
         if (TMath::Abs(mcDau_Xic0->GetPdgCode())==3312) { // 3312: Xi
           Xi_flag = kTRUE;
+
+
+
+          Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+          if ( fabs(mcpart->Y())<0.8 && CheckOrigin==4 ) fHistMCGen_Xic0_Pt_wMatchToXiPi->Fill(mcpart->Pt());
+
+
+
           if (mcDau_Xic0->GetNDaughters()==NDaughters) {
             for (Int_t jdau=mcDau_Xic0->GetDaughterFirst(); jdau<=mcDau_Xic0->GetDaughterLast(); jdau++) {
               if (jdau<0) break;
@@ -2049,6 +2066,13 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
         Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
+
+
+
+        if ( fabs(mcpart->Y())<0.8 && CheckOrigin==4 ) fHistMCGen_Xic0_Pt_wFullMatch->Fill(mcpart->Pt());
+
+
+
       }
     } // for Xic0
 

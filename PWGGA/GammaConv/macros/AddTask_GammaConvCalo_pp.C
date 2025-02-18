@@ -3526,7 +3526,6 @@ void AddTask_GammaConvCalo_pp(
 
 
 
-
     // Variations for systematics PCM-EDC 13 TeV EG2
     // Variations of EDC Part
   } else if ( trainConfig == 3100){ // EMCAL clusters       wo trigger mimicing
@@ -4105,6 +4104,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dl00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // RBins    min = 72,     max = 95
     cuts.AddCutPCMCalo("00010113","0dg00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // RBins    min = 95,     max = 180
 
+  } else if ( trainConfig == 3522){
+    cuts.AddCutPCMCalo("00010113","05m00009f9730000dge0404000","422790109fe309v0000","0r63103100000010"); // eta < 0.5
+    cuts.AddCutPCMCalo("00010113","07m00009f9730000dge0404000","466790109fe309v0000","0r63103100000010"); // eta < 0.3
+    cuts.AddCutPCMCalo("00010113","0em00009f9730000dge0404000","444790109fe309v0000","0r63103100000010"); // eta < 0.13
 
   } else if ( trainConfig == 3530){//alpha, std 3 == <=1.0 (for smearing studies)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","0r6310a100000010"); //a: alpha meson variation 1 0<alpha<0.2
@@ -4168,6 +4171,23 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 3551){ // cluster efficiency b
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe302200b0","0r63103100000010"); // No NCell
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n2200b0","0r63103100000010"); // NCell >= 2
+
+  
+  // Dir gamma cuts with lower threshold clusterizer (S100A100).minE = 500 MeV
+  } else if (trainConfig == 3600){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe109v0000","0s631031000000d0"); // INT7, no NCell cut
+  } else if (trainConfig == 3601){  // NCell effi applied
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C9v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
+  } else if (trainConfig == 3602){  // M02 variations
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C250000","0s631031000000d0"); // INT7, with NCell cut (+effi), M02 = 0.3
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C240000","0s631031000000d0"); // INT7, with NCell cut (+effi), M02 = 0.4
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C230000","0s631031000000d0"); // INT7, with NCell cut (+effi), M02 = 0.5
+  } else if (trainConfig == 3603){  // no E/P matching
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117999097e1C9v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
+  } else if (trainConfig == 3604){  // conversion rejection
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C9v0b00","0s631031000000d0"); // , conv. rej 0.02
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C9v0c00","0s631031000000d0"); // , conv. rej 0.05
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1C9v0d00","0s631031000000d0"); // , conv. rej 0.1
 
   //////////////////////    Mult slices  pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult PHI7

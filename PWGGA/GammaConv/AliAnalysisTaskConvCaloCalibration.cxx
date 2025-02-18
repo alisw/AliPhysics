@@ -131,6 +131,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusHighPtTrackdEtaSM(NULL),
   fHistoClusHighPtTrackdPhiSM(NULL),
   fHistoEVsM02(NULL),
+  fHistoEVsM02VsNCell(NULL),
   fHistoEVsM02NCell4(NULL),
   fHistoClusterLeadingFractionVsEClus(NULL),
   fHistoClusterSigmaVsEClus(NULL),
@@ -261,6 +262,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusHighPtTrackdEtaSM(NULL),
   fHistoClusHighPtTrackdPhiSM(NULL),
   fHistoEVsM02(NULL),
+  fHistoEVsM02VsNCell(NULL),
   fHistoEVsM02NCell4(NULL),
   fHistoClusterLeadingFractionVsEClus(NULL),
   fHistoClusterSigmaVsEClus(NULL),
@@ -523,6 +525,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fHistoClusTrackdEtaSM          = new TH1F**[fnCuts];
         fHistoClusTrackdPhiSM          = new TH1F**[fnCuts];
         fHistoEVsM02                   = new TH2F*[fnCuts];
+        fHistoEVsM02VsNCell            = new TH3F*[fnCuts];
         fHistoEVsM02NCell4             = new TH2F*[fnCuts];
         fHistoClusterLeadingFractionVsEClus   = new TH2F*[fnCuts];
         fHistoClusterSigmaVsEClus             = new TH2F*[fnCuts];
@@ -916,6 +919,18 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       fHistoEVsM02[iCut]->SetXTitle("E_{cluster}(GeV)");
       fHistoEVsM02[iCut]->SetYTitle("M_{02}");
       fESDList[iCut]->Add(fHistoEVsM02[iCut]);
+
+      std::vector<double> vecM02 = {0};
+      while(vecM02.back() < 2){
+        vecM02.push_back(vecM02.back()+0.01);
+      }
+      std::vector<double> vecNCells = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 15.5, 20.5, 100.5};
+
+      fHistoEVsM02VsNCell[iCut]                       = new TH3F("ESD_ClusterE_M02_NCell", "ESD_ClusterE_M02_NCell", nBinsClusterPt, arrClusPtBinning, vecM02.size()-1, vecM02.data(), vecNCells.size()-1, vecNCells.data());
+      fHistoEVsM02VsNCell[iCut]->SetXTitle("E_{cluster}(GeV)");
+      fHistoEVsM02VsNCell[iCut]->SetYTitle("M_{02}");
+      fESDList[iCut]->Add(fHistoEVsM02VsNCell[iCut]);
+
       fHistoEVsM02NCell4[iCut]                       = new TH2F("ESD_ClusterE_M02_NCell4", "ESD_ClusterE_M02_NCell4", nBinsClusterPt, arrClusPtBinning, 200, 0, 2);
       fHistoEVsM02NCell4[iCut]->SetXTitle("E_{cluster}(GeV)");
       fHistoEVsM02NCell4[iCut]->SetYTitle("M_{02}");
@@ -1023,6 +1038,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         if (fHistoClusGammaERxNCellCrit[iCut])  fHistoClusGammaERxNCellCrit[iCut]->Sumw2();
         if (fHistoEVsM02[iCut])  fHistoEVsM02[iCut]->Sumw2();
         if (fHistoEVsM02NCell4[iCut])  fHistoEVsM02NCell4[iCut]->Sumw2();
+        if (fHistoEVsM02VsNCell[iCut]) fHistoEVsM02VsNCell[iCut]->Sumw2();
         for(Int_t iModules = 0; iModules < fnModules; iModules++ ){
           if(fHistoClusGammaERxSM[iCut][iModules])fHistoClusGammaERxSM[iCut][iModules]->Sumw2();
           if(fHistoClusGammaERxNCellCritSM[iCut][iModules])fHistoClusGammaERxNCellCritSM[iCut][iModules]->Sumw2();
@@ -1510,6 +1526,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
           }
         }
         fHistoEVsM02[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
+        fHistoEVsM02VsNCell[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), clus->GetNCells(), fWeightJetJetMC);
         if(clus->GetNCells() > 4){
           fHistoEVsM02NCell4[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
         }

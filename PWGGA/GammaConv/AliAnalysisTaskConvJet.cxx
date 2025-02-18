@@ -71,7 +71,12 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fVecJetTracks({}),
                                                    fVecTrueJetParticles({}),
                                                    fAccType(0),
-                                                   fAccTypeMC(0)
+                                                   fAccTypeMC(0),
+                                                   fDistToEMCBorder(0),
+                                                   fEMCSMEdgesMode(0),
+                                                   fDistEMCSMEdge(0),
+                                                   fApplyEnergyWeight(false),
+                                                   funcEnergyWeights(nullptr)
 {
 }
 
@@ -104,7 +109,12 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fVecJetTracks({}),
                                                                    fVecTrueJetParticles({}),
                                                                    fAccType(0),
-                                                                   fAccTypeMC(0)
+                                                                   fAccTypeMC(0),
+                                                                   fDistToEMCBorder(0),
+                                                                   fEMCSMEdgesMode(0),
+                                                                   fDistEMCSMEdge(0),
+                                                                   fApplyEnergyWeight(false),
+                                                                   funcEnergyWeights(nullptr)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -171,11 +181,15 @@ void AliAnalysisTaskConvJet::DoJetLoop()
           continue;
         if (!IsJetAccepted(jet))
           continue;
+        double jetEnergyWeight = 1.;
+        if(fApplyEnergyWeight){
+          jetEnergyWeight = funcEnergyWeights->Eval(jet->Pt());
+        }
         count++;
-        fVectorJetPt.push_back(jet->Pt());
-        fVectorJetPx.push_back(jet->Px());
-        fVectorJetPy.push_back(jet->Py());
-        fVectorJetPz.push_back(jet->Pz());
+        fVectorJetPt.push_back(jet->Pt()*jetEnergyWeight);
+        fVectorJetPx.push_back(jet->Px()*jetEnergyWeight);
+        fVectorJetPy.push_back(jet->Py()*jetEnergyWeight);
+        fVectorJetPz.push_back(jet->Pz()*jetEnergyWeight);
         fVectorJetEta.push_back(jet->Eta());
         fVectorJetPhi.push_back(jet->Phi());
         fVectorJetR.push_back(jet->Area());
@@ -301,20 +315,40 @@ void AliAnalysisTaskConvJet::FindPartonsJet(TClonesArray* arrMCPart)
  */
 bool AliAnalysisTaskConvJet::IsJetAccepted(const AliEmcalJet* jet)
 {
-  if (fDistToEMCBorder == 0) {
-    return true;
+  double jetPhi = jet->Phi();
+  if(jetPhi < 0) jetPhi += 2*TMath::Pi();
+  bool accept = true;
+  if(fDistToEMCBorder > 0){
+    // geometry values from https://arxiv.org/pdf/2209.04216.pdf (page 10)
+    if (jetPhi < 1.40 + fDistToEMCBorder ||
+        jetPhi > 5.70 - fDistToEMCBorder ||
+        (jetPhi > 3.26 - fDistToEMCBorder && jetPhi < 4.54 + fDistToEMCBorder)) {
+      accept = false;
+    }
+    if (std::abs(jet->Eta()) > 0.7 - fDistToEMCBorder ||
+        (std::abs(jet->Eta()) < 0.23 + fDistToEMCBorder && jetPhi > 4.54 && jetPhi < 5.58)) {
+      accept = false;
+    }
   }
-  // geometry values from https://arxiv.org/pdf/2209.04216.pdf (page 10)
-  if (jet->Phi() < 1.40 + fDistToEMCBorder ||
-      jet->Phi() > 5.70 - fDistToEMCBorder ||
-      (jet->Phi() > 3.26 - fDistToEMCBorder && jet->Phi() < 4.54 + fDistToEMCBorder)) {
-    return false;
+  if(fEMCSMEdgesMode > 0){
+    // first, check in steps of 20 degrees
+    const double angle = TMath::Pi()/9.; // twenty degree
+    // const double angleDiff = TMath::Pi()/60.; // 3 degrees
+    // Calculate the remainder when dividing by 20
+    double remainder = fmod(jetPhi, angle);
+
+    // Check if it's within the range ±angleDiff
+    bool isAtBorder = false;
+    if (remainder <= fDistEMCSMEdge || (angle - remainder) <= fDistEMCSMEdge) {
+      isAtBorder = true;
+    }
+    if(fEMCSMEdgesMode == 1){
+      accept = !isAtBorder;
+    } else if(fEMCSMEdgesMode == 2){
+      accept = isAtBorder;
+    }
   }
-  if (std::abs(jet->Eta()) > 0.7 - fDistToEMCBorder ||
-      (std::abs(jet->Eta()) < 0.23 + fDistToEMCBorder && jet->Phi() > 4.54 && jet->Phi() < 5.58)) {
-    return false;
-  }
-  return true;
+  return accept;
 }
 
 /**
@@ -382,7 +416,9 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   const char* nclusters,
   const char* ncells,
   const char* suffix,
-  double distToEMCBorder)
+  const double distToEMCBorder,
+  const double distToSMEdges
+  )
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -458,6 +494,7 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   sampleTask->SetCaloCellsName(cellName);
   sampleTask->SetVzRange(-10, 10);
   sampleTask->SetDistToEMCBorder(distToEMCBorder);
+  if(distToSMEdges != 0) sampleTask->SetDistToEMCSMEdge(std::abs(distToSMEdges), 1 + (distToSMEdges < 0));
 
   if (trackName == "mcparticles") {
     sampleTask->AddMCParticleContainer(trackName);
@@ -500,4 +537,10 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   mgr->ConnectOutput(sampleTask, 1, coutput1);
 
   return sampleTask;
+}
+
+
+void AliAnalysisTaskConvJet::setWeightEnergyJets(const char * formula){
+  fApplyEnergyWeight = true;
+  funcEnergyWeights = new TF1("funcEnergyWeightsJets", formula, 0, 10000);
 }

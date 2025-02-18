@@ -79,7 +79,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliFJWrapper.h"
 #include "AliEmcalJet.h"
-#include "AliEmcalJetTask.h"
+//#include "AliEmcalJetTask.h"
 #include "AliRhoParameter.h"
 #include "AliEmcalContainerUtils.h"
 #include <fstream>
@@ -101,7 +101,7 @@ ClassImp(AliAnalysisTaskJetHadroAOD)
 // -----------------------------------------------------------------------
 //________________________________________________________________________
 AliAnalysisTaskJetHadroAOD::AliAnalysisTaskJetHadroAOD()
-: AliAnalysisTaskEmcalJet("JetHadro"), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
+: AliAnalysisTaskEmcalJet("JetHadro", kTRUE), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
 fAOD_FilterBits(0),
 fPIDCombined(0x0),
 fMCStack(0x0),
@@ -245,6 +245,9 @@ fhasRealFJjet(0),
 fhasRealEMCjet(0),
 fNumRealFJJets(0),
 fNumRealEMCJets(0),
+fhasAcceptedFJjet_Truth(0),
+fhasRealFJjet_Truth(0),
+fNumRealFJJets_Truth(0),
 fIsEmbeddedEvent(kFALSE),
 fDoPartLevelMatching(kFALSE),
 fDoDetLevelMatching(kFALSE),
@@ -270,8 +273,10 @@ fHistImpParam(0),
 fHistVertex(0),
 fHist_Is_Good_Inc_Event(0),
 fHist_Has_Acc_Real_FJ_Jet(0),
+fHist_Has_Acc_Real_FJ_Jet_Truth(0),
 fHist_Has_Acc_Real_EMC_Jet(0),
 fHist_Num_Real_FJ_Jets(0),
+fHist_Num_Real_FJ_Jets_Truth(0),
 fHist_Num_Real_EMC_Jets(0),
 fHist_RhoFJ(0),
 fHist_RhoEMC(0),
@@ -437,7 +442,7 @@ fMultTrueFlag(kFALSE)
 
 //________________________________________________________________________
 AliAnalysisTaskJetHadroAOD::AliAnalysisTaskJetHadroAOD(const char *name)
-: AliAnalysisTaskEmcalJet(name), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
+: AliAnalysisTaskEmcalJet(name, kTRUE), fEventCuts(0), fPIDResponse(0), fAOD(0), fMCEvent(0), fListHist(0),
 fAOD_FilterBits(0),
 fPIDCombined(0x0),
 fMCStack(0x0),
@@ -581,6 +586,9 @@ fhasRealFJjet(0),
 fhasRealEMCjet(0),
 fNumRealFJJets(0),
 fNumRealEMCJets(0),
+fhasAcceptedFJjet_Truth(0),
+fhasRealFJjet_Truth(0),
+fNumRealFJJets_Truth(0),
 fIsEmbeddedEvent(kFALSE),
 fDoPartLevelMatching(kFALSE),
 fDoDetLevelMatching(kFALSE),
@@ -606,8 +614,10 @@ fHistImpParam(0),
 fHistVertex(0),
 fHist_Is_Good_Inc_Event(0),
 fHist_Has_Acc_Real_FJ_Jet(0),
+fHist_Has_Acc_Real_FJ_Jet_Truth(0),
 fHist_Has_Acc_Real_EMC_Jet(0),
 fHist_Num_Real_FJ_Jets(0),
+fHist_Num_Real_FJ_Jets_Truth(0),
 fHist_Num_Real_EMC_Jets(0),
 fHist_RhoFJ(0),
 fHist_RhoEMC(0),
@@ -781,10 +791,11 @@ fMultTrueFlag(kFALSE)
   // ==========================================
   //
   // Define outputs
+
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 
   if (fDoEventTree){
-    DefineOutput(2, TTree::Class());
     DefineOutput(3, TTree::Class());
     DefineOutput(4, TTree::Class());
     DefineOutput(5, TTree::Class());
@@ -795,6 +806,7 @@ fMultTrueFlag(kFALSE)
     DefineOutput(10, TTree::Class());
     DefineOutput(11, TTree::Class());
     DefineOutput(12, TTree::Class());
+    DefineOutput(13, TTree::Class());
   }
 
   // ==========================================
@@ -813,8 +825,10 @@ AliAnalysisTaskJetHadroAOD::~AliAnalysisTaskJetHadroAOD()
   if (fHistVertex)          delete fHistVertex;
   if (fHist_Is_Good_Inc_Event)          delete fHist_Is_Good_Inc_Event;
   if (fHist_Has_Acc_Real_FJ_Jet)          delete fHist_Has_Acc_Real_FJ_Jet;
+  if (fHist_Has_Acc_Real_FJ_Jet_Truth)          delete fHist_Has_Acc_Real_FJ_Jet_Truth;
   if (fHist_Has_Acc_Real_EMC_Jet)          delete fHist_Has_Acc_Real_EMC_Jet;
   if (fHist_Num_Real_FJ_Jets)          delete fHist_Num_Real_FJ_Jets;
+  if (fHist_Num_Real_FJ_Jets_Truth)          delete fHist_Num_Real_FJ_Jets_Truth;
   if (fHist_Num_Real_EMC_Jets)          delete fHist_Num_Real_EMC_Jets;
   if (fHist_RhoFJ)          delete fHist_RhoFJ;
   if (fHist_RhoEMC)          delete fHist_RhoEMC;
@@ -1018,6 +1032,11 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   Initialize();
   std::cout << " Info::siweyhmi: ===== In the UserCreateOutputObjects ===== " << std::endl;
 
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  TH1::AddDirectory(oldStatus);
+
   fFastJetWrapper = new AliFJWrapper("fFastJetWrapper","fFastJetWrapper");
   fFastJetWrapper->Clear();
 
@@ -1080,7 +1099,6 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
   //
-  fEventCuts.AddQAplotsToList(fListHist);
 
   Float_t tpc_mom_bins[58] = {};
   for (int i=0; i < (57+1); i++){
@@ -1144,8 +1162,10 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
 
   fHist_Is_Good_Inc_Event            = new TH1F("hIs_Good_Inc_Event", "Good inclusive event or not"    , 2, 0., 2.);
   fHist_Has_Acc_Real_FJ_Jet            = new TH1F("hHas_Acc_Real_FJ_Jet", "Good jet event: 0 no accepted jets, 1 accepted jet but not real, 2 has real jet" , 3, 0., 3.);
+  fHist_Has_Acc_Real_FJ_Jet_Truth            = new TH1F("hHas_Acc_Real_FJ_Jet_Truth", "Good truth jet event: 0 no accepted jets, 1 accepted jet but not real, 2 has real jet" , 3, 0., 3.);
   fHist_Has_Acc_Real_EMC_Jet            = new TH1F("hHas_Acc_Real_EMC_Jet", "Good jet event: 0 no accepted jets, 1 accepted jet but not real, 2 has real jet" , 3, 0., 3.);
   fHist_Num_Real_FJ_Jets            = new TH1F("hNum_Real_FJ_Jets", "Number of Real FJ Jets", 10, 0., 10.);
+  fHist_Num_Real_FJ_Jets_Truth            = new TH1F("hNum_Real_FJ_Jets_Truth", "Number of Real FJ Jets Truth", 10, 0., 10.);
   fHist_Num_Real_EMC_Jets            = new TH1F("hNum_Real_EMC_Jets", "Number of Real FJ Jets", 10, 0., 10.);
   fHist_RhoFJ            = new TH1F("hRhoFJ", "FJ Rho Value"    , 600, 0., 600.);
   fHist_RhoEMC            = new TH1F("hRhoEMC", "EMC Rho Value"    , 600, 0., 600.);
@@ -1450,8 +1470,10 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fListHist->Add(fHistCentrality);
     fListHist->Add(fHist_Is_Good_Inc_Event);
     fListHist->Add(fHist_Has_Acc_Real_FJ_Jet);
+    fListHist->Add(fHist_Has_Acc_Real_FJ_Jet_Truth);
     fListHist->Add(fHist_Has_Acc_Real_EMC_Jet);
     fListHist->Add(fHist_Num_Real_FJ_Jets);
+    fListHist->Add(fHist_Num_Real_FJ_Jets_Truth);
     fListHist->Add(fHist_Num_Real_EMC_Jets);
     fListHist->Add(fHist_RhoFJ);
     fListHist->Add(fHist_RhoEMC);
@@ -1689,21 +1711,22 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   //   Send output objects to container
   // ************************************************************************
   //
-  PostData(1, fListHist);
+  PostData(1, fOutput);
+  PostData(2, fListHist);
 
   if (fDoEventTree){
-    PostData(2, fTreejetsEMCconst);
-    PostData(3, fTreejetsEMCBGconst);
-    PostData(4, fTreejetsFJ);
-    PostData(5, fTreejetsFJBG);
-    PostData(6, fTreejetsFJconst);
-    PostData(7, fTreejetsFJBGconst);
-    PostData(8, fTreejetEvents);
-    PostData(9, fTreejetsEMC);
-    PostData(10, fTreejetsEMCBG);
-    PostData(11, fTreeMC);
-    PostData(12, fTreeCuts);
-  } 
+    PostData(3, fTreejetsEMCconst);
+    PostData(4, fTreejetsEMCBGconst);
+    PostData(5, fTreejetsFJ);
+    PostData(6, fTreejetsFJBG);
+    PostData(7, fTreejetsFJconst);
+    PostData(8, fTreejetsFJBGconst);
+    PostData(9, fTreejetEvents);
+    PostData(10, fTreejetsEMC);
+    PostData(11, fTreejetsEMCBG);
+    PostData(12, fTreeMC);
+    PostData(13, fTreeCuts);
+  }
 
   std::cout << " Info::siweyhmi: ===== Out of UserCreateOutputObjects ===== " << std::endl;
 
@@ -1714,6 +1737,7 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   //
   // main event loop
   //
+
   if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the UserExec ===== " << std::endl;
   //
   // Check Monte Carlo information and other access first:
@@ -1747,7 +1771,6 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   {
     //
     // Init magnetic filed for golden chi2 cut
-    fAOD->InitMagneticField();
     //
     // event selection
       if ( (fPassIndex==3 || fPassIndex==2) && fYear>2013){
@@ -1895,6 +1918,9 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
     fjetEmbRhoVal = 0.0;
     fNumRealFJJets = 0;
     fNumRealEMCJets = 0;
+    fhasAcceptedFJjet_Truth = 0;
+    fhasRealFJjet_Truth = 0;
+    fNumRealFJJets_Truth = 0;
     fall_reco_jets_w_multiple_matches = 0;
     fall_reco_jets_w_matches = 0;
 
@@ -1918,9 +1944,9 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
 
     if (fUseCouts) cout << "num_reco_jets_w_multiple_matches over all events is " <<  fall_reco_jets_w_multiple_matches << endl;
     if (fUseCouts) cout << "num_reco_jets_w_matches over all events is " <<  fall_reco_jets_w_matches << endl;
-
     return kTRUE;
   }
+
   return kTRUE;
 
 }
@@ -3402,6 +3428,7 @@ void AliAnalysisTaskJetHadroAOD::FillTreeMC()
   
   TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
   if (AODMCTrackArray == NULL) return;
+  fisGoodIncEvent = 1;
   if (fUseCouts) std::cout << "AODMCTrackArray->GetEntriesFast() is " << AODMCTrackArray->GetEntriesFast() << std::endl; //AOD Number of gen particles - used for looping over tracks
 
     // Loop over all primary MC particle
@@ -3602,9 +3629,6 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
   float fTrackPt = 0.15;
   float fTrackEta = fEtaCut;
   float fGhostArea = 0.005;
-  float bgJetAbsEtaCut = 0.7;
-  float bgJetRadius = 0.2;
-
   Float_t jetAbsEtaCut = fTrackEta-0.4;
 
   //SOME CODE FROM NIMA
@@ -3616,16 +3640,6 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
   fFastJetWrapper_Gen->SetGhostArea(fGhostArea);
   fFastJetWrapper_Gen->SetAreaType(fastjet::AreaType::active_area);
   fFastJetWrapper_Gen->SetMaxRap(1.0);
-
-  fFastJetWrapperBG_Gen->Clear();
-  fFastJetWrapperBG_Gen->SetR(bgJetRadius);
-  fFastJetWrapperBG_Gen->SetAlgorithm(fastjet::JetAlgorithm::kt_algorithm);
-  fFastJetWrapperBG_Gen->SetRecombScheme(fastjet::RecombinationScheme::pt_scheme);
-  //fFastJetWrapperBG_Gen->SetStrategy(fastjet::Strategy::Best); //this doesn't need to be here - in FJ constructor already
-  fFastJetWrapperBG_Gen->SetGhostArea(fGhostArea);
-  fFastJetWrapperBG_Gen->SetAreaType(fastjet::AreaType::active_area_explicit_ghosts);
-  fFastJetWrapperBG_Gen->SetMaxRap(1.0);
-
   fFastJetWrapper_Rec->Clear();
   fFastJetWrapper_Rec->SetR(0.4);
   fFastJetWrapper_Rec->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
@@ -3635,16 +3649,30 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
   fFastJetWrapper_Rec->SetAreaType(fastjet::AreaType::active_area);
   fFastJetWrapper_Rec->SetMaxRap(1.0);
 
-  fFastJetWrapperBG_Rec->Clear();
-  fFastJetWrapperBG_Rec->SetR(bgJetRadius);
-  fFastJetWrapperBG_Rec->SetAlgorithm(fastjet::JetAlgorithm::kt_algorithm);
-  fFastJetWrapperBG_Rec->SetRecombScheme(fastjet::RecombinationScheme::pt_scheme);
-  //fFastJetWrapperBG->SetStrategy(fastjet::Strategy::Best); //this doesn't need to be here - in FJ constructor already
-  fFastJetWrapperBG_Rec->SetGhostArea(fGhostArea);
-  fFastJetWrapperBG_Rec->SetAreaType(fastjet::AreaType::active_area_explicit_ghosts);
-  fFastJetWrapperBG_Rec->SetMaxRap(1.0);
-
   float particleEtaCut = fEtaCut;
+  float bgJetAbsEtaCut = 0.7;
+  float bgJetRadius = 0.2;
+
+  if (fYear!=2017){
+
+    fFastJetWrapperBG_Gen->Clear();
+    fFastJetWrapperBG_Gen->SetR(bgJetRadius);
+    fFastJetWrapperBG_Gen->SetAlgorithm(fastjet::JetAlgorithm::kt_algorithm);
+    fFastJetWrapperBG_Gen->SetRecombScheme(fastjet::RecombinationScheme::pt_scheme);
+    //fFastJetWrapperBG_Gen->SetStrategy(fastjet::Strategy::Best); //this doesn't need to be here - in FJ constructor already
+    fFastJetWrapperBG_Gen->SetGhostArea(fGhostArea);
+    fFastJetWrapperBG_Gen->SetAreaType(fastjet::AreaType::active_area_explicit_ghosts);
+    fFastJetWrapperBG_Gen->SetMaxRap(1.0);
+
+    fFastJetWrapperBG_Rec->Clear();
+    fFastJetWrapperBG_Rec->SetR(bgJetRadius);
+    fFastJetWrapperBG_Rec->SetAlgorithm(fastjet::JetAlgorithm::kt_algorithm);
+    fFastJetWrapperBG_Rec->SetRecombScheme(fastjet::RecombinationScheme::pt_scheme);
+    //fFastJetWrapperBG->SetStrategy(fastjet::Strategy::Best); //this doesn't need to be here - in FJ constructor already
+    fFastJetWrapperBG_Rec->SetGhostArea(fGhostArea);
+    fFastJetWrapperBG_Rec->SetAreaType(fastjet::AreaType::active_area_explicit_ghosts);
+    fFastJetWrapperBG_Rec->SetMaxRap(1.0);
+  }
 
   //Int_t numMCTracks = fMCEvent->GetNumberOfTracks();      //ESD Number of gen particles - used for looping over tracks
   
@@ -3699,25 +3727,31 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
     //Make truth level jets
     // loop over AOD tracks and add their four vector to wrapper --> identical to track container in EMC jet
     fFastJetWrapper_Gen->AddInputVector(particle->Px(), particle->Py(), particle->Pz(), particle->E(), i);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
-    fFastJetWrapperBG_Gen->AddInputVector(particle->Px(), particle->Py(), particle->Pz(), particle->E(), i);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
+    if (fYear!=2017){
+      fFastJetWrapperBG_Gen->AddInputVector(particle->Px(), particle->Py(), particle->Pz(), particle->E(), i);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
+    }
   }
 
   //
   // background jet definitions
-  fastjet::JetMedianBackgroundEstimator bgE;
-  fastjet::Selector selectorBG = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
-  bgE.set_selector(selectorBG);
-
-  fastjet::Selector selectorBGjets = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
-  fFastJetWrapperBG_Gen->Run();
-  std::vector<fastjet::PseudoJet> jetsBG = sorted_by_pt(selectorBGjets(fFastJetWrapperBG_Gen->GetInclusiveJets()));
-
   Float_t rho_MC = 0.0;
-  if (jetsBG.size() > 0) {
-    bgE.set_jets(jetsBG);  // give the kT jets to the background estimator
-    rho_MC = bgE.rho();
+  if (fYear!=2017){
+    fastjet::JetMedianBackgroundEstimator bgE;
+    fastjet::Selector selectorBG = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
+    bgE.set_selector(selectorBG);
+
+    fastjet::Selector selectorBGjets = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
+    fFastJetWrapperBG_Gen->Run();
+    std::vector<fastjet::PseudoJet> jetsBG = sorted_by_pt(selectorBGjets(fFastJetWrapperBG_Gen->GetInclusiveJets()));
+
+
+    if (jetsBG.size() > 0) {
+      bgE.set_jets(jetsBG);  // give the kT jets to the background estimator
+      rho_MC = bgE.rho();
+    }
+    if (fUseCouts) std::cout << "rho_MC is " << rho_MC << std::endl;
   }
-  if (fUseCouts) std::cout << "rho_MC is " << rho_MC << std::endl;
+
 
   // run jet finder using wrapper
   fFastJetWrapper_Gen->Run();
@@ -3748,24 +3782,30 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
     if (trackReal->Pt() < fTrackPt || TMath::Abs(trackReal->Eta()) > particleEtaCut) continue;
     if (TMath::Abs(trackReal->Y()) > fYCut && fDoRapCut) continue;
     fFastJetWrapper_Rec->AddInputVector(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
-    fFastJetWrapperBG_Rec->AddInputVector(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
+   
+    if (fYear!=2017){
+       fFastJetWrapperBG_Rec->AddInputVector(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
+    }
   }
   //
   // background jet definitions
-  fastjet::JetMedianBackgroundEstimator bgERec;
-  fastjet::Selector selectorBGRec = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
-  bgERec.set_selector(selectorBGRec);
-
-  fastjet::Selector selectorBGjetsRec = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
-  fFastJetWrapperBG_Rec->Run();
-  std::vector<fastjet::PseudoJet> jetsBGRec = sorted_by_pt(selectorBGjetsRec(fFastJetWrapperBG_Rec->GetInclusiveJets()));
-
   Float_t rho_MC_Rec = 0.0;
-  if (jetsBGRec.size() > 0) {
-    bgERec.set_jets(jetsBGRec);  // give the kT jets to the background estimator
-    rho_MC_Rec = bgERec.rho();
+  if (fYear!=2017){
+    fastjet::JetMedianBackgroundEstimator bgERec;
+    fastjet::Selector selectorBGRec = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
+    bgERec.set_selector(selectorBGRec);
+
+    fastjet::Selector selectorBGjetsRec = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
+    fFastJetWrapperBG_Rec->Run();
+    std::vector<fastjet::PseudoJet> jetsBGRec = sorted_by_pt(selectorBGjetsRec(fFastJetWrapperBG_Rec->GetInclusiveJets()));
+
+    
+    if (jetsBGRec.size() > 0) {
+      bgERec.set_jets(jetsBGRec);  // give the kT jets to the background estimator
+      rho_MC_Rec = bgERec.rho();
+    }
+    if (fUseCouts) std::cout << "rho_MC_Rec is " << rho_MC_Rec << std::endl;
   }
-  if (fUseCouts) std::cout << "rho_MC_Rec is " << rho_MC_Rec << std::endl;
 
   fFastJetWrapper_Rec->Run();
   std::vector<fastjet::PseudoJet> jets_rec = sorted_by_pt(fFastJetWrapper_Rec->GetInclusiveJets());
@@ -3796,6 +3836,14 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
     if (nConstituents<1) continue;
     fastjet::PseudoJet highestpt_const = constituents[0];
     if (highestpt_const.pt() > 100.0) continue;
+   
+    fhasAcceptedFJjet = 1;
+
+    if (jet_recoptsub > fjetMinPtSub && jet_recoptsub < fjetMaxPtSub  && jet_recoArea > fjetMinArea)
+    {
+      fhasRealFJjet = 1;
+      fNumRealFJJets +=1;
+    }
 
     fHistMCR_Jet_ptsub_v_area->Fill(jet_recoArea, jet_recoptsub);
 
@@ -4117,6 +4165,14 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
     if (nConstituents<1) continue;
     fastjet::PseudoJet highestpt_const = constituents[0];
     if (highestpt_const.pt() > 100.0) continue;
+
+    fhasAcceptedFJjet_Truth = 1;
+
+    if (jetptsub > fjetMinPtSub && jetptsub < fjetMaxPtSub  && jetArea > fjetMinArea)
+    {
+      fhasRealFJjet_Truth = 1;
+      fNumRealFJJets_Truth +=1;
+    }
 
     fHistMCT_Jet_ptsub_v_area->Fill(jetArea, jetptsub);
 
@@ -5223,9 +5279,21 @@ void AliAnalysisTaskJetHadroAOD::FillEventHistos()
   else {
     fHist_Has_Acc_Real_EMC_Jet->Fill(0.5);
   }
+  if (fhasAcceptedFJjet_Truth){
+    if (fhasRealFJjet_Truth){
+      fHist_Has_Acc_Real_FJ_Jet_Truth->Fill(2.5);
+    }
+    else{
+      fHist_Has_Acc_Real_FJ_Jet_Truth->Fill(1.5);
+    }
+  }
+  else {
+    fHist_Has_Acc_Real_FJ_Jet_Truth->Fill(0.5);
+  }
 
   //Number of Jets Info
   fHist_Num_Real_FJ_Jets->Fill(fNumRealFJJets+0.5);
+  fHist_Num_Real_FJ_Jets_Truth->Fill(fNumRealFJJets_Truth+0.5);
   fHist_Num_Real_EMC_Jets->Fill(fNumRealEMCJets+0.5);
 
   //Rho Info

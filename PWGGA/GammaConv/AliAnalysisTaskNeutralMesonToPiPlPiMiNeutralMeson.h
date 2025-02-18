@@ -54,7 +54,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     }
 
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
-    void SetLightOutput(Int_t flag){fDoLightOutput = flag;}
     void SetUnsmearedOutputs(TString unsmearingoutputs){
       fEnableNoCorrOutput           = (unsmearingoutputs.Contains("0") || unsmearingoutputs.Contains("4")) ? kTRUE : kFALSE;
       fEnableSubNDMOutput           = unsmearingoutputs.Contains("1") ? kTRUE : kFALSE;
@@ -235,6 +234,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                            fEnableNDMEfficiency;                               ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableNDMInputSpectrum;                            ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableBasicMesonQA;                                ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableAdvancedMesonQA;                             ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableBackgroundQA;                                ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnable3DHistoQA;                                   ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableCorrelationTreeQA;                           ///< Turn On or Off if Histograms are created and used
@@ -264,6 +264,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoNegPionPt;                                    //!<! array of histos of negative pion, pt
     TH1F**                            fHistoPosPionPt;                                    //!<! array of histos of positive pion, pt
     TH2F**                            fHistoPionPionInvMassPt;                            //!<! array of histos of pion pion, invMass, pT_{pi+pi-}
+    TH1F**                            fHistoLowerContrGammaPt;                            //!<! array of histos of one of gamma contributiong to NDM (lower energy), only calo
+    TH1F**                            fHistoHigherContrGammaPt;                           //!<! array of histos of one of gamma contributiong to NDM (higher energy), only calo
     TH2F**                            fHistoGammaGammaInvMassPt;                          //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoSwappingGammaGammaInvMassPt;                  //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
@@ -571,7 +573,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                          fAllowOverlapHeaders;                                 ///< enable overlapping headers for cluster selection
     Int_t                           fIsMC;                                                ///< Flag for MC
     Int_t                           fSelectedHeavyNeutralMeson;                           ///< Flag for running eta prime
-    Int_t                           fDoLightOutput;                                       ///< Flag to turn on light output
     Int_t                           fNDMRecoMode;                                         ///< Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           ///< tolerance in rad for angle cuts
     Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
@@ -700,7 +701,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 39);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 41);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

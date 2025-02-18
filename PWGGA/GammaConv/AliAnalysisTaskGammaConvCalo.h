@@ -361,6 +361,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TProfile2D**            fProfileTruePrimaryEtaWeightsInvMassPt;             //! array of profiles with weights for validated primary mothers, invMass, pt
     TH2F**                  fHistoTruePrimaryPi0MCPtResolPt;                    //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryEtaMCPtResolPt;                    //! array of histos with validated weighted primary eta, MCpt, resol pt
+    TH2F**                  fHistoTruePrimaryPi0MCPtVsRecPt;                    //! array of histos with validated weighted primary pi0, MCpt vs Rec. pt
+    TH2F**                  fHistoTruePrimaryEtaMCPtVsRecPt;                    //! array of histos with validated weighted primary eta, MCpt vs Rec. pt
     TH2F**                  fHistoTrueMotherPi0ConvPhotonEtaPhi;                //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
     TH2F**                  fHistoTrueMotherEtaConvPhotonEtaPhi;                //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
     TH2F**                  fHistoTrueSecondaryPi0InvMassPt;                    //! array of histos with validated secondary mothers, invMass, pt

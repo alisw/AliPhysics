@@ -10,15 +10,6 @@
 
 AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFileName = "Config_siweyhmi_JetHadro_AOD.C",Int_t settingType = 0,Int_t year = 2018, TString periodName="18q", Int_t passIndex = 3, const char* suffix = "", Int_t containerNameMode=0, Bool_t postTrees=kFALSE)
 {
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libTender");
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGUDbase");
-  gSystem->Load("libTPCcalib");
-  gSystem->Load("libPWGPP");
-  gSystem->Load("libPWGLFspectra");
-  gRandom->SetSeed(0);
   //
   //get the current analysis manager
   //
@@ -125,7 +116,7 @@ AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFil
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3, *coutput4;
   AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9;
-  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12;
+  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13;
   //
   //  find and connect input container // Output files --> File opening order is important
   cinput  = mgr->GetCommonInputContainer();
@@ -150,23 +141,25 @@ AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFil
   }
   //
   // Output containers
-  coutput1  = mgr->CreateContainer(listName, TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput1  = mgr->CreateContainer(combinedName+"_EMCalFWhistos",  TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
   mgr->ConnectOutput (task,  1, coutput1);
+  
+  coutput2  = mgr->CreateContainer(listName, TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  mgr->ConnectOutput (task,  2, coutput2);
 
   if (postTrees){
-    coutput2  = mgr->CreateContainer(combinedName+"_jetsEMCconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput3  = mgr->CreateContainer(combinedName+"_jetsEMCBGconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput4  = mgr->CreateContainer(combinedName+"_jetsFJ",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput5  = mgr->CreateContainer(combinedName+"_jetsFJBG",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput6 = mgr->CreateContainer(combinedName+"_jetsFJconst",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput7 = mgr->CreateContainer(combinedName+"_jetsFJBGconst",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput8 = mgr->CreateContainer(combinedName+"_jeteventInfo",   TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput9 = mgr->CreateContainer(combinedName+"_jetsEMC",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput10 = mgr->CreateContainer(combinedName+"_jetsEMCBG",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput11  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-    coutput12  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput3  = mgr->CreateContainer(combinedName+"_jetsEMCconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput4  = mgr->CreateContainer(combinedName+"_jetsEMCBGconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput5  = mgr->CreateContainer(combinedName+"_jetsFJ",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput6  = mgr->CreateContainer(combinedName+"_jetsFJBG",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput7 = mgr->CreateContainer(combinedName+"_jetsFJconst",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput8 = mgr->CreateContainer(combinedName+"_jetsFJBGconst",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput9 = mgr->CreateContainer(combinedName+"_jeteventInfo",   TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput10 = mgr->CreateContainer(combinedName+"_jetsEMC",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput11 = mgr->CreateContainer(combinedName+"_jetsEMCBG",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput12  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput13  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
 
-    mgr->ConnectOutput (task,  2, coutput2);
     mgr->ConnectOutput (task,  3, coutput3);
     mgr->ConnectOutput (task,  4, coutput4);
     mgr->ConnectOutput (task,  5, coutput5);
@@ -177,6 +170,7 @@ AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFil
     mgr->ConnectOutput (task,  10, coutput10);
     mgr->ConnectOutput (task,  11, coutput11);
     mgr->ConnectOutput (task,  12, coutput12);
+    mgr->ConnectOutput (task,  13, coutput13);
 }
 
 

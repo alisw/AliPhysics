@@ -5,7 +5,8 @@
 // pPb5.02(run2) -> K+K-
 // PID is the same as in PbPb2.76->K+K- paper
 // 0.2-0.5,0.5-1.5; 0-20,20-40,40-90%
-// event shape: St:
+// event shape: St: 0-1
+// Filter Bit: 8
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -62,7 +63,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //pPb 5.02 config reader:
   //Both AliFemtoEventReaderAODMultSelection *Reader and AliFemtoEventReaderAOD *Reader are the same
   AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
-    Reader->SetFilterBit(128); //8 - hybrid (TPC+ITS?), 7 - TPC. PbPb: AOD FilterBit 128 which means that TPC only tracks constrained to SPD primary vertex are used
+    Reader->SetFilterBit(8); //8 - hybrid (TPC+ITS?), 7 - TPC. PbPb: AOD FilterBit 128 which means that TPC only tracks constrained to SPD primary vertex are used
     Reader->SetEPVZERO(kTRUE); // How do we use EventPlaneEngle???
     Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);//no difference if Reader->SetUseMultiplicity(AliFemtoEventReaderAODMultSelection::kCentralityV0A);//Lena
     //Reader->SetUseMultiplicity(AliFemtoEventReaderAODMultSelection::kCentralityV0A);//Lena

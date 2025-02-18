@@ -382,6 +382,9 @@ private:
   Bool_t             fhasRealEMCjet;
   Int_t              fNumRealFJJets;
   Int_t              fNumRealEMCJets;
+  Bool_t             fhasAcceptedFJjet_Truth;
+  Bool_t             fhasRealFJjet_Truth;
+  Int_t              fNumRealFJJets_Truth;
 
   Bool_t              fMultTrueFlag;
 
@@ -419,8 +422,10 @@ private:
   TH1F             * fHistVertex;                //!<! control histogram for vertexZ
   TH1F             * fHist_Is_Good_Inc_Event;    //!<! histogram for good inclusive events
   TH1F             * fHist_Has_Acc_Real_FJ_Jet;    //!<! histogram for good FJ jet events
+  TH1F             * fHist_Has_Acc_Real_FJ_Jet_Truth;    //!<! histogram for good FJ truth jet events
   TH1F             * fHist_Has_Acc_Real_EMC_Jet;    //!<! histogram for good jet events
   TH1F             * fHist_Num_Real_FJ_Jets;    //!<! histogram for number of real FJ jets
+  TH1F             * fHist_Num_Real_FJ_Jets_Truth;    //!<! histogram for number of real FJ jets
   TH1F             * fHist_Num_Real_EMC_Jets;    //!<! histogram for number of real EMC jets
   TH1F             * fHist_RhoFJ;    //!<! histogram for FJ rho values
   TH1F             * fHist_RhoEMC;    //!<! histogram for EMC rho values
@@ -610,7 +615,7 @@ private:
   AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
   AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 5);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 6);
 
 };
 
