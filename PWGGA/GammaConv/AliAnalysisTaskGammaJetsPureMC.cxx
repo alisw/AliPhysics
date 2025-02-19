@@ -322,7 +322,7 @@ void AliAnalysisTaskGammaJetsPureMC::UserCreateOutputObjects(){
 
 
   std::vector<double> vecParticleSpec;
-  for(int i = 0; i < 13; ++i){
+  for(int i = 0; i < 18; ++i){
     vecParticleSpec.push_back(i-0.5);
   }
   fHistJetPtPartPtVsPart = new TH3F("JetPtPartPtVsPart", "JetPtPartPtVsPart", vecParticleSpec.size()-1, vecParticleSpec.data(), vecPartPt.size()-1, vecPartPt.data(), vecJetPt.size()-1, vecJetPt.data());
@@ -600,6 +600,8 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
   // check for particles inside of jets
   std::vector<int> vecLeadingPDG(fVecJets_Std.size());
   for(auto & i : vecLeadingPDG) i = 0;
+  std::vector<int> vecLeadingMotherPDG(fVecJets_Std.size());
+  for(auto & i : vecLeadingMotherPDG) i = 0;
   std::vector<double> vecLeadingE(fVecJets_Std.size());
   for(auto & i : vecLeadingE) i = 0.;
   std::array<double, 4> arrEnergyFracPart = {0., 0., 0., 0.};
@@ -621,8 +623,12 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
 
     }
 
-    // int iMother = particle->GetMother();
-    // auto particleMother                    = (AliVParticle *)fMCEvent->GetTrack(iMother);
+    int iMother = particle->GetMother();
+    auto particleMother                    = (AliVParticle *)fMCEvent->GetTrack(iMother);
+    int pdgMother = -1;
+    if(particleMother){
+      pdgMother = particleMother->PdgCode();
+    }
 
     int jetindex = -1;
     double minR = 10000;
@@ -637,13 +643,14 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
       }
     }
     double jetPt = jetindex == -1 ? 0 : fVecJets_Std[jetindex].pt();
-    int partIndex = GetParticleIndex(std::abs(particle->PdgCode()));
+    int partIndex = GetParticleIndex(std::abs(particle->PdgCode()), std::abs(pdgMother));
     fHistJetPtPartPtVsPart->Fill(partIndex, particle->Pt(), jetPt);
     if(jetPt > 0)fHistJetPtPartFragVsPart->Fill(partIndex, particle->Pt()/jetPt, jetPt);
 
     if(jetindex >= 0){
       if(particle->P() > vecLeadingE[jetindex]){
         vecLeadingPDG[jetindex] = particle->PdgCode();
+        vecLeadingMotherPDG[jetindex] = pdgMother;
         vecLeadingE[jetindex] = particle->Pt();
       }
     }
@@ -657,7 +664,7 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
 
 
   for(size_t j = 0; j < fVecJets_Std.size(); ++j){
-    int partIndex = GetParticleIndex(std::abs(vecLeadingPDG[j]));
+    int partIndex = GetParticleIndex(std::abs(vecLeadingPDG[j]), std::abs(vecLeadingMotherPDG[j]));
     fHistJetPtPartPtVsPartLead->Fill(partIndex, vecLeadingE[j], fVecJets_Std[j].pt());
     if(fVecJets_Std[j].pt() > 0)fHistJetPtPartFragVsPartLead->Fill(partIndex, vecLeadingE[j]/fVecJets_Std[j].pt(), fVecJets_Std[j].pt());
   }
@@ -710,31 +717,44 @@ void AliAnalysisTaskGammaJetsPureMC::FillResponseMatrixAndEffi(std::vector<fastj
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskGammaJetsPureMC::GetParticleIndex(int pdgcode){
+int AliAnalysisTaskGammaJetsPureMC::GetParticleIndex(const int pdgcode, const int motherpdg) const {
   if(pdgcode == 22){ // gamma
-    return 0;
+    if(motherpdg > 100 &&  motherpdg < 10000){ // decay photon
+      return 0;
+    } else { // direct photon
+      return 1;
+    }
   } else if(pdgcode == 211){ // pi+-
-    return 1;
-  } else if(pdgcode == 321){ // Kaon
     return 2;
-  } else if(pdgcode == 130){ // K0s
+  } else if(pdgcode == 321){ // Kaon
     return 3;
-  } else if(pdgcode == 310){ // K0l
+  } else if(pdgcode == 130){ // K0s
     return 4;
-  } else if(pdgcode == 2212){ // proton
+  } else if(pdgcode == 310){ // K0l
     return 5;
-  } else if(pdgcode == 2112){ // neutron
+  } else if(pdgcode == 2212){ // proton
     return 6;
-  } else if(pdgcode == 3122){  // Lambda
+  } else if(pdgcode == 2112){ // neutron
     return 7;
-  } else if(pdgcode == 11){ // electron
+  } else if(pdgcode == 3122){  // Lambda
     return 8;
-  } else if(pdgcode == 3112 || pdgcode == 3222 || pdgcode == 3322 ){ // Sigma baryons
+  } else if(pdgcode == 11){ // electron
     return 9;
-  } else if(pdgcode == 12 || pdgcode == 14 || pdgcode == 16 ){ // Neutrinos
+  } else if(pdgcode == 13 ){ // Muons
     return 10;
+  } else if(pdgcode == 3112 || pdgcode == 3222 ){ // charged Sigma baryons
+    return 11;
+  } else if(pdgcode == 3212 ){ // Sigma 0
+    return 12;
+  } else if(pdgcode == 3312){ // charged Cascade
+    return 13;
+  } else if(pdgcode == 3322){ // neutral Cascade
+    return 14;
+  } else if(pdgcode == 12 || pdgcode == 14 || pdgcode == 16 ){ // Neutrinos
+    return 15;
+  
   }
-  return 11;
+  return 16;
 }
 
 
