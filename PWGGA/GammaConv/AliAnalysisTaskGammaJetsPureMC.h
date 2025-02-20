@@ -81,7 +81,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
   protected:
     bool AcceptParticle(AliVParticle* particle);
     void FillResponseMatrixAndEffi(std::vector<fastjet::PseudoJet> vecTrueJet, std::vector<fastjet::PseudoJet> vecRecJet, TH2F* hResp, TH1D* hUnMatched, TH1D* hMultiMatched, TH1D* hRecUnMatched );
-    int GetParticleIndex(int pdgcode);
+    int GetParticleIndex(const int pdgcode, const int motherpdg) const;
 
     TList*                fOutputContainer;           //! Output container
     // histograms events
@@ -151,7 +151,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaJetsPureMC(const AliAnalysisTaskGammaJetsPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaJetsPureMC &operator=(const AliAnalysisTaskGammaJetsPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaJetsPureMC, 1);
+    ClassDef(AliAnalysisTaskGammaJetsPureMC, 2);
 };
 
 #endif
