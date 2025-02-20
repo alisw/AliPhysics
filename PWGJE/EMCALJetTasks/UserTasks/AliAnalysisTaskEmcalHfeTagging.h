@@ -25,6 +25,7 @@ class AliAODMCHeader;
 class AliAnalysisUtils;
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include <THnSparse.h>
 
 
 
@@ -125,20 +126,15 @@ protected:
     Float_t                             GetJetMass(AliEmcalJet *jet,Int_t jetContNb);
     Float_t                             Angularity(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             Coronna(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             GetJetCoronna(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             PTD(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             Circularity(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             LeSub(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb);
     Float_t                             GetJetNumberOfConstituents(AliEmcalJet *jet,Int_t jetContNb);
-    Float_t                             GetSigma2(AliEmcalJet *jet, Int_t jetContNb);
-    Float_t                             Sigma2(AliEmcalJet *jet, Int_t jetContNb);
-    
-    Int_t                               SelectTrigger(Float_t minpT, Float_t maxpT);
+	Int_t 								MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb);
+	Int_t								SelectTrigger(Float_t minpT, Float_t maxpT);
     Double_t                            RelativePhi(Double_t mphi, Double_t vphi);
+	Double_t 							AngularDifference(AliVParticle* jet1, AliVParticle* jet2);
+	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
+	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
     
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent
@@ -159,7 +155,7 @@ protected:
     JetShapeType                        fJetShapeType;           // jet type to be used
     JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
     JetSelectionType                    fJetSelection;           // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[26];          // jet shapes used for the tagging
+    Float_t                             fShapesVar[21];          // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
     Int_t                               fSelectedShapes;         //chose set of shapes
@@ -233,6 +229,9 @@ protected:
     TH1F                                *fnTrueElecPerJet;
     TH1F                                *fnTrueHFElecPerJet;
     TH1F                                *fnTruePElecPerJet;
+    TH2F                                *fnTrueElecPerJetPt;
+    TH2F                                *fnTrueHFElecPerJetPt;
+    TH2F                                *fnTruePElecPerJetPt;
     TH1F                                *fPi0PtGen;
     TH1F                                *fPi0PtEnh;
     TH1F                                *fEtaPtGen;
@@ -247,23 +246,17 @@ protected:
     TH1F                                *fLSptAng[5][5];
     TH1F                                *fULSptDisp[5][6];
     TH1F                                *fLSptDisp[5][6];
-    TH1F                                *fRecPEAngDcal[5][5];
-    TH1F                                *fTotPEAngDcal[5][5];
-    TH1F                                *fRecPEDispDcal[5][6];
-    TH1F                                *fTotPEDispDcal[5][6];
     TH2F                                *fPtP;
     TH1F                                *fptJetIE;               // pT of jets containing IE
     TH1F                                *fptJetPE;               // pT of jets containing PE
     TH1F                                *fptJetHFE;              // pT of jets containing HFE
+    TH1F                                *fptJetHadron;              // pT of jets not containing electrons
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
-    TH1F                                *fptTruePEdcal;
-    TH1F                                *fptRecPEdcal;
     TH1F                                *fptTrueHFEeffTPCTOF[5];
     TH3F                                *fptTrueHFEeffTPCTOFang[2];
     TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
-    TH1F                                *fptTrueHFEeffEMCal[5];         //EMCal + DCal
-    TH1F                                *fptTrueHFEeffDCal[5];
+    TH1F                                *fptTrueHFEeffEMCal[5];
     TH3F                                *fptTrueHFEeffEMCalang[2];
     TH3F                                *fptTrueHFEeffEMCaldisp[2];
     TH1F                                *fPtTrack;
@@ -281,8 +274,7 @@ protected:
     TH2F                                *fEtaPhiTrueElec;
     TH2F                                *fnEovPelecNoTPCcut;
     TH2F                                *fnEovPelecTPCcut;
-    TH2F                                *fnEovPelecTPCEMCalcut;     //EMCal + Dcal
-    TH2F                                *fnEovPelecTPCDCalcut;
+    TH2F                                *fnEovPelecTPCEMCalcut;
     TH2F                                *fnEovPelecTPCsscut[5];
     TH2F                                *fnEovPbackg;
     TH2F                                *fnClsE;
@@ -319,8 +311,27 @@ protected:
     TH2F                                *fDispBeauty;
     TH2F                                *fDispQuark;
     TH2F                                *fDispGluon;
-    TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
+
+	// (Semi-)inclusive observables and response matrices
+	TH1F								*fPtSemiInclJet[5];
+	TH2F								*fAngSemiInclJet[5];
+	TH2F								*fDispSemiInclJet[5];
+	THnSparseF							*fRMPtSemiInclJet[5];
+	THnSparseF						    *fRMAngSemiInclJet[5];
+	THnSparseF						    *fRMDispSemiInclJet[5];
+	// Unweighted response matrices
+	THnSparseF							*fRMUWPtSemiInclJet[5];
+	THnSparseF						    *fRMUWAngSemiInclJet[5];
+	THnSparseF						    *fRMUWDispSemiInclJet[5];
+
+	// No electron methodology
+	TH2F								*fptJetNoElectrons;
+	TH3F								*fAngJetNoElectrons;
+	TH3F								*fDispJetNoElectrons;
     
+	TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
+    
+
 private:
     AliAnalysisTaskEmcalHfeTagging(const AliAnalysisTaskEmcalHfeTagging&);            // not implemented
     AliAnalysisTaskEmcalHfeTagging &operator=(const AliAnalysisTaskEmcalHfeTagging&); // not implemented

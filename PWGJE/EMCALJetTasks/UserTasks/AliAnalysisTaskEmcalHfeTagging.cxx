@@ -146,6 +146,9 @@ fnIncSubPhotElecPerJet(0),
 fnTrueElecPerJet(0),
 fnTrueHFElecPerJet(0),
 fnTruePElecPerJet(0),
+fnTrueElecPerJetPt(0),
+fnTrueHFElecPerJetPt(0),
+fnTruePElecPerJetPt(0),
 fPi0PtGen(0),
 fPi0PtEnh(0),
 fEtaPtGen(0),
@@ -156,10 +159,9 @@ fPtP(0),
 fptJetIE(0),
 fptJetPE(0),
 fptJetHFE(0),
+fptJetHadron(0),
 fptRecPE(0),
 fptTruePE(0),
-fptTruePEdcal(0),
-fptRecPEdcal(0),
 fPtTrack(0),
 fPhiTrack(0x0),
 fEtaTrack(0x0),
@@ -176,7 +178,6 @@ fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
-fnEovPelecTPCDCalcut(0x0),
 fnEovPbackg(0x0),
 fnClsE(0x0),
 fnM20(0x0),
@@ -212,17 +213,18 @@ fDispCharm(0x0),
 fDispBeauty(0x0),
 fDispQuark(0x0),
 fDispGluon(0x0),
+fptJetNoElectrons(0),
+fAngJetNoElectrons(0),
+fDispJetNoElectrons(0),
 fTreeObservableTagging(0)
-
 {
-    for(Int_t i=0;i<26;i++){
+    for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
     }
     
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffTPCTOF[i] = NULL;
         fptTrueHFEeffEMCal[i] = NULL;
-        fptTrueHFEeffDCal[i] = NULL;
         fnEovPelecTPCsscut[i] = NULL;
     }
     
@@ -249,19 +251,25 @@ fTreeObservableTagging(0)
             fTotPEAng[i][j] = NULL;
             fULSptAng[i][j] = NULL;
             fLSptAng[i][j] = NULL;
-            
-            fRecPEAngDcal[i][j] = NULL;
-            fTotPEAngDcal[i][j] = NULL;
         }
         for(Int_t j=0;j<6;j++){
             fRecPEDisp[i][j] = NULL;
             fTotPEDisp[i][j] = NULL;
             fULSptDisp[i][j] = NULL;
             fLSptDisp[i][j] = NULL;
-            
-            fRecPEDispDcal[i][j] = NULL;
-            fTotPEDispDcal[i][j] = NULL;
         }
+    }
+    
+	for(Int_t i = 0; i < 5; i++){
+        fPtSemiInclJet[i] = NULL;
+        fAngSemiInclJet[i] = NULL;
+		fDispSemiInclJet[i] = NULL;
+		fRMPtSemiInclJet[i] = NULL; 
+		fRMAngSemiInclJet[i] = NULL; 
+		fRMDispSemiInclJet[i] = NULL; 
+		fRMUWPtSemiInclJet[i] = NULL; 
+		fRMUWAngSemiInclJet[i] = NULL; 
+		fRMUWDispSemiInclJet[i] = NULL; 
     }
     
     
@@ -357,6 +365,9 @@ fnIncSubPhotElecPerJet(0),
 fnTrueElecPerJet(0),
 fnTrueHFElecPerJet(0),
 fnTruePElecPerJet(0),
+fnTrueElecPerJetPt(0),
+fnTrueHFElecPerJetPt(0),
+fnTruePElecPerJetPt(0),
 fPi0PtGen(0),
 fPi0PtEnh(0),
 fEtaPtGen(0),
@@ -367,10 +378,9 @@ fPtP(0),
 fptJetIE(0),
 fptJetPE(0),
 fptJetHFE(0),
+fptJetHadron(0),
 fptRecPE(0),
 fptTruePE(0),
-fptTruePEdcal(0),
-fptRecPEdcal(0),
 fPtTrack(0),
 fPhiTrack(0x0),
 fEtaTrack(0x0),
@@ -387,7 +397,6 @@ fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
-fnEovPelecTPCDCalcut(0x0),
 fnEovPbackg(0x0),
 fnClsE(0x0),
 fnM20(0x0),
@@ -423,17 +432,19 @@ fDispCharm(0x0),
 fDispBeauty(0x0),
 fDispQuark(0x0),
 fDispGluon(0x0),
+fptJetNoElectrons(0),
+fAngJetNoElectrons(0),
+fDispJetNoElectrons(0),
 fTreeObservableTagging(0)
 {
     // Standard constructor.
-    for(Int_t i=0;i<26;i++){
+    for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
     }
     
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffTPCTOF[i] = NULL;
         fptTrueHFEeffEMCal[i] = NULL;
-        fptTrueHFEeffDCal[i] = NULL;
         fnEovPelecTPCsscut[i] = NULL;
     }
     
@@ -458,19 +469,25 @@ fTreeObservableTagging(0)
             fTotPEAng[i][j] = NULL;
             fULSptAng[i][j] = NULL;
             fLSptAng[i][j] = NULL;
-            
-            fRecPEAngDcal[i][j] = NULL;
-            fTotPEAngDcal[i][j] = NULL;
         }
         for(Int_t j=0;j<6;j++){
             fRecPEDisp[i][j] = NULL;
             fTotPEDisp[i][j] = NULL;
             fULSptDisp[i][j] = NULL;
             fLSptDisp[i][j] = NULL;
-            
-            fRecPEDispDcal[i][j] = NULL;
-            fTotPEDispDcal[i][j] = NULL;
         }
+    }
+	
+	for(Int_t i = 0; i < 5; i++){
+        fPtSemiInclJet[i] = NULL;
+        fAngSemiInclJet[i] = NULL;
+		fDispSemiInclJet[i] = NULL;
+		fRMPtSemiInclJet[i] = NULL; 
+		fRMAngSemiInclJet[i] = NULL; 
+		fRMDispSemiInclJet[i] = NULL; 
+		fRMUWPtSemiInclJet[i] = NULL; 
+		fRMUWAngSemiInclJet[i] = NULL; 
+		fRMUWDispSemiInclJet[i] = NULL; 
     }
     
     SetMakeGeneralHistograms(kTRUE);
@@ -508,11 +525,23 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         9,10,11,12,13,14,15,16,18,20};
     
     Double_t bin_JetPt[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t bin_g[9] = {0.,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.12};//g
+    Double_t bin_g[9] = {0., 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.6};//g
     Double_t bin_ptd[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};//pTD
     
-    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};//for syst.
+    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};//for syst.
     
+	Int_t nbin_jetptRM[2] = {24, 24};
+	Double_t max_jetptRM[2] = {120., 120};
+   	Double_t min_jetptRM[2] = {0., 0.};
+
+	Int_t nbin_gRM[4] = {24, 24, 20, 20};
+	Double_t max_gRM[4] = {120., 120., 1., 1.};
+	Double_t min_gRM[4] = {0., 0., 0., 0.};
+	
+	Int_t nbin_ptdRM[4] = {24, 24, 20, 20};
+	Double_t max_ptdRM[4] = {120., 120., 1., 1.};
+	Double_t min_ptdRM[4] = {0., 0., 0., 0.};
+
     fNeventV0 = new TH1F("fNeventV0","Number of Events (V0)",5,-0.5,4.5);
     fOutput->Add(fNeventV0);
     
@@ -623,8 +652,17 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnTrueHFElecPerJet=new TH1F("fnTrueHFElecPerJet", "fnTrueHFElecPerJet", 50,0,50);
     fOutput->Add(fnTrueHFElecPerJet);
     
-    fnTruePElecPerJet=new TH1F("fnTruePElecPerJet", "fnTruePElecPerJet", 50,0,50);
+	fnTruePElecPerJet=new TH1F("fnTruePElecPerJet", "fnTruePElecPerJet", 50,0,50);
     fOutput->Add(fnTruePElecPerJet);
+    
+	fnTrueElecPerJetPt = new TH2F("fnTrueElecPerJetPt", "fnTrueElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fOutput->Add(fnTrueElecPerJetPt);
+    
+    fnTrueHFElecPerJetPt = new TH2F("fnTrueHFElecPerJetPt", "fnTrueHFElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fOutput->Add(fnTrueHFElecPerJetPt);
+    
+	fnTruePElecPerJetPt = new TH2F("fnTruePElecPerJetPt", "fnTruePElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fOutput->Add(fnTruePElecPerJetPt);
     
     fPi0PtGen = new TH1F("fPi0PtGen","fPi0PtGen",nbin,xbins);
     fOutput->Add(fPi0PtGen);
@@ -658,13 +696,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
             fLSptAng[i][j] = new TH1F(Form("fLSptAng%d%d",i,j), Form("fLSptAng%d%d",i,j), 33,ptRange);
             fOutput->Add(fLSptAng[i][j]);
-            
-            
-            fRecPEAngDcal[i][j] = new TH1F(Form("fRecPEAngDcal%d%d",i,j), Form("fRecPEAngDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fRecPEAngDcal[i][j]);
-
-            fTotPEAngDcal[i][j] = new TH1F(Form("fTotPEAngDcal%d%d",i,j), Form("fTotPEAngDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fTotPEAngDcal[i][j]);
         }
         
         for(Int_t j=0;j<6;j++){
@@ -679,13 +710,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
             
             fLSptDisp[i][j] = new TH1F(Form("fLSptDisp%d%d",i,j), Form("fLSptDisp%d%d",i,j), 33,ptRange);
             fOutput->Add(fLSptDisp[i][j]);
-            
-            
-            fRecPEDispDcal[i][j] = new TH1F(Form("fRecPEDispDcal%d%d",i,j), Form("fRecPEDispDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fRecPEDispDcal[i][j]);
-            
-            fTotPEDispDcal[i][j] = new TH1F(Form("fTotPEDispDcal%d%d",i,j), Form("fTotPEDispDcal%d%d",i,j), 33,ptRange);
-            fOutput->Add(fTotPEDispDcal[i][j]);
         }
     }
     
@@ -702,18 +726,15 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fptJetHFE= new TH1F("fptJetHFE", "fptJetHFE", 100, 0, 200);
     fOutput->Add(fptJetHFE);
+	
+	fptJetHadron = new TH1F("fptJetHadron", "fptJetHadron", 24, 0., 120.);
+    fOutput -> Add(fptJetHadron);
     
     fptRecPE= new TH1F("fptRecPE", "fptRecPE", 33,ptRange);
     fOutput->Add(fptRecPE);
     
     fptTruePE= new TH1F("fptTruePE", "fptTruePE", 33,ptRange);
     fOutput->Add(fptTruePE);
-    
-    fptTruePEdcal= new TH1F("fptTruePEdcal", "fptTruePEdcal", 33,ptRange);
-    fOutput->Add(fptTruePEdcal);
-    
-    fptRecPEdcal= new TH1F("fptRecPEdcal", "fptRecPEdcal", 33,ptRange);
-    fOutput->Add(fptRecPEdcal);
     
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffTPCTOF[i] = new TH1F(Form("fptTrueHFEeffTPCTOF%d",i), Form("fptTrueHFEeffTPCTOF%d",i), 33,ptRange);
@@ -736,10 +757,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     for(Int_t i=0;i<5;i++){
         fptTrueHFEeffEMCal[i] = new TH1F(Form("fptTrueHFEeffEMCal%d",i), Form("fptTrueHFEeffEMCal%d",i), 33,ptRange);
         fOutput->Add(fptTrueHFEeffEMCal[i]);
-        
-        fptTrueHFEeffDCal[i] = new TH1F(Form("fptTrueHFEeffDCal%d",i), Form("fptTrueHFEeffDCal%d",i), 33,ptRange);
-        fOutput->Add(fptTrueHFEeffDCal[i]);
-        
     }
     
     for(Int_t i=0;i<2;i++){
@@ -802,9 +819,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnEovPelecTPCEMCalcut = new TH2F("fnEovPelecTPCEMCalcut", "fnEovPelecTPCEMCalcut", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPelecTPCEMCalcut);
     
-    fnEovPelecTPCDCalcut = new TH2F("fnEovPelecTPCDCalcut", "fnEovPelecTPCDCalcut", 100, 0, 100,40,0,2);
-    fOutput->Add(fnEovPelecTPCDCalcut);
-
     for(Int_t i=0;i<5;i++){
         fnEovPelecTPCsscut[i] = new TH2F(Form("fnEovPelecTPCsscut%d",i), Form("fnEovPelecTPCsscut%d",i), 33,ptRange,40,0,2);
         fOutput->Add(fnEovPelecTPCsscut[i]);
@@ -914,7 +928,48 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fDispGluon = new TH2F("fDispGluon", "fDispGluon", 5, bin_JetPt, 6, bin_ptd);
     fOutput->Add(fDispGluon);
+
+	// Inclusive and semi-inclusive histograms
+    for(Int_t i = 0; i < 5; i++){
+        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 12, 0., 60.);
+		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
+						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
+		fRMUWPtSemiInclJet[i] = new THnSparseF(Form("fRMUWPtSemiInclJet%d", i), Form("fRMUWPtSemiInclJet%d", i), 2, 
+						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
+        fOutput->Add(fPtSemiInclJet[i]);
+        fOutput->Add(fRMPtSemiInclJet[i]);
+        fOutput->Add(fRMUWPtSemiInclJet[i]);
+
+        fAngSemiInclJet[i] = new TH2F(Form("fAngSemiInclJet%d",i), Form("fAngSemiInclJet%d",i), 5, bin_JetPt, 8, bin_g);
+		fRMAngSemiInclJet[i] = new THnSparseF(Form("fRMAngSemiInclJet%d", i), Form("fRMAngSemiInclJet%d", i), 4, 
+						                    nbin_gRM, min_gRM, max_gRM);
+		fRMUWAngSemiInclJet[i] = new THnSparseF(Form("fRMUWAngSemiInclJet%d", i), Form("fRMUWAngSemiInclJet%d", i), 4, 
+						                    nbin_gRM, min_gRM, max_gRM);
+        fOutput->Add(fAngSemiInclJet[i]);
+        fOutput->Add(fRMAngSemiInclJet[i]);
+        fOutput->Add(fRMUWAngSemiInclJet[i]);
+        
+		fDispSemiInclJet[i] = new TH2F(Form("fDispSemiInclJet%d",i), Form("fDispSemiInclJet%d",i), 5, bin_JetPt, 6, bin_ptd);
+		fRMDispSemiInclJet[i] = new THnSparseF(Form("fRMDispSemiInclJet%d", i), Form("fRMDispSemiInclJet%d", i), 4, 
+						                    nbin_ptdRM, min_ptdRM, max_ptdRM);
+		fRMUWDispSemiInclJet[i] = new THnSparseF(Form("fRMUWDispSemiInclJet%d", i), Form("fRMUWDispSemiInclJet%d", i), 4, 
+						                    nbin_ptdRM, min_ptdRM, max_ptdRM);
+        fOutput->Add(fDispSemiInclJet[i]);
+        fOutput->Add(fRMDispSemiInclJet[i]);
+        fOutput->Add(fRMUWDispSemiInclJet[i]);
+    }
+
+	// No electrons 3D methodology
+    fptJetNoElectrons = new TH2F("fptJetNoElectrons", "fptJetNoElectrons", 33, ptRange, 5, bin_JetPt);
+	fOutput -> Add(fptJetNoElectrons);
+
+    fAngJetNoElectrons = new TH3F("fAngJetNoElectrons", "fAngJetNoElectrons", 33, ptRange, 5, bin_JetPt, 8, bin_g);
+	fOutput -> Add(fAngJetNoElectrons);
+
+    fDispJetNoElectrons = new TH3F("fDispJetNoElectrons", "fDispJetNoElectrons", 33, ptRange, 5, bin_JetPt, 6, bin_ptd);
+	fOutput -> Add(fDispJetNoElectrons);
     
+
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
         TH1 *h = dynamic_cast<TH1*>(fOutput->At(i));
@@ -928,42 +983,36 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     
     TH1::AddDirectory(oldStatus);
-    const Int_t nVar = 26;
+    const Int_t nVar = 21;
     
     fTreeObservableTagging = new TTree(GetOutputSlot(2)->GetContainer()->GetName(), GetOutputSlot(2)->GetContainer()->GetName());
     
     TString *fShapesVarNames = new TString [nVar];
     
+	// Jet info
     fShapesVarNames[0] = "partonCode";
     fShapesVarNames[1] = "ptJet";
     fShapesVarNames[2] = "ptDJet";
     fShapesVarNames[3] = "mJet";
-    // fShapesVarNames[4] = "nbOfConst";
     fShapesVarNames[4] = "angularity";
-    fShapesVarNames[5] = "circularity";
-    fShapesVarNames[6] = "lesub";
-    fShapesVarNames[7] = "coronna";
-    
-    fShapesVarNames[8] = "ptJetMatch";
-    fShapesVarNames[9] = "ptDJetMatch";
-    fShapesVarNames[10] = "mJetMatch";
-    // fShapesVarNames[12] = "nbOfConstMatch";
-    fShapesVarNames[11] = "angularityMatch";
-    fShapesVarNames[12] = "circularityMatch";
-    fShapesVarNames[13] = "lesubMatch";
-    fShapesVarNames[14] = "coronnaMatch";
-    fShapesVarNames[15] = "weightPythia";
-    //fShapesVarNames[14]="ntrksEvt";
-    fShapesVarNames[16] = "rhoVal";
-    fShapesVarNames[17] = "rhoMassVal";
-    fShapesVarNames[18] = "ptUnsub";
-    fShapesVarNames[19] = "ptTrueHFE";
-    fShapesVarNames[20] = "ptElec";
-    fShapesVarNames[21] = "nInclElec";
-    fShapesVarNames[22] = "nPhotElec";
-    fShapesVarNames[23] = "hasElec";
-    fShapesVarNames[24] = "nTrueElectronsMC";
-    fShapesVarNames[25] = "nTrueHFElecMC";
+    fShapesVarNames[5] = "ptJetMatch";
+    fShapesVarNames[6] = "ptDJetMatch";
+    fShapesVarNames[7] = "mJetMatch";
+    fShapesVarNames[8] = "angularityMatch";
+    fShapesVarNames[9] = "weightPythia";
+    fShapesVarNames[10] = "rhoVal";
+    fShapesVarNames[11] = "rhoMassVal";
+    fShapesVarNames[12] = "ptUnsub";
+
+	// Electron info
+    fShapesVarNames[13] = "ptTrueHFE";
+    fShapesVarNames[14] = "ptElec";
+    fShapesVarNames[15] = "nInclElec";
+    fShapesVarNames[16] = "nPhotElec";
+    fShapesVarNames[17] = "hasElec";
+    fShapesVarNames[18] = "nTrueElectronsMC";
+    fShapesVarNames[19] = "nTrueHFElecMC";
+    fShapesVarNames[20] = "pdgOnlyOneTrueElectron";
     
     
     for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -1104,9 +1153,52 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
 Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 {
     // Fill histograms.
-    //cout<<"base container"<<endl;
-    AliEmcalJet* jet1 = NULL;
-    AliJetContainer *jetCont = GetJetContainer(0);
+
+	// Always load all possible 4 containers
+	// Order will change depending on JetShapeType and Sub, but main is always first
+    AliJetContainer* jetCont = GetJetContainer(0);
+    if (!jetCont) return 0;
+	
+    AliJetContainer* jetContExtra1 = GetJetContainer(1);
+    AliJetContainer* jetContExtra2 = GetJetContainer(2);
+    AliJetContainer* jetContExtra3 = GetJetContainer(3);
+    
+	AliJetContainer* jetContTrue = nullptr;
+	AliJetContainer* jetContUS = nullptr;
+	AliJetContainer* jetContPartLevel = nullptr;
+		
+	// Determine extra jet containers 
+	// No need to do anything if kMCTrue, kData or kGenOnTheFly as they only use first
+	if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
+		jetContTrue = jetContExtra1;
+		if (fJetShapeSub == kConstSub) {
+			jetContUS = jetContExtra2;			
+			jetContPartLevel = jetContExtra3;			
+		} else {
+			jetContPartLevel = jetContExtra2;			
+		}
+	}
+	
+	// Determine container for jet matching
+	Int_t kMatched = 0;
+    if (fJetShapeType == kPythiaDef) {
+        if (fJetShapeSub == kConstSub) {
+			kMatched = 3;
+		} else {
+    		kMatched = 1;
+		}
+	} else if (fJetShapeType == kDetEmbPartPythia) {
+        if (fJetShapeSub == kConstSub) {
+			kMatched = 3;
+		/* } else if (fJetShapeSub == kDerivSub) { */
+		} else {
+			kMatched = 2;
+		}
+	}
+
+
+
+    AliEmcalJet* jetbase = nullptr;
     
     Float_t kWeight=1;
     if (fCentSelectOn)
@@ -1129,271 +1221,294 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
         }
     }
     
-    Float_t rhoVal=0, rhoMassVal = 0.;
     
-    if(jetCont) {
-        jetCont->ResetCurrentID();
-        if ((fJetShapeSub==kConstSub) || (fJetShapeSub==kDerivSub)){
-            //rho
-            AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoSparseR020"));
-            if (!rhoParam) {
-                Printf("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data());
-            } else rhoVal = rhoParam->GetVal();
-            //rhom
-            AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMassSparseR020"));
-            if (!rhomParam) {
-                Printf("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data());
-            } else rhoMassVal = rhomParam->GetVal();
-        }
+    if (jetCont) {
+        jetCont -> ResetCurrentID();
         
-        while((jet1 = jetCont->GetNextAcceptJet())) {
-            if (!jet1) continue;
-            AliEmcalJet* jet2 = 0x0;
-            AliEmcalJet* jet3 = 0x0;
-            fPtJet->Fill(jet1->Pt());
-            fPhiJet->Fill(jet1->Pt(),jet1->Phi());
-            fEtaJet->Fill(jet1->Pt(),jet1->Eta());
-            if (jet1->Pt() > 5.) fEtaPhiJet->Fill(jet1->Phi(),jet1->Eta());
-            fAreaJet->Fill(jet1->Pt(),jet1->Area());
-            AliEmcalJet *jetUS = NULL;
-            Int_t ifound=0, ilab=-1;
-            
-            fShapesVar[0] = 0.;
-            if(fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kDetEmbPartPythia){
-                //AliJetContainer *jetContTrue = GetJetContainer(1);
-                AliJetContainer *jetContUS = GetJetContainer(2);
-                
-                if(fJetShapeSub == AliAnalysisTaskEmcalHfeTagging::kConstSub){
-                    for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
-                        jetUS = jetContUS->GetJet(i);
-                        if(jetUS->GetLabel()==jet1->GetLabel()) {
-                            ifound++;
-                            if(ifound==1) ilab = i;
+		// Determine Rho if subtracted container
+    	Float_t rhoVal = 0., rhoMassVal = 0.;
+    	if ((fJetShapeSub==kConstSub) || (fJetShapeSub==kDerivSub)){
+    	    //rho
+    	    AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoSparseR020"));
+    	    if (!rhoParam) {
+    	        Printf("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data());
+
+			} else {
+				rhoVal = rhoParam->GetVal();
+			}
+
+    	    //rhom
+    	    AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMassSparseR020"));
+    	    
+			if (!rhomParam) {
+    	        Printf("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data());
+
+		   	} else {
+					rhoMassVal = rhomParam->GetVal();
+			}
+    	}
+
+        while ((jetbase = jetCont -> GetNextAcceptJet())) {
+            if (!jetbase) continue;
+
+            AliEmcalJet* jettrue = nullptr;  // Matched unsubtracted jet
+            AliEmcalJet* jetpartlevel = nullptr;  // Matched particle-level jet
+            AliEmcalJet* jetUS = nullptr;
+									  
+			// Fill kinematics histograms
+            fPtJet->Fill(jetbase->Pt());
+            fPhiJet->Fill(jetbase->Pt(),jetbase->Phi());
+            fEtaJet->Fill(jetbase->Pt(),jetbase->Eta());
+            if (jetbase->Pt() > 5.) fEtaPhiJet->Fill(jetbase->Phi(),jetbase->Eta());
+            fAreaJet->Fill(jetbase->Pt(),jetbase->Area());
+
+			// Jet matching
+			// If kConstSub, get match to equivalent unsubtracted jet jetUS by jettrue
+			// Particle level jet will be described by jetpartlevel
+            if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kDetEmbPartPythia){
+                Double_t fractionpt = 0;  // For min pt shared cut
+
+                if (fJetShapeSub == AliAnalysisTaskEmcalHfeTagging::kConstSub){
+					// Original logic
+                    for(Int_t i = 0; i < jetContUS -> GetNJets(); i++) {
+                        if(jetContUS -> GetJet(i) -> GetLabel() == jetbase -> GetLabel()) {
+                    		jetUS = jetContUS -> GetJet(i);
+							break;
                         }
                     }
-                    if(ilab==-1) continue;
-                    jetUS=jetContUS->GetJet(ilab);
-                    jet2=jetUS->ClosestJet();
-                }
+
+					if (!jetUS) {
+                    	/* Printf("Equivalent unsubtracted jet (jetUS) not found, returning"); */
+						continue;
+					}
+
+            		jettrue = GetClosestOnOtherJetContainer(jetUS, jetContTrue);
+					fractionpt = GetFractionSharedPtBetweenJets(jetUS, jettrue);
+
+                } else {
+            		jettrue = GetClosestOnOtherJetContainer(jetbase, jetContTrue);
+					fractionpt = GetFractionSharedPtBetweenJets(jetbase, jettrue);
+				}
                 
-                if(!(fJetShapeSub == AliAnalysisTaskEmcalHfeTagging::kConstSub)) jet2 = jet1->ClosestJet();
-                if (!jet2) {
-                    Printf("jet2 does not exist, returning");
+				// Min pt shared cut
+				if (fractionpt < fMinFractionShared) continue;
+                
+                if (!jettrue) {
+                    Printf("jettrue does not exist, returning");
                     continue;
                 }
+                    	    
+                jetpartlevel = GetClosestOnOtherJetContainer(jettrue, jetContPartLevel);
                 
-                //AliJetContainer *jetContPart=GetJetContainer(3);
-                jet3=jet2->ClosestJet();
-                
-                if(!jet3){
-                    Printf("jet3 does not exist, returning");
+                if(!jetpartlevel){
+                    Printf("jetpartlevel does not exist, returning");
                     continue;
                 }
-                //cout<<"jet 3 exists"<<jet3->Pt()<<endl;
-                
-                
-                fh2ResponseUW->Fill(jet1->Pt(),jet2->Pt());
-                
-                Double_t fraction=0;
-                if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
-                if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
-                //if (fraction > 0.1) cout<<"***** hey a jet matched with fraction"<<fraction<<"  "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
-                
-                if(fraction<fMinFractionShared) continue;
-                //InputEvent()->Print();
-                
+					
+                fh2ResponseUW->Fill(jetbase->Pt(),jettrue->Pt());
             }
             
             if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kPythiaDef){
-                jet3 = jet1->ClosestJet();
-                if (!jet3) continue;
+                jetpartlevel = GetClosestOnOtherJetContainer(jetbase, jetContPartLevel);
+                if(!jetpartlevel){
+                    Printf("jetpartlevel does not exist, returning");
+                    continue;
+                }
                 
-                fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
+                fh2ResponseUW->Fill(jetbase->Pt(),jetpartlevel->Pt());
                 
                 Double_t probDensDetPart = -999., probDensPartDet = -999.;
                 
-                if (jet1->Pt()>0) probDensPartDet = (jet3->Pt()-jet1->Pt())/jet1->Pt();
-                if (jet3->Pt()>0) probDensDetPart = (jet1->Pt()-jet3->Pt())/jet3->Pt();
+                if (jetbase->Pt()>0) probDensPartDet = (jetpartlevel->Pt()-jetbase->Pt())/jetbase->Pt();
+                if (jetpartlevel->Pt()>0) probDensDetPart = (jetbase->Pt()-jetpartlevel->Pt())/jetpartlevel->Pt();
                 
-                fJetProbDensityDetPart->Fill(probDensDetPart,jet3->Pt());
-                fJetProbDensityPartDet->Fill(probDensPartDet,jet1->Pt());
+                fJetProbDensityDetPart->Fill(probDensDetPart,jetpartlevel->Pt());
+                fJetProbDensityPartDet->Fill(probDensPartDet,jetbase->Pt());
                 
             }
             
+            fShapesVar[0] = 0.;
             if (fJetShapeType == kGenOnTheFly){
                 const AliEmcalPythiaInfo *partonsInfo = 0x0;
                 partonsInfo = GetPythiaInfo();
-                Double_t jp1=RelativePhi(jet1->Phi(),partonsInfo->GetPartonPhi6());
-                Double_t detap1=(jet1->Eta())-(partonsInfo->GetPartonEta6());
+                Double_t jp1=RelativePhi(jetbase->Phi(),partonsInfo->GetPartonPhi6());
+                Double_t detap1=(jetbase->Eta())-(partonsInfo->GetPartonEta6());
                 kWeight=partonsInfo->GetPythiaEventWeight();
-                fh2ResponseW->Fill(jet1->Pt(),jet1->Pt(),kWeight);
+                fh2ResponseW->Fill(jetbase->Pt(),jetbase->Pt(),kWeight);
                 
                 Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
-                fEtaJetCorr6->Fill(jet1->Eta(), partonsInfo->GetPartonEta6());
-                fPhiJetCorr6->Fill(jet1->Phi(), partonsInfo->GetPartonPhi6());
+                fEtaJetCorr6->Fill(jetbase->Eta(), partonsInfo->GetPartonEta6());
+                fPhiJetCorr6->Fill(jetbase->Phi(), partonsInfo->GetPartonPhi6());
                 if(dRp1 < fRMatching) {
                     fShapesVar[0] = partonsInfo->GetPartonFlag6();
-                    fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jet1->Pt());
+                    fPtJetCorr ->Fill(partonsInfo->GetPartonPt6(), jetbase->Pt());
                 }
                 else {
-                    jp1=RelativePhi(jet1->Phi(),partonsInfo->GetPartonPhi7());
-                    detap1=(jet1->Eta())-(partonsInfo->GetPartonEta7());
+                    jp1=RelativePhi(jetbase->Phi(),partonsInfo->GetPartonPhi7());
+                    detap1=(jetbase->Eta())-(partonsInfo->GetPartonEta7());
                     dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
-                    fEtaJetCorr7->Fill(jet1->Eta(), partonsInfo->GetPartonEta7());
-                    fPhiJetCorr7->Fill(jet1->Phi(), partonsInfo->GetPartonPhi7());
+                    fEtaJetCorr7->Fill(jetbase->Eta(), partonsInfo->GetPartonEta7());
+                    fPhiJetCorr7->Fill(jetbase->Phi(), partonsInfo->GetPartonPhi7());
                     if(dRp1 < fRMatching) {
                         fShapesVar[0] = partonsInfo->GetPartonFlag7();
-                        fPtJetCorr->Fill(partonsInfo->GetPartonPt7(), jet1->Pt());
+                        fPtJetCorr->Fill(partonsInfo->GetPartonPt7(), jetbase->Pt());
                     }
                     else fShapesVar[0]=0;
                 }
             }
             
-            Double_t ptSubtracted = 0;
-            if (fJetShapeSub==kConstSub) ptSubtracted= jet1->Pt();
-            
-            else if (fJetShapeSub==kDerivSub)  {
-                ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
+			// Pt subtraction procedure
+            Double_t ptSubtracted = 0., jetbaseang = -1., jetbaseptd = -1.;
+            if (fJetShapeSub == kConstSub) { 
+				ptSubtracted = jetbase -> Pt();
+
+			} else if (fJetShapeSub == kDerivSub)  {
+                ptSubtracted = jetbase -> Pt() -GetRhoVal(0) * jetbase -> Area();
+
+            } else if (fJetShapeSub==kNoSub) {
+                if ((fJetShapeType == kData) || (fJetShapeType == kDetEmbPartPythia)) ptSubtracted = jetbase -> Pt() - GetRhoVal(0) * jetbase -> Area();
+
+                else if ((fJetShapeType == kPythiaDef) || (fJetShapeType == kMCTrue) || (fJetShapeType == kGenOnTheFly)) ptSubtracted = jetbase -> Pt();
             }
             
-            else if (fJetShapeSub==kNoSub) {
-                if ((fJetShapeType==kData) || (fJetShapeType==kDetEmbPartPythia)) ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
-                else if ((fJetShapeType==kPythiaDef) || (fJetShapeType==kMCTrue) || (fJetShapeType==kGenOnTheFly)) ptSubtracted= jet1->Pt();
-            }
-            
-            //Printf("ptSubtracted=%f,fPtThreshold =%f ", ptSubtracted, fPtThreshold);
             if (ptSubtracted < fPtThreshold) continue;
             
-            if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), ptSubtracted);
-            if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+            if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jetbase,0), ptSubtracted);
+            if ((fCentSelectOn == kFALSE) && (jetbase->GetNumberOfTracks() <= 1)) continue;
             
+			jetbaseptd = GetJetpTD(jetbase, 0);
+			jetbaseang = GetJetAngularity(jetbase, 0); 
+
             fShapesVar[1] = ptSubtracted;
-            fShapesVar[2] = GetJetpTD(jet1,0);
-            fShapesVar[3] = GetJetMass(jet1,0);
-            fShapesVar[4] = GetJetAngularity(jet1,0);
-            fShapesVar[5] = GetJetCircularity(jet1,0);
-            fShapesVar[6] = GetJetLeSub(jet1,0);
-            fShapesVar[7] = GetJetCoronna(jet1,0);
+            fShapesVar[2] = jetbaseptd;
+            fShapesVar[3] = GetJetMass(jetbase, 0);
+            fShapesVar[4] = jetbaseang;
             
-            Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.,circMatch=0., lesubMatch=0., coronnaMatch=0;
-            //Float constMatch=0., sigma2Match=0.;
-            Int_t kMatched = 0;
+            Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.;
             
-            if (fJetShapeType==kPythiaDef) {
-                kMatched =1;
-                if(fJetShapeSub==kConstSub) kMatched = 3;
-                
-                if (!jet3) {
-                    Printf("jet3 does not exist, returning");
-                    continue;
-                }
-                
-                ptMatch=jet3->Pt();
-                ptDMatch=GetJetpTD(jet3, kMatched);
-                massMatch=GetJetMass(jet3,kMatched);
-                //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
-                angulMatch=GetJetAngularity(jet3, kMatched);
-                circMatch=GetJetCircularity(jet3, kMatched);
-                lesubMatch=GetJetLeSub(jet3, kMatched);
-                coronnaMatch=GetJetCoronna(jet3,kMatched);
-                //sigma2Match = GetSigma2(jet2, kMatched);
+            if (kMatched != 0) {
+                ptMatch = jetpartlevel -> Pt();
+                ptDMatch = GetJetpTD(jetpartlevel, kMatched);
+				massMatch = GetJetMass(jetpartlevel, kMatched);
+                angulMatch = GetJetAngularity(jetpartlevel, kMatched);
             }
             
-            if (fJetShapeType==kDetEmbPartPythia) {
-                if(fJetShapeSub==kConstSub) kMatched = 3;
-                if(fJetShapeSub==kDerivSub) kMatched = 2;
-                ptMatch=jet3->Pt();
-                ptDMatch=GetJetpTD(jet3, kMatched);
-                massMatch=GetJetMass(jet3,kMatched);
-                // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
-                angulMatch=GetJetAngularity(jet3, kMatched);
-                circMatch=GetJetCircularity(jet3, kMatched);
-                lesubMatch=GetJetLeSub(jet3, kMatched);
-                coronnaMatch = GetJetCoronna(jet3, kMatched);
-            }
-            
-            
-            
-            if (fJetShapeType == kMCTrue || fJetShapeType == kData || fJetShapeType == kGenOnTheFly) {
-                kMatched = 0;
-                ptMatch=0.;
-                ptDMatch=0.;
-                massMatch=0.;
-                //constMatch=0.;
-                angulMatch=0.;
-                circMatch=0.;
-                lesubMatch=0.;
-                coronnaMatch =0.;
-                
-            }
-            
-            fShapesVar[8] = ptMatch;
-            fShapesVar[9] = ptDMatch;
-            fShapesVar[10] = massMatch;
-            fShapesVar[11] = angulMatch;
-            fShapesVar[12] = circMatch;
-            fShapesVar[13] = lesubMatch;
-            fShapesVar[14] = coronnaMatch;
-            fShapesVar[15] = kWeight;
-            fShapesVar[16] = rhoVal;
-            fShapesVar[17] = rhoMassVal;
-            fShapesVar[18] = jet1->Pt();
+            fShapesVar[5] = ptMatch;
+            fShapesVar[6] = ptDMatch;
+            fShapesVar[7] = massMatch;
+            fShapesVar[8] = angulMatch;
+            fShapesVar[9] = kWeight;
+            fShapesVar[10] = rhoVal;
+            fShapesVar[11] = rhoMassVal;
+            fShapesVar[12] = jetbase->Pt();
             
             Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC= 0, nTrueHFElecMC= 0;
             Double_t pElec = 0., ptElec = 0.;
             Bool_t hasElectrons = kFALSE;
             
-            GetNumberOfElectrons(jet1, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
+            GetNumberOfElectrons(jetbase, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
             
-            fAngChargPart->Fill(jet1->Pt(),GetJetAngularity(jet1,0));
-            fDispChargPart->Fill(jet1->Pt(),GetJetpTD(jet1,0));
+            fAngChargPart->Fill(ptSubtracted, jetbaseang);
+            fDispChargPart->Fill(ptSubtracted, jetbaseptd);
+
+			Double_t ptRMvalues[2] = {ptSubtracted, ptMatch};
+			Double_t angRMvalues[4] = {ptSubtracted, ptMatch, jetbaseang, angulMatch};
+			Double_t ptdRMvalues[4] = {ptSubtracted, ptMatch, jetbaseptd, ptDMatch};
+
+			for (int sibin = MaxPtBinForSemiInclusiveJet(jetbase, 0); sibin >= 0; sibin--) {
+				fPtSemiInclJet[sibin] -> Fill(ptSubtracted);
+				fAngSemiInclJet[sibin] -> Fill(ptSubtracted, jetbaseang);
+				fDispSemiInclJet[sibin] -> Fill(ptSubtracted, jetbaseptd);
+
+				fRMPtSemiInclJet[sibin] -> Fill(ptRMvalues, kWeight);
+				fRMUWPtSemiInclJet[sibin] -> Fill(ptRMvalues, 1.);
+				
+				fRMAngSemiInclJet[sibin] -> Fill(angRMvalues, kWeight);
+				fRMUWAngSemiInclJet[sibin] -> Fill(angRMvalues, 1.);
+				
+				fRMDispSemiInclJet[sibin] -> Fill(ptdRMvalues, kWeight);
+				fRMUWDispSemiInclJet[sibin] -> Fill(ptdRMvalues, 1.);
+			}	
             
-            if(nInclusiveElectrons==1){
-                fAngIncElec->Fill(jet1->Pt(),GetJetAngularity(jet1,0));
-                fDispIncElec->Fill(jet1->Pt(),GetJetpTD(jet1,0));
+            if (nInclusiveElectrons == 1) {
+                fAngIncElec -> Fill(ptSubtracted, jetbaseang);
+                fDispIncElec -> Fill(ptSubtracted, jetbaseptd);
             }
             
-            if(!hasElectrons){
-                fAngHadron->Fill(jet1->Pt(),GetJetAngularity(jet1,0));
-                fDispHadron->Fill(jet1->Pt(),GetJetpTD(jet1,0));
+            if (!hasElectrons) {
+                fptJetHadron -> Fill(ptSubtracted);
+                fAngHadron -> Fill(ptSubtracted, jetbaseang);
+                fDispHadron -> Fill(ptSubtracted, jetbaseptd);
+
+				// Choose one constituent to act as a random tagger
+				int randomtaggernumber = gRandom -> Integer(jetbase -> GetNumberOfTracks());
+				AliVParticle* randomtagger = jetbase -> Track(randomtaggernumber);
+				if (randomtagger) {
+					fptJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted);
+					fAngJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseang);
+					fDispJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseptd);
+				}
             }
             
             
             
             // generated HFE jets
             
-            AliVParticle *vp1 = 0x0;
-            Int_t pdgCode = 0;
+            AliVParticle* vp1 = nullptr;
+			AliAODMCParticle* mcparticle = nullptr, *mcmother = nullptr;
+            Int_t pdgCode = 0, pdgMother = 0, motherIndex = -1;
             Int_t elecCounter = 0;
             Double_t ptTrueHFE = -1.;
             
             if(fMCarray){
-                
-                GetNumberOfTrueElectrons(jet1, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC, ptTrueHFE);
-                
-                for(UInt_t i = 0; i < jet1->GetNumberOfTracks(); i++) {
-                    vp1 = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-                    
-                    if (!vp1){
-                        Printf("AliVParticle associated to constituent not found");
-                        continue;
-                    }
-                    
-                    pdgCode = vp1->PdgCode();
-                    if (TMath::Abs(pdgCode)==11) elecCounter++;
+                GetNumberOfTrueElectrons(jetbase, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC, ptTrueHFE);
+               
+				if (jetContPartLevel) {
+					/* partCont = jetContPartLevel -> GetParticleContainer(); */
+                	for(UInt_t i = 0; i < jetbase -> GetNumberOfTracks(); i++) {
+                        /* vp1 = static_cast<AliVParticle*>(jetbase->TrackAt(i, jetContPartLevel->GetParticleContainer()->GetArray())); */
+                        vp1 = jetbase -> Track(i);
+                        
+                        if (!vp1){
+                            Printf("AliVParticle associated to constituent not found");
+                            continue;
+                        }
+                        	
+				        /* mcparticle = static_cast<AliAODMCParticle*>(fMCarr  ay -> At(vp1 -> GetLabel())); */
+						mcparticle = static_cast<AliAODMCParticle*>(jetContPartLevel -> GetParticleContainer() -> GetParticle(vp1 -> GetLabel())); 
+                        if (!mcparticle) continue;
+
+				        pdgCode = mcparticle -> PdgCode();
+                        
+                        if (TMath::Abs(pdgCode)==11) {
+				        	elecCounter++;
+
+				        	if (nTrueElectronsMC == 1) {
+				        		motherIndex = mcparticle -> GetMother();
+				        		mcmother = static_cast<AliAODMCParticle*>(fMCarray -> At(motherIndex));
+
+				        		if (mcmother) pdgMother = mcmother -> PdgCode();
+				        	}
+				        }
+				    }
                 }
-                if (elecCounter==1) fPtGenJet->Fill(jet1->Pt());
+
+                if (elecCounter==1) fPtGenJet->Fill(jetbase->Pt());
             }
             
-            fShapesVar[19] = ptTrueHFE;
-            fShapesVar[20] = ptElec;
-            fShapesVar[21] = nInclusiveElectrons;
-            fShapesVar[22] = nPhotonicElectrons;
-            fShapesVar[23] = hasElectrons;
-            fShapesVar[24] = nTrueElectronsMC;
-            fShapesVar[25] = nTrueHFElecMC;
+            fShapesVar[13] = ptTrueHFE;
+            fShapesVar[14] = ptElec;
+            fShapesVar[15] = nInclusiveElectrons;
+            fShapesVar[16] = nPhotonicElectrons;
+            fShapesVar[17] = hasElectrons;
+            fShapesVar[18] = nTrueElectronsMC;
+            fShapesVar[19] = nTrueHFElecMC;
+            fShapesVar[20] = pdgMother;
             
-            fTreeObservableTagging->Fill();
+			// Only fill tree if electron candidate or MC electron is found, ignore soft jets
+			if ((nInclusiveElectrons > 0 || nTrueElectronsMC > 0) && ptSubtracted > 5.) {
+            	fTreeObservableTagging->Fill();
+			}
             
             
         }//jet loop
@@ -1511,13 +1626,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             Double_t clsE = -9., m02 = -9., m20 = -9., clsTime = -9, EovP = -9.;
             
-            Double_t emcalphimin = 1.39;
-            Double_t emcalphimax = 3.265;
-            
-            Double_t dcalphimin = 4.53;
-            Double_t dcalphimax = 5.58; // removed PHOS
-            
-            Bool_t isDCalCluster = kFALSE;
+            Double_t emcphimim = 1.39;
+            Double_t emcphimax = 3.265;
             
             Int_t clsId = track->GetEMCALcluster();
             AliVCluster* cluster=0x0;
@@ -1534,20 +1644,16 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                     cluster->GetPosition(emcx);
                     TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
                     Double_t emcphi = clustpos.Phi();
-                    Double_t emceta = clustpos.Eta();
                     
                     if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
                     
-                    if ((emcphi>emcalphimin && emcphi<emcalphimax) ||
-                        (emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12)){
+                    if (emcphi>emcphimim && emcphi<emcphimax){
                         clsE = cluster->GetNonLinCorrEnergy();
                         m20 = cluster->GetM20();
                         m02 = cluster->GetM02();
                         clsTime = cluster->GetTOF()*1e+9; // ns
                         
                         EovP = clsE/p;
-                        
-                        if(emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12) isDCalCluster = kTRUE;
                     }
                 }
             }
@@ -1559,9 +1665,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut){
                 fnEovPelecTPCEMCalcut->Fill(pt,EovP);
-                
-                if(isDCalCluster) fnEovPelecTPCDCalcut->Fill(pt,EovP);
-                
                 
                 for (Int_t l=0;l<5;l++){// pt jet range
                     if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]) fnEovPelecTPCsscut[l]->Fill(pt,EovP);
@@ -1607,10 +1710,11 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nRecIE=0, nHFE=0, nPE=0, nPairs=0, iDecay = 0, nDmeson = 0, nBmeson = 0, nElecFromB = 0, nElecFromD = 0, nElecFromDfromB = 0, nQuark = 0, nGluon = 0, nBeauty = 0, nCharm = 0;
+	Int_t nIEptmin = 0, nHFEptmin = 0, nPEptmin = 0;
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
     
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};
+    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
@@ -1666,15 +1770,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             
             Double_t EovP = -9., clsE = -9., m20 = -9.;
             
-            Double_t emcalphimin = 1.39;
-            Double_t emcalphimax = 3.265;
-            
-            Double_t dcalphimin = 4.53;
-            Double_t dcalphimax = 5.58; //removed phos
-            
-            
-            
-            Bool_t isDCalCluster = kFALSE;
+            Double_t emcphimim = 1.39;
+            Double_t emcphimax = 3.265;
             
             Int_t clsId = track->GetEMCALcluster();
             
@@ -1686,24 +1783,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
 
                 cluster = clusterCont->GetCluster(clsId);
                 
-                if(cluster && cluster->IsEMCAL()){
-                    
-                    Float_t  emcx[3]; // cluster pos
-                    cluster->GetPosition(emcx);
-                    TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
-                    Double_t emcphi = clustpos.Phi();
-                    Double_t emceta = clustpos.Eta();
-                    
-                    if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
-                    
-                    if ((emcphi>emcalphimin && emcphi<emcalphimax) ||
-                        (emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12)){
-                    
-                        clsE = cluster->GetNonLinCorrEnergy();
-                        m20 = cluster->GetM20();
-                        
-                      if(emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12) isDCalCluster = kTRUE;
-                    }
+                if(cluster && cluster->IsEMCAL() && phi > emcphimim && phi < emcphimax){
+                    clsE = cluster->GetNonLinCorrEnergy();
+                    m20 = cluster->GetM20();
                 }
             }
             
@@ -1797,12 +1879,17 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             
                             if (isFromHFdecay) nHFE++;
                             if (iDecay>0 && iDecay<7) nPE++;
+
+							if (pte > 0.5) {
+								nIEptmin++;
+                            	if (isFromHFdecay) nHFEptmin++;
+                            	if (iDecay>0 && iDecay<7) nPEptmin++;
+							}
                         }
                         
                         if ((partPDG==11) && isFromHFdecay && nHFE<2){
                             fptTrueHFEeffTPCTOF[0]->Fill(pt);
                             fptTrueHFEeffEMCal[0]->Fill(pt);
-                            if(isDCalCluster) fptTrueHFEeffDCal[0]->Fill(pt);
                             
                             fptTrueHFEeffTPCTOFang[0]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
                             fptTrueHFEeffEMCalang[0]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
@@ -1818,7 +1905,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         if ((partPDG==11) && isFromHFdecay  && nHFE<2){
                             fptTrueHFEeffTPCTOF[1]->Fill(pt);
                             fptTrueHFEeffEMCal[1]->Fill(pt);
-                            if(isDCalCluster) fptTrueHFEeffDCal[1]->Fill(pt);
                             
                             if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3)
                                 fptTrueHFEeffTPCTOF[2]->Fill(pt);
@@ -1835,18 +1921,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut)
                                 fptTrueHFEeffEMCal[2]->Fill(pt);
-                                if(isDCalCluster) fptTrueHFEeffDCal[2]->Fill(pt);
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut)
                                 fptTrueHFEeffEMCal[3]->Fill(pt);
-                                if(isDCalCluster) fptTrueHFEeffDCal[3]->Fill(pt);
-                            
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut){
                                 
                                 fptTrueHFEeffEMCal[4]->Fill(pt);
-                                if(isDCalCluster) fptTrueHFEeffDCal[4]->Fill(pt);
-                                
                                 fptTrueHFEeffEMCalang[1]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
                                 fptTrueHFEeffEMCaldisp[1]->Fill(pt,jet->Pt(),GetJetpTD(jet,0));
                             }
@@ -1857,11 +1938,10 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             m20 > 0.01 && m20 < fM20cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal) nRecIE++;
                         
                         // TPC-TOF
-                        if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut && pt>=fMinPtTPC && pt<fMaxPtTPC & nRecIE <2){
+                        if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut && pt>=fMinPtTPC && pt<fMaxPtTPC && nRecIE <2){
                             nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,iDecay,MCweight);
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
-                        
                             
                             for (Int_t l=0;l<5;l++){// pt jet range
                                 if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
@@ -1885,47 +1965,25 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         
                         //EMCal
                         if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut &&
-                            m20 > 0.01 && m20 < fM20cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal  & nRecIE <2){
+                            m20 > 0.01 && m20 < fM20cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal && nRecIE <2){
                             nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,iDecay,MCweight);
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
-                            
-                            if(isDCalCluster){
-                                if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPEdcal->Fill(pt,MCweight);
-                                if (iDecay>0 && iDecay<7) fptTruePEdcal->Fill(pt,MCweight);
-                            }
                             
                             for (Int_t l=0;l<5;l++){// pt jet range
                                 if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
                                     
                                     for (Int_t m=0;m<5;m++){// angularity
                                         if (ang>=angRange[m] && ang<angRange[m+1]){
-                                            if (iDecay>0 && iDecay<7)
-                                                fTotPEAng[l][m]->Fill(pt,MCweight);
+                                            if (iDecay>0 && iDecay<7) fTotPEAng[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l][m]->Fill(pt,MCweight);
-                                            
-                                            if(isDCalCluster){
-                                                if (iDecay>0 && iDecay<7)
-                                                    fTotPEAngDcal[l][m]->Fill(pt,MCweight);
-                                                if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAngDcal[l][m]->Fill(pt,MCweight);
-                                            }
-                                            
-                                            
                                         }
                                     }
                                     
                                     for (Int_t m=0;m<6;m++){// dispersion
                                         if (disp>=dispRange[m] && disp<dispRange[m+1]){
-                                            if (iDecay>0 && iDecay<7)
-                                                fTotPEDisp[l][m]->Fill(pt,MCweight);
+                                            if (iDecay>0 && iDecay<7) fTotPEDisp[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l][m]->Fill(pt,MCweight);
-                                            
-                                            if(isDCalCluster){
-                                                if (iDecay>0 && iDecay<7)
-                                                    fTotPEDispDcal[l][m]->Fill(pt,MCweight);
-                                                if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDispDcal[l][m]->Fill(pt,MCweight);
-                                            }
-                                            
                                         }
                                     }
                                 }
@@ -1944,6 +2002,10 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     fnTrueElecPerJet->Fill(nIE);
     fnTrueHFElecPerJet->Fill(nHFE);
     fnTruePElecPerJet->Fill(nPE);
+    
+	if (nIEptmin > 0) fnTrueElecPerJetPt -> Fill(jet -> Pt(), nIEptmin);
+    if (nHFEptmin > 0) fnTrueHFElecPerJetPt -> Fill(jet -> Pt(), nHFEptmin);
+    if (nPEptmin > 0) fnTruePElecPerJetPt -> Fill(jet -> Pt(), nPEptmin);
     
     nTrueElec = nIE;
     nTrueHFElec = nHFE;
@@ -2009,7 +2071,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
     Int_t sub = -1;
     
     Double_t ptJetRange[6] = {5,20,40,60,80,120};
-    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};
+    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Double_t jetPt = jet->Pt();
@@ -2080,9 +2142,10 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         
         if(recg.GetNDF()<1) continue;
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
         
-        openingAngle = ge1.GetAngle(ge2);
+		if (TMath::Abs(chi2recg) > 3.) continue;
+        
+        /* openingAngle = ge1.GetAngle(ge2); */
         //if(openingAngle > fOpeningAngleCut) continue;
         
         Int_t MassCorrect=-9;
@@ -2347,8 +2410,10 @@ void AliAnalysisTaskEmcalHfeTagging::GetWeightAndDecay(AliAODMCParticle *particl
 Float_t AliAnalysisTaskEmcalHfeTagging::Angularity(AliEmcalJet *jet, Int_t jetContNb = 0){
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
+	Double_t jetradius = jetCont -> GetJetRadius();
+
+    if (!jet->GetNumberOfTracks()) return 0;
+
     Double_t den=0.;
     Double_t num = 0.;
     AliVParticle *vp1 = 0x0;
@@ -2366,90 +2431,20 @@ Float_t AliAnalysisTaskEmcalHfeTagging::Angularity(AliEmcalJet *jet, Int_t jetCo
         num=num+vp1->Pt()*dr;
         den=den+vp1->Pt();
     }
-    return num/den;
+
+    return num / (den * jetradius);
 }
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalHfeTagging::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0){
+    AliJetContainer *jetCont = GetJetContainer(jetContNb);
+	Double_t jetradius = jetCont -> GetJetRadius();
     
     if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
-        else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
+        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity() / jetradius;
+        else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity() / jetradius;
         else
             return Angularity(jet, jetContNb);
-    
-}
-
-//____________________________________________________________________________
-
-Float_t AliAnalysisTaskEmcalHfeTagging::Coronna(AliEmcalJet *jet, Int_t jetContNb = 0){
-    
-    AliTrackContainer *PartCont = NULL;
-    AliParticleContainer *PartContMC = NULL;
-    
-    
-    if (fJetShapeSub==kConstSub){
-        if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kGenOnTheFly) PartContMC = GetParticleContainer(1);
-        else PartCont = GetTrackContainer(1);
-    }
-    else{
-        if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kGenOnTheFly) PartContMC = GetParticleContainer(0);
-        else PartCont = GetTrackContainer(0);
-    }
-    
-    TClonesArray *TracksArray = NULL;
-    TClonesArray *TracksArrayMC = NULL;
-    
-    if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kGenOnTheFly) TracksArrayMC = PartContMC->GetArray();
-    else TracksArray = PartCont->GetArray();
-    
-    if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kGenOnTheFly){
-        if(!PartContMC || !TracksArrayMC) return -2;
-    }
-    else {
-        if(!PartCont || !TracksArray) return -2;
-    }
-    
-    
-    AliAODTrack *Track = 0x0;
-    Float_t sumpt=0;
-    Int_t NTracks=0;
-    if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kGenOnTheFly) NTracks = TracksArrayMC->GetEntriesFast();
-    else NTracks = TracksArray->GetEntriesFast();
-    
-    for(Int_t i=0; i < NTracks; i++){
-        if (fJetShapeType == AliAnalysisTaskEmcalHfeTagging::kGenOnTheFly){
-            if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
-                if (!Track) continue;
-                if(TMath::Abs(Track->Eta())>0.9) continue;
-                Double_t dphi = RelativePhi(Track->Phi(),jet->Phi());
-                Double_t dr2 = (Track->Eta()-jet->Eta())*(Track->Eta()-jet->Eta()) + dphi*dphi;
-                Double_t dr = TMath::Sqrt(dr2);
-                if((dr>=0.8) && (dr<1)) sumpt=sumpt+Track->Pt();
-            }
-        }
-        else{
-            if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
-                if (!Track) continue;
-                if(TMath::Abs(Track->Eta())>0.9) continue;
-                if (Track->Pt()<0.15) continue;
-                Double_t dphi = RelativePhi(Track->Phi(),jet->Phi());
-                Double_t dr2 = (Track->Eta()-jet->Eta())*(Track->Eta()-jet->Eta()) + dphi*dphi;
-                Double_t dr = TMath::Sqrt(dr2);
-                if((dr>=0.8) && (dr<1)) sumpt=sumpt+Track->Pt();
-                
-            }
-        }
-    }
-    return sumpt;
-}
-
-//________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::GetJetCoronna(AliEmcalJet *jet, Int_t jetContNb = 0){
-    
-    if((fJetShapeSub==kDerivSub) && (jetContNb==0)) return -2;
-    else
-        return Coronna(jet, jetContNb);
     
 }
 
@@ -2457,8 +2452,8 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetCoronna(AliEmcalJet *jet, Int_t je
 Float_t AliAnalysisTaskEmcalHfeTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0){
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
+    if (!jet->GetNumberOfTracks()) return 0;
+
     Double_t den=0.;
     Double_t num = 0.;
     AliVParticle *vp1 = 0x0;
@@ -2473,6 +2468,7 @@ Float_t AliAnalysisTaskEmcalHfeTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 
         num=num+vp1->Pt()*vp1->Pt();
         den=den+vp1->Pt();
     }
+
     return TMath::Sqrt(num)/den;
 }
 
@@ -2484,147 +2480,6 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetpTD(AliEmcalJet *jet, Int_t jetCon
         else return jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
         else
             return PTD(jet, jetContNb);
-    
-}
-
-//_____________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::Circularity(AliEmcalJet *jet, Int_t jetContNb = 0){
-    
-    AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
-    Double_t mxx    = 0.;
-    Double_t myy    = 0.;
-    Double_t mxy    = 0.;
-    int  nc     = 0;
-    Double_t sump2  = 0.;
-    Double_t pxjet=jet->Px();
-    Double_t pyjet=jet->Py();
-    Double_t pzjet=jet->Pz();
-    
-    
-    //2 general normalized vectors perpendicular to the jet
-    TVector3  ppJ1(pxjet, pyjet, pzjet);
-    TVector3  ppJ3(- pxjet* pzjet, - pyjet * pzjet, pxjet * pxjet + pyjet * pyjet);
-    ppJ3.SetMag(1.);
-    TVector3  ppJ2(-pyjet, pxjet, 0);
-    ppJ2.SetMag(1.);
-    AliVParticle *vp1 = 0x0;
-    for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
-        vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
-        
-        if (!vp1){
-            Printf("AliVParticle associated to constituent not found");
-            continue;
-        }
-        
-        TVector3 pp(vp1->Px(), vp1->Py(), vp1->Pz());
-        
-        //local frame
-        TVector3 pLong = pp.Dot(ppJ1) / ppJ1.Mag2() * ppJ1;
-        TVector3 pPerp = pp - pLong;
-        //projection onto the two perpendicular vectors defined above
-        
-        Float_t ppjX = pPerp.Dot(ppJ2);
-        Float_t ppjY = pPerp.Dot(ppJ3);
-        Float_t ppjT = TMath::Sqrt(ppjX * ppjX + ppjY * ppjY);
-        if(ppjT<=0) return 0;
-        
-        mxx += (ppjX * ppjX / ppjT);
-        myy += (ppjY * ppjY / ppjT);
-        mxy += (ppjX * ppjY / ppjT);
-        nc++;
-        sump2 += ppjT;}
-    
-    if(nc<2) return 0;
-    if(sump2==0) return 0;
-    // Sphericity Matrix
-    Double_t ele[4] = {mxx / sump2, mxy / sump2, mxy / sump2, myy / sump2};
-    TMatrixDSym m0(2,ele);
-    
-    // Find eigenvectors
-    TMatrixDSymEigen m(m0);
-    TVectorD eval(2);
-    TMatrixD evecm = m.GetEigenVectors();
-    eval  = m.GetEigenValues();
-    // Largest eigenvector
-    int jev = 0;
-    //  cout<<eval[0]<<" "<<eval[1]<<endl;
-    if (eval[0] < eval[1]) jev = 1;
-    TVectorD evec0(2);
-    // Principle axis
-    evec0 = TMatrixDColumn(evecm, jev);
-    Double_t compx=evec0[0];
-    Double_t compy=evec0[1];
-    TVector2 evec(compx, compy);
-    Double_t circ=0;
-    if(jev==1) circ=2*eval[0];
-    if(jev==0) circ=2*eval[1];
-    
-    return circ;
-    
-    
-    
-}
-
-//________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb =0 ){
-    //calc subtracted jet mass
-    
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedCircularity();
-        else return jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity();
-        else
-            return Circularity(jet, jetContNb);
-    
-}
-
-//________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::LeSub(AliEmcalJet *jet, Int_t jetContNb =0 ){
-    
-    AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
-    Double_t den=0.;
-    Double_t num = 0.;
-    AliVParticle *vp1 = 0x0;
-    AliVParticle *vp2 = 0x0;
-    std::vector<int> ordindex;
-    ordindex=jet->GetPtSortedTrackConstituentIndexes(jetCont->GetParticleContainer()->GetArray());
-    //Printf("Nbof const = %d", jet->GetNumberOfTracks());
-    //Printf("ordindex[0] = %d, ordindex[1] = %d", ordindex[0], ordindex[1]);
-    
-    if(ordindex.size()<2) return -1;
-    
-    vp1 = static_cast<AliVParticle*>(jet->TrackAt(ordindex[0], jetCont->GetParticleContainer()->GetArray()));
-    if (!vp1){
-        Printf("AliVParticle associated to Leading constituent not found");
-        return -1;
-    }
-    
-    vp2 = static_cast<AliVParticle*>(jet->TrackAt(ordindex[1], jetCont->GetParticleContainer()->GetArray()));
-    if (!vp2){
-        Printf("AliVParticle associated to Subleading constituent not found");
-        return -1;
-    }
-    
-    
-    num=vp1->Pt();
-    den=vp2->Pt();
-    //Printf("vp1->Pt() =%f, vp2->Pt() =%f", vp1->Pt(), vp2->Pt());
-    
-    return num-den;
-}
-
-//________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb =0) {
-    //calc subtracted jet mass
-    
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedLeSub();
-        else return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
-        else
-            return LeSub(jet, jetContNb);
     
 }
 
@@ -2640,19 +2495,19 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetNumberOfConstituents(AliEmcalJet *
     
 }
 
-
-//______________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::Sigma2(AliEmcalJet *jet, Int_t jetContNb=0){
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb=0){
+    // Give the bin with max value for minimum pT bin for semi-inclusive observables due to the 
+	// transverse mass rescaling of charged pions, i.e. min(pT pion)^2 = min(pT e)^2 + m_e^2 - m_pion^2
+	// Using m_e = 0.0005 GeV, m_pion = 0.13957 GeV and min(pT e) = [0.5, 1.0, 2.0, 3.0] GeV
+	
+	double minpTpion[5] = {0, 0.4802, 0.9902, 1.9951, 2.9968};	
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
-    if (!jet->GetNumberOfTracks())
-        return 0;
-    Double_t mxx    = 0.;
-    Double_t myy    = 0.;
-    Double_t mxy    = 0.;
-    int  nc     = 0;
-    Double_t sump2  = 0.;
-    
+    if (!jet->GetNumberOfTracks()) return -1;
+
+	// Get largest constituent pt
+	double largestpt = 0.;
     AliVParticle *vp1 = 0x0;
     for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
         vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
@@ -2662,56 +2517,18 @@ Float_t AliAnalysisTaskEmcalHfeTagging::Sigma2(AliEmcalJet *jet, Int_t jetContNb
             continue;
         }
         
-        Double_t ppt=vp1->Pt();
-        Double_t dphi = RelativePhi(vp1->Phi(),jet->Phi());
-        
-        Double_t deta = vp1->Eta()-jet->Eta();
-        mxx += ppt*ppt*deta*deta;
-        myy += ppt*ppt*dphi*dphi;
-        mxy -= ppt*ppt*deta*TMath::Abs(dphi);
-        nc++;
-        sump2 += ppt*ppt;
-        
+        if (vp1 -> Pt() > largestpt) largestpt = vp1 -> Pt();
     }
-    if(nc<2) return 0;
-    if(sump2==0) return 0;
-    // Sphericity Matrix
-    Double_t ele[4] = {mxx , mxy , mxy , myy };
-    TMatrixDSym m0(2,ele);
-    
-    // Find eigenvectors
-    TMatrixDSymEigen m(m0);
-    TVectorD eval(2);
-    TMatrixD evecm = m.GetEigenVectors();
-    eval  = m.GetEigenValues();
-    // Largest eigenvector
-    int jev = 0;
-    //  cout<<eval[0]<<" "<<eval[1]<<endl;
-    if (eval[0] < eval[1]) jev = 1;
-    TVectorD evec0(2);
-    // Principle axis
-    evec0 = TMatrixDColumn(evecm, jev);
-    Double_t compx=evec0[0];
-    Double_t compy=evec0[1];
-    TVector2 evec(compx, compy);
-    Double_t sig=0;
-    if(jev==1) sig=TMath::Sqrt(TMath::Abs(eval[0])/sump2);
-    if(jev==0) sig=TMath::Sqrt(TMath::Abs(eval[1])/sump2);
-    
-    return sig;
-    
-}
 
-//________________________________________________________________________
-Float_t AliAnalysisTaskEmcalHfeTagging::GetSigma2(AliEmcalJet *jet, Int_t jetContNb=0){
-    //calc subtracted jet mass
-    
-    if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-        if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedSigma2();
-        else return jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2();
-        else
-            return Sigma2(jet, jetContNb);
-    
+	// If there is a particle with pt > min pt[j], the jet should populate all the bins previous
+	// to j (inclusive) 
+	for (int j = 4; j > 0; j--) {
+    	if (largestpt > minpTpion[j]) {
+        	return j;
+        }
+	}
+	
+	return 0;
 }
 
 //________________________________________________________________________
@@ -2849,6 +2666,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::InclElecTrackCuts(const AliVVertex *pViet
     return kTRUE;
     
 }
+
 //_________________________________________
 Bool_t AliAnalysisTaskEmcalHfeTagging::PhotElecTrackCuts(const AliVVertex *pVaetx,AliAODTrack *aetrack,Int_t nMother, Double_t listMother[])
 {
@@ -2863,6 +2681,70 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::PhotElecTrackCuts(const AliVVertex *pVaet
     
     return kTRUE;
     
+}
+
+//_________________________________________
+Double_t AliAnalysisTaskEmcalHfeTagging::AngularDifference(AliVParticle* jet1, AliVParticle* jet2) {
+  Double_t phi1 = jet1 -> Phi(), eta1 = jet1 -> Eta();
+  Double_t phi2 = jet2 -> Phi(), eta2 = jet2 -> Eta();
+
+  Double_t deltaeta = eta1 - eta2, deltaphi = RelativePhi(phi1, phi2);
+
+  if (deltaphi > TMath::Pi()) deltaphi -= 2 * TMath::Pi();
+  if (deltaphi < -TMath::Pi()) deltaphi += 2 * TMath::Pi();
+
+  return TMath::Sqrt(deltaphi * deltaphi + deltaeta * deltaeta);
+}
+
+//_________________________________________
+AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer) {
+    AliEmcalJet* closestjet = nullptr;
+	AliEmcalJet* jet2 = nullptr;
+	// If distance is always higher than pi, return null;
+	Double_t distmin = TMath::Pi();
+
+	for (Int_t i = 0; i < othercontainer -> GetNJets(); i++) {
+		jet2 = othercontainer -> GetJet(i);
+		Double_t dist = AngularDifference(jet1, jet2);
+		/* cout << "dist: " << dist << endl; */
+
+		if (dist < distmin) {
+			distmin = dist;
+			closestjet = jet2;
+		}
+	}
+
+	return closestjet;
+}
+
+//_________________________________________
+Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched) {
+	// Similar to AliJetContainer::GetFractionSharedPt() but using any two jets instead of closest and geometric matching
+	// The angular distance threshold is set as 0.02 and 5% for pT matching
+	
+	if (!jet1 || !jetmatched) return -1;
+	
+	Double_t jetmatchedpt = jetmatched -> Pt(), sumpt = 0.;
+	if (jetmatchedpt < 0. || jet1 -> Pt() < 0) return -1;
+
+	AliVParticle* p1 = nullptr, *p2 = nullptr;
+	
+	for (Int_t ic2 = 0; ic2 < jetmatched -> GetNumberOfTracks(); ic2++) {
+		p2 = jetmatched -> Track(ic2);
+		if (!p2) continue;
+		
+		for (Int_t ic1 = 0; ic1 < jet1 -> GetNumberOfTracks(); ic1++) {
+			p1 = jet1 -> Track(ic1);
+			if (!p1) continue;
+
+			if (AngularDifference(p1, p2) < 0.02 && abs((p1 -> Pt() - p2 -> Pt()) / p2 -> Pt()) < 0.05) {
+				sumpt += p2 -> Pt();
+				break;
+			}
+		}
+	}
+
+	return sumpt / jetmatchedpt;
 }
 
 //_______________________________________________________________________
