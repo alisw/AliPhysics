@@ -66,8 +66,11 @@ void AliMultDepSpecOnTheFlyAnalysisTask::DefineDefaultAxes()
     // binning for improved RAA reference up to 100 GeV/c
     std::vector<double> highPtBins = {11., 12., 13., 14., 15., 16., 18., 20., 22., 24., 26., 30., 34., 40., 50., 60., 80., 100.};
     ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
+  } else if (fHighPtMode == 4) {
+    std::vector<double> highPtBins = {11.,  12.,  13.,  14.,  15., 16.,  17., 18.,  19.,  20.,  22.,  24.,  26.,  28.,  30.,  35., 40.,  45., 50.};
+    ptBins.insert(ptBins.end(), highPtBins.begin(), highPtBins.end());
   }
-
+  
   int nBinsMultTrue = fMaxMultTrue + 1;
   SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMultTrue - 0.5}, nBinsMultTrue);
   SetAxis(pt_true, "pt_true", "#it{p}_{T} (GeV/#it{c})", ptBins);
@@ -167,7 +170,7 @@ void AliMultDepSpecOnTheFlyAnalysisTask::LoopTrue(bool count)
     if (!fMCIsChargedPrimary) continue;
     
     if (count) {
-      ++fMultTrue;
+      if(fCountParticle) ++fMultTrue;
     } else {
       if (fMCAcceptEvent) {
         fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
@@ -186,7 +189,6 @@ template <typename Particle_t>
 bool AliMultDepSpecOnTheFlyAnalysisTask::InitParticle(int particleID)
 {
   Particle_t* particle = static_cast<Particle_t*>(fMCEvent->GetTrack(particleID));
-
   if (!particle) {
     AliFatal("Particle not found\n");
     return false;
@@ -203,9 +205,17 @@ bool AliMultDepSpecOnTheFlyAnalysisTask::InitParticle(int particleID)
 
   fMCPt = particle->Pt();
   fMCEta = particle->Eta();
-
-  if ((fMCPt <= fMinPt + PRECISION) || (fMCPt >= fMaxPt - PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
+  
+  if ((fMCPt <= fMinPt + PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
     return false;
+  }
+
+  fCountParticle = true;
+  if(fMCPt >= fMaxPt - PRECISION) {
+    if(!fFillPtBeyondMultDef){
+      return false;
+    }
+    fCountParticle = false;
   }
   return true;
 }
@@ -292,7 +302,7 @@ bool AliMultDepSpecOnTheFlyAnalysisTask::SetupTask(string dataSet, TString optio
       fMaxMultTrue = 3200;
     }
   }
-
+  
   // kinematic cuts:
   SetEtaRange(-0.8, 0.8);
   SetPtRange(0.15, 10.0);
@@ -308,6 +318,10 @@ bool AliMultDepSpecOnTheFlyAnalysisTask::SetupTask(string dataSet, TString optio
   if (options.Contains("highPtMode::100")) {
     fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
+  }
+  if (options.Contains("fillPtBeyondMultDef")) {
+    fFillPtBeyondMultDef = true;
+    fHighPtMode = 4;
   }
 
   return true;
