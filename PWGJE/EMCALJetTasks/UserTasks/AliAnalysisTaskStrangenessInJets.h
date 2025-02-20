@@ -30,6 +30,7 @@ class AliEventCuts;
 
 #include "AliAnalysisTaskEmcal.h"
 
+
 namespace fastjet {
   class PseudoJet;
 }
@@ -102,6 +103,7 @@ public:
   void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetLeadingV0(Bool_t b = 0) {bdLeadingV0 = b;}
+  void SetMaxDeltaR(Double_t r = 0.12) {fdMaxDeltaR = r;}
   
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
@@ -166,10 +168,11 @@ public:
   static const Int_t iALambdaId;
   static const Int_t iK0LId;
   static const Int_t iK0ALId;
-  static const Int_t iXiId;
-  static const Int_t iAXiId;
-  static const Int_t iXi0Id;
-  static const Int_t iAXi0Id;
+
+  static const Int_t iKGenId;
+  static const Int_t iLGenId;
+  static const Int_t iALGenId;
+
 
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent); //Fills histograms according to the V0 type 
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
@@ -182,7 +185,7 @@ public:
   TString GetCentBinLabel(Int_t index);
   Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
   Bool_t AssociateRecV0withMC( AliAODv0* v, AliEmcalJet *xjet, Bool_t bIsK, Bool_t bIsL, Bool_t bIsAL, Int_t iCent);
-  Bool_t GeneratedMCParticles( Int_t iCent );
+  Bool_t GeneratedMCParticles( Int_t iCent);
   Double_t MassPeakSigma(Double_t pt, Int_t particle);
   Double_t MassPeakMean(Double_t pt, Int_t particle);
   
@@ -193,6 +196,7 @@ protected:
   void AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart);  
   void AddEventTracksMC(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
+  Int_t GetuidMC(AliVTrack* trk, std::vector<Int_t>& ivecLb);
 
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListStdJets; //! Output list for jet analysis results
@@ -206,7 +210,7 @@ protected:
   Int_t           fNCand;                   //! number of selected V0 candidates already added to fCandidateArray
 
   TClonesArray          *fJets;                   //!<!jet collection
-  
+
   AliFJWrapper           fFastJetWrapper;         //!<!fastjet wrapper 
   //AliFJWrapper           fFastJetWrapperBG;       //!<!fastjet wrapper for the bg jets
   AliFJWrapper           fFastJetWrapperMCGen;    //!<!fastjet wrapper for the bg jets
@@ -284,6 +288,7 @@ private:
   Double_t fdJetTrackEtaMax;          ///< max jet constituent track eta
   Double_t fdMaxEtaJetBG;            ///< Maximum jet eta cut for the bacground estimation
   Double_t fdBgRadius;               ///< Background jet radius
+  Double_t fdMaxDeltaR;              ///< Maximum value of Delta R for the jet matching
 
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
   Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
@@ -378,6 +383,9 @@ private:
 
   // MC histograms
   TH1D* fh1MCStats; //! V0s in jets statistics
+
+  TH2D* fh2JetMatchDeltaRDistrib[fgkiNBinsCent]; //! pt distribution of all DeltaR od particle-detector jet pairs
+  TH1D* fh1JetPtSmearing[fgkiNBinsCent]; //! distribution of particle level jet pt - detector level jet pt
   // K0 inclusive
   TH1D* fh1V0K0sPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated K0s in event
   TH2D* fh2V0K0sPtMassMCRec[fgkiNBinsCent]; //! pt-mass spectrum of successfully reconstructed K0s in event
@@ -391,6 +399,9 @@ private:
   THnSparse* fh3V0K0sInJetEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of generated K0s in jet
   THnSparse* fh4V0K0sInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed K0s in jet
   THnSparse* fhnV0K0sInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
+
+  TH2D* fh2V0K0sInJetPtMCGenSepJet[fgkiNBinsCent]; //! pt spectrum of generated K0s in jet
+  THnSparse* fh3V0K0sInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //! eta-pt spectrum of generated K0s in jet  
   // resolution
   TH2D* fh2V0K0sMCResolMPt[fgkiNBinsCent]; //! K0s mass resolution vs pt
   TH2D* fh2V0K0sMCPtGenPtRec[fgkiNBinsCent]; //! K0s generated pt vs reconstructed pt
@@ -408,6 +419,9 @@ private:
   THnSparse* fh3V0LambdaInJetEtaPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh4V0LambdaInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
+
+  TH2D* fh2V0LambdaInJetPtMCGenSepJet[fgkiNBinsCent]; //!
+  THnSparse* fh3V0LambdaInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //!
   // resolution
   TH2D* fh2V0LambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0LambdaMCPtGenPtRec[fgkiNBinsCent]; //!
@@ -435,7 +449,9 @@ private:
   THnSparse* fh3V0ALambdaInJetEtaPtMCGen[fgkiNBinsCent]; //!
   THnSparse* fh4V0ALambdaInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! V0 in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_V0; pt_V0; pt_jet
-
+  
+  TH2D* fh2V0ALambdaInJetPtMCGenSepJet[fgkiNBinsCent]; //!
+  THnSparse* fh3V0ALambdaInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //!
   // resolution
   TH2D* fh2V0ALambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaMCPtGenPtRec[fgkiNBinsCent]; //!
@@ -472,7 +488,7 @@ private:
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 8) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 9) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
