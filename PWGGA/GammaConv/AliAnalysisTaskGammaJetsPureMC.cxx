@@ -105,6 +105,8 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(): AliAnalysisTas
   fEffiNeutral(nullptr),
   fEffiCharged(nullptr),
   fVecNonMeasureable({-1}),
+  fDoJetEnergyShift(false),
+  fJetEnergyShift(1.),
   fRand(0)
 {
 
@@ -159,6 +161,8 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(const char *name)
   fEffiNeutral(nullptr),
   fEffiCharged(nullptr),
   fVecNonMeasureable({-1}),
+  fDoJetEnergyShift(false),
+  fJetEnergyShift(1.),
   fRand(0)
 {
   // Define output slots here
@@ -173,7 +177,6 @@ AliAnalysisTaskGammaJetsPureMC::~AliAnalysisTaskGammaJetsPureMC()
 //________________________________________________________________________
 void AliAnalysisTaskGammaJetsPureMC::UserCreateOutputObjects(){
 
-  
   // Create histograms
   if(fOutputContainer != nullptr){
     delete fOutputContainer;
@@ -584,7 +587,7 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
     fVecJets_DetNN = sel_jets(clust_seq_full.inclusive_jets());
 
     for(const auto & jet : fVecJets_DetNN){
-      fHistJetPtY_DetNN->Fill(jet.pt(), jet.eta());
+      fHistJetPtY_DetNN->Fill(jet.pt()*fJetEnergyShift, jet.eta());
       fHistJetEta_DetNN->Fill(jet.eta());
       fHistJetPhi_DetNN->Fill(jet.phi());
     }
@@ -593,7 +596,7 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
 
   // Response Matrices
   FillResponseMatrixAndEffi(fVecJets_Std, fVecJets_Det, fHistResponse_Std_Det, fHistUnMatched_Std_Det, fHistMultiMatched_Std_Det, fHistRecUnMatched_Std_Det);
-  FillResponseMatrixAndEffi(fVecJets_Std, fVecJets_DetNN, fHistResponse_Std_DetNN, fHistUnMatched_Std_DetNN, fHistMultiMatched_Std_DetNN, fHistRecUnMatched_Std_DetNN);
+  FillResponseMatrixAndEffi(fVecJets_Std, fVecJets_DetNN, fHistResponse_Std_DetNN, fHistUnMatched_Std_DetNN, fHistMultiMatched_Std_DetNN, fHistRecUnMatched_Std_DetNN, fJetEnergyShift);
 
 
 
@@ -672,7 +675,7 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
 }
 
 
-void AliAnalysisTaskGammaJetsPureMC::FillResponseMatrixAndEffi(std::vector<fastjet::PseudoJet> vecTrueJet, std::vector<fastjet::PseudoJet> vecRecJet, TH2F* hResp, TH1D* hUnMatched, TH1D* hMultiMatched, TH1D* hRecUnMatched){
+void AliAnalysisTaskGammaJetsPureMC::FillResponseMatrixAndEffi(std::vector<fastjet::PseudoJet> vecTrueJet, std::vector<fastjet::PseudoJet> vecRecJet, TH2F* hResp, TH1D* hUnMatched, TH1D* hMultiMatched, TH1D* hRecUnMatched, double energyShiftRec){
 
   
   std::vector<int> vecMatched;
@@ -694,9 +697,9 @@ void AliAnalysisTaskGammaJetsPureMC::FillResponseMatrixAndEffi(std::vector<fastj
       // std::cout << "maxR " << maxR << "  vecRecJet[irec].pt() " << vecRecJet[irec].pt() << "  vecTrueJet[index].pt() " << vecTrueJet[index].pt() << "  irec " << irec << "  index " << index << std::endl;
       
       vecMatched.push_back(index);
-      hResp->Fill(vecRecJet[irec].pt(), vecTrueJet[index].pt());
+      hResp->Fill(vecRecJet[irec].pt()*energyShiftRec, vecTrueJet[index].pt());
     } else {
-      hRecUnMatched->Fill(vecRecJet[irec].pt());
+      hRecUnMatched->Fill(vecRecJet[irec].pt()*energyShiftRec);
     }
   }
   for(size_t itrue = 0; itrue < vecTrueJet.size(); ++itrue){
