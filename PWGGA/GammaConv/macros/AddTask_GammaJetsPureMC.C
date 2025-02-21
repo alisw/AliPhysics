@@ -1,4 +1,4 @@
-void AddTask_GammaJetsPureMC(TString strEffiNeutral = "0.7", TString strEffiCharged = "0.8", TString strPDGNonMeas = "-1") {
+void AddTask_GammaJetsPureMC(TString strEffiNeutral = "0.7", TString strEffiCharged = "0.8", TString strPDGNonMeas = "-1", double energyshift = 1., TString nameTask = "GammaJetsPureMC") {
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,14 +17,15 @@ void AddTask_GammaJetsPureMC(TString strEffiNeutral = "0.7", TString strEffiChar
   //================================================
   //            find input container
   AliAnalysisTaskGammaJetsPureMC *task=NULL;
-  task= new AliAnalysisTaskGammaJetsPureMC("GammaJetsPureMC");
+  task= new AliAnalysisTaskGammaJetsPureMC(nameTask);
 
   task->SetEfficiency(strEffiNeutral, strEffiCharged);
   if(!strPDGNonMeas.EqualTo("")) task->SetParticlesNonMeas(strPDGNonMeas);
+  if(energyshift != 1.) task->SetJetEnergyShift(energyshift);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaJetsPureMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaJetsPureMC",AliAnalysisManager::GetCommonFileName()));
+    mgr->CreateContainer(nameTask, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",AliAnalysisManager::GetCommonFileName(), nameTask.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
