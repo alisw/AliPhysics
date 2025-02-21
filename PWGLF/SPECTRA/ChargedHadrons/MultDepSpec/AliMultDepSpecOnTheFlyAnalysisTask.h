@@ -70,7 +70,8 @@ protected:
   double fMinPt{0.15};   ///< minimum pT cut
   double fMaxPt{10.0};   ///< maximum pT cut
   int fMaxMultTrue{100}; ///< maximum true multiplicity
-
+  bool fFillPtBeyondMultDef{false};  ///< fill histograms with pts beyond max pt (special case)
+  
   std::map<unsigned int, Axis> fAxes{}; //!<! axis definitions used in the histograms
 
   Hist<TH2D> fHist_multPtSpec_prim_gen{}; //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
@@ -90,6 +91,8 @@ protected:
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
   bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 
+  bool fCountParticle{}; //!<! count this particle?
+  
   /// \cond CLASSIMP
   ClassDef(AliMultDepSpecOnTheFlyAnalysisTask, 1);
   /// \endcond
