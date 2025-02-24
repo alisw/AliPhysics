@@ -76,11 +76,12 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     void SetEfficiency(TString strNeutral = "0.7", TString strCharged = "0.8");
     void SetParticlesNonMeas(TString strPart);
     bool IsNonMeasureable(int pdgCode, int charge) const;
+    void SetJetEnergyShift(double shift) { fDoJetEnergyShift = true; fJetEnergyShift = shift; }
     
 
   protected:
     bool AcceptParticle(AliVParticle* particle);
-    void FillResponseMatrixAndEffi(std::vector<fastjet::PseudoJet> vecTrueJet, std::vector<fastjet::PseudoJet> vecRecJet, TH2F* hResp, TH1D* hUnMatched, TH1D* hMultiMatched, TH1D* hRecUnMatched );
+    void FillResponseMatrixAndEffi(std::vector<fastjet::PseudoJet> vecTrueJet, std::vector<fastjet::PseudoJet> vecRecJet, TH2F* hResp, TH1D* hUnMatched, TH1D* hMultiMatched, TH1D* hRecUnMatched, double energyShiftRec = 1. );
     int GetParticleIndex(const int pdgcode, const int motherpdg) const;
 
     TList*                fOutputContainer;           //! Output container
@@ -144,6 +145,9 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     TF1* fEffiCharged;                                      // efficiency function for charged particles
     std::vector<int> fVecNonMeasureable;                    // vector holding the non-measureable particles
 
+    bool fDoJetEnergyShift;                                 // Boolean for shift jet energy for response studies
+    double fJetEnergyShift;                                 // Shift jet energy for response studies
+
     TRandom3 fRand;
      
 
@@ -151,7 +155,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaJetsPureMC(const AliAnalysisTaskGammaJetsPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaJetsPureMC &operator=(const AliAnalysisTaskGammaJetsPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaJetsPureMC, 2);
+    ClassDef(AliAnalysisTaskGammaJetsPureMC, 3);
 };
 
 #endif
