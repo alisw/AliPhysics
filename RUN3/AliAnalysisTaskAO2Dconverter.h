@@ -103,6 +103,8 @@ public:
   void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
   void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
+  void SetSaveEventBitsInAODConversion(Bool_t saveEventBitsInAODConversion = kTRUE) {fSaveEventBitsInAODConversion = saveEventBitsInAODConversion;};
+  void SetSaveHybridTracksInAODConversion(Bool_t saveHybridTracksInAODConversion = kTRUE) {fSaveHybridTracksInAODConversion = saveHybridTracksInAODConversion;};
 
   void SetDisableEMCAL(bool flag = true) { fDisableEMCAL = flag; }
 
@@ -271,6 +273,8 @@ public:
 private:
   Bool_t fUseEventCuts = kFALSE;         // Use or not event cuts
   Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
+  Bool_t fSaveEventBitsInAODConversion = kFALSE;
+  Bool_t fSaveHybridTracksInAODConversion = kFALSE;
   Bool_t fReadTR = false;
   Int_t fCollSystem;            // 0 - pp, 1 - PbPb, 2 pPb, 29 UPC
   AliEventCuts fEventCuts;      // Standard event cuts
