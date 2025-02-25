@@ -106,12 +106,16 @@ fIsNew{kFALSE},
     fOutputList{0},
     fTriggerDist{0},
     fAssociatedHDist{0},
+    fDphiHHCont{0},
+    fDphiHHContEff{0},
     fDphiHElec{0},
+    fDphiHElecTriggered{0},
     fDphiHUSElec{0},
     fDphiHLSElec{0},
 fDphiHUSElecEff{0},
 fDphiHLSElecEff{0},
     fDphiHElecEff{0},
+    fDphiHElecTriggeredEff{0},
     fDphiHH{0},
     fDphiHHEff{0},
     fDphiHElecMixed{0},
@@ -141,8 +145,21 @@ fmultPercentileCuts{0},
     fNSigma{0},
     fNSigmaCuts{0},
 f2DPPtHist{0},
+fNSigmaAssoNoCuts{0},
+fNSigmaAssoNoCuts_woTOFwSPDKAny{0},
+fNSigmaAssoNoCuts_woTOFwSPDKBoth{0},
+fNSigmaAssoNoCuts_wTOFwSPDKAny{0},
+fNSigmaAssoNoCuts_wTOFwSPDKBoth{0},
 fNSigmaAssoCuts{0},
+fNSigmaAssoCuts_woTOFwSPDKAny{0},
+fNSigmaAssoCuts_woTOFwSPDKBoth{0},
+fNSigmaAssoCuts_wTOFwSPDKAny{0},
+fNSigmaAssoCuts_wTOFwSPDKBoth{0},
 fNSigmaAssoCutsPt{0},
+fNSigmaAssoCutsPt_woTOFwSPDKAny{0},
+fNSigmaAssoCutsPt_woTOFwSPDKBoth{0},
+fNSigmaAssoCutsPt_wTOFwSPDKAny{0},
+fNSigmaAssoCutsPt_wTOFwSPDKBoth{0},
 f2DHEpTDist{0},
 f2DHHpTDist{0},
 fAllHadronsPt{0},
@@ -172,8 +189,10 @@ fAssocTrkBitElec{0},
 fAssocTrkBitH{0},
 fPartnerTrkBit{0},
 fTrigTrkBit{0},
+fUseSPDKAny{0},
 fUseSPDKBoth{0},
-fRunOnMC{0}
+fRunOnMC{0},
+fUseTOFCut{0}
 {
     // DO NOT TOUCH
     MULT_LOW = 0;
@@ -217,12 +236,16 @@ fIsNew{kFALSE},
     fOutputList{0},
     fTriggerDist{0},
     fAssociatedHDist{0},
+    fDphiHHCont{0},
+    fDphiHHContEff{0},
     fDphiHElec{0},
+    fDphiHElecTriggered{0},
     fDphiHUSElec{0},
     fDphiHLSElec{0},
 fDphiHUSElecEff{0},
 fDphiHLSElecEff{0},
     fDphiHElecEff{0},
+    fDphiHElecTriggeredEff{0},
     fDphiHH{0},
     fDphiHHEff{0},
     fDphiHElecMixed{0},
@@ -252,8 +275,21 @@ fmultPercentileCuts{0},
     fNSigma{0},
     fNSigmaCuts{0},
 f2DPPtHist{0},
+fNSigmaAssoNoCuts{0},
+fNSigmaAssoNoCuts_woTOFwSPDKAny{0},
+fNSigmaAssoNoCuts_woTOFwSPDKBoth{0},
+fNSigmaAssoNoCuts_wTOFwSPDKAny{0},
+fNSigmaAssoNoCuts_wTOFwSPDKBoth{0},
 fNSigmaAssoCuts{0},
+fNSigmaAssoCuts_woTOFwSPDKAny{0},
+fNSigmaAssoCuts_woTOFwSPDKBoth{0},
+fNSigmaAssoCuts_wTOFwSPDKAny{0},
+fNSigmaAssoCuts_wTOFwSPDKBoth{0},
 fNSigmaAssoCutsPt{0},
+fNSigmaAssoCutsPt_woTOFwSPDKAny{0},
+fNSigmaAssoCutsPt_woTOFwSPDKBoth{0},
+fNSigmaAssoCutsPt_wTOFwSPDKAny{0},
+fNSigmaAssoCutsPt_wTOFwSPDKBoth{0},
 f2DHEpTDist{0},
 f2DHHpTDist{0},
 fAllHadronsPt{0},
@@ -283,8 +319,10 @@ fAssocTrkBitElec{0},
 fAssocTrkBitH{0},
 fPartnerTrkBit{0},
 fTrigTrkBit{0},
+fUseSPDKAny{0},
 fUseSPDKBoth{0},
-fRunOnMC{0}
+fRunOnMC{0},
+fUseTOFCut{0}
 {
   // DO NOT TOUCH
     DefineInput(0, TChain::Class());
@@ -348,6 +386,10 @@ void AliAnalysisTaskHadronElectronAnalysis::SetTrigTrkBit(double trigTrkBit){
   fTrigTrkBit = trigTrkBit;
 }
 
+void AliAnalysisTaskHadronElectronAnalysis::SetUseSPDKAny(bool useSPDKAny){
+    fUseSPDKAny = useSPDKAny;
+}
+
 void AliAnalysisTaskHadronElectronAnalysis::SetUseSPDKBoth(bool useSPDKBoth){
   fUseSPDKBoth = useSPDKBoth;
 }
@@ -355,6 +397,11 @@ void AliAnalysisTaskHadronElectronAnalysis::SetUseSPDKBoth(bool useSPDKBoth){
 void AliAnalysisTaskHadronElectronAnalysis::SetRunOnMC(bool runOnMC){
   fRunOnMC = runOnMC;
 }
+
+void AliAnalysisTaskHadronElectronAnalysis::SetUseTOFCut(bool useTOFCut){
+  fUseTOFCut = useTOFCut;
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskHadronElectronAnalysis::UserCreateOutputObjects()
 {
@@ -382,16 +429,16 @@ void AliAnalysisTaskHadronElectronAnalysis::UserCreateOutputObjects()
     double dist_mins[5] = {0, 0, -1, -10, 0};
     double dist_maxes[5] = {15, 6.28, 1, 10, 100};
 
-    fLooseDist = new THnSparseF("fLooseDist", "All Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fLooseDist = new THnSparseF("fLooseDist", "All Hadron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fLooseDist);
 
-    fTriggerDist = new THnSparseF("fTriggerDist", "Trigger Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fTriggerDist = new THnSparseF("fTriggerDist", "Trigger Hadron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fTriggerDist);
 
-    fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fAssociatedHDist = new THnSparseF("fAssociatedHDist", "Associated Hadron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fAssociatedHDist);
 
-    fElectronDist = new THnSparseF("fElectronDist", "Electron Distribution", 4, dist_bins, dist_mins, dist_maxes);
+    fElectronDist = new THnSparseF("fElectronDist", "Electron Distribution", 5, dist_bins, dist_mins, dist_maxes);
     fOutputList->Add(fElectronDist);
     
 //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Inv Mass, Zvtx, multiplicity percentile
@@ -400,52 +447,63 @@ void AliAnalysisTaskHadronElectronAnalysis::UserCreateOutputObjects()
     double hl_cor_mins[7] = {1.0, 1, -1.0*TMath::Pi()/2.0, -2.0, 1.06, -10, 0};
     double hl_cor_maxes[7] = {12.0, 10, 3.0*TMath::Pi()/2.0, 2.0, 1.16, 10, 100};
 
-    fDphiHElec = new THnSparseF("fDphiHElec", "Hadron-Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHHCont = new THnSparseF("fDphiHHCont", "Hadron-Hadron Contamination Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fOutputList->Add(fDphiHHCont);
+
+    fDphiHHContEff = new THnSparseF("fDphiHHContEff", "Efficiency Corrected Hadron-Hadron Contamination Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fOutputList->Add(fDphiHHContEff);
+
+    fDphiHElec = new THnSparseF("fDphiHElec", "Hadron-Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHElec);
 
-    fDphiHUSElec = new THnSparseF("fDphiHUSElec", "Hadron-US Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHElecTriggered = new THnSparseF("fDphiHElecTriggered", "Hadron-Electron Correlation Histogram With Triggered Event", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fOutputList->Add(fDphiHElecTriggered);
+
+    fDphiHUSElec = new THnSparseF("fDphiHUSElec", "Hadron-US Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHUSElec);
     
-    fDphiHLSElec = new THnSparseF("fDphiHLSElec", "Hadron-LS Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLSElec = new THnSparseF("fDphiHLSElec", "Hadron-LS Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLSElec);
     
-    fDphiHUSElecEff = new THnSparseF(" fDphiHUSElecEff", "Efficiency Corrected Hadron-ULS Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHUSElecEff = new THnSparseF(" fDphiHUSElecEff", "Efficiency Corrected Hadron-ULS Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add( fDphiHUSElecEff);
     
-    fDphiHLSElecEff = new THnSparseF("fDphiHLSElecEff", "Efficiency Corrected Hadron-LS Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLSElecEff = new THnSparseF("fDphiHLSElecEff", "Efficiency Corrected Hadron-LS Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLSElecEff);
     
-    fDphiHElecEff = new THnSparseF("fDphiHElecEff", "Efficiency-corrected Hadron-Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHElecEff = new THnSparseF("fDphiHElecEff", "Efficiency-corrected Hadron-Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHElecEff);
 
-    fDphiHElecMixed = new THnSparseF("fDphiHElecMixed", "Mixed Hadron-Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHElecTriggeredEff = new THnSparseF("fDphiHElecTriggeredEff", "Efficiency-corrected Hadron-Electron Correlation Histogram with Trigered Event", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fOutputList->Add(fDphiHElecTriggeredEff);
+
+    fDphiHElecMixed = new THnSparseF("fDphiHElecMixed", "Mixed Hadron-Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHElecMixed);
 
-    fDphiHULSElecMixed= new THnSparseF("fDphiHULSElecMixed", "Mixed Hadron-ULS Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHULSElecMixed= new THnSparseF("fDphiHULSElecMixed", "Mixed Hadron-ULS Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHULSElecMixed);
     
-    fDphiHLSElecMixed = new THnSparseF("fDphiHLSElecMixed", "Mixed Hadron-LS Electron Correlation Histogram", 6, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
+    fDphiHLSElecMixed = new THnSparseF("fDphiHLSElecMixed", "Mixed Hadron-LS Electron Correlation Histogram", 7, hl_cor_bins, hl_cor_mins, hl_cor_maxes);
     fOutputList->Add(fDphiHLSElecMixed);
-
 
     //Correlation axes are: Trigger Pt, Associated Pt, dPhi, dEta, Zvtx, mulitplicity percentile
     int hh_cor_bins[6] = {11, 9, 16, 20, 10, 100};
     double hh_cor_mins[6] = {1, 1, -1.0*TMath::Pi()/2.0, -2.0, -10, 0};
     double hh_cor_maxes[6] = {12, 10, 3.0*TMath::Pi()/2.0, 2.0, 10, 100};
 
-    fDphiHH = new THnSparseF("fDphiHH", "Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHH = new THnSparseF("fDphiHH", "Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiHH);
 
-    fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHEff = new THnSparseF("fDphiHHEff", "Efficiency corrected Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiHHEff);
 
-    fDphiTriggerTrigger = new THnSparseF("fDphiTriggerTrigger", "Trigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiTriggerTrigger = new THnSparseF("fDphiTriggerTrigger", "Trigger-Trigger Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiTriggerTrigger);
 
-    fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiHHMixed = new THnSparseF("fDphiHHMixed", "Mixed Hadron-Hadron Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiHHMixed);
 
-    fDphiTriggerTriggerMixed = new THnSparseF("fDphiTriggerTriggerMixed", "MixedTrigger-Trigger Correlation Histogram", 5, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
+    fDphiTriggerTriggerMixed = new THnSparseF("fDphiTriggerTriggerMixed", "MixedTrigger-Trigger Correlation Histogram", 6, hh_cor_bins, hh_cor_mins, hh_cor_maxes);
     fOutputList->Add(fDphiTriggerTriggerMixed);
 
 //Mixed Event Trigger and Associated vs pt
@@ -516,13 +574,52 @@ void AliAnalysisTaskHadronElectronAnalysis::UserCreateOutputObjects()
     
     f2DPPtHist= new TH2D("2DPPtHist", "2DPPtHist", 100, 0, 10, 100, 0, 10);
     fOutputList->Add(f2DPPtHist);
-    
+
+    fNSigmaAssoNoCuts= new TH2D("NSigmaAssoNoCuts", "NSigmaAssoNOCuts", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoNoCuts);
+
+    fNSigmaAssoNoCuts_woTOFwSPDKAny= new TH2D("NSigmaAssoNoCuts_woTOFwSPDKany", "NSigmaAssoNOCuts_woTOFwSPDKany", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoNoCuts_woTOFwSPDKAny);
+
+    fNSigmaAssoNoCuts_woTOFwSPDKBoth= new TH2D("NSigmaAssoNoCuts_woTOFwSPDKBoth", "NSigmaAssoNoCuts_woTOFwSPDKBoth", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoNoCuts_woTOFwSPDKBoth);
+
+    fNSigmaAssoNoCuts_wTOFwSPDKAny= new TH2D("NSigmaAssoNoCuts_wTOFwSPDKany", "NSigmaAssoNoCuts_wTOFwSPDKany", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoNoCuts_wTOFwSPDKAny);
+
+    fNSigmaAssoNoCuts_wTOFwSPDKBoth= new TH2D("NSigmaAssoNoCuts_wTOFwSPDKBoth", "NSigmaAssoNoCuts_wTOFwSPDKBoth", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoNoCuts_wTOFwSPDKBoth);
+
     fNSigmaAssoCuts= new TH2D("NSigmaAssoCuts", "NSigmaAssoCuts", 100, 0, 10, 1200, -15, 10);//change later to 2500 or something. 
     fOutputList->Add(fNSigmaAssoCuts);
+
+    fNSigmaAssoCuts_woTOFwSPDKAny= new TH2D("NSigmaAssoCuts_woTOFwSPDKAny", "NSigmaAssoCuts_woTOFwSPDKAny", 100, 0, 10, 1200, -15, 10);//change later to 2500 or something. 
+    fOutputList->Add(fNSigmaAssoCuts_woTOFwSPDKAny);
     
+     fNSigmaAssoCuts_woTOFwSPDKBoth= new TH2D("NSigmaAssoCuts_woTOFwSPDKBoth", "NSigmaAssoCuts_woTOFwSPDKBoth", 100, 0, 10, 1200, -15, 10);//change later to 2500 or something. 
+    fOutputList->Add(fNSigmaAssoCuts_woTOFwSPDKBoth);
+
+     fNSigmaAssoCuts_wTOFwSPDKAny= new TH2D("NSigmaAssoCuts_wTOFwSPDKAny", "NSigmaAssoCuts_wTOFwSPDKAny", 100, 0, 10, 1200, -15, 10);//change later to 2500 or something. 
+    fOutputList->Add(fNSigmaAssoCuts_wTOFwSPDKAny);
+ 
+    fNSigmaAssoCuts_wTOFwSPDKBoth= new TH2D("NSigmaAssoCuts_wTOFwSPDKBoth", "NSigmaAssoCuts_wTOFwSPDKBoth", 100, 0, 10, 1200, -15, 10);//change later to 2500 or something. 
+    fOutputList->Add(fNSigmaAssoCuts_wTOFwSPDKBoth);
+
     fNSigmaAssoCutsPt= new TH2D("NSigmaAssoCutsPt", "NSigmaAssoCutsPt", 100, 0, 10, 1200, -15, 10);
     fOutputList->Add(fNSigmaAssoCutsPt);
-    
+
+    fNSigmaAssoCutsPt_woTOFwSPDKAny= new TH2D("NSigmaAssoCutsPt_woTOFwSPDAny", "NSigmaAssoCutsPt_woTOFwSPDKAny", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoCutsPt_woTOFwSPDKAny);
+
+    fNSigmaAssoCutsPt_woTOFwSPDKBoth= new TH2D("NSigmaAssoCutsPt_woTOFwSPDKBoth", "NSigmaAssoCutsPt_woTOFwSPDKBoth", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoCutsPt_woTOFwSPDKBoth);
+
+    fNSigmaAssoCutsPt_wTOFwSPDKAny= new TH2D("NSigmaAssoCutsPt_wTOFwSPDKAny", "NSigmaAssoCutsPt_wTOFwSPDKAny", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoCutsPt_wTOFwSPDKAny);
+
+    fNSigmaAssoCutsPt_wTOFwSPDKBoth= new TH2D("NSigmaAssoCutsPt_wTOFwSPDKBoth", "NSigmaAssoCutsPt_wTOFwSPDKBoth", 100, 0, 10, 1200, -15, 10);
+    fOutputList->Add(fNSigmaAssoCutsPt_wTOFwSPDKBoth);
+
     f2DHEpTDist= new TH2D("f2DHEpTDist", "f2DHEpTDist", 10, 0, 10,10,0,10);
     fOutputList->Add(f2DHEpTDist);
     
@@ -678,11 +775,17 @@ void AliAnalysisTaskHadronElectronAnalysis::UserCreateOutputObjects()
     TNamed *trigTrkBit = new TNamed(Form("trigTrkBit = %f", fTrigTrkBit), Form("%f", fTrigTrkBit));
     fOutputList->Add(trigTrkBit);
 
+    TNamed *useSPDKAny = new TNamed(Form("useSPDKAny = %d", fUseSPDKAny),Form("%d", fUseSPDKAny));
+    fOutputList->Add(useSPDKAny);
+    
     TNamed *useSPDKBoth = new TNamed(Form("useSPDKBoth = %d", fUseSPDKBoth),Form("%d", fUseSPDKBoth));
     fOutputList->Add(useSPDKBoth);
 
     TNamed *runOnMC = new TNamed(Form("runOnMC = %d", fRunOnMC), Form("%d", fRunOnMC));
     fOutputList->Add(runOnMC);
+
+    TNamed *useTOFCut = new TNamed(Form("useTOFCut = %d", fUseTOFCut), Form("%d", fUseTOFCut));
+    fOutputList->Add(useTOFCut);
 
     PostData(1, fOutputList);
 
@@ -692,7 +795,7 @@ void AliAnalysisTaskHadronElectronAnalysis::UserCreateOutputObjects()
 void AliAnalysisTaskHadronElectronAnalysis::FillSingleParticleDist(std::vector<AliAODTrack*> particle_list, double zVtx, THnSparse* fDist, double multPercentile)
 {
 
-    double dist_points[5]; //Pt, Phi, Eta, zVtx
+    double dist_points[5]; //Pt, Phi, Eta, zVtx, multiplicity percentile
     for(int i = 0; i < (int)particle_list.size(); i++) {
         auto particle = particle_list[i];
         dist_points[0] = particle->Pt();
@@ -708,7 +811,7 @@ void AliAnalysisTaskHadronElectronAnalysis::FillSingleParticleDist(std::vector<A
 void AliAnalysisTaskHadronElectronAnalysis::FillSingleParticleDist(std::vector<AliAnalysisTaskHadronElectronAnalysis::AliMotherContainer> particle_list, double zVtx, THnSparse* fDist, double multPercentile)
 {
 
-    double dist_points[5]; //Pt, Phi, Eta, zVtx
+    double dist_points[5]; //Pt, Phi, Eta, zVtx, multiplicity percentile
     for(int i = 0; i < (int)particle_list.size(); i++) {
         auto particle = particle_list[i].particle;
         dist_points[0] = particle.Pt();
@@ -1076,7 +1179,113 @@ bool AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsHadrons(AliAODTrac
 }
 
 //_____________________________________________________________________________
-bool AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectrons(AliAODTrack *track){
+void AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectronsWoTOFWSPDKBoth(AliAODTrack *track, std::string analysisType){
+  Bool_t pass = kTRUE;
+if(fRunOnMC == kFALSE){//remove this cut when running on MC
+    pass = pass && (track->Pt() >= 2 && track->Pt() <= 4);
+    }
+    pass = pass && (TMath::Abs(track->Eta()) <= fEtaCut);
+    pass = pass && track->TestFilterMask(fAssocTrkBitElec);//
+   
+    double TPCNSigmaElec = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+ //SPDKBoth Cut
+ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return;
+ if (pass){
+  if(analysisType == "he"){
+   fNSigmaAssoNoCuts_woTOFwSPDKBoth->Fill(track->P(), TPCNSigmaElec);
+    pass = pass && (TPCNSigmaElec >= fTPCNSigmaElecMin && TPCNSigmaElec <= fTPCNSigmaElecMax);
+    if (pass){
+     fNSigmaAssoCuts_woTOFwSPDKBoth->Fill(track->P(),TPCNSigmaElec);
+     fNSigmaAssoCutsPt_woTOFwSPDKBoth->Fill(track->Pt(),TPCNSigmaElec);
+    }
+  }
+}
+}
+void AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectronsWoTOFWSPDKAny(AliAODTrack *track, std::string analysisType){
+    Bool_t pass = kTRUE;
+ if(fRunOnMC == kFALSE){//remove this cut when running on MC
+    pass = pass && (track->Pt() >= 2 && track->Pt() <= 4);
+    }
+    pass = pass && (TMath::Abs(track->Eta()) <= fEtaCut);
+    pass = pass && track->TestFilterMask(fAssocTrkBitElec);//
+  //std::cout << "Made it to line 1179" << std::endl;  
+    double TPCNSigmaElec = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+ //SPDKAny Cut
+  //std::cout << "Made it to line 1182" << std::endl; 
+ if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return;
+ // std::cout << "Made it to line 1184" << std::endl; 
+ if (pass){
+  if(analysisType == "he"){
+   fNSigmaAssoNoCuts_woTOFwSPDKAny->Fill(track->P(), TPCNSigmaElec);
+  //  std::cout << "Made it to line 1188" << std::endl; 
+    pass = pass && (TPCNSigmaElec >= fTPCNSigmaElecMin && TPCNSigmaElec <= fTPCNSigmaElecMax);
+    //    std::cout << "Made it to line 1190" << std::endl; 
+    if (pass){
+     // std::cout << "Made it to line 1192" << std::endl; 
+     fNSigmaAssoCuts_woTOFwSPDKAny->Fill(track->P(),TPCNSigmaElec);
+     //std::cout << "Made it to line 1194" << std::endl; 
+     fNSigmaAssoCutsPt_woTOFwSPDKAny->Fill(track->Pt(),TPCNSigmaElec);
+    // std::cout << "Made it to line 1196" << std::endl; 
+    }
+  }
+} 
+}
+void AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectronsWTOFWSPDKBoth(AliAODTrack *track, std::string analysisType){
+    Bool_t pass = kTRUE;
+if(fRunOnMC == kFALSE){//remove this cut when running on MC
+    pass = pass && (track->Pt() >= 2 && track->Pt() <= 4);
+    }
+    pass = pass && (TMath::Abs(track->Eta()) <= fEtaCut);
+    pass = pass && track->TestFilterMask(fAssocTrkBitElec);//
+   
+    double TPCNSigmaElec = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+ //TOF Cut
+    double TOFNSigmaElec = -999;
+     TOFNSigmaElec = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+     pass = pass && (TMath::Abs(TOFNSigmaElec) <= 3);
+     
+ //SPDKBoth Cut
+ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return;
+ if (pass){
+  if(analysisType == "he"){
+   fNSigmaAssoNoCuts_wTOFwSPDKBoth->Fill(track->P(), TPCNSigmaElec);
+    pass = pass && (TPCNSigmaElec >= fTPCNSigmaElecMin && TPCNSigmaElec <= fTPCNSigmaElecMax);
+    if (pass){
+     fNSigmaAssoNoCuts_wTOFwSPDKBoth->Fill(track->P(),TPCNSigmaElec);
+     fNSigmaAssoCutsPt_wTOFwSPDKBoth->Fill(track->Pt(),TPCNSigmaElec);
+    }
+  }
+}
+}
+void AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectronsWTOFWSPDKAny(AliAODTrack *track, std::string analysisType){
+    Bool_t pass = kTRUE;
+ if(fRunOnMC == kFALSE){//remove this cut when running on MC
+    pass = pass && (track->Pt() >= 2 && track->Pt() <= 4);
+    }
+    pass = pass && (TMath::Abs(track->Eta()) <= fEtaCut);
+    pass = pass && track->TestFilterMask(fAssocTrkBitElec);//
+   
+    double TPCNSigmaElec = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+ //TOF Cut
+    double TOFNSigmaElec = -999;
+     TOFNSigmaElec = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+     pass = pass && (TMath::Abs(TOFNSigmaElec) <= 3);
+      
+ //SPDKAny Cut
+ if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return;
+ if (pass){
+  if(analysisType == "he"){
+   fNSigmaAssoNoCuts_wTOFwSPDKAny->Fill(track->P(), TPCNSigmaElec);
+    pass = pass && (TPCNSigmaElec >= fTPCNSigmaElecMin && TPCNSigmaElec <= fTPCNSigmaElecMax);
+    if (pass){
+     fNSigmaAssoCuts_wTOFwSPDKAny->Fill(track->P(),TPCNSigmaElec);
+     fNSigmaAssoCutsPt_wTOFwSPDKAny->Fill(track->Pt(),TPCNSigmaElec);
+    }
+  }
+} 
+}
+
+bool AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectrons(AliAODTrack *track, std::string analysisType){
 
     Bool_t pass = kTRUE;
     
@@ -1089,24 +1298,49 @@ bool AliAnalysisTaskHadronElectronAnalysis::PassAssociatedCutsElectrons(AliAODTr
     }
     pass = pass && (TMath::Abs(track->Eta()) <= fEtaCut);
     pass = pass && track->TestFilterMask(fAssocTrkBitElec);//
-   
+   //std::cout << "Made it to line 1258" << std::endl; 
     double TPCNSigmaElec = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
      //For Pions, +- half a sigma around the maximum
-      //pass = pass && (TPCNSigmaElec >= -5.5 &&TPCNSigmaElec >= -4.5);
-    
-    //For All Hadrons, -4 -> -10
- //  pass = pass && (TPCNSigmaElec <= -4 && TPCNSigmaElec >= -10);
-    
-  
-   pass = pass && (TPCNSigmaElec >= fTPCNSigmaElecMin && TPCNSigmaElec <= fTPCNSigmaElecMax);// cut for when running on electrons
-  
-   
-    
-    
-    //SPD Cut
+    //pass = pass && (TPCNSigmaElec >= -5.5 &&TPCNSigmaElec >= -4.5);
+  //std::cout << "Made it to line 1262" << std::endl; 
+        //SPD Cut
+    if(fUseSPDKAny == kTRUE){
+    if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return kFALSE;
+    }
+  // std::cout << "Made it to line 1267" << std::endl;  
     if(fUseSPDKBoth == kTRUE){
     if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return kFALSE; //standard to use &, unless you are using emcal.
     }
+     //  std::cout << "Made it to line 1271" << std::endl; 
+    //TOF Cut
+    double TOFNSigmaElec = -999;
+     TOFNSigmaElec = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+    if(fUseTOFCut == kTRUE){
+     pass = pass && (TMath::Abs(TOFNSigmaElec) <= 3);
+    }
+//std::cout << "Made it to line 1278" << std::endl; 
+    //For All Hadrons, -4 -> -10
+    if(analysisType == "hhShape"){
+     pass = pass && (TPCNSigmaElec <= -4 && TPCNSigmaElec >= -10);
+    }
+   // std::cout << "Made it to line 1283" << std::endl; 
+    //For electrons
+    if(analysisType == "he"){
+   
+     // std::cout << "The value of pass is " << pass << std::endl;
+     // std::cout << "The value of TPCNSigmaElec is " << TPCNSigmaElec << std::endl;
+
+    if (pass) fNSigmaAssoNoCuts->Fill(track->P(), TPCNSigmaElec);
+   // std::cout << "Made it to line 1288" << std::endl;  
+    pass = pass && (TPCNSigmaElec >= fTPCNSigmaElecMin && TPCNSigmaElec <= fTPCNSigmaElecMax);// cut for when running on electrons
+     //   std::cout << "Made it to line 1290" << std::endl; 
+    if (pass){
+     //W/ TOF cut and w/ SPDKBoth
+     fNSigmaAssoCuts->Fill(track->P(),TPCNSigmaElec);
+     fNSigmaAssoCutsPt->Fill(track->Pt(),TPCNSigmaElec);
+    }
+    }
+  //std::cout << "Made it to line 1297" << std::endl; 
 
     return pass;
 }
@@ -1798,6 +2032,8 @@ Bool_t  AliAnalysisTaskHadronElectronAnalysis::IsNonHFE(AliAODMCParticle *MCPart
 //_____________________________________________________________________________
 void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
 {
+
+ // std::cout << "Made it to the User Exec" << std::endl;
   
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD){
@@ -1835,6 +2071,7 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
 
        
     std::vector<AliAODTrack*> elec_list;
+    std::vector<AliAODTrack*> triggered_elec_list;
     std::vector<AliAODTrack*> trigger_list;
     std::vector<AliAODTrack*> associated_h_list;
     std::vector<AliAODTrack*> all_hadron_list;
@@ -1855,7 +2092,7 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
 
        fAllHadronsPt->Fill(track->Pt());
         
-       
+       bool isTriggeredEvent = false;
         
         //Filter for trigger particles
         if(PassTriggerCuts(track)) {
@@ -1867,7 +2104,9 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
             
             AliCFParticle *triggerPart = new AliCFParticle(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0);
             fMixedTrackObjArray->Add(triggerPart);
-        }//if we pass trigger cuts then add it to the list.
+
+            isTriggeredEvent = true;
+          }//if we pass trigger cuts then add it to the list.
 
         
         if(PassAssociatedCutsHadrons(track)) {
@@ -1883,13 +2122,13 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
             double time = track->GetTOFsignal() - fpidResponse->GetTOFResponse().GetStartTime(track->P());
             double length = track->GetIntegratedLength();
           //  double v = //length/time
-        double beta;
-        if(time>0){
-         beta = (length/time)/0.0299792;//v/(speed of light in cm/ps)
-        }
-        else{
+           double beta;
+           if(time>0){
+            beta = (length/time)/0.0299792;//v/(speed of light in cm/ps)
+           }
+           else{
             beta=-1;
-        }
+             }
             fBeta->Fill(track->P(),beta);
             
             double TPCNSigmaElec = -999;
@@ -1901,11 +2140,11 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
             
             fDedx->Fill(track->P(),track->GetTPCsignal());
             fBetaDedx->Fill(track->GetTPCsignal(),beta);
-        f2DPPtHist->Fill(track->P(),track->Pt());
+            f2DPPtHist->Fill(track->P(),track->Pt());
         
-        if( TMath::Abs(TOFNSigmaElec) <= 3) {
-        fNSigma->Fill(track->P(),TPCNSigmaElec);
-        }
+           if( TMath::Abs(TOFNSigmaElec) <= 3) {
+           fNSigma->Fill(track->P(),TPCNSigmaElec);
+             }
             
             if(PassTPCCuts(track)){
                 
@@ -1922,43 +2161,63 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
                 fDedxTOFCuts->Fill(track->P(),track->GetTOFsignal());
             }
           elec_list.push_back(track);
-      
+
+          if(isTriggeredEvent) triggered_elec_list.push_back(track);
+
     }//end track loop
 
     //Making list of possible electrons
     std::vector<AliAODTrack*> corrElec_list;
+    //Making list of possible electrons from triggered events
+    std::vector<AliAODTrack*> triggered_corrElec_list;
     //Making list of possible electrons with looser cuts
     std::vector<AliAODTrack*> partnerElec_list;
 
+
+    std::string analysisType[2] = {"he", "hhShape"};
+      for(int analysisTypeInt = 0; analysisTypeInt<2;analysisTypeInt++){
+
         for(int j = 0; j < (int) elec_list.size(); j++) {
        // find the electron for the Hadron Electron correlation
-
+            if(analysisType[analysisTypeInt]== "he"){
             fElecPtBeforeCuts->Fill(elec_list[j]->Pt());//still placing daughter cuts on it.
-            
-            if(PassAssociatedCutsElectrons(elec_list[j])){
-                
+            }
+              //std::cout << "Made it to the new methods, but not running yet" << std::endl;
+            //some methods purely to make the necessary histograms for nsigma comparisons
+            PassAssociatedCutsElectronsWoTOFWSPDKBoth(elec_list[j], analysisType[analysisTypeInt]);
+            //  std::cout << "Made it past WoTOFWSPDKBoth" << std::endl;
+            PassAssociatedCutsElectronsWoTOFWSPDKAny(elec_list[j], analysisType[analysisTypeInt]);
+          // std::cout << "Made it past WoTOFWSPDKAny" << std::endl;
+            PassAssociatedCutsElectronsWTOFWSPDKBoth(elec_list[j], analysisType[analysisTypeInt]);
+          //  std::cout << "Made it past WTOFWSPDKBoth" << std::endl;
+            PassAssociatedCutsElectronsWTOFWSPDKAny(elec_list[j], analysisType[analysisTypeInt]);
+          //  std::cout << "Made it past WTOFWSPDKAny" << std::endl;
+
+            if(PassAssociatedCutsElectrons(elec_list[j], analysisType[analysisTypeInt])){
+                //        std::cout << "Made it past PassAssociatedCutsElectrons" << std::endl;  
                 if(fRunOnMC==kFALSE && elec_list[j]->Pt() >= 2 && elec_list[j]->Pt() <= 4){
                corrElec_list.push_back(elec_list[j]);
                     
+                    if(analysisType[analysisTypeInt]== "he"){
                     //get phi distributions for associated elec
                      fAssElecPhiDist ->Fill(elec_list[j]->Phi());
+                    }
                 }
-               
+             // std::cout << "Made it to line 2159" << std::endl; 
                 if(fRunOnMC==kTRUE){//fill the list without the pt cuts if running over MC
                     corrElec_list.push_back(elec_list[j]);
                 }
-                
+                if(analysisType[analysisTypeInt]== "he"){
                 fElecPtAfterCuts->Fill(elec_list[j]->Pt());
-                
+               
                double TPCNSigmaElec = fpidResponse->NumberOfSigmasTPC(elec_list[j], AliPID::kElectron);
                 double TOFNSigmaElec = fpidResponse->NumberOfSigmasTOF(elec_list[j], AliPID::kElectron);
                  
                 
-                fNSigmaAssoCuts->Fill(elec_list[j]->P(),TPCNSigmaElec);
-                fNSigmaAssoCutsPt->Fill(elec_list[j]->Pt(),TPCNSigmaElec);
+                }
             }
         }
-    
+  if(analysisType[analysisTypeInt]== "he"){
     for(int j = 0; j < (int) elec_list.size(); j++) {
    // find the electron for the partner electron list
 
@@ -1967,10 +2226,29 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
         }
     }
     
+    for(int j = 0; j < (int) triggered_elec_list.size(); j++) {
+   // find the electron for only triggered events
+         if(PassAssociatedCutsElectrons(triggered_elec_list[j], analysisType[analysisTypeInt])){
+                
+           if(fRunOnMC==kFALSE && triggered_elec_list[j]->Pt() >= 2 && triggered_elec_list[j]->Pt() <= 4){
+               triggered_corrElec_list.push_back(triggered_elec_list[j]);
+                
+            }  
+          }
+
+    }
+// std::cout << "Made it to line 2193" << std::endl;
     
     //Find unlikesign and likesign
     std::vector<AliAODTrack*> USElec_list = GetUnlikeSignVector(corrElec_list,partnerElec_list);//unlikesign electron list
     std::vector<AliAODTrack*> LSElec_list = GetLikeSignVector(corrElec_list,partnerElec_list);//likesign electron list
+
+    if (corrElec_list.size() > 0) {
+     // std::cout << corrElec_list.size() << " is the size of corr elec\n";
+    }
+    // if (partnerElec_list.size() > 0) {
+    //   std::cout << partnerElec_list.size() << " is the size of part elec\n";
+    // }
     
     // Filling all of our single particle distribution histograms:
     FillSingleParticleDist(trigger_list, primZ, fTriggerDist, multPercentile);
@@ -1980,6 +2258,8 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
     // Filling all of our correlation histograms
     MakeSameHElecCorrelations(trigger_list, corrElec_list, fDphiHElec, primZ, multPercentile, false);
     MakeSameHElecCorrelations(trigger_list, corrElec_list, fDphiHElecEff, primZ, multPercentile, true);
+    MakeSameHElecCorrelations(trigger_list, triggered_corrElec_list, fDphiHElecTriggered, primZ, multPercentile, false);
+    MakeSameHElecCorrelations(trigger_list, triggered_corrElec_list, fDphiHElecTriggeredEff, primZ, multPercentile, true);
     MakeSameHElecCorrelations(trigger_list, USElec_list, fDphiHUSElec, primZ, multPercentile, false);
     MakeSameHElecCorrelations(trigger_list, LSElec_list, fDphiHLSElec, primZ, multPercentile, false);
     MakeSameHElecCorrelations(trigger_list, USElec_list, fDphiHUSElecEff, primZ, multPercentile, true);
@@ -1989,7 +2269,11 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHH, primZ, multPercentile, false);
     MakeSameHHCorrelations(trigger_list, associated_h_list, fDphiHHEff, primZ, multPercentile, true);
     MakeSameTriggerTriggerCorrelations(trigger_list, fDphiTriggerTrigger, multPercentile, primZ);
+  
 
+  
+
+       
   if(corrElec_list.size() > 0 || associated_h_list.size() > 0) {
     // std::cout << "Made it to mixed event section" << std::endl;
         AliEventPool *fCorPool = fCorPoolMgr->GetEventPool(multPercentile, primZ);
@@ -2012,6 +2296,13 @@ void AliAnalysisTaskHadronElectronAnalysis::UserExec(Option_t*)
             }
         }
     }
+      }//end if analysisType == "he"
+      if(analysisType[analysisTypeInt]== "hhShape"){
+      MakeSameHElecCorrelations(trigger_list, corrElec_list, fDphiHHCont, primZ, multPercentile, false);
+      MakeSameHElecCorrelations(trigger_list, corrElec_list, fDphiHHContEff, primZ, multPercentile, true);
+    }
+     }//end for loop for hadron contamination shape and h-e
+
 
    
 //trigger per event counter

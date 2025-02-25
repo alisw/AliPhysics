@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "AliAnalysisTaskHadronElectronAnalysis.h"
+
 AliAnalysisTaskHadronElectronAnalysis* AddHadronElectronAnalysisTask(
   TString INVESTIGATION_NAME,
   TString SUBMISSION_TIME,
@@ -15,8 +17,10 @@ AliAnalysisTaskHadronElectronAnalysis* AddHadronElectronAnalysisTask(
   float ASSOC_TRK_BIT_H=1024,
   float PARTNER_TRK_BIT = AliAODTrack::kTrkTPCOnly,
   float TRIG_TRK_BIT = AliAODTrack::kIsHybridGCG,
+  bool USE_SPD_KANY = false,
   bool USE_SPD_KBOTH = false,
-  bool RUN_ON_MC = false
+  bool RUN_ON_MC = false,
+  bool USE_TOF_CUT = false
 ) {
 
   AliAnalysisManager *manage = AliAnalysisManager::GetAnalysisManager();
@@ -27,7 +31,8 @@ AliAnalysisTaskHadronElectronAnalysis* AddHadronElectronAnalysisTask(
 
 
 
-  TString file_name = Form("%s_partner_electron_pt_cut_%f_tpc_nsigma_elec_min_%f_tpc_nsigma_elec_max_%f_assoc_trk_bit_elec_%f_time_%s.root", INVESTIGATION_NAME.Data(), PARTNER_ELECTRON_PT_CUT, TPC_NSIGMA_ELEC_MIN, TPC_NSIGMA_ELEC_MAX, ASSOC_TRK_BIT_ELEC, SUBMISSION_TIME.Data());
+  
+  TString file_name = AliAnalysisManager::GetCommonFileName();
   
   AliAnalysisTaskHadronElectronAnalysis* task = new AliAnalysisTaskHadronElectronAnalysis(name.Data());
 
@@ -46,8 +51,10 @@ AliAnalysisTaskHadronElectronAnalysis* AddHadronElectronAnalysisTask(
   task->SetAssocTrkBitH(ASSOC_TRK_BIT_H);
   task->SetPartnerTrkBit(PARTNER_TRK_BIT);
   task->SetTrigTrkBit(TRIG_TRK_BIT);
+  task->SetUseSPDKAny(USE_SPD_KANY);
   task->SetUseSPDKBoth(USE_SPD_KBOTH);
   task->SetRunOnMC(RUN_ON_MC);
+  task->SetUseTOFCut(USE_TOF_CUT);
 
   manage->AddTask(task);
 
