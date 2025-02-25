@@ -100,6 +100,7 @@ public:
     void SetcFactorHist(Bool_t t) { ifcFactorHist = t; }
     void SetAddEventCuts(Bool_t t) { fAddEventCuts = t; }
     void SetHighPtTrackCutEvent(Float_t t) { fHighPtTrackCutEvent = t; }
+    void SetAxisShift(Float_t t) { fDeltaAxisShift = t; }
 
     
     
@@ -121,21 +122,22 @@ protected:
     
     void FillEmbJetsEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, double pt, bool typeSame, std::string type, double bkgIndex1, double bkgIndex2, bool cfactor, std::string tag);
 
-    void FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, double jetpt, float pt,string typeSame, std::string type, double n, double bkgIndex1, double bkgIndex2,  double bkgIndex3, std::string tag);
+    void FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, double jetpt, double pt, std::string typeSame, std::string type, bool ifMatchedJet);
 
     std::vector<fastjet::PseudoJet> FindThermalConeEEC(AliEmcalJet *fJetEmb, std::string axisType, int index);
 
-     std::vector<fastjet::PseudoJet> FindThermalConeE3C(AliEmcalJet *fJetEmb, std::string axisType, int index);
+    std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindThermalConeE3C(AliEmcalJet *fJetEmb, int index1, int index2, int index3);
 
-    void FillBkgSubJetsData(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, bool typeSame, std::string type);
+    void FillBkgSubJetsDataEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, bool typeSame, std::string type);
+    void FillBkgSubJetsDataE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, double jetpt, std::string typeSame, std::string type);
 
-    std::vector<fastjet::PseudoJet> FindConesDataEEC(AliEmcalJet *fJet, double ptSub, AliJetContainer *fJetCont,std::string axisType);
-    std::vector<fastjet::PseudoJet> FindConesDataE3C(AliEmcalJet *fJet, double ptSub, AliJetContainer *fJetCont,std::string axisType);
+    std::vector<fastjet::PseudoJet> FindConesDataEEC(AliEmcalJet *fJet,std::string axisType);
+    std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindConesDataE3C(AliEmcalJet *fJet);
 
     bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
     void DoJetMatching();
     void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
-    void GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance);
+    void GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance, Float_t& JetEmbPtSub);
     Long64_t GetUniqueEventID(AliVEvent* inputEvent);
     Bool_t CheckHighPtTrackInEvent(AliVEvent* inputEvent);
 
@@ -145,7 +147,7 @@ protected:
     return TMath::Sqrt((eta1-eta2)*(eta1-eta2) + deltaPhi*deltaPhi);
     }
 
-    void FillMatchedTrackTree(AliEmcalJet* fJet_Hyb, AliEmcalJet* fJet_Tru);
+    void FillMatchedTrackTree(AliEmcalJet* fJet_Hyb, AliEmcalJet* fJet_Tru, float_t& JetEmbPtSub);
     void FillEmbHistograms(Long64_t EvCounter);
 
     double Calculate_pX(double pT, double eta, double phi);
@@ -218,25 +220,25 @@ protected:
     Bool_t fCout; ///<print cout statements 
     Bool_t fisGoodIncEvent; ///<check if event is good 
 
-    Double_t fJet_pt_det; ///< jet pt det 
-    Double_t fJet_pt_tru; ///< jet pt tru
-    Double_t fTrack_pt_det; ///< track pt det 
-    Double_t fTrack_pt_tru; ///< track pt tru
-    Double_t fTrack_eta_det; ///< track eta det 
-    Double_t fTrack_eta_tru; ///< track eta tru 
-    Double_t fTrack_phi_det; ///< track phi det 
-    Double_t fTrack_phi_tru; ///< track phi tru
-    Double_t fTrack_pt_miss; ///< miss track pt 
-    Double_t fTrack_pt_fake; ///< fake track pt 
-    Double_t fTrack_eta_miss; ///< miss track eta 
-    Double_t fTrack_eta_fake; ///< fake track eta  
-    Double_t fTrack_phi_miss; ///< miss track phi  
-    Double_t fTrack_phi_fake; ///< fake track phi
+    Float_t fJet_pt_det; ///< jet pt det 
+    Float_t fJet_pt_tru; ///< jet pt tru
+    Float_t fTrack_pt_det; ///< track pt det 
+    Float_t fTrack_pt_tru; ///< track pt tru
+    Float_t fTrack_eta_det; ///< track eta det 
+    Float_t fTrack_eta_tru; ///< track eta tru 
+    Float_t fTrack_phi_det; ///< track phi det 
+    Float_t fTrack_phi_tru; ///< track phi tru
+    Float_t fTrack_pt_miss; ///< miss track pt 
+    Float_t fTrack_pt_fake; ///< fake track pt 
+    Float_t fTrack_eta_miss; ///< miss track eta 
+    Float_t fTrack_eta_fake; ///< fake track eta  
+    Float_t fTrack_phi_miss; ///< miss track phi  
+    Float_t fTrack_phi_fake; ///< fake track phi
 
-    Double_t fJet_pt_dat; ///< jet pt dat
-    Double_t fTrack_pt_dat; ///< track pt dat
-    Double_t fTrack_eta_dat; ///< track eta dat
-    Double_t fTrack_phi_dat; ///< track phi dat
+    Float_t fJet_pt_dat; ///< jet pt dat
+    Float_t fTrack_pt_dat; ///< track pt dat
+    Float_t fTrack_eta_dat; ///< track eta dat
+    Float_t fTrack_phi_dat; ///< track phi dat
 
     //From jet extractor task
     Bool_t              fDoPartLevelMatching;
@@ -687,6 +689,169 @@ protected:
     TH1F* h_jetpt_um;//!<!Histograms unmatched jet pT
     TH2F* h_jetpt_m_tru;//!<!Histograms matched jet pT hyb vs true
 
+    TH3F* h3_MB1MB1MB1_dat;//!<!Histograms for B'B'B' data 3D
+    TH3F* h3_JJMB_dat;//!<!Histograms for JJB' data 3D
+    TH3F* h3_JMB1MB2_dat;//!<!Histograms for JB'B'' data 3D
+    TH3F* h3_JMBMB_dat;//!<!Histograms for JB'B' data 3D
+    TH3F* h3_MB1MB1MB2_dat;//!<!Histograms for B'B'B'' data 3D
+    TH3F* h3_MB1MB2MB2_dat;//!<!Histograms for B'B''B'' data 3D
+    TH3F* h3_MB1MB2MB3_dat;//!<!Histograms for B'B''B''' data 3D
+
+    TH3F* hJet_deltaR_MJ_e3c;//!<!Histograms for embedding 2D
+    TH3F* hJet_deltaR_MJ0_e3c;//!<!Histograms for embedding 2D all fake tracks
+    TH3F* hJet_deltaR_MJ1_e3c;//!<!Histograms for embedding 2D one real track
+    TH3F* hJet_deltaR_MJ2_e3c;//!<!Histograms for embedding 2D two real tracks
+    TH3F* hJet_deltaR_MJ3_e3c;//!<!Histograms for embedding 2D all real tracks
+    
+
+    TH3F* hJet_deltaR_MJ_e3c_m;//!<!Histograms for embedding 2D matchedjet
+    TH3F* hJet_deltaR_MJ0_e3c_m;//!<!Histograms for embedding 2D all fake tracks mj
+    TH3F* hJet_deltaR_MJ1_e3c_m;//!<!Histograms for embedding 2D one real tracks mj
+    TH3F* hJet_deltaR_MJ2_e3c_m;//!<!Histograms for embedding 2D two real tracks mj
+    TH3F* hJet_deltaR_MJ3_e3c_m;//!<!Histograms for embedding 2D all real tracks mj
+
+    TH3F* h_MB1MB1MB1_m;//!<!Histograms for embedding 2D mbmbmb mj
+    TH3F* h_JJMB_m;//!<!Histograms for embedding 2D jjmb mj
+    TH3F* h_JMBMB_m;//!<!Histograms for embedding 2D jmbmb mj
+    TH3F* h_MB1MB1MB2_m;//!<!Histograms for embedding 2D mb1mb1mb2 mj
+    TH3F* h_MB1MB2MB2_m;//!<!Histograms for embedding 2D mb1mb2mb2 mj
+    TH3F* h_JMB1MB2_m;//!<!Histograms for embedding 2D jmb1mb2 mj
+    TH3F* h_MB1MB2MB3_m;//!<!Histograms for embedding 2D mb1mb2mb3 mj
+    TH3F* h_BMBMB_m;//!<!Histograms for embedding 2D bmbmb mj
+    TH3F* h_SMBMB_m;//!<!Histograms for embedding 2D smbmb mj
+    TH3F* h_BMB1MB2_m;//!<!Histograms for embedding 2D bmb1mb2 mj
+    TH3F* h_SMB1MB2_m;//!<!Histograms for embedding 2D smb1mb2 mj
+    TH3F* h_BBMB_m;//!<!Histograms for embedding 2D bbmb mj
+    TH3F* h_SBMB_m;//!<!Histograms for embedding 2D sbmb mj
+    TH3F* h_SSMB_m;//!<!Histograms for embedding 2D ssmb mj
+
+    TH3F* hJet_deltaR_MJ_e3c_tru_m;//!<!Histograms for embedding 2D mbmbmb mj tru
+    TH3F* hJet_deltaR_MJ0_e3c_tru_m;//!<!Histograms for embedding 2D all fake tracks mj tru
+    TH3F* hJet_deltaR_MJ1_e3c_tru_m;//!<!Histograms for embedding 2D one true tracks mj tru
+    TH3F* hJet_deltaR_MJ2_e3c_tru_m;//!<!Histograms for embedding 2D two true tracks mj tru
+    TH3F* hJet_deltaR_MJ3_e3c_tru_m;//!<!Histograms for embedding 2D all true tracks mj tru
+
+    TH3F* h_MB1MB1MB1_tru_m;//!<!Histograms for embedding 2D mbmbmb mj tru
+    TH3F* h_JJMB_tru_m;//!<!Histograms for embedding 2D jjmb mj tru
+    TH3F* h_JMBMB_tru_m;//!<!Histograms for embedding 2D jmbmb mj tru
+    TH3F* h_MB1MB1MB2_tru_m;//!<!Histograms for embedding 2D mb1mb1mb2 mj tru
+    TH3F* h_MB1MB2MB2_tru_m;//!<!Histograms for embedding 2D mb1mb2mb2 mj tru
+    TH3F* h_JMB1MB2_tru_m;//!<!Histograms for embedding 2D jmb1mb2 mj tru
+    TH3F* h_MB1MB2MB3_tru_m;//!<!Histograms for embedding 2D mb1mb2mb3 mj tru
+    TH3F* h_BMBMB_tru_m;//!<!Histograms for embedding 2D bmbmb mj tru
+    TH3F* h_SMBMB_tru_m;//!<!Histograms for embedding 2D smbmb mj tru
+    TH3F* h_BMB1MB2_tru_m;//!<!Histograms for embedding 2D bmb1mb2 mj tru
+    TH3F* h_BBMB_tru_m;//!<!Histograms for embedding 2D bbmb mj tru
+    TH3F* h_SBMB_tru_m;//!<!Histograms for embedding 2D sbmb tru
+    TH3F* h_SSMB_tru_m;//!<!Histograms for embedding 2D ssmb tru
+    TH3F* h_SMB1MB2_tru_m;//!<!Histograms for embedding 2D smb1mb2 mj tru
+
+    TH3F* hJet_deltaR_MJ_e3c_um;//!<!Histograms for embedding 2D unmatched jet 
+    TH3F* hJet_deltaR_MJ0_e3c_um;//!<!Histograms for embedding 2D unmatchedjet all bkg
+    TH3F* hJet_deltaR_MJ1_e3c_um;//!<!Histograms for embedding 2D unmatchedjet 1 pythia
+    TH3F* hJet_deltaR_MJ2_e3c_um;//!<!Histograms for embedding 2D unmatchedjet 2 pythia
+    TH3F* hJet_deltaR_MJ3_e3c_um;//!<!Histograms for embedding 2D unmatchedjet 3 pythia
+
+    TH3F* h_MB1MB1MB1_um;//!<!Histograms for embedding 2D mbmbmb umj
+    TH3F* h_JJMB_um;//!<!Histograms for embedding 2D jjmb umj
+    TH3F* h_JMBMB_um;//!<!Histograms for embedding 2D jmbmb umj
+    TH3F* h_MB1MB1MB2_um;//!<!Histograms for embedding 2D mb1mb1mb2 umj
+    TH3F* h_MB1MB2MB2_um;//!<!Histograms for embedding 2D mb1mb2mb2 umj
+    TH3F* h_JMB1MB2_um;//!<!Histograms for embedding 2D jmb1mb2 umj
+    TH3F* h_MB1MB2MB3_um;//!<!Histograms for embedding 2D mb1mb2mb3 umj
+    TH3F* h_BMBMB_um;//!<!Histograms for embedding 2D bmbmb umj
+    TH3F* h_SMBMB_um;//!<!Histograms for embedding 2D smbmb umj
+    TH3F* h_BMB1MB2_um;//!<!Histograms for embedding 2D bmb1mb2 umj
+    TH3F* h_SMB1MB2_um;//!<!Histograms for embedding 2D smb1mb2 umj
+    TH3F* h_BBMB_um;//!<!Histograms for embedding 2D bbmb umj
+    TH3F* h_SBMB_um;//!<!Histograms for embedding 2D sbmb umj
+    TH3F* h_SSMB_um;//!<!Histograms for embedding 2D ssmb umj
+    
+
+    TH3F* h3Jet_deltaR_MJ_e3c;//!<!Histograms for embedding 3D
+    TH3F* h3Jet_deltaR_MJ0_e3c;//!<!Histograms for embedding 3D all fake tracks
+    TH3F* h3Jet_deltaR_MJ1_e3c;//!<!Histograms for embedding 3D one real track
+    TH3F* h3Jet_deltaR_MJ2_e3c;//!<!Histograms for embedding 3D two real tracks
+    TH3F* h3Jet_deltaR_MJ3_e3c;//!<!Histograms for embedding 3D all real tracks
+
+    TH3F* h3_MB1MB1MB1;//!<!Histograms for embedding 3D mbmbmb
+    TH3F* h3_JJMB;//!<!Histograms for embedding 3D jjmb
+    TH3F* h3_JMBMB;//!<!Histograms for embedding 3D jmbmb
+    TH3F* h3_MB1MB1MB2;//!<!Histograms for embedding 3D mb1mb1mb2
+    TH3F* h3_MB1MB2MB2;//!<!Histograms for embedding 3D mb1mb2mb2
+    TH3F* h3_JMB1MB2;//!<!Histograms for embedding 3D jmb1mb2
+    TH3F* h3_MB1MB2MB3;//!<!Histograms for embedding 3D mb1mb2mb3
+    TH3F* h3_BMBMB;//!<!Histograms for embedding 3D bmbmb
+    TH3F* h3_SMBMB;//!<!Histograms for embedding 3D smbmb
+    TH3F* h3_BMB1MB2;//!<!Histograms for embedding 3D bmb1mb2
+    TH3F* h3_SMB1MB2;//!<!Histograms for embedding 3D smb1mb2
+    TH3F* h3_BBMB;//!<!Histograms for embedding 3D bbmb
+    TH3F* h3_SBMB;//!<!Histograms for embedding 3D sbmb
+    TH3F* h3_SSMB;//!<!Histograms for embedding 3D ssmb
+
+    TH3F* h3Jet_deltaR_MJ_e3c_m;//!<!Histograms for embedding 3D matchedjet
+    TH3F* h3Jet_deltaR_MJ0_e3c_m;//!<!Histograms for embedding 3D all fake tracks mj
+    TH3F* h3Jet_deltaR_MJ1_e3c_m;//!<!Histograms for embedding 3D one real tracks mj
+    TH3F* h3Jet_deltaR_MJ2_e3c_m;//!<!Histograms for embedding 3D two real tracks mj
+    TH3F* h3Jet_deltaR_MJ3_e3c_m;//!<!Histograms for embedding 3D all real tracks mj
+
+    TH3F* h3_MB1MB1MB1_m;//!<!Histograms for embedding 3D mbmbmb mj
+    TH3F* h3_JJMB_m;//!<!Histograms for embedding 3D jjmb mj
+    TH3F* h3_JMBMB_m;//!<!Histograms for embedding 3D jmbmb mj
+    TH3F* h3_MB1MB1MB2_m;//!<!Histograms for embedding 3D mb1mb1mb2 mj
+    TH3F* h3_MB1MB2MB2_m;//!<!Histograms for embedding 3D mb1mb2mb2 mj
+    TH3F* h3_JMB1MB2_m;//!<!Histograms for embedding 3D jmb1mb2 mj
+    TH3F* h3_MB1MB2MB3_m;//!<!Histograms for embedding 3D mb1mb2mb3 mj
+    TH3F* h3_BMBMB_m;//!<!Histograms for embedding 3D bmbmb mj
+    TH3F* h3_SMBMB_m;//!<!Histograms for embedding 3D smbmb mj
+    TH3F* h3_BMB1MB2_m;//!<!Histograms for embedding 3D bmb1mb2 mj
+    TH3F* h3_SMB1MB2_m;//!<!Histograms for embedding 3D smb1mb2 mj
+    TH3F* h3_BBMB_m;//!<!Histograms for embedding 3D bbmb mj
+    TH3F* h3_SBMB_m;//!<!Histograms for embedding 3D sbmb mj
+    TH3F* h3_SSMB_m;//!<!Histograms for embedding 3D ssmb mj
+
+    TH3F* h3Jet_deltaR_MJ_e3c_tru_m;//!<!Histograms for embedding 3D mbmbmb mj tru
+    TH3F* h3Jet_deltaR_MJ0_e3c_tru_m;//!<!Histograms for embedding 3D all fake tracks mj tru
+    TH3F* h3Jet_deltaR_MJ1_e3c_tru_m;//!<!Histograms for embedding 3D one true tracks mj tru
+    TH3F* h3Jet_deltaR_MJ2_e3c_tru_m;//!<!Histograms for embedding 3D two true tracks mj tru
+    TH3F* h3Jet_deltaR_MJ3_e3c_tru_m;//!<!Histograms for embedding 3D all true tracks mj tru
+
+    TH3F* h3_MB1MB1MB1_tru_m;//!<!Histograms for embedding 3D mbmbmb mj tru
+    TH3F* h3_JJMB_tru_m;//!<!Histograms for embedding 3D jjmb mj tru
+    TH3F* h3_JMBMB_tru_m;//!<!Histograms for embedding 3D jmbmb mj tru
+    TH3F* h3_MB1MB1MB2_tru_m;//!<!Histograms for embedding 3D mb1mb1mb2 mj tru
+    TH3F* h3_MB1MB2MB2_tru_m;//!<!Histograms for embedding 3D mb1mb2mb2 mj tru
+    TH3F* h3_JMB1MB2_tru_m;//!<!Histograms for embedding 3D jmb1mb2 mj tru
+    TH3F* h3_MB1MB2MB3_tru_m;//!<!Histograms for embedding 3D mb1mb2mb3 mj tru
+    TH3F* h3_BMBMB_tru_m;//!<!Histograms for embedding 3D bmbmb mj tru
+    TH3F* h3_SMBMB_tru_m;//!<!Histograms for embedding 3D smbmb mj tru
+    TH3F* h3_BMB1MB2_tru_m;//!<!Histograms for embedding 3D bmb1mb2 mj tru
+    TH3F* h3_BBMB_tru_m;//!<!Histograms for embedding 3D bbmb mj tru
+    TH3F* h3_SBMB_tru_m;//!<!Histograms for embedding 3D sbmb tru
+    TH3F* h3_SSMB_tru_m;//!<!Histograms for embedding 3D ssmb tru
+    TH3F* h3_SMB1MB2_tru_m;//!<!Histograms for embedding 3D smb1mb2 mj tru
+
+    TH3F* h3Jet_deltaR_MJ_e3c_um;//!<!Histograms for embedding 3D unmatched jet 
+    TH3F* h3Jet_deltaR_MJ0_e3c_um;//!<!Histograms for embedding 3D unmatchedjet all bkg
+    TH3F* h3Jet_deltaR_MJ1_e3c_um;//!<!Histograms for embedding 3D unmatchedjet 1 pythia
+    TH3F* h3Jet_deltaR_MJ2_e3c_um;//!<!Histograms for embedding 3D unmatchedjet 2 pythia
+    TH3F* h3Jet_deltaR_MJ3_e3c_um;//!<!Histograms for embedding 3D unmatchedjet 3 pythia
+
+    TH3F* h3_MB1MB1MB1_um;//!<!Histograms for embedding 3D mbmbmb umj
+    TH3F* h3_JJMB_um;//!<!Histograms for embedding 3D jjmb umj
+    TH3F* h3_JMBMB_um;//!<!Histograms for embedding 3D jmbmb umj
+    TH3F* h3_MB1MB1MB2_um;//!<!Histograms for embedding 3D mb1mb1mb2 umj
+    TH3F* h3_MB1MB2MB2_um;//!<!Histograms for embedding 3D mb1mb2mb2 umj
+    TH3F* h3_JMB1MB2_um;//!<!Histograms for embedding 3D jmb1mb2 umj
+    TH3F* h3_MB1MB2MB3_um;//!<!Histograms for embedding 3D mb1mb2mb3 umj
+    TH3F* h3_BMBMB_um;//!<!Histograms for embedding 3D bmbmb umj
+    TH3F* h3_SMBMB_um;//!<!Histograms for embedding 3D smbmb umj
+    TH3F* h3_BMB1MB2_um;//!<!Histograms for embedding 3D bmb1mb2 umj
+    TH3F* h3_SMB1MB2_um;//!<!Histograms for embedding 3D smb1mb2 umj
+    TH3F* h3_BBMB_um;//!<!Histograms for embedding 3D bbmb umj
+    TH3F* h3_SBMB_um;//!<!Histograms for embedding 3D sbmb umj
+    TH3F* h3_SSMB_um;//!<!Histograms for embedding 3D ssmb umj
+
     TTree *fTreeMatchTracks; ///< Tree with matched tracks from MC
     TTree *fTreeData; ///< Tree with tracks from Data
 
@@ -700,6 +865,9 @@ protected:
     Bool_t ifcFactorHist;///< initialize c_factor_hist and fill c_factor_histograms
     Bool_t fAddEventCuts;///< ignore embedding events with tracks with pT greater than fHighPtTrackCutEvent
     Float_t fHighPtTrackCutEvent;///< ignore embedding events with tracks with pT greater than fHighPtTrackCutEvent
+    Float_t fDeltaAxisShift;///< shift cone axis in phi wrt jet 
+
+    TH1F* h_dpt;//!<!Histograms for checking delta_pt 
     
 private:
     AliAnalysisTaskJetsEECpbpb(
@@ -707,7 +875,7 @@ private:
     AliAnalysisTaskJetsEECpbpb &
     operator=(const AliAnalysisTaskJetsEECpbpb &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEECpbpb, 31) //change this to 32 if you add something new
+    ClassDef(AliAnalysisTaskJetsEECpbpb, 34) //change this to 35 if you add something new
 };
 #endif
 
