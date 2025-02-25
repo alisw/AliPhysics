@@ -1817,6 +1817,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   else {
     // // Get multiplicity selection
     // AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    // AliMultSelection *multSelection = (AliMultSelection*) fVEvent->FindListObject("MultSelection");
     // if (!multSelection)
     //   AliFatal("MultSelection not found in input event");
 
@@ -1831,6 +1832,56 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     // if( multSelection->GetThisEventPassesTrackletVsCluster() )
     //   SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
+
+    if( fAOD->GetPrimaryVertex()->GetNContributors()>0 )
+      SETBIT (run2bcinfo.fEventCuts, kNonZeroNContribs);
+
+    // if( multSelection->GetThisEventIsNotIncompleteDAQ() )
+    //   SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kPileUp))
+      SETBIT(run2bcinfo.fEventCuts, kPileUpMV);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
+      SETBIT(run2bcinfo.fEventCuts, kTPCPileUp);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kTimeRangeCut))
+      SETBIT(run2bcinfo.fEventCuts, kTimeRangeCut);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kEMCALEDCut))
+      SETBIT(run2bcinfo.fEventCuts, kEMCALEDCut);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
+      SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
+
+    if (fUseTriggerAnalysis) {
+      if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
+
+      if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
+
+      if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
+
+      if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+    }
   }
 
   FillTree(kRun2BCInfo);
@@ -2082,7 +2133,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   {
     Int_t ntrk = fVEvent->GetNumberOfTracks();
     Int_t ntofcls_filled = 0; // total number of TOF clusters filled per event
-
     for (Int_t itrk = 0; itrk < ntrk; itrk++)
     {
       AliESDtrack *track = nullptr;
