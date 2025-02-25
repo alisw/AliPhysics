@@ -1814,7 +1814,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
     }
   }
-  else {
+  else if (fAOD && fSaveEventBitsInAODConversion) {
     // // Get multiplicity selection
     // AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     // AliMultSelection *multSelection = (AliMultSelection*) fVEvent->FindListObject("MultSelection");
@@ -2144,24 +2144,15 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         AliVTrack * aodVTrack = fAOD->GetTrack(itrk);
         AliAODTrack * aodTrack = dynamic_cast<AliAODTrack *>(aodVTrack);
         if (!aodTrack) continue; // Should not happen
-        // Skip MUON tracks and constrained tracks
+        // Skip MUON tracks
         if (aodTrack->IsMuonTrack()) continue;
-        // if (aodTrack->IsTPCConstrained()) {
-        //   std::cout << "is a TPC constrained track" << std::endl;
-        //   continue;
-        // }
-        // if (aodTrack->IsGlobalConstrained()) {
-        //   std::cout << "is a global constrained track" << std::endl;
-        //   continue;
-        // }
-        // if (aodTrack->IsHybridGlobalConstrainedGlobal()) {
-        //   std::cout << "is a hybrid global constrained track" << std::endl;
-        //   continue;
-        // }
-        // if (aodTrack->IsHybridTPCConstrainedGlobal()) {
-        //   std::cout << "is a hybrid TPC constrained track" << std::endl;
-        //   continue;
-        // }
+        // Skip constrained tracks if relevant flag is off
+        if (!fSaveHybridTracksInAODConversion) {
+          if (aodTrack->IsTPCConstrained()) continue;
+          if (aodTrack->IsGlobalConstrained()) continue;
+          if (aodTrack->IsHybridGlobalConstrainedGlobal()) continue;
+          if (aodTrack->IsHybridTPCConstrainedGlobal()) continue;
+        }
 
         track = new AliESDtrack(aodVTrack);
         deleteTrack = kTRUE; // Since we use new, we have to delete at the end
