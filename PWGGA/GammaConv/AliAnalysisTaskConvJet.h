@@ -100,7 +100,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void SetDistToEMCSMEdge(const double tmp, const int mode) {fDistEMCSMEdge = tmp; fEMCSMEdgesMode = mode;}
   double GetDistToEMCSMEdge() const {return fDistEMCSMEdge;}
 
-  void setWeightEnergyJets(const char * formula);
+  void setWeightEnergyJets(const char * formula, const int mode = 1);
+  void SetNonMeasurablePart(TString str);
 
  protected:
   void ExecOnce();
@@ -109,6 +110,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   void DoJetLoop();
   std::tuple<double, int> GetLeadingPartPt(AliEmcalJet * jet, const bool isTrueJet = false);
+  bool IsNonMeasurable(const int pdg, const int charge);
 
   Double_t fNJets;                     // Number of reconstructed jets
   std::vector<Double_t> fVectorJetPt;  // Vector for the pt of the reconstructed jets
@@ -155,8 +157,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   int fEMCSMEdgesMode;          // Mode 1 = cut away the edges, Mode 2 = keep the edges
   double fDistEMCSMEdge;        // distance cut to SM Edges. If jet axis is near that, cut it away (or the other way around)
 
-  bool fApplyEnergyWeight;
+  int fApplyEnergyWeight;       // 1: Apply constant energy shift for all jets, 2: Apply energy shift depending on the fraction of non-measurable particles
   TF1* funcEnergyWeights;
+  std::vector<int> fVecNonMeasurable;
 
  private:
   bool IsJetAccepted(const AliEmcalJet *jet);
@@ -164,7 +167,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 20);
+  ClassDef(AliAnalysisTaskConvJet, 21);
   /// \endcond
 };
 #endif
