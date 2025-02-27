@@ -114,22 +114,22 @@ protected:
     double delR(const fastjet::PseudoJet& ps1, const fastjet::PseudoJet& ps2);
   
     Double_t GetDownscaleWeight(string tstring);
-    void ComputeENC(AliEmcalJet *fJet, double ptSub, AliJetContainer *fJetCont);
+    void ComputeENC(AliEmcalJet *fJet, float ptSub, AliJetContainer *fJetCont);
     
     void ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, Int_t km); //MC and det correlations
     
     // void ComputeJetTrackMatch(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, AliJetContainer *fJet_truCont, Int_t km);
     
-    void FillEmbJetsEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, double pt, bool typeSame, std::string type, double bkgIndex1, double bkgIndex2, bool cfactor, std::string tag);
+    void FillEmbJetsEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, float jetpt, float pt, bool typeSame, std::string type, double bkgIndex1, double bkgIndex2, bool cfactor, std::string tag);
 
-    void FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, double jetpt, double pt, std::string typeSame, std::string type, bool ifMatchedJet);
+    void FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, float jetpt, float pt, std::string typeSame, std::string type, bool ifMatchedJet);
 
     std::vector<fastjet::PseudoJet> FindThermalConeEEC(AliEmcalJet *fJetEmb, std::string axisType, int index);
 
     std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindThermalConeE3C(AliEmcalJet *fJetEmb, int index1, int index2, int index3);
 
-    void FillBkgSubJetsDataEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, bool typeSame, std::string type);
-    void FillBkgSubJetsDataE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, double jetpt, std::string typeSame, std::string type);
+    void FillBkgSubJetsDataEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, float jetpt, bool typeSame, std::string type);
+    void FillBkgSubJetsDataE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, float jetpt, std::string typeSame, std::string type);
 
     std::vector<fastjet::PseudoJet> FindConesDataEEC(AliEmcalJet *fJet,std::string axisType);
     std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindConesDataE3C(AliEmcalJet *fJet);
@@ -867,7 +867,7 @@ protected:
     Float_t fHighPtTrackCutEvent;///< ignore embedding events with tracks with pT greater than fHighPtTrackCutEvent
     Float_t fDeltaAxisShift;///< shift cone axis in phi wrt jet 
 
-    TH1F* h_dpt;//!<!Histograms for checking delta_pt 
+    TH2F* h_dpt;//!<!Histograms for checking delta_pt as a function of pt
     
 private:
     AliAnalysisTaskJetsEECpbpb(
