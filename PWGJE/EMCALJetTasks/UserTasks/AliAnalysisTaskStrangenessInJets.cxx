@@ -170,6 +170,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fdMaxEtaJetBG(0.7),
   fdBgRadius(0.4),
   fdMaxDeltaR(0.12),
+  fbCheckHybridDaughters(0),
   fdCutPtJetMin(0),
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
@@ -420,6 +421,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fdMaxEtaJetBG(0.7),
   fdBgRadius(0.4),
   fdMaxDeltaR(0.12),
+  fbCheckHybridDaughters(0),
   fdCutPtJetMin(0),
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
@@ -707,7 +709,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   };  
   
   //labels for the in jet statistics
-  const Int_t iNCategInJetStat = 12;
+  const Int_t iNCategInJetStat = 14;
   TString categInJetStats[iNCategInJetStat] = {
     "N Jets",                       //0
     "V0s in jets",                  //1
@@ -720,7 +722,9 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     "N jets before cuts(after bg sub)", //8
     "N jet after pt sel",           //9
     "N jet after area sel",         //10
-    "N jet after lead track pt sel" //11
+    "N jet after lead track pt sel", //11
+    "N V0 with hybrid daug", //12
+    "N total V0 before"   //13
    }; 
  
 
@@ -1435,6 +1439,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   Int_t iNV0CandLambda = 0; // counter of Lambda candidates at the end
   Int_t iNV0CandALambda = 0; // counter of Lambda candidates at the end
   Bool_t bPrintCuts = 0; // print out which cuts are applied
+
+  Int_t iNHybDaug = 0;
   // Other cuts
   Double_t dNSigmaMassMax = fdNSigmas; // [sigma m] N of multiple of sigma for in jet bg estimation (used only for mass peak method of signal extraction)
   //Double_t dDistPrimaryMax = 0.01; // [cm] max distance of production point to the primary vertex (criterion for choice of MC particles considered as primary)
@@ -1944,24 +1950,55 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       if(bIsInPeakK0s && bIsInPeakALambda)
         uid = iK0ALId + fNCand;
     }	
-    //printf("K0: %d, Lambda: %d, ALambda: %d \nPeakK0: %d, PeakL: %d: PeakAL: %d \n      uid:  %i    \n\n", bIsCandidateK0s,  bIsCandidateLambda, bIsCandidateALambda, bIsInPeakK0s, bIsInPeakLambda, bIsInPeakALambda, uid);
-    //if(bIsInPeakK0s && bIsCandidateK0s)
-    //  cout << "uid: " << uid << endl; 
 
-    if(bIsInPeakK0s || bIsInPeakLambda || bIsInPeakALambda){
-      if (uid > 0) { // to get rid of the situations when isinpeakcandidate is different from the iscandidate
-        new ((*fV0CandidateArray)[fNCand]) AliAODv0(*v0); // 
-        ivecV0CandIndex.push_back(uid);
-        //add the v0 vector to the fastjetwrapper
-        fFastJetWrapper.AddInputVector(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy, uid);
-        InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
-        //add higher daughter pt to the vector for the leadind track cut 
-        if(dPtDaughterPos > dPtDaughterNeg) dvecDaughterPt.push_back(dPtDaughterPos);
-        else dvecDaughterPt.push_back(dPtDaughterNeg);
+    if(fbCheckHybridDaughters) {
+      AliVTrack* track = 0; 
+      Int_t trackPosLabel = trackPos->GetID();
+      Int_t trackNegLabel = trackNeg->GetID();
+      Bool_t bDaugterIn = kFALSE;
+      for(auto trackIterator : fTracksCont->accepted_momentum()) {  // count V0 only if at least one daughter is hybrid
+	      track = trackIterator.second;    
+        Int_t iTrackLabel = track->GetID();
+        if ((iTrackLabel == trackPosLabel) || (iTrackLabel == trackNegLabel)) {
+          bDaugterIn = kTRUE;
+          break;
+        }  
+      } 
+      if(uid > 0 && (bIsInPeakK0s || bIsInPeakLambda || bIsInPeakALambda))
+        iNSelV0++;
+      if(!bDaugterIn)
+        continue;
+      if(bIsInPeakK0s || bIsInPeakLambda || bIsInPeakALambda){
+        if (uid > 0) { // to get rid of the situations when isinpeakcandidate is different from the iscandidate
+          new ((*fV0CandidateArray)[fNCand]) AliAODv0(*v0); // 
+          ivecV0CandIndex.push_back(uid);
+          //add the v0 vector to the fastjetwrapper
+          fFastJetWrapper.AddInputVector(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy, uid);
+          InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
+          //add higher daughter pt to the vector for the leadind track cut 
+          if(dPtDaughterPos > dPtDaughterNeg) dvecDaughterPt.push_back(dPtDaughterPos);
+          else dvecDaughterPt.push_back(dPtDaughterNeg);
+          fNCand++;   
+          iNHybDaug++;     
+        }   
+      }
+    }
+    else {
+      if(bIsInPeakK0s || bIsInPeakLambda || bIsInPeakALambda){
+        if (uid > 0) { // to get rid of the situations when isinpeakcandidate is different from the iscandidate
+          new ((*fV0CandidateArray)[fNCand]) AliAODv0(*v0); // 
+          ivecV0CandIndex.push_back(uid);
+          //add the v0 vector to the fastjetwrapper
+          fFastJetWrapper.AddInputVector(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy, uid);
+          InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
+          //add higher daughter pt to the vector for the leadind track cut 
+          if(dPtDaughterPos > dPtDaughterNeg) dvecDaughterPt.push_back(dPtDaughterPos);
+          else dvecDaughterPt.push_back(dPtDaughterNeg);
+          fNCand++;
+          iNSelV0++;
+        }   
+      }
 
-        fNCand++;
-        iNSelV0++;  
-      }  
     }
 
     //===== End of filling V0 spectra =====            
@@ -1969,7 +2006,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   //===== End of V0 loop =====
   //printf("fjw inputs before add track: %i \n", fFastJetWrapper.GetInputVectors().size());
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of V0 loop");
-  //printf("There are %i selected V0s in the event. \n", iNSelV0);   
+  fh1NV0sInJetStats->Fill(12, iNHybDaug);
+  fh1NV0sInJetStats->Fill(13, iNSelV0);
+  //printf("There are %i selected V0s in the event. With at least one hybrid daughter(added to fjw): %i V0s. \n", iNSelV0, iNHybDaug);   
   if(fV0CandidateArray->GetEntriesFast() > 0) {
     AddEventTracks(fV0CandidateArray, InputBgParticles);
   }
@@ -2619,14 +2658,15 @@ Bool_t AliAnalysisTaskStrangenessInJets::IsFromGoodGenerator(Int_t index)
 void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart)
 { 
   // Add event tracks to a collection that already contains the V0 candidates, excluding the daughters of the V0 candidates
-  TObjArray allDaughters(10);
-  allDaughters.SetOwner(kFALSE);
+  std::vector<int> daughterIDs;
+  //TObjArray allDaughters(10);
+  //allDaughters.SetOwner(kFALSE);
 
   TIter next(coll);
   AliAODv0* v0part = 0;
   while ((v0part = static_cast<AliAODv0*>(next()))) {
     AliDebug(2, Form("Found a V0 candidtate with pT = %.3f, eta = %.3f, phi = %.3f \n", v0part->Pt(), v0part->Eta(), v0part->Phi()));
-    if (v0part) AddDaughters(v0part, allDaughters);
+    if (v0part) AddDaughters(v0part, daughterIDs);
   }
 
   AliVTrack* track = 0;
@@ -2641,12 +2681,13 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, std::v
     Int_t nind = 0;
     numbtrack++; 
 	  track = trackIterator.second; 
+    Int_t trackID = track->GetID();
 
-    if (allDaughters.Remove(track) == 0) {
-      //adding track to the fastjet
+    // Check if track ID is in the list of daughter IDs
+    if (std::find(daughterIDs.begin(), daughterIDs.end(), trackID) == daughterIDs.end()) {
       if(fbMCAnalysis)
         nind = GetuidMC(track, ivecMLabels);
-
+      //adding track to the fastjet
       fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n + nind);
       VectorBgPart.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
       //InputBgParticles.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
@@ -2664,7 +2705,7 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, std::v
   //printf("There were %d tracks, %d were added to the fj and %d excluded. \n", numbtrack, nadded, nexcluded);
 }
 
-Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
+void AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, std::vector<int>& daughterIDs)
 {
   // Add all the dauthers of cand in an array. Follows all the decay cascades.
 
@@ -2682,24 +2723,20 @@ Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, T
     AliAODRecoDecay* cand2 = dynamic_cast<AliAODRecoDecay*>(track);
 
     if (cand2) {
-      //printf("cand2 true (call adddaughter for cand2(has its own daughter)), Daughter pT = %.3f --> \n", track->Pt());
-      pt += AddDaughters(cand2, daughters);
+      AddDaughters(cand2, daughterIDs);
     }
     else {
       if (!track->InheritsFrom("AliAODTrack")) {
         printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.\n");
         continue;
       }
-      //printf("cand2 false, will not have daughters, add to array, Daughter pT = %.3f\n", track->Pt());
       fh1DaughtersPt[0]->Fill(track->Pt());
-      daughters.AddLast(track);
-      pt += track->Pt();
+      daughterIDs.push_back(track->GetID()); // Store ID for matching
+      //if(track->GetID()<0) cout << track->GetID() << endl;
+      //daughters.AddLast(track);
       ntot++;
     }
   }
-  //printf("Total pt of the daughters = %.3f \n", pt);
-
-  return pt;
 }
 
 
