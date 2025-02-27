@@ -161,6 +161,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fdMaxEtaJetBG(0.7),
   fdBgRadius(0.4),
   fdMaxDeltaR(0.12),
+  fbCheckHybridDaughters(0),
   fdCutPtJetMin(0),
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
@@ -176,8 +177,8 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fh2EventCentTracks(0),
   fh2EventCentMult(0),
   fh1NCascadesInJetStats(0),
-  fh1NRndConeCent(0),
   fh1AreaExcluded(0),
+  fh1NRndConeCent(0),
   fh1MCStats(0)     
 {	
   for(Int_t i = 0; i < fgkiNCategCascade; i++) {
@@ -400,6 +401,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
   fdMaxEtaJetBG(0.7),
   fdBgRadius(0.4),
   fdMaxDeltaR(0.12),
+  fbCheckHybridDaughters(0),
   fdCutPtJetMin(0),
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
@@ -415,8 +417,8 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
   fh2EventCentTracks(0),
   fh2EventCentMult(0),
   fh1NCascadesInJetStats(0),
-  fh1NRndConeCent(0),
   fh1AreaExcluded(0),
+  fh1NRndConeCent(0),
   fh1MCStats(0)    
 {
   for(Int_t i = 0; i < fgkiNCategCascade; i++) {
@@ -676,7 +678,7 @@ void AliAnalysisTaskCascadesInJets::UserCreateOutputObjects()
   };
   
   //labels for the in jet statistics
-  const Int_t iNCategInJetStat = 11;
+  const Int_t iNCategInJetStat = 13;
   TString categInJetStats[iNCategInJetStat] = {
     "N Jets",                    //0
     "Cascades in jets",          //1
@@ -688,7 +690,9 @@ void AliAnalysisTaskCascadesInJets::UserCreateOutputObjects()
     "N jets before cuts(after bg sub)", //7
     "N jet after pt sel",           //8
     "N jet after area sel",         //9
-    "N jet after lead track pt sel" //10
+    "N jet after lead track pt sel", //10
+    "N Cascade with hybrid daug", //11
+    "N total Cascade before"   //12
    }; 
  
 
@@ -1382,6 +1386,9 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   Int_t iNCascadeCandOmegaMinus = 0; // counter of OmegaMinus candidates at the end
   Int_t iNCascadeCandOmegaPlus = 0; // counter of OmegaPlus candidates at the end
 
+  Int_t iNSelCascade = 0;  //Counter of all selected V0 candidates
+  Int_t iNHybDaug = 0;
+
   // Values of Cascade reconstruction cuts:   
   // Daughter tracks
   Double_t dDCACascadeBachToPrimVtxMin = fdCutDCACascadeBachToPrimVtxMin; // 0.04; // [cm] min DCA of bachelor track to the prim vtx
@@ -1395,11 +1402,11 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   Double_t dCPACascadeV0Min = fdCutCPACascadeV0Min;// 0.97; // min cosine of the pointing angle of the V0 in the cascade   
   Double_t dCascadeRadiusDecayMin =0.6; // [cm] min radial distance of the decay vertex of the cascade
   Double_t dCascadeV0RadiusDecayMin = 1.2; // [cm] min radial distance of the decay vertex of the V0 (from the cascade)  
-  Double_t dCascadeRapMax = 0.75;
-  Double_t dCascadeEtaMax = 0.75; // max |pseudorapidity| of Cascade
+  //Double_t dCascadeRapMax = 0.75;
+  //Double_t dCascadeEtaMax = 0.75; // max |pseudorapidity| of Cascade
   // Selection of active cuts
   Bool_t bCutEtaV0Daughter = 1; // V0 daughter pseudorapidity
-  Bool_t bCutEtaCascade = 1; // Cascade pseudorapidity
+  //Bool_t bCutEtaCascade = 1; // Cascade pseudorapidity
 
   Double_t dCTauXi = 4.917; // [cm] c tau of Xi
   Double_t dCTauOmega = 2.463 ; // [cm] c tau of Omega
@@ -1408,8 +1415,8 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   // Other cuts
   Double_t dNSigmaMassMax = fdNSigmas; // [sigma m] max difference between candidate mass and real particle mass (used only for mass peak method of signal extraction)
   // particle masses from PDG
-  Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-  Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+  //Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+  //Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
   Double_t dMassPDGXiMinus = TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass();       //Double_t dMassPDGXiPlus = TDatabasePDG::Instance()->GetParticle(kXiPlus)->Mass();  
   Double_t dMassPDGOmegaMinus = TDatabasePDG::Instance()->GetParticle(kOmegaMinus)->Mass(); //Double_t dMassPDGXOmegaPlus = TDatabasePDG::Instance()->GetParticle(kOmegaPlus)->Mass();  
 
@@ -1572,7 +1579,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Double_t dNSigmaNegPion   = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackNeg, AliPID::kPion)) : 0.);
     Double_t dNSigmaNegProton = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackNeg, AliPID::kProton)) : 0.);
     Double_t dNSigmaBachPion  = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackBach, AliPID::kProton)) : 0.);
-    Double_t dNSigmaBachKaon  = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackBach, AliPID::kKaon)) : 0.);
+    //Double_t dNSigmaBachKaon  = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackBach, AliPID::kKaon)) : 0.);
 
     AliAODVertex* prodVtxDaughterPos = (AliAODVertex*)(trackPos->GetProdVertex()); // production vertex of the positive daughter track
     Char_t cTypeVtxProdPos = prodVtxDaughterPos->GetType(); // type of the production vertex
@@ -1864,7 +1871,27 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
       iNCascadeCandOmegaPlus++;
     }  
 
-    if((bIsInPeakXi || bIsInPeakOmega) && uid > 0)  {  // to get rid of the situations when isinpeakcandidate is different from the iscandidate
+    
+    if(fbCheckHybridDaughters) {
+      AliVTrack* track = 0; 
+      Int_t trackPosLabel = trackPos->GetID();
+      Int_t trackNegLabel = trackNeg->GetID();
+      Int_t trackBachLabel = trackBach->GetID();
+
+      Bool_t bDaugterIn = kFALSE;
+      for(auto trackIterator : fTracksCont->accepted_momentum()) {  // count V0 only if at least one daughter is hybrid
+	      track = trackIterator.second;    
+        Int_t iTrackLabel = track->GetID();
+        if ((iTrackLabel == trackPosLabel) || (iTrackLabel == trackNegLabel) || (iTrackLabel == trackBachLabel)) {
+          bDaugterIn = kTRUE;
+          break;
+        }  
+      } 
+      if((bIsInPeakXi || bIsInPeakOmega) && uid > 0)
+        iNSelCascade++;
+      if(!bDaugterIn)
+        continue;
+      if((bIsInPeakXi || bIsInPeakOmega) && uid > 0)  {  // to get rid of the situations when isinpeakcandidate is different from the iscandidate
         new ((*fCascadeCandidateArray)[fNCand]) AliAODcascade(*Cascade); //  
         ivecCascadeCandIndex.push_back(uid);
         //add the v0 vector to the fastjetwrapper
@@ -1875,7 +1902,23 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
         else dvecDaughterPt.push_back(dPtDaughterNeg);
 
         fNCand++;
+        iNHybDaug++; 
+      }  
+    }
+    else {
+      if((bIsInPeakXi || bIsInPeakOmega) && uid > 0)  {  // to get rid of the situations when isinpeakcandidate is different from the iscandidate
+        new ((*fCascadeCandidateArray)[fNCand]) AliAODcascade(*Cascade); //  
+        ivecCascadeCandIndex.push_back(uid);
+        //add the v0 vector to the fastjetwrapper
+        fFastJetWrapper.AddInputVector(vecCascadeMomentum[0], vecCascadeMomentum[1], vecCascadeMomentum[2], dEnergy, uid);
+        InputBgParticles.push_back(fastjet::PseudoJet(vecCascadeMomentum[0], vecCascadeMomentum[1], vecCascadeMomentum[2], dEnergy));
+      
+        if(dPtDaughterPos > dPtDaughterNeg) dvecDaughterPt.push_back(dPtDaughterPos);
+        else dvecDaughterPt.push_back(dPtDaughterNeg);
 
+        fNCand++;
+        iNSelCascade++;
+      }
     }
     
 
@@ -1883,7 +1926,9 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   }
   //===== End of Cascade loop =====
     if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of Cascade loop");
-  
+  //cout << iNSelCascade << " Cascade candidates and " << iNHybDaug << " Cascades added" << endl;  
+  fh1NCascadesInJetStats->Fill(11, iNHybDaug);
+  fh1NCascadesInJetStats->Fill(12, iNSelCascade);
   fh1CascadeCandPerEvent->Fill(iNCascadeCandTot);
   fh1CascadeCandPerEventCentXiMinus[iCentIndex]->Fill(iNCascadeCandXiMinus);
   fh1CascadeCandPerEventCentXiPlus[iCentIndex]->Fill(iNCascadeCandXiPlus);
@@ -2514,14 +2559,15 @@ Bool_t AliAnalysisTaskCascadesInJets::IsFromGoodGenerator(Int_t index)
 void AliAnalysisTaskCascadesInJets::AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart)
 { 
   // Add event tracks to a collection that already contains the Cascade candidates, excluding the daughters of the Cascade candidates
-  TObjArray allDaughters(10);
-  allDaughters.SetOwner(kFALSE);
+  std::vector<int> daughterIDs;
+  //TObjArray allDaughters(10);
+  //allDaughters.SetOwner(kFALSE);
 
   TIter next(coll);
   AliAODcascade* cascadepart = 0;
   while ((cascadepart = static_cast<AliAODcascade*>(next()))) {
     AliDebug(2, Form("Found a Cascade candidtate with pT = %.3f, eta = %.3f, phi = %.3f \n", cascadepart->Pt(), cascadepart->Eta(), cascadepart->Phi()));
-    if (cascadepart) AddDaughters(cascadepart, allDaughters);
+    if (cascadepart) AddDaughters(cascadepart, daughterIDs);
   }
 
   AliVTrack* track = 0;
@@ -2530,15 +2576,17 @@ void AliAnalysisTaskCascadesInJets::AddEventTracks(TClonesArray* coll, std::vect
   Int_t nadded = 0;
   Int_t nexcluded = 0;
   std::vector<Int_t> ivecMLabels;
+ 
   for(auto trackIterator : fTracksCont->accepted_momentum() ) { 
     Int_t nind = 0;
     numbtrack++; 
 	  track = trackIterator.second; 
-    if (allDaughters.Remove(track) == 0) {
-      
+    Int_t trackID = track->GetID();
+
+    // Check if track ID is in the list of daughter IDs
+    if (std::find(daughterIDs.begin(), daughterIDs.end(), trackID) == daughterIDs.end()) {
       if(fbMCAnalysis)
         nind = GetuidMC(track, ivecMLabels);
-      
       //adding track to the fastjet
       fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n + nind);
       VectorBgPart.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
@@ -2548,14 +2596,14 @@ void AliAnalysisTaskCascadesInJets::AddEventTracks(TClonesArray* coll, std::vect
       AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", numbtrack, track->Pt(), track->Eta(), track->Phi()));
     }
     else {
-		nexcluded++;
-		AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", numbtrack, track->Pt(), track->Eta(), track->Phi()));
+		  nexcluded++;
+		  AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", numbtrack, track->Pt(), track->Eta(), track->Phi()));
     }
   } 
   //printf("There were %d tracks, %d were added to the fj and %d excluded. \n", numbtrack, nadded, nexcluded);
 }
 
-Double_t AliAnalysisTaskCascadesInJets::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
+void AliAnalysisTaskCascadesInJets::AddDaughters(AliAODRecoDecay* cand, std::vector<int>& daughterIDs)
 {
   // Add all the dauthers of cand in an array. Follows all the decay cascades.
 
@@ -2563,7 +2611,6 @@ Double_t AliAnalysisTaskCascadesInJets::AddDaughters(AliAODRecoDecay* cand, TObj
   //printf("AddDaughters: the number of daughters is %d \n", n);
 
   Int_t ntot = 0;
-  Double_t pt = 0;
   for (Int_t i = 0; i < n; i++) {
     AliVTrack* track = dynamic_cast<AliVTrack*>(cand->GetDaughter(i));
     if (!track) {
@@ -2573,24 +2620,21 @@ Double_t AliAnalysisTaskCascadesInJets::AddDaughters(AliAODRecoDecay* cand, TObj
     AliAODRecoDecay* cand2 = dynamic_cast<AliAODRecoDecay*>(track);
 
     if (cand2) {
-      //printf("cand2 true (call adddaughter for cand2(has its own daughter)), Daughter pT = %.3f --> \n", track->Pt());
-      pt += AddDaughters(cand2, daughters);
+      AddDaughters(cand2, daughterIDs);
     }
     else {
       if (!track->InheritsFrom("AliAODTrack")) {
         printf("Warning: One of the daughters is not of type 'AliAODTrack' nor 'AliAODRecoDecay'.\n");
         continue;
       }
-      //printf("cand2 false, will not have daughters, add to array, Daughter pT = %.3f\n", track->Pt());
-      daughters.AddLast(track);
-      pt += track->Pt();
+      daughterIDs.push_back(track->GetID()); // Store ID for matching
+      //if(track->GetID()<0) cout << track->GetID() << endl;
+      //daughters.AddLast(track);
       ntot++;
     }
   }
-  //printf("Total pt of the daughters = %.3f \n", pt);
-
-  return pt;
-}  
+  //cout << ntot << " N of added daughters" << endl;
+} 
 
 Int_t AliAnalysisTaskCascadesInJets::GetuidMC(AliVTrack* trk, std::vector<Int_t>& ivecLb)
 {
@@ -2734,8 +2778,8 @@ Bool_t AliAnalysisTaskCascadesInJets::AssociateRecCascadeWithMC( AliAODcascade* 
   dPrimVtxMCY = MCHeader->GetVtxY();
   dPrimVtxMCZ = MCHeader->GetVtxZ();
 
-  Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-  Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+  //Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+  //Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
   Double_t dMassPDGXi = TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass();       
   Double_t dMassPDGOmega = TDatabasePDG::Instance()->GetParticle(kOmegaMinus)->Mass(); 
 

@@ -104,6 +104,8 @@ public:
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetLeadingV0(Bool_t b = 0) {bdLeadingV0 = b;}
   void SetMaxDeltaR(Double_t r = 0.12) {fdMaxDeltaR = r;}
+
+  void SetCheckHybridDaughter(Bool_t b = 0) { fbCheckHybridDaughters = b;}
   
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
@@ -183,7 +185,7 @@ public:
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
-  Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+  void AddDaughters(AliAODRecoDecay* cand, std::vector<int>& daughterIDs);
   Bool_t AssociateRecV0withMC( AliAODv0* v, AliEmcalJet *xjet, Bool_t bIsK, Bool_t bIsL, Bool_t bIsAL, Int_t iCent);
   Bool_t GeneratedMCParticles( Int_t iCent);
   Double_t MassPeakSigma(Double_t pt, Int_t particle);
@@ -289,6 +291,8 @@ private:
   Double_t fdMaxEtaJetBG;            ///< Maximum jet eta cut for the bacground estimation
   Double_t fdBgRadius;               ///< Background jet radius
   Double_t fdMaxDeltaR;              ///< Maximum value of Delta R for the jet matching
+
+  Bool_t fbCheckHybridDaughters;     ///< Switch for adding only V0 with hybrod daughter to the jet finder
 
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
   Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
@@ -488,7 +492,7 @@ private:
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 9) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 10) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
