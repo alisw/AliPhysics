@@ -136,10 +136,12 @@ h3_MB1MB1MB1_dat(0),h3_JJMB_dat(0),h3_JMB1MB2_dat(0),h3_JMBMB_dat(0),h3_MB1MB1MB
 hJet_deltaR_MJ_e3c(0),hJet_deltaR_MJ0_e3c(0),hJet_deltaR_MJ1_e3c(0),hJet_deltaR_MJ2_e3c(0),hJet_deltaR_MJ3_e3c(0),
 hJet_deltaR_MJ_e3c_m(0),hJet_deltaR_MJ0_e3c_m(0),hJet_deltaR_MJ1_e3c_m(0),hJet_deltaR_MJ2_e3c_m(0),hJet_deltaR_MJ3_e3c_m(0),h_MB1MB1MB1_m(0),
 h_JJMB_m(0),h_JMBMB_m(0),h_MB1MB1MB2_m(0),h_MB1MB2MB2_m(0),h_JMB1MB2_m(0),h_MB1MB2MB3_m(0),h_BMBMB_m(0),h_SMBMB_m(0),h_BMB1MB2_m(0),
-h_SMB1MB2_m(0),h_BBMB_m(0),h_SBMB_m(0),h_SSMB_m(0),hJet_deltaR_MJ_e3c_tru_m(0),hJet_deltaR_MJ0_e3c_tru_m(0),hJet_deltaR_MJ1_e3c_tru_m(0),
-hJet_deltaR_MJ2_e3c_tru_m(0),hJet_deltaR_MJ3_e3c_tru_m(0),h_MB1MB1MB1_tru_m(0),h_JJMB_tru_m(0),h_JMBMB_tru_m(0),h_MB1MB1MB2_tru_m(0),
-h_MB1MB2MB2_tru_m(0),h_JMB1MB2_tru_m(0),h_MB1MB2MB3_tru_m(0),h_BMBMB_tru_m(0),h_SMBMB_tru_m(0),h_BMB1MB2_tru_m(0),h_SMB1MB2_tru_m(0),
-h_BBMB_tru_m(0),h_SBMB_tru_m(0),h_SSMB_tru_m(0),hJet_deltaR_MJ_e3c_um(0),hJet_deltaR_MJ0_e3c_um(0),hJet_deltaR_MJ1_e3c_um(0),
+h_SMB1MB2_m(0),h_BBMB_m(0),h_SBMB_m(0),h_SSMB_m(0),
+hJet_deltaR_MJ_e3c_tru_m(0),hJet_deltaR_MJ0_e3c_tru_m(0),hJet_deltaR_MJ1_e3c_tru_m(0),hJet_deltaR_MJ2_e3c_tru_m(0),hJet_deltaR_MJ3_e3c_tru_m(0),
+h_MB1MB1MB1_tru_m(0),h_JJMB_tru_m(0),h_JMBMB_tru_m(0),h_MB1MB1MB2_tru_m(0),
+h_MB1MB2MB2_tru_m(0),h_JMB1MB2_tru_m(0),h_MB1MB2MB3_tru_m(0),h_BMBMB_tru_m(0),h_SMBMB_tru_m(0),h_BMB1MB2_tru_m(0),
+h_BBMB_tru_m(0),h_SBMB_tru_m(0),h_SSMB_tru_m(0),h_SMB1MB2_tru_m(0),
+hJet_deltaR_MJ_e3c_um(0),hJet_deltaR_MJ0_e3c_um(0),hJet_deltaR_MJ1_e3c_um(0),
 hJet_deltaR_MJ2_e3c_um(0),hJet_deltaR_MJ3_e3c_um(0),h_MB1MB1MB1_um(0),h_JJMB_um(0),h_JMBMB_um(0),h_MB1MB1MB2_um(0),h_MB1MB2MB2_um(0),
 h_JMB1MB2_um(0),h_MB1MB2MB3_um(0),h_BMBMB_um(0),h_SMBMB_um(0),h_BMB1MB2_um(0),h_SMB1MB2_um(0),h_BBMB_um(0),h_SBMB_um(0),h_SSMB_um(0),
 h3Jet_deltaR_MJ_e3c(0),h3Jet_deltaR_MJ0_e3c(0),h3Jet_deltaR_MJ1_e3c(0),h3Jet_deltaR_MJ2_e3c(0),h3Jet_deltaR_MJ3_e3c(0),h3_MB1MB1MB1(0),
@@ -235,10 +237,12 @@ h3_MB1MB1MB1_dat(0),h3_JJMB_dat(0),h3_JMB1MB2_dat(0),h3_JMBMB_dat(0),h3_MB1MB1MB
 hJet_deltaR_MJ_e3c(0),hJet_deltaR_MJ0_e3c(0),hJet_deltaR_MJ1_e3c(0),hJet_deltaR_MJ2_e3c(0),hJet_deltaR_MJ3_e3c(0),
 hJet_deltaR_MJ_e3c_m(0),hJet_deltaR_MJ0_e3c_m(0),hJet_deltaR_MJ1_e3c_m(0),hJet_deltaR_MJ2_e3c_m(0),hJet_deltaR_MJ3_e3c_m(0),h_MB1MB1MB1_m(0),
 h_JJMB_m(0),h_JMBMB_m(0),h_MB1MB1MB2_m(0),h_MB1MB2MB2_m(0),h_JMB1MB2_m(0),h_MB1MB2MB3_m(0),h_BMBMB_m(0),h_SMBMB_m(0),h_BMB1MB2_m(0),
-h_SMB1MB2_m(0),h_BBMB_m(0),h_SBMB_m(0),h_SSMB_m(0),hJet_deltaR_MJ_e3c_tru_m(0),hJet_deltaR_MJ0_e3c_tru_m(0),hJet_deltaR_MJ1_e3c_tru_m(0),
-hJet_deltaR_MJ2_e3c_tru_m(0),hJet_deltaR_MJ3_e3c_tru_m(0),h_MB1MB1MB1_tru_m(0),h_JJMB_tru_m(0),h_JMBMB_tru_m(0),h_MB1MB1MB2_tru_m(0),
-h_MB1MB2MB2_tru_m(0),h_JMB1MB2_tru_m(0),h_MB1MB2MB3_tru_m(0),h_BMBMB_tru_m(0),h_SMBMB_tru_m(0),h_BMB1MB2_tru_m(0),h_SMB1MB2_tru_m(0),
-h_BBMB_tru_m(0),h_SBMB_tru_m(0),h_SSMB_tru_m(0),hJet_deltaR_MJ_e3c_um(0),hJet_deltaR_MJ0_e3c_um(0),hJet_deltaR_MJ1_e3c_um(0),
+h_SMB1MB2_m(0),h_BBMB_m(0),h_SBMB_m(0),h_SSMB_m(0),
+hJet_deltaR_MJ_e3c_tru_m(0),hJet_deltaR_MJ0_e3c_tru_m(0),hJet_deltaR_MJ1_e3c_tru_m(0),hJet_deltaR_MJ2_e3c_tru_m(0),hJet_deltaR_MJ3_e3c_tru_m(0),
+h_MB1MB1MB1_tru_m(0),h_JJMB_tru_m(0),h_JMBMB_tru_m(0),h_MB1MB1MB2_tru_m(0),
+h_MB1MB2MB2_tru_m(0),h_JMB1MB2_tru_m(0),h_MB1MB2MB3_tru_m(0),h_BMBMB_tru_m(0),h_SMBMB_tru_m(0),h_BMB1MB2_tru_m(0),
+h_BBMB_tru_m(0),h_SBMB_tru_m(0),h_SSMB_tru_m(0),h_SMB1MB2_tru_m(0),
+hJet_deltaR_MJ_e3c_um(0),hJet_deltaR_MJ0_e3c_um(0),hJet_deltaR_MJ1_e3c_um(0),
 hJet_deltaR_MJ2_e3c_um(0),hJet_deltaR_MJ3_e3c_um(0),h_MB1MB1MB1_um(0),h_JJMB_um(0),h_JMBMB_um(0),h_MB1MB1MB2_um(0),h_MB1MB2MB2_um(0),
 h_JMB1MB2_um(0),h_MB1MB2MB3_um(0),h_BMBMB_um(0),h_SMBMB_um(0),h_BMB1MB2_um(0),h_SMB1MB2_um(0),h_BBMB_um(0),h_SBMB_um(0),h_SSMB_um(0),
 h3Jet_deltaR_MJ_e3c(0),h3Jet_deltaR_MJ0_e3c(0),h3Jet_deltaR_MJ1_e3c(0),h3Jet_deltaR_MJ2_e3c(0),h3Jet_deltaR_MJ3_e3c(0),h3_MB1MB1MB1(0),
@@ -330,10 +334,10 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
 
     // jet pT bins
     Double_t from_const = 10;
-    Double_t to_const = 120;
-    Int_t bins_const = 11;
+    Double_t to_const = 140;
+    Int_t bins_const = 13;
     Double_t width_const = (to_const-from_const)/bins_const;
-    Double_t new_bins_const[12] = {};
+    Double_t new_bins_const[14] = {};
     for (Int_t i = 0; i <= bins_const; i++)
     {
     new_bins_const[i] = (from_const + i * width_const);
@@ -386,12 +390,13 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     Double_t to_const_reco = 100;
     Int_t bins_const_reco = 6;
     Double_t width_const_reco = (to_const_reco-from_const_reco)/bins_const_reco;
-    Double_t xbins[8] = {};
+    Double_t xbins[9] = {};
     for (Int_t i = 0; i <= bins_const_reco; i++)
     {
         xbins[i] = (from_const_reco + i * width_const_reco);
     }
     xbins[7] = 120; 
+    xbins[8] = 140; 
 
     double dRbins[] = {0.0001,0.01,0.0144613,0.0173904,0.0209128,0.0251487,0.0302425,
         0.0363681,0.0437345,0.0525929,0.0632456,0.0760559,0.091461,0.109986,0.132264,0.159054,0.191271,0.230012,0.276601,0.332627,0.4,0.524807,1};
@@ -429,25 +434,25 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     if(fCout){cout<<"HERE BINS ARE DECLARED!!!!!!!!!!!!!"<<endl;}
 // /////////////////////////////// DATA HISTOGRAMS //////////////////////////////////////////
     if(!fDoEmbedding){
-    jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 11, 10, 120);
+    jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 13,10,140);
     fOutput->Add(jet_pt_hist);
 
-    pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 11, 10, 120);
+    pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 13,10,140);
     fOutput->Add(pt_tru);
     
-    EEC_pt_hist = new TH2F("EEC_pt_hist", "EEC and jet_pt 2D", 21, new_bins, 11, 10, 120);
+    EEC_pt_hist = new TH2F("EEC_pt_hist", "EEC and jet_pt 2D", 21, new_bins, 13,10,140);
     fOutput->Add(EEC_pt_hist);
     
-    E3C_pt_hist = new TH2F("E3C_pt_hist", "EEEC and jet_pt 2D", 21, new_bins, 11, 10, 120);
+    E3C_pt_hist = new TH2F("E3C_pt_hist", "EEEC and jet_pt 2D", 21, new_bins, 13,10,140);
     fOutput->Add(E3C_pt_hist);
 
     if(fCout) cout<<"###########------subtraction histograms for EEC data----########"<<endl;
 
-    h_MB1_dat = new TH2F("h_MB1_dat", "h_MB1_dat", 11, new_bins_const,21, new_bins);//min bias data
+    h_MB1_dat = new TH2F("h_MB1_dat", "h_MB1_dat", 13, new_bins_const,21, new_bins);//min bias data
     fOutput->Add(h_MB1_dat);
-    h_JMB_dat = new TH2F("h_JMB_dat", "h_JMB_dat", 11, new_bins_const,21, new_bins);//Jet*MINBIAS data
+    h_JMB_dat = new TH2F("h_JMB_dat", "h_JMB_dat", 13, new_bins_const,21, new_bins);//Jet*MINBIAS data
     fOutput->Add(h_JMB_dat);
-    h_MB1MB2_dat = new TH2F("h_MB1MB2_dat", "h_MB1MB2_dat", 11, new_bins_const,21, new_bins);//Jet*MINBIAS data
+    h_MB1MB2_dat = new TH2F("h_MB1MB2_dat", "h_MB1MB2_dat", 13, new_bins_const,21, new_bins);//Jet*MINBIAS data
     fOutput->Add(h_JMB_dat);
 
     h3Jet_deltaR_MB1_dat = new TH3F("h3Jet_deltaR_MB1_dat", "h3Jet_deltaR_MB1_dat", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);//Jet*MINBIAS
@@ -458,19 +463,19 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     fOutput->Add(h3Jet_deltaR_MB1MB2_dat);
    
    if(fCout) cout<<"###########------subtraction histograms for E3C data----########"<<endl;
-    h_MB1MB1MB1_dat = new TH2F("h_MB1MB1MB1_dat", "h_MB1MB1MB1_dat",11, new_bins_const,21, new_bins);
+    h_MB1MB1MB1_dat = new TH2F("h_MB1MB1MB1_dat", "h_MB1MB1MB1_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB1_dat);
-    h_JJMB_dat = new TH2F("h_JJMB_dat", "h_JJMB_dat", 11, new_bins_const,21, new_bins);
+    h_JJMB_dat = new TH2F("h_JJMB_dat", "h_JJMB_dat", 13, new_bins_const,21, new_bins);
     fOutput->Add(h_JJMB_dat);
-    h_JMB1MB2_dat = new TH2F("h_JMB1MB2_dat", "h_JMB1MB2_dat", 11, new_bins_const,21, new_bins);
+    h_JMB1MB2_dat = new TH2F("h_JMB1MB2_dat", "h_JMB1MB2_dat", 13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMB1MB2_dat);
-    h_JMBMB_dat = new TH2F("h_JMBMB_dat", "h_JMBMB_dat",11, new_bins_const,21, new_bins);
+    h_JMBMB_dat = new TH2F("h_JMBMB_dat", "h_JMBMB_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMBMB_dat);
-    h_MB1MB2MB2_dat = new TH2F("h_MB1MB2MB2_dat", "h_MB1MB2MB2_dat",11, new_bins_const,21, new_bins);
+    h_MB1MB2MB2_dat = new TH2F("h_MB1MB2MB2_dat", "h_MB1MB2MB2_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB2_dat);
-    h_MB1MB1MB2_dat = new TH2F("h_MB1MB1MB2_dat", "h_MB1MB1MB2_dat",11, new_bins_const,21, new_bins);
+    h_MB1MB1MB2_dat = new TH2F("h_MB1MB1MB2_dat", "h_MB1MB1MB2_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB2_dat);
-    h_MB1MB2MB3_dat = new TH2F("h_MB1MB2MB3_dat", "h_MB1MB2MB3_dat",11, new_bins_const,21, new_bins);
+    h_MB1MB2MB3_dat = new TH2F("h_MB1MB2MB3_dat", "h_MB1MB2MB3_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB3_dat);
 
     h3_MB1MB1MB1_dat = new TH3F("h3_MB1MB1MB1", "h3_MB1MB1MB1",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
@@ -496,13 +501,13 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     fOutput->Add(hJet_num_um);
     hJet_num_m = new TH1F("hJet_num_m", "hJet_num_m",1,0,1);
     fOutput->Add(hJet_num_m);
-    h_jetpt_m = new TH1F("h_jetptM","h_jetptM",11, 10, 120);
+    h_jetpt_m = new TH1F("h_jetptM","h_jetptM",13,10,140);
     fOutput->Add(h_jetpt_m);
-    h_jetpt_m_tru = new TH2F("h_jetptM_tru","h_jetptM_tru",11,10,120,11, 10, 120);
+    h_jetpt_m_tru = new TH2F("h_jetptM_tru","h_jetptM_tru",13,10,140,13,10,140);
     fOutput->Add(h_jetpt_m_tru);
-    h_jetpt_um = new TH1F("h_jetptUM","h_jetptUM",11, 10, 120);
+    h_jetpt_um = new TH1F("h_jetptUM","h_jetptUM",13,10,140);
     fOutput->Add(h_jetpt_um);
-    h_dpt = new TH1F ("h_dpt","h_dpt",240,-60,60);
+    h_dpt = new TH2F ("h_dpt","h_dpt",240,-60,60,13,10,140);
     fOutput->Add(h_dpt);
    }
 
@@ -510,88 +515,88 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
    {
    if(fCout)cout<<"#####################---Declaring Embedding Histograms EEC----####################"<<endl;
     //matched subtracted jet
-    h_MJ = new TH3F("h_MJ", "h_MJ", 11, new_bins_const,11, new_bins_const,21, new_bins);//all tracks fake + real
+    h_MJ = new TH3F("h_MJ", "h_MJ", 13, new_bins_const,13, new_bins_const,21, new_bins);//all tracks fake + real
     fOutput->Add(h_MJ);
-    h_MJ0 = new TH3F("h_MJ0", "h_MJ0",11, new_bins_const,11, new_bins_const,21, new_bins);//0 real tracks
+    h_MJ0 = new TH3F("h_MJ0", "h_MJ0",13, new_bins_const,13, new_bins_const,21, new_bins);//0 real tracks
     fOutput->Add(h_MJ0);
-    h_MJ1 = new TH3F("h_MJ1", "h_MJ1", 11, new_bins_const,11, new_bins_const,21, new_bins);//1 real track
+    h_MJ1 = new TH3F("h_MJ1", "h_MJ1", 13, new_bins_const,13, new_bins_const,21, new_bins);//1 real track
     fOutput->Add(h_MJ1);
-    h_MJ2 = new TH3F("h_MJ2", "h_MJ2", 11, new_bins_const,11, new_bins_const,21, new_bins);//2 real tracks
+    h_MJ2 = new TH3F("h_MJ2", "h_MJ2", 13, new_bins_const,13, new_bins_const,21, new_bins);//2 real tracks
     fOutput->Add(h_MJ2);
 
-    h_MJ_m = new TH3F("h_MJ_m", "h_MJ_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//all tracks fake + real
+    h_MJ_m = new TH3F("h_MJ_m", "h_MJ_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//all tracks fake + real
     fOutput->Add(h_MJ_m);
-    h_MJ0_m = new TH3F("h_MJ0_m", "h_MJ0_m",11, new_bins_const,11, new_bins_const,21, new_bins);//0 real tracks
+    h_MJ0_m = new TH3F("h_MJ0_m", "h_MJ0_m",13, new_bins_const,13, new_bins_const,21, new_bins);//0 real tracks
     fOutput->Add(h_MJ0_m);
-    h_MJ1_m = new TH3F("h_MJ1_m", "h_MJ1_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//1 real track
+    h_MJ1_m = new TH3F("h_MJ1_m", "h_MJ1_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//1 real track
     fOutput->Add(h_MJ1_m);
-    h_MJ2_m = new TH3F("h_MJ2_m", "h_MJ2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//2 real tracks
+    h_MJ2_m = new TH3F("h_MJ2_m", "h_MJ2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//2 real tracks
     fOutput->Add(h_MJ2_m);
     
-    h_MJ_tru_m = new TH3F("h_MJ_tru_m", "h_MJ_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//all tracks fake + real
+    h_MJ_tru_m = new TH3F("h_MJ_tru_m", "h_MJ_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//all tracks fake + real
     fOutput->Add(h_MJ_tru_m);
-    h_MJ0_tru_m = new TH3F("h_MJ0_tru_m", "h_MJ0_tru_m",11, new_bins_const,11, new_bins_const,21, new_bins);//0 real tracks
+    h_MJ0_tru_m = new TH3F("h_MJ0_tru_m", "h_MJ0_tru_m",13, new_bins_const,13, new_bins_const,21, new_bins);//0 real tracks
     fOutput->Add(h_MJ0_tru_m);
-    h_MJ1_tru_m = new TH3F("h_MJ1_tru_m", "h_MJ1_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//1 real track
+    h_MJ1_tru_m = new TH3F("h_MJ1_tru_m", "h_MJ1_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//1 real track
     fOutput->Add(h_MJ1_tru_m);
-    h_MJ2_tru_m = new TH3F("h_MJ2_tru_m", "h_MJ2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//2 real tracks
+    h_MJ2_tru_m = new TH3F("h_MJ2_tru_m", "h_MJ2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//2 real tracks
     fOutput->Add(h_MJ2_tru_m);
 
-    h_MJ_um = new TH3F("h_MJ_um", "h_MJ_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//all tracks fake + real
+    h_MJ_um = new TH3F("h_MJ_um", "h_MJ_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//all tracks fake + real
     fOutput->Add(h_MJ_um);
-    h_MJ0_um = new TH3F("h_MJ0_um", "h_MJ0_um",11, new_bins_const,11, new_bins_const,21, new_bins);//0 real tracks
+    h_MJ0_um = new TH3F("h_MJ0_um", "h_MJ0_um",13, new_bins_const,13, new_bins_const,21, new_bins);//0 real tracks
     fOutput->Add(h_MJ0_um);
-    h_MJ1_um = new TH3F("h_MJ1_um", "h_MJ1_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//1 real track
+    h_MJ1_um = new TH3F("h_MJ1_um", "h_MJ1_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//1 real track
     fOutput->Add(h_MJ1_um);
-    h_MJ2_um = new TH3F("h_MJ2_um", "h_MJ2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//2 real tracks
+    h_MJ2_um = new TH3F("h_MJ2_um", "h_MJ2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//2 real tracks
     fOutput->Add(h_MJ2_um);
     
   //for MB1
-    h_MB1 = new TH3F("h_MB1", "h_MB1", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1 = new TH3F("h_MB1", "h_MB1", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1);
-    h_MB1_m = new TH3F("h_MB1_m", "h_MB1_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1_m = new TH3F("h_MB1_m", "h_MB1_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1_m);
-    h_MB1_tru_m = new TH3F("h_MB1_tru_m", "h_MB1_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1_tru_m = new TH3F("h_MB1_tru_m", "h_MB1_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1_tru_m);
-    h_MB1_um = new TH3F("h_MB1_um", "h_MB1_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1_um = new TH3F("h_MB1_um", "h_MB1_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1_um);
 
   //for JMB
-    h_JMB = new TH3F("h_JMB", "h_JMB", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_JMB = new TH3F("h_JMB", "h_JMB", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_JMB);
-    h_JMB_m = new TH3F("h_JMB_m", "h_JMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_JMB_m = new TH3F("h_JMB_m", "h_JMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_JMB_m);
-    h_JMB_tru_m = new TH3F("h_JMB_tru_m", "h_JMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_JMB_tru_m = new TH3F("h_JMB_tru_m", "h_JMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_JMB_tru_m);
-    h_JMB_um = new TH3F("h_JMB_um", "h_JMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_JMB_um = new TH3F("h_JMB_um", "h_JMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_JMB_um);
    
-    h_SMB = new TH3F("h_SMB", "h_SMB", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_SMB = new TH3F("h_SMB", "h_SMB", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_SMB);
-    h_SMB_m = new TH3F("h_SMB_m", "h_SMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_SMB_m = new TH3F("h_SMB_m", "h_SMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_SMB_m);
-    h_SMB_tru_m = new TH3F("h_SMB_tru_m", "h_SMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_SMB_tru_m = new TH3F("h_SMB_tru_m", "h_SMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_SMB_tru_m);
-    h_SMB_um = new TH3F("h_SMB_um", "h_SMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_SMB_um = new TH3F("h_SMB_um", "h_SMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_SMB_um);
 
-    h_BMB = new TH3F("h_BMB", "h_BMB", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_BMB = new TH3F("h_BMB", "h_BMB", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_BMB);
-    h_BMB_m = new TH3F("h_BMB_m", "h_BMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_BMB_m = new TH3F("h_BMB_m", "h_BMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_BMB_m);
-    h_BMB_tru_m = new TH3F("h_BMB_tru_m", "h_BMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_BMB_tru_m = new TH3F("h_BMB_tru_m", "h_BMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_BMB_tru_m);
-    h_BMB_um = new TH3F("h_BMB_um", "h_BMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_BMB_um = new TH3F("h_BMB_um", "h_BMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_BMB_um);
 
   //for MB1MB2
-    h_MB1MB2 = new TH3F("h_MB1MB2", "h_MB1MB2", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1MB2 = new TH3F("h_MB1MB2", "h_MB1MB2", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1MB2);
-    h_MB1MB2_m = new TH3F("h_MB1MB2_m", "h_MB1MB2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1MB2_m = new TH3F("h_MB1MB2_m", "h_MB1MB2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1MB2_m);
-    h_MB1MB2_tru_m = new TH3F("h_MB1MB2_tru_m", "h_MB1MB2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1MB2_tru_m = new TH3F("h_MB1MB2_tru_m", "h_MB1MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1MB2_tru_m);
-    h_MB1MB2_um = new TH3F("h_MB1MB2_um", "h_MB1MB2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);//min bias
+    h_MB1MB2_um = new TH3F("h_MB1MB2_um", "h_MB1MB2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);//min bias
     fOutput->Add(h_MB1MB2_um);
 
 //////////////////////// HISTOGRAMS FOR 3D Subtraction and Unfolding///////////////////////////
@@ -727,215 +732,215 @@ if(fCout)cout<<"#####################---Declaring 3D Embedding Histograms EEC---
 //     /////FOR E3C MIN BIAS SUBTRCTION////////
   if(ife3c && fDoEmbedding)
   {
-     h_MJ_e3c = new TH3F("h_MJ_e3c", "h_MJ_e3c", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ_e3c = new TH3F("h_MJ_e3c", "h_MJ_e3c", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ_e3c);
-     h_MJ0_e3c = new TH3F("h_MJ0_e3c", "h_MJ0_e3c", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ0_e3c = new TH3F("h_MJ0_e3c", "h_MJ0_e3c", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ0_e3c);
-     h_MJ1_e3c = new TH3F("h_MJ1_e3c", "h_MJ1_e3c",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ1_e3c = new TH3F("h_MJ1_e3c", "h_MJ1_e3c",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ1_e3c);
-     h_MJ2_e3c = new TH3F("h_MJ2_e3c", "h_MJ2_e3c",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ2_e3c = new TH3F("h_MJ2_e3c", "h_MJ2_e3c",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ2_e3c);
-     h_MJ3_e3c = new TH3F("h_MJ3_e3c", "h_MJ3_e3c", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ3_e3c = new TH3F("h_MJ3_e3c", "h_MJ3_e3c", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ3_e3c);
-     h_MJ_e3c_tru = new TH3F("h_MJ_e3c_tru", "h_MJ_e3c_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ_e3c_tru = new TH3F("h_MJ_e3c_tru", "h_MJ_e3c_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ_e3c_tru);
-     h_MJ0_e3c_tru = new TH3F("h_MJ0_e3c_tru", "h_MJ0_e3c_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ0_e3c_tru = new TH3F("h_MJ0_e3c_tru", "h_MJ0_e3c_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ0_e3c_tru);
-     h_MJ1_e3c_tru = new TH3F("h_MJ1_e3c_tru", "h_MJ1_e3c_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ1_e3c_tru = new TH3F("h_MJ1_e3c_tru", "h_MJ1_e3c_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ1_e3c_tru);
-     h_MJ2_e3c_tru = new TH3F("h_MJ2_e3c_tru", "h_MJ2_e3c_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ2_e3c_tru = new TH3F("h_MJ2_e3c_tru", "h_MJ2_e3c_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ2_e3c_tru);
-     h_MJ3_e3c_tru = new TH3F("h_MJ3_e3c_tru", "h_MJ3_e3c_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MJ3_e3c_tru = new TH3F("h_MJ3_e3c_tru", "h_MJ3_e3c_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MJ3_e3c_tru);
 
     if(fCout) cout<<"subtraction histograms for E3C 1"<<endl; 
 
-     h_MB1MB1MB1 = new TH3F("h_MB1MB1MB1", "h_MB1MB1MB1",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB1MB1 = new TH3F("h_MB1MB1MB1", "h_MB1MB1MB1",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB1MB1);
-     h_MB1MB1MB1_tru = new TH3F("h_MB1MB1MB1_tru", "h_MB1MB1MB1_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB1MB1_tru = new TH3F("h_MB1MB1MB1_tru", "h_MB1MB1MB1_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB1MB1_tru);
 
     if(fCout) cout<<"subtraction histograms for E3C 2"<<endl; 
 
-     h_JJMB = new TH3F("h_JJMB", "h_JJMB", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_JJMB = new TH3F("h_JJMB", "h_JJMB", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_JJMB);
-     h_JJMB_tru = new TH3F("h_JJMB_tru", "h_JJMB_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_JJMB_tru = new TH3F("h_JJMB_tru", "h_JJMB_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_JJMB_tru);
 
-     h_JMBMB = new TH3F("h_JMBMB", "h_JMBMB",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_JMBMB = new TH3F("h_JMBMB", "h_JMBMB",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_JMBMB);
-     h_JMBMB_tru = new TH3F("h_JMBMB_tru", "h_JMBMB_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_JMBMB_tru = new TH3F("h_JMBMB_tru", "h_JMBMB_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_JMBMB_tru);
 
-     h_MB1MB1MB2 = new TH3F("h_MB1MB1MB2", "h_MB1MB1MB2",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB1MB2 = new TH3F("h_MB1MB1MB2", "h_MB1MB1MB2",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB1MB2);
-     h_MB1MB1MB2_tru = new TH3F("h_MB1MB1MB2_tru", "h_MB1MB1MB2_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB1MB2_tru = new TH3F("h_MB1MB1MB2_tru", "h_MB1MB1MB2_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB1MB2_tru);
 
-     h_MB1MB2MB2 = new TH3F("h_MB1MB2MB2", "h_MB1MB2MB2",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB2MB2 = new TH3F("h_MB1MB2MB2", "h_MB1MB2MB2",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB2MB2);
-     h_MB1MB2MB2_tru = new TH3F("h_MB1MB2MB2_tru", "h_MB1MB2MB2_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB2MB2_tru = new TH3F("h_MB1MB2MB2_tru", "h_MB1MB2MB2_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB2MB2_tru);
 
     if(fCout) cout<<"subtraction histograms for E3C 3"<<endl; 
 
-     h_JMB1MB2 = new TH3F("h_JMB1MB2", "h_JMB1MB2", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_JMB1MB2 = new TH3F("h_JMB1MB2", "h_JMB1MB2", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_JMB1MB2);
-     h_JMB1MB2_tru = new TH3F("h_JMB1MB2_tru", "h_JMB1MB2_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_JMB1MB2_tru = new TH3F("h_JMB1MB2_tru", "h_JMB1MB2_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_JMB1MB2_tru);
 
-     h_MB1MB2MB3 = new TH3F("h_MB1MB2MB3", "h_MB1MB2MB3",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB2MB3 = new TH3F("h_MB1MB2MB3", "h_MB1MB2MB3",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB2MB3);
-     h_MB1MB2MB3_tru = new TH3F("h_MB1MB2MB3_tru", "h_MB1MB2MB3_tru",11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_MB1MB2MB3_tru = new TH3F("h_MB1MB2MB3_tru", "h_MB1MB2MB3_tru",13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_MB1MB2MB3_tru);
 
     if(fCout) cout<<"subtraction histograms for E3C 4"<<endl; 
 
-     h_BMBMB = new TH3F("h_BMBMB", "h_BMBMB", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_BMBMB = new TH3F("h_BMBMB", "h_BMBMB", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_BMBMB);
-     h_SMBMB = new TH3F("h_SMBMB", "h_SMBMB", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_SMBMB = new TH3F("h_SMBMB", "h_SMBMB", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_SMBMB);
-     h_BMB1MB2 = new TH3F("h_BMB1MB2", "h_BMB1MB2", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_BMB1MB2 = new TH3F("h_BMB1MB2", "h_BMB1MB2", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_BMB1MB2);
-     h_SMB1MB2 = new TH3F("h_SMB1MB2", "h_SMB1MB2", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_SMB1MB2 = new TH3F("h_SMB1MB2", "h_SMB1MB2", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_SMB1MB2);
-     h_BBMB = new TH3F("h_BBMB", "h_BBMB", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_BBMB = new TH3F("h_BBMB", "h_BBMB", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_BBMB);
-     h_SBMB = new TH3F("h_SBMB", "h_SBMB", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_SBMB = new TH3F("h_SBMB", "h_SBMB", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_SBMB);
-     h_SSMB = new TH3F("h_SSMB", "h_SSMB", 11, new_bins_const,11, new_bins_const,21, new_bins);
+     h_SSMB = new TH3F("h_SSMB", "h_SSMB", 13, new_bins_const,13, new_bins_const,21, new_bins);
      fOutput->Add(h_SSMB);
 
-    h_BMBMB_tru = new TH3F("h_BMBMB_tru", "h_BMBMB_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMBMB_tru = new TH3F("h_BMBMB_tru", "h_BMBMB_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMBMB_tru);
-    h_SMBMB_tru = new TH3F("h_SMBMB_tru", "h_SMBMB_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMBMB_tru = new TH3F("h_SMBMB_tru", "h_SMBMB_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMBMB_tru);
-    h_BMB1MB2_tru = new TH3F("h_BMB1MB2_tru", "h_BMB1MB2_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMB1MB2_tru = new TH3F("h_BMB1MB2_tru", "h_BMB1MB2_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMB1MB2_tru);
-    h_BBMB_tru = new TH3F("h_BBMB_tru", "h_BBMB_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BBMB_tru = new TH3F("h_BBMB_tru", "h_BBMB_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BBMB_tru);
-    h_SBMB_tru = new TH3F("h_SBMB_tru", "h_SBMB_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SBMB_tru = new TH3F("h_SBMB_tru", "h_SBMB_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SBMB_tru);
-    h_SSMB_tru = new TH3F("h_SSMB_tru", "h_SSMB_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SSMB_tru = new TH3F("h_SSMB_tru", "h_SSMB_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SSMB_tru);
-    h_SMB1MB2_tru = new TH3F("h_SMB1MB2_tru", "h_SMB1MB2_tru", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMB1MB2_tru = new TH3F("h_SMB1MB2_tru", "h_SMB1MB2_tru", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMB1MB2_tru);
 
     if(fCout) cout<<"subtraction histograms for E3C matched jets "<<endl;
-    hJet_deltaR_MJ_e3c_m = new TH3F("hJet_deltaR_MJ_e3c_m", "hJet_deltaR_MJ_e3c_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ_e3c_m = new TH3F("hJet_deltaR_MJ_e3c_m", "hJet_deltaR_MJ_e3c_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ_e3c_m);
-    hJet_deltaR_MJ0_e3c_m = new TH3F("hJet_deltaR_MJ0_e3c_m", "hJet_deltaR_MJ0_e3c_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ0_e3c_m = new TH3F("hJet_deltaR_MJ0_e3c_m", "hJet_deltaR_MJ0_e3c_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ0_e3c_m);
-    hJet_deltaR_MJ1_e3c_m = new TH3F("hJet_deltaR_MJ1_e3c_m", "hJet_deltaR_MJ1_e3c_m",11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ1_e3c_m = new TH3F("hJet_deltaR_MJ1_e3c_m", "hJet_deltaR_MJ1_e3c_m",13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ1_e3c_m);
-    hJet_deltaR_MJ2_e3c_m = new TH3F("hJet_deltaR_MJ2_e3c_m", "hJet_deltaR_MJ2_e3c_m",11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ2_e3c_m = new TH3F("hJet_deltaR_MJ2_e3c_m", "hJet_deltaR_MJ2_e3c_m",13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ2_e3c_m);
-    hJet_deltaR_MJ3_e3c_m = new TH3F("hJet_deltaR_MJ3_e3c_m", "hJet_deltaR_MJ3_e3c_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ3_e3c_m = new TH3F("hJet_deltaR_MJ3_e3c_m", "hJet_deltaR_MJ3_e3c_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ3_e3c_m);
-    h_MB1MB1MB1_m = new TH3F("h_MB1MB1MB1_m", "h_MB1MB1MB1_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB1MB1_m = new TH3F("h_MB1MB1MB1_m", "h_MB1MB1MB1_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB1_m);
-    h_JJMB_m = new TH3F("h_JJMB_m", "h_JJMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JJMB_m = new TH3F("h_JJMB_m", "h_JJMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JJMB_m);
-    h_JMBMB_m = new TH3F("h_JMBMB_m", "h_JMBMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JMBMB_m = new TH3F("h_JMBMB_m", "h_JMBMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMBMB_m);
-    h_MB1MB1MB2_m = new TH3F("h_MB1MB1MB2_m", "h_MB1MB1MB2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB1MB2_m = new TH3F("h_MB1MB1MB2_m", "h_MB1MB1MB2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB2_m);
-    h_MB1MB2MB2_m = new TH3F("h_MB1MB2MB2_m", "h_MB1MB2MB2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB2MB2_m = new TH3F("h_MB1MB2MB2_m", "h_MB1MB2MB2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB2_m);
-    h_JMB1MB2_m = new TH3F("h_JMB1MB2_m", "h_JMB1MB2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JMB1MB2_m = new TH3F("h_JMB1MB2_m", "h_JMB1MB2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMB1MB2_m);
-    h_MB1MB2MB3_m = new TH3F("h_MB1MB2MB3_m", "h_MB1MB2MB3_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB2MB3_m = new TH3F("h_MB1MB2MB3_m", "h_MB1MB2MB3_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB3_m);
-    h_BMBMB_m = new TH3F("h_BMBMB_m", "h_BMBMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMBMB_m = new TH3F("h_BMBMB_m", "h_BMBMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMBMB_m);
-    h_SMBMB_m = new TH3F("h_SMBMB_m", "h_SMBMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMBMB_m = new TH3F("h_SMBMB_m", "h_SMBMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMBMB_m);
-    h_BMB1MB2_m = new TH3F("h_BMB1MB2_m", "h_BMB1MB2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMB1MB2_m = new TH3F("h_BMB1MB2_m", "h_BMB1MB2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMB1MB2_m);
-    h_SMB1MB2_m = new TH3F("h_SMB1MB2_m", "h_SMB1MB2_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMB1MB2_m = new TH3F("h_SMB1MB2_m", "h_SMB1MB2_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMB1MB2_m);
-    h_BBMB_m = new TH3F("h_BBMB_m", "h_BBMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BBMB_m = new TH3F("h_BBMB_m", "h_BBMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BBMB_m);
-    h_SBMB_m = new TH3F("h_SBMB_m", "h_SBMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SBMB_m = new TH3F("h_SBMB_m", "h_SBMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SBMB_m);
-    h_SSMB_m = new TH3F("h_SSMB_m", "h_SSMB_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SSMB_m = new TH3F("h_SSMB_m", "h_SSMB_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SSMB_m);
     
-    hJet_deltaR_MJ_e3c_tru_m = new TH3F("hJet_deltaR_MJ_e3c_tru_m", "hJet_deltaR_MJ_e3c_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ_e3c_tru_m = new TH3F("hJet_deltaR_MJ_e3c_tru_m", "hJet_deltaR_MJ_e3c_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ_e3c_tru_m);
-    hJet_deltaR_MJ0_e3c_tru_m = new TH3F("hJet_deltaR_MJ0_e3c_tru_m", "hJet_deltaR_MJ0_e3c_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ0_e3c_tru_m = new TH3F("hJet_deltaR_MJ0_e3c_tru_m", "hJet_deltaR_MJ0_e3c_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ0_e3c_tru_m);
-    hJet_deltaR_MJ1_e3c_tru_m = new TH3F("hJet_deltaR_MJ1_e3c_tru_m", "hJet_deltaR_MJ1_e3c_tru_m",11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ1_e3c_tru_m = new TH3F("hJet_deltaR_MJ1_e3c_tru_m", "hJet_deltaR_MJ1_e3c_tru_m",13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ1_e3c_tru_m);
-    hJet_deltaR_MJ2_e3c_tru_m = new TH3F("hJet_deltaR_MJ2_e3c_tru_m", "hJet_deltaR_MJ2_e3c_tru_m",11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ2_e3c_tru_m = new TH3F("hJet_deltaR_MJ2_e3c_tru_m", "hJet_deltaR_MJ2_e3c_tru_m",13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ2_e3c_tru_m);
-    hJet_deltaR_MJ3_e3c_tru_m = new TH3F("hJet_deltaR_MJ3_e3c_tru_m", "hJet_deltaR_MJ3_e3c_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ3_e3c_tru_m = new TH3F("hJet_deltaR_MJ3_e3c_tru_m", "hJet_deltaR_MJ3_e3c_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ3_e3c_tru_m);
-    h_JJMB_tru_m = new TH3F("h_JJMB_tru_m", "h_JJMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JJMB_tru_m = new TH3F("h_JJMB_tru_m", "h_JJMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JJMB_tru_m);
-    h_JMBMB_tru_m = new TH3F("h_JMBMB_tru_m", "h_JMBMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JMBMB_tru_m = new TH3F("h_JMBMB_tru_m", "h_JMBMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMBMB_tru_m);
-    h_MB1MB1MB2_tru_m = new TH3F("h_MB1MB1MB2_tru_m", "h_MB1MB1MB2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB1MB2_tru_m = new TH3F("h_MB1MB1MB2_tru_m", "h_MB1MB1MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB2_tru_m);
-    h_MB1MB2MB2_tru_m = new TH3F("h_MB1MB2MB2_tru_m", "h_MB1MB2MB2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB2MB2_tru_m = new TH3F("h_MB1MB2MB2_tru_m", "h_MB1MB2MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB2_tru_m);
-    h_JMB1MB2_tru_m = new TH3F("h_JMB1MB2_tru_m", "h_JMB1MB2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JMB1MB2_tru_m = new TH3F("h_JMB1MB2_tru_m", "h_JMB1MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMB1MB2_tru_m);
-    h_MB1MB2MB3_tru_m = new TH3F("h_MB1MB2MB3_tru_m", "h_MB1MB2MB3_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB2MB3_tru_m = new TH3F("h_MB1MB2MB3_tru_m", "h_MB1MB2MB3_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB3_tru_m);
-    h_BMBMB_tru_m = new TH3F("h_BMBMB_tru_m", "h_BMBMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMBMB_tru_m = new TH3F("h_BMBMB_tru_m", "h_BMBMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMBMB_tru_m);
-    h_SMBMB_tru_m = new TH3F("h_SMBMB_tru_m", "h_SMBMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMBMB_tru_m = new TH3F("h_SMBMB_tru_m", "h_SMBMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMBMB_tru_m);
-    h_BMB1MB2_tru_m = new TH3F("h_BMB1MB2_tru_m", "h_BMB1MB2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMB1MB2_tru_m = new TH3F("h_BMB1MB2_tru_m", "h_BMB1MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMB1MB2_tru_m);
-    h_BBMB_tru_m = new TH3F("h_BBMB_tru_m", "h_BBMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BBMB_tru_m = new TH3F("h_BBMB_tru_m", "h_BBMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BBMB_tru_m);
-    h_SBMB_tru_m = new TH3F("h_SBMB_tru_m", "h_SBMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SBMB_tru_m = new TH3F("h_SBMB_tru_m", "h_SBMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SBMB_tru_m);
-    h_SSMB_tru_m = new TH3F("h_SSMB_tru_m", "h_SSMB_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SSMB_tru_m = new TH3F("h_SSMB_tru_m", "h_SSMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SSMB_tru_m);
-    h_SMB1MB2_tru_m = new TH3F("h_SMB1MB2_tru_m", "h_SMB1MB2_tru_m", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMB1MB2_tru_m = new TH3F("h_SMB1MB2_tru_m", "h_SMB1MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMB1MB2_tru_m);
 
   if(fCout) cout<<"subtraction histograms for E3C unmatched jets "<<endl;
-    hJet_deltaR_MJ_e3c_um = new TH3F("hJet_deltaR_MJ_e3c_um", "hJet_deltaR_MJ_e3c_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ_e3c_um = new TH3F("hJet_deltaR_MJ_e3c_um", "hJet_deltaR_MJ_e3c_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ_e3c_um);
-    hJet_deltaR_MJ0_e3c_um = new TH3F("hJet_deltaR_MJ0_e3c_um", "hJet_deltaR_MJ0_e3c_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ0_e3c_um = new TH3F("hJet_deltaR_MJ0_e3c_um", "hJet_deltaR_MJ0_e3c_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ0_e3c_um);
-    hJet_deltaR_MJ1_e3c_um = new TH3F("hJet_deltaR_MJ1_e3c_um", "hJet_deltaR_MJ1_e3c_um",11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ1_e3c_um = new TH3F("hJet_deltaR_MJ1_e3c_um", "hJet_deltaR_MJ1_e3c_um",13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ1_e3c_um);
-    hJet_deltaR_MJ2_e3c_um = new TH3F("hJet_deltaR_MJ2_e3c_um", "hJet_deltaR_MJ2_e3c_um",11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ2_e3c_um = new TH3F("hJet_deltaR_MJ2_e3c_um", "hJet_deltaR_MJ2_e3c_um",13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ2_e3c_um);
-    hJet_deltaR_MJ3_e3c_um = new TH3F("hJet_deltaR_MJ3_e3c_um", "hJet_deltaR_MJ3_e3c_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    hJet_deltaR_MJ3_e3c_um = new TH3F("hJet_deltaR_MJ3_e3c_um", "hJet_deltaR_MJ3_e3c_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(hJet_deltaR_MJ3_e3c_um);
-    h_MB1MB1MB1_um = new TH3F("h_MB1MB1MB1_um", "h_MB1MB1MB1_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB1MB1_um = new TH3F("h_MB1MB1MB1_um", "h_MB1MB1MB1_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB1_um);
-    h_JJMB_um = new TH3F("h_JJMB_um", "h_JJMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JJMB_um = new TH3F("h_JJMB_um", "h_JJMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JJMB_um);
-    h_JMBMB_um = new TH3F("h_JMBMB_um", "h_JMBMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JMBMB_um = new TH3F("h_JMBMB_um", "h_JMBMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMBMB_um);
-    h_MB1MB1MB2_um = new TH3F("h_MB1MB1MB2_um", "h_MB1MB1MB2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB1MB2_um = new TH3F("h_MB1MB1MB2_um", "h_MB1MB1MB2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB2_um);
-    h_MB1MB2MB2_um = new TH3F("h_MB1MB2MB2_um", "h_MB1MB2MB2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB2MB2_um = new TH3F("h_MB1MB2MB2_um", "h_MB1MB2MB2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB2_um);
-    h_JMB1MB2_um = new TH3F("h_JMB1MB2_um", "h_JMB1MB2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_JMB1MB2_um = new TH3F("h_JMB1MB2_um", "h_JMB1MB2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMB1MB2_um);
-    h_MB1MB2MB3_um = new TH3F("h_MB1MB2MB3_um", "h_MB1MB2MB3_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_MB1MB2MB3_um = new TH3F("h_MB1MB2MB3_um", "h_MB1MB2MB3_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB3_um);
-    h_BMBMB_um = new TH3F("h_BMBMB_um", "h_BMBMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMBMB_um = new TH3F("h_BMBMB_um", "h_BMBMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMBMB_um);
-    h_SMBMB_um = new TH3F("h_SMBMB_um", "h_SMBMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMBMB_um = new TH3F("h_SMBMB_um", "h_SMBMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMBMB_um);
-    h_BMB1MB2_um = new TH3F("h_BMB1MB2_um", "h_BMB1MB2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BMB1MB2_um = new TH3F("h_BMB1MB2_um", "h_BMB1MB2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BMB1MB2_um);
-    h_SMB1MB2_um = new TH3F("h_SMB1MB2_um", "h_SMB1MB2_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SMB1MB2_um = new TH3F("h_SMB1MB2_um", "h_SMB1MB2_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SMB1MB2_um);
-    h_BBMB_um = new TH3F("h_BBMB_um", "h_BBMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_BBMB_um = new TH3F("h_BBMB_um", "h_BBMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_BBMB_um);
-    h_SBMB_um = new TH3F("h_SBMB_um", "h_SBMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SBMB_um = new TH3F("h_SBMB_um", "h_SBMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SBMB_um);
-    h_SSMB_um = new TH3F("h_SSMB_um", "h_SSMB_um", 11, new_bins_const,11, new_bins_const,21, new_bins);
+    h_SSMB_um = new TH3F("h_SSMB_um", "h_SSMB_um", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_SSMB_um);
 
   if(fCout) cout<<"subtraction histograms for E3C unfolding bins 3D"<<endl;
@@ -1112,9 +1117,9 @@ if(fCout)cout<<"Unmatched jets only"<<endl;
     //Unfolding optimization histograms from data
     if(!fDoEmbedding){
     if(fCout) cout<<"Unfolding optimization histograms from data"<<endl;
-    OptUn_eec = new TH3F("Opt_Un_eec","Optimize unfolding bins",50, fine_bins, 11, new_bins_const,200, wt_new_bins);
+    OptUn_eec = new TH3F("Opt_Un_eec","Optimize unfolding bins",50, fine_bins, 13, new_bins_const,200, wt_new_bins);
     fOutput->Add(OptUn_eec);
-    OptUn_e3c = new TH3F("Opt_Un_e3c","Optimize unfolding bins e3c",50, fine_bins, 11, new_bins_const,400, wt_new_bins_e3c);
+    OptUn_e3c = new TH3F("Opt_Un_e3c","Optimize unfolding bins e3c",50, fine_bins, 13, new_bins_const,400, wt_new_bins_e3c);
     fOutput->Add(OptUn_e3c);
     }
 
@@ -1352,7 +1357,7 @@ else{
             }
     }
  
-      Double_t ptSubtracted = 0;
+      Float_t ptSubtracted = 0;
       if (fJetShapeSub == kConstSub || fJetShapeSub == kEventSub) {  
         ptSubtracted = jet1->Pt();
      }
@@ -1497,7 +1502,7 @@ void AliAnalysisTaskJetsEECpbpb::FillMatchedTrackTree(AliEmcalJet* fJet_Hyb, Ali
     //Truth level 
     std::vector<fastjet::PseudoJet> fConstituents_tru; 
     fConstituents_tru.clear();
-    fastjet::PseudoJet PseudoTracks_tru; //Creating a pseudojet object called PseduoTracks
+    fastjet::PseudoJet PseudoTracks_tru; 
     unsigned int JetconstituentIndex_tru = 0;
     for (auto part_tru: fJet_Tru->GetParticleConstituents())
     {
@@ -1773,22 +1778,20 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
     //HERE is where the pT matching condition comes in
     GetMatchedJetObservables(jet_emb, matchedJetPt_Det, matchedJetPt_Part, matchedJetPhi_Det, matchedJetEta_Det, matchedJetPhi_Part, matchedJetEta_Part, matchedJetDistance_Det, matchedJetDistance_Part, jet_embptsub);
     
+    std::vector<fastjet::PseudoJet> jetConstituents; 
     std::string matchedType = "";
     bool ifmj = false;
     if (matchedJetPt_Det==-0.1 || matchedJetPt_Part==-0.1) {
-      hJet_num_um->Fill(0.5);
       if(jet_embptsub<fPtThreshold) continue;
       if(jet_embArea<fjetMinArea) continue;
       if(fCout){cout << "THIS JET WASNT MATCHED" << endl;} 
-      std::vector<fastjet::PseudoJet> jetConstituents; 
+      hJet_num_um->Fill(0.5);
+      h_jetpt_um->Fill(jet_embptsub);
       jetConstituents.clear();
       fastjet::PseudoJet PseudoJetTracks; 
       unsigned int JetconstituentIndex = 0;
       for (auto part: jet_emb->GetParticleConstituents())
       {
-        h_jetpt_um->Fill(jet_embptsub);
-        std::vector<fastjet::PseudoJet> jetConstituents; 
-        jetConstituents.clear();
         PseudoJetTracks.reset(part.Px(), part.Py(), part.Pz(), part.E()); 
         const AliVParticle* part2 = part.GetParticle();
         //if its not a background particle, set ID 
@@ -1867,18 +1870,15 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
       if(jet_embptsub<fPtThreshold) continue;
       if(jet_embArea<fjetMinArea) continue;
       float dpt = jet_embptsub - matchedJetPt_Det;
-      h_dpt->Fill(dpt);
+      h_dpt->Fill(dpt,jet_embptsub);
+      h_jetpt_m->Fill(jet_embptsub);
+      h_jetpt_m_tru->Fill(jet_embptsub,matchedJetPt_Part);
       if(fCout){cout << "THIS JET WAS MATCHED" << endl;} 
-      std::vector<fastjet::PseudoJet> jetConstituents; 
       jetConstituents.clear();
       fastjet::PseudoJet PseudoJetTracks; 
       unsigned int JetconstituentIndex = 0;
       for (auto part: jet_emb->GetParticleConstituents())
       {
-        h_jetpt_m->Fill(jet_embptsub);
-        h_jetpt_m_tru->Fill(jet_embptsub,matchedJetPt_Part);
-        std::vector<fastjet::PseudoJet> jetConstituents; 
-        jetConstituents.clear();
         PseudoJetTracks.reset(part.Px(), part.Py(), part.Pz(), part.E()); 
         const AliVParticle* part2 = part.GetParticle(); 
         //if its not a background particle, set ID 
@@ -2200,10 +2200,10 @@ void AliAnalysisTaskJetsEECpbpb::MatchTracks()
 //______________________________________________________________________
 //To perform background subtraction in data 
 //This will give BB' and JB contributions
-void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, bool typeSame, std::string type)
+void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, float jetpt, bool typeSame, std::string type)
 {
-  double w_eec = 0.0;
-  double w_eec_3D = 0.0;
+  float w_eec = 0.0;
+  float w_eec_3D = 0.0;
 
     if(typeSame){
         int mult = particles.size();
@@ -2214,13 +2214,13 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataEEC(std::vector<fastjet::Pseu
             {
                 if(particles.at(j).pt()<fMinENCtrackPt) continue;
 
-                  double pt_i = particles.at(i).pt();
-                  double pt_j =  particles.at(j).pt();
+                  float pt_i = particles.at(i).pt();
+                  float pt_j =  particles.at(j).pt();
                 
                   w_eec = (1./(jetpt*jetpt))*(2 * pt_i * pt_j);
                   w_eec_3D =  (1.0 /(jetpt*jetpt))*(pt_i * pt_j);
 
-                  double dR = delR(particles.at(i), particles.at(j));
+                  float dR = delR(particles.at(i), particles.at(j));
 
                   if(type == "sameMB"){
                     h_MB1_dat->Fill(jetpt, dR, w_eec);
@@ -2242,13 +2242,13 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataEEC(std::vector<fastjet::Pseu
             {
                  if(particles2.at(j).pt()<fMinENCtrackPt) continue;
                   
-                  double pt_i = particles.at(i).pt();
-                  double pt_j =  particles.at(j).pt();
+                  float pt_i = particles.at(i).pt();
+                  float pt_j =  particles.at(j).pt();
                     
                   w_eec = (1./(jetpt*jetpt))*(2*pt_i * pt_j);
                   w_eec_3D =  (1.0 /(jetpt*jetpt))*(pt_i * pt_j);
                 
-                  double dR = delR(particles.at(i), particles2.at(j));
+                  float dR = delR(particles.at(i), particles2.at(j));
 
                 if(type == "jetMB"){
                     h_JMB_dat->Fill(jetpt, dR, w_eec);
@@ -2272,25 +2272,25 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataEEC(std::vector<fastjet::Pseu
 //This will give B'B'B' (all same)
 //B'B''B'', B'B'B'' and JB'B',  JJB' (two diff)
 //JB'B'', B'B''B''' (all diff)
-void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2,std::vector<fastjet::PseudoJet> particles3, double jetpt, std::string typeSame, std::string type)
+void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2,std::vector<fastjet::PseudoJet> particles3, float jetpt, std::string typeSame, std::string type)
 {
   int mult = particles.size();
   int mult2 = particles2.size();
   int mult3 = particles3.size();
     
-  double w = 0;
-  double w_iij = 0;
-  double w_e3c_3D = 0;
-  double w_iij_3D = 0;
+  float w = 0;
+  float w_iij = 0;
+  float w_e3c_3D = 0;
+  float w_iij_3D = 0;
     
-  double w_ijs = 0;
-  double w_ijs_3D = 0;
+  float w_ijs = 0;
+  float w_ijs_3D = 0;
     
-  double w_twosame = 0;
-  double w_twosame_3D = 0;
+  float w_twosame = 0;
+  float w_twosame_3D = 0;
     
-  double w_ijk = 0;
-  double w_ijk_3D = 0;
+  float w_ijk = 0;
+  float w_ijk_3D = 0;
 
     if(typeSame == "all"){
         for (int i = 0; i < mult; i++)
@@ -2307,7 +2307,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                 w_e3c_3D =  (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles.at(j).pt()*particles.at(j).pt());
                 w_iij_3D =  (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles.at(i).pt()*particles.at(j).pt());
 
-                double dR = delR(particles.at(i), particles.at(j));
+                float dR = delR(particles.at(i), particles.at(j));
 
                  if(type == "sameMB"){
                     h_MB1MB1MB1_dat->Fill(jetpt, dR, w);
@@ -2325,11 +2325,11 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     w_ijs = (1./(jetpt*jetpt*jetpt))*(6*particles.at(i).pt()*particles.at(j).pt()*particles.at(s).pt());
                     w_ijs_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles.at(j).pt()*particles.at(s).pt());
 
-                    double dR_ij = delR(particles.at(i), particles.at(j));
-                    double dR_js = delR(particles.at(j), particles.at(s));
-                    double dR_is = delR(particles.at(s), particles.at(i));
+                    float dR_ij = delR(particles.at(i), particles.at(j));
+                    float dR_js = delR(particles.at(j), particles.at(s));
+                    float dR_is = delR(particles.at(s), particles.at(i));
                     
-                    double R_L = -1;
+                    float R_L = -1;
                     if(dR_ij>dR_js && dR_ij>dR_is){R_L = dR_ij;}
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
@@ -2360,7 +2360,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
               w_twosame = (1./(jetpt*jetpt*jetpt))*(3*particles.at(i).pt()*particles2.at(j).pt()*particles2.at(j).pt());
               w_twosame_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles2.at(j).pt()*particles2.at(j).pt());
              
-              double R_L = delR(particles.at(i), particles2.at(j));
+              float R_L = delR(particles.at(i), particles2.at(j));
 
               if(type == "jetjetMB"){
                 h_JJMB_dat->Fill(jetpt, R_L,w_twosame);
@@ -2399,11 +2399,11 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     w_ijk = (1./(jetpt*jetpt*jetpt))*(6*particles.at(i).pt()*particles2.at(j).pt()*particles2.at(k).pt());
                     w_ijk_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles2.at(j).pt()*particles2.at(k).pt());
 
-                    double dR_ij = delR(particles.at(i), particles2.at(j));
-                    double dR_js = delR(particles2.at(j), particles2.at(k));
-                    double dR_is = delR(particles2.at(k), particles.at(i));
+                    float dR_ij = delR(particles.at(i), particles2.at(j));
+                    float dR_js = delR(particles2.at(j), particles2.at(k));
+                    float dR_is = delR(particles2.at(k), particles.at(i));
                     
-                    double R_L = -1;
+                    float R_L = -1;
                     if(dR_ij>dR_js && dR_ij>dR_is){R_L = dR_ij;}
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
@@ -2474,11 +2474,11 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     w_ijk = (1./(jetpt*jetpt*jetpt))*(6*particles.at(i).pt()*particles2.at(j).pt()*particles3.at(k).pt());
                     w_ijk_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles2.at(j).pt()*particles3.at(k).pt());
                     
-                    double dR_ij = delR(particles.at(i), particles2.at(j));
-                    double dR_js = delR(particles2.at(j), particles3.at(k));
-                    double dR_is = delR(particles.at(i), particles3.at(k));
+                    float dR_ij = delR(particles.at(i), particles2.at(j));
+                    float dR_js = delR(particles2.at(j), particles3.at(k));
+                    float dR_is = delR(particles.at(i), particles3.at(k));
                     
-                    double R_L = -1;
+                    float R_L = -1;
                     if(dR_ij>dR_js && dR_ij>dR_is){R_L = dR_ij;}
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
@@ -2697,13 +2697,13 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet)
 //if cfactor && ifcFactorHist is true then fill the c-factor histograms
 //this will be true 50% of times and false 50% times and will be set in the embedding
 //if you want to use all the same events to find the c-factor just set it manually
-void AliAnalysisTaskJetsEECpbpb::FillEmbJetsEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, double jetpt, double pt, bool typeSame, std::string type, double bkgIndex1, double bkgIndex2, bool cfactor, std::string tag)
+void AliAnalysisTaskJetsEECpbpb::FillEmbJetsEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, float jetpt, float pt, bool typeSame, std::string type, double bkgIndex1, double bkgIndex2, bool cfactor, std::string tag)
 {
-double w_eec = 0.0;
-double w_eec_tru = 0.0;
+float w_eec = 0.0;
+float w_eec_tru = 0.0;
 
-double w_eec_3D = 0.0;
-double w_eec_tru_3D = 0.0;
+float w_eec_3D = 0.0;
+float w_eec_tru_3D = 0.0;
 
 if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
     if(typeSame)
@@ -2716,8 +2716,8 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
             {
                 if(particles.at(j).pt()<fMinENCtrackPt) continue;
 
-                  double pt_i = particles.at(i).pt();
-                  double pt_j =  particles.at(j).pt();
+                  float pt_i = particles.at(i).pt();
+                  float pt_j =  particles.at(j).pt();
                 
                   w_eec = (1./(jetpt*jetpt))*(2 * pt_i * pt_j);
                   w_eec_tru = (1./(pt*pt))*(2 * pt_i * pt_j);
@@ -2726,12 +2726,13 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                   w_eec_tru_3D =  (1.0 / (pt * pt))* (pt_i * pt_j);
                 
                 
-                double dR = delR(particles.at(i), particles.at(j));
+                float dR = delR(particles.at(i), particles.at(j));
                 int i1 = particles.at(i).user_index();
                 int i2 = particles.at(j).user_index();
                 
                 if(type == "sameJet")
                 {
+                  if(fCout)std::cout<<"In type: sameJet"<<endl;
                         h_MJ->Fill(jetpt, pt, dR, w_eec);
 
                         h3Jet_deltaR_MJ->Fill(jetpt, dR, w_eec_3D);
@@ -2861,6 +2862,8 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                  }
                 if(type == "sameMB")
                 {
+                  if(fCout)std::cout<<"In type: sameMB"<<endl;
+
                       h_MB1->Fill(jetpt, pt, dR, w_eec);
                       h3Jet_deltaR_MB1->Fill(jetpt, dR, w_eec_3D);
                       h3Jet_deltaR_MB1->Fill(jetpt, dR, w_eec_3D);
@@ -2901,8 +2904,8 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
             for (int j = 0; j < mult2; j++){
                  if(particles2.at(j).pt()<fMinENCtrackPt) continue;
                   
-                   double pt_i = particles.at(i).pt();
-                   double pt_j =  particles.at(j).pt();
+                   float pt_i = particles.at(i).pt();
+                   float pt_j =  particles.at(j).pt();
                     
                     w_eec = (1./(jetpt*jetpt))*(2*pt_i * pt_j);
                     w_eec_tru = (1./(pt*pt))*(2*pt_i * pt_j);
@@ -2910,7 +2913,7 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                     w_eec_3D =  (1.0 /(jetpt*jetpt))*(pt_i * pt_j);
                     w_eec_tru_3D =  (1.0 / (pt * pt))* (pt_i * pt_j);
                 
-                double dR = delR(particles.at(i), particles2.at(j));
+                float dR = delR(particles.at(i), particles2.at(j));
                 
                 int i1 = particles.at(i).user_index();
                 int i2 = particles2.at(j).user_index();
@@ -3058,39 +3061,39 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
 // //________________________________________________________________________
 // //bkgindex = -1 for jet background particle, -2 for first thermal cone, -3 for second thermal cone, -4 for third thermal cone
 // //pt is true (gen) level jet pT, jetpt is the pT of the embedded subtracted jet
-void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2,std::vector<fastjet::PseudoJet> particles3, double jetpt, double pt, std::string typeSame, std::string type, bool ifMatchedJet)
+void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2,std::vector<fastjet::PseudoJet> particles3, float jetpt, float pt, std::string typeSame, std::string type, bool ifMatchedJet)
 {
     if(fCout){cout<<particles.size()<<" and "<<particles2.size()<<"  and "<<particles3.size()<<endl;}
     int mult = particles.size();
     int mult2 = particles2.size();
     int mult3 = particles3.size();
     
-    double w = 0;
-    double w_tru = 0;
-    double w_iij = 0;
-    double w_tru_iij = 0;
-    double w_e3c_3D = 0;
-    double w_e3c_tru_3D = 0;
-    double w_iij_3D = 0;
-    double w_iij_tru_3D = 0;
+    float w = 0;
+    float w_tru = 0;
+    float w_iij = 0;
+    float w_tru_iij = 0;
+    float w_e3c_3D = 0;
+    float w_e3c_tru_3D = 0;
+    float w_iij_3D = 0;
+    float w_iij_tru_3D = 0;
     
-    double w_ijs = 0;
-    double w_ijs_tru = 0;
+    float w_ijs = 0;
+    float w_ijs_tru = 0;
     
-    double w_ijs_3D = 0;
-    double w_ijs_tru_3D = 0;
+    float w_ijs_3D = 0;
+    float w_ijs_tru_3D = 0;
     
-    double w_twosame = 0;
-    double w_twosame_tru = 0;
+    float w_twosame = 0;
+    float w_twosame_tru = 0;
     
-    double w_twosame_3D = 0;
-    double w_twosame_tru_3D = 0;
+    float w_twosame_3D = 0;
+    float w_twosame_tru_3D = 0;
     
-    double w_ijk = 0;
-    double w_ijk_tru = 0;
+    float w_ijk = 0;
+    float w_ijk_tru = 0;
     
-    double w_ijk_3D = 0;
-    double w_ijk_tru_3D = 0;
+    float w_ijk_3D = 0;
+    float w_ijk_tru_3D = 0;
     
     
     if(fCout){cout<<"!!!!!!!!!!after setting: "<<mult<<" and "<<mult2<<" and "<<mult3<<endl;}
@@ -3122,7 +3125,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                 
                 
                 
-                double dR = delR(particles.at(i), particles.at(j));
+                float dR = delR(particles.at(i), particles.at(j));
                 int i1 = particles.at(i).user_index();
                 int i2 = particles.at(j).user_index();
                 
@@ -3130,7 +3133,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                 
                 if(type =="sameJet")
                 {
-                    hJet_deltaR_MJ_e3c->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ_e3c->Fill(jetpt, pt, dR, w_iij);
+                  if(fCout){cout<<"filling base histograms"<<endl;}
+                    h_MJ_e3c->Fill(jetpt, pt, dR, w);h_MJ_e3c->Fill(jetpt, pt, dR, w_iij);
+
+                  if(fCout){cout<<"filling base 3D histograms"<<endl;}
 
                     h3Jet_deltaR_MJ_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ_e3c->Fill(jetpt, dR, w_iij_3D);
                     h3Jet_deltaR_MJ_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ_e3c->Fill(jetpt, dR, w_iij_3D);
@@ -3149,7 +3155,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                         
                        }
                         else{
-               
+                            if(fCout){cout<<"filling unmatched case"<<endl;}
                             hJet_deltaR_MJ_e3c_um->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ_e3c_um->Fill(jetpt, pt, dR, w_iij);
                             
                             h3Jet_deltaR_MJ_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ_e3c_um->Fill(jetpt, dR, w_iij_3D);
@@ -3159,7 +3165,8 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                        }
                         
                         if ((i1 == -1) && (i2 == -1)) {
-                            hJet_deltaR_MJ0_e3c->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ0_e3c->Fill(jetpt, pt, dR, w_iij);
+                          if(fCout){cout<<"all bkg"<<endl;}
+                            h_MJ0_e3c->Fill(jetpt, pt, dR, w);h_MJ0_e3c->Fill(jetpt, pt, dR, w_iij);
                             
                             h3Jet_deltaR_MJ0_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ0_e3c->Fill(jetpt, dR, w_iij_3D);
                             h3Jet_deltaR_MJ0_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ0_e3c->Fill(jetpt, dR, w_iij_3D);
@@ -3192,43 +3199,44 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                             }
                         }//fake fake fake
                         else if (i2 == -1) {
-                            hJet_deltaR_MJ1_e3c->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ2_e3c->Fill(jetpt, pt, dR, w_iij);
+                          if(fCout){cout<<"j bkg"<<endl;}
+                            h_MJ1_e3c->Fill(jetpt, pt, dR, w);h_MJ2_e3c->Fill(jetpt, pt, dR, w_iij);
 
-                            h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_iij_3D);
-                            h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_iij_3D);
-                            h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_iij_3D);
+                            h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_iij_3D);
+                            h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_iij_3D);
+                            h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_iij_3D);
                             
                             if(ifMatchedJet){
                                 
                                 hJet_deltaR_MJ1_e3c_m->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ2_e3c_m->Fill(jetpt, pt, dR, w_iij);
                                 hJet_deltaR_MJ1_e3c_tru_m->Fill(jetpt, pt, dR, w_tru);hJet_deltaR_MJ2_e3c_tru_m->Fill(jetpt, pt, dR, w_tru_iij);
                                 
-                                h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_iij_3D);
-                                h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_iij_3D);
-                                h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_m->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_m->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ1_e3c_m->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_m->Fill(jetpt, dR, w_iij_3D);
                                 
-                                h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
-                                h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
-                                h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
+                                h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
+                                h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
+                                h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
                                 
                             }
                             else{
                                 
                                 hJet_deltaR_MJ1_e3c_um->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ2_e3c_um->Fill(jetpt, pt, dR, w_iij);
                                 
-                                h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_iij_3D);
-                                h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_iij_3D);
-                                h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_iij_3D);
                     
                             }
                         }//real fake fake for ijj & real real fake for iij
                         else if (i1 == -1) {
-                            hJet_deltaR_MJ2_e3c->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ1_e3c->Fill(jetpt, pt, dR, w_iij);
-                            
-                            
-                            h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_iij_3D);
-                            h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_iij_3D);
-                            h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_iij_3D);
+                          if(fCout){cout<<"i bkg, realrealfake"<<endl;}
+                            h_MJ2_e3c->Fill(jetpt, pt, dR, w);h_MJ1_e3c->Fill(jetpt, pt, dR, w_iij);
+                          
+                            h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_iij_3D);
+                            h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_iij_3D);
+                            h3Jet_deltaR_MJ2_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c->Fill(jetpt, dR, w_iij_3D);
                             
                             
                             if(ifMatchedJet){
@@ -3236,25 +3244,25 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                                 hJet_deltaR_MJ2_e3c_m->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ1_e3c_m->Fill(jetpt, pt, dR, w_iij);
                                 hJet_deltaR_MJ2_e3c_tru_m->Fill(jetpt, pt, dR, w_tru);hJet_deltaR_MJ1_e3c_tru_m->Fill(jetpt, pt, dR, w_tru_iij);
                                 
-                                h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
-                                h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
-                                h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
+                                h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
+                                h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
+                                h3Jet_deltaR_MJ2_e3c_tru_m->Fill(pt, dR, w_e3c_tru_3D);h3Jet_deltaR_MJ1_e3c_tru_m->Fill(pt, dR, w_iij_tru_3D);
                                 
                             }
                             else{
                                 
                                 hJet_deltaR_MJ2_e3c_um->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ1_e3c_um->Fill(jetpt, pt, dR, w_iij);
                                 
-                                h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_iij_3D);
-                                h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_iij_3D);
-                                h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_iij_3D);
+                                h3Jet_deltaR_MJ2_e3c_um->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ1_e3c_um->Fill(jetpt, dR, w_iij_3D);
                                 
                                 
                             }
                             
                         }//real real fake
                         else {
-                            hJet_deltaR_MJ3_e3c->Fill(jetpt, pt, dR, w);hJet_deltaR_MJ3_e3c->Fill(jetpt, pt, dR, w_iij);
+                            h_MJ3_e3c->Fill(jetpt, pt, dR, w);h_MJ3_e3c->Fill(jetpt, pt, dR, w_iij);
                             
                             h3Jet_deltaR_MJ3_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ3_e3c->Fill(jetpt, dR, w_iij_3D);
                             h3Jet_deltaR_MJ3_e3c->Fill(jetpt, dR, w_e3c_3D);h3Jet_deltaR_MJ3_e3c->Fill(jetpt, dR, w_iij_3D);
@@ -3284,6 +3292,8 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                             }
                             
                         }//both are pythia
+
+                        if(fCout){cout<<"finished with same jet loop"<<endl;}
                     }
                                     
                 if(type=="sameMB"){
@@ -3347,11 +3357,11 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                     w_ijs_tru_3D = (1./(pt*pt*pt))*(particles.at(i).pt()*particles.at(j).pt()*particles.at(s).pt());
                     
                     
-                    double dR_ij = delR(particles.at(i), particles.at(j));
-                    double dR_js = delR(particles.at(j), particles.at(s));
-                    double dR_is = delR(particles.at(s), particles.at(i));
+                    float dR_ij = delR(particles.at(i), particles.at(j));
+                    float dR_js = delR(particles.at(j), particles.at(s));
+                    float dR_is = delR(particles.at(s), particles.at(i));
                     
-                    double R_L = -1;
+                    float R_L = -1;
                     if(dR_ij>dR_js && dR_ij>dR_is){R_L = dR_ij;}
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
@@ -3366,7 +3376,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                         
                         if(fCout){cout<<"fill same jet ijs"<<endl;}
                         
-                        hJet_deltaR_MJ_e3c->Fill(jetpt, pt, R_L, w_ijs);
+                        h_MJ_e3c->Fill(jetpt, pt, R_L, w_ijs);
                         
                         h3Jet_deltaR_MJ_e3c->Fill(jetpt, R_L, w_ijs_3D);
                         h3Jet_deltaR_MJ_e3c->Fill(jetpt, R_L, w_ijs_3D);
@@ -3410,7 +3420,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                         }
                         
                         if ((i1 == -1) && (i2 == -1) && (i3 == -1)){
-                            hJet_deltaR_MJ0_e3c->Fill(jetpt, pt, R_L, w_ijs);
+                            h_MJ0_e3c->Fill(jetpt, pt, R_L, w_ijs);
                             
                             h3Jet_deltaR_MJ0_e3c->Fill(jetpt, R_L, w_ijs_3D);//fake fake fake
                             h3Jet_deltaR_MJ0_e3c->Fill(jetpt, R_L, w_ijs_3D);//fake fake fake
@@ -3456,7 +3466,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                             else if (((i1 == -1) && (i2 == -1) && (i3 != 0)) ||((i1 == -1) && (i2 != 0) && (i3 == -1)) ||((i1 != 0) && (i2 == -1) && (i3 == -1)))
                             {
                                 
-                                hJet_deltaR_MJ1_e3c->Fill(jetpt, pt, R_L, w_ijs);
+                                h_MJ1_e3c->Fill(jetpt, pt, R_L, w_ijs);
                                 
                                 h3Jet_deltaR_MJ1_e3c->Fill(jetpt, R_L, w_ijs_3D);//fake fake REAL
                                 h3Jet_deltaR_MJ1_e3c->Fill(jetpt, R_L, w_ijs_3D);
@@ -3503,7 +3513,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                             }
                             else if (((i1 == -1) && (i2 != 0) && (i3 != 0)) ||((i1 != 0) && (i2 != 0) && (i3 == -1)) ||((i1 != 0) && (i2 == -1) && (i3 != 0)))
                             {
-                                hJet_deltaR_MJ2_e3c->Fill(jetpt, pt, R_L, w_ijs);
+                                h_MJ2_e3c->Fill(jetpt, pt, R_L, w_ijs);
                                 
                                 h3Jet_deltaR_MJ2_e3c->Fill(jetpt, R_L, w_ijs_3D);
                                 h3Jet_deltaR_MJ2_e3c->Fill(jetpt, R_L, w_ijs_3D);
@@ -3548,7 +3558,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                                 
                             }
                             else{
-                                hJet_deltaR_MJ3_e3c->Fill(jetpt, pt, R_L, w_ijs);//real real real
+                                h_MJ3_e3c->Fill(jetpt, pt, R_L, w_ijs);//real real real
                                 
                                 
                                 h3Jet_deltaR_MJ3_e3c->Fill(jetpt, R_L, w_ijs_3D);
@@ -3666,7 +3676,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                 w_twosame_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles2.at(j).pt()*particles2.at(j).pt());
                 w_twosame_tru_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles2.at(j).pt()*particles2.at(j).pt());
                 
-                double R_L = delR(particles.at(i), particles2.at(j));
+                float R_L = delR(particles.at(i), particles2.at(j));
                 
                 if(fCout){cout<<" about to fill histograms in TWO SAME"<<endl;}
                 if(i1==-2 && (i2 >= 0 || i2 == -1)) {
@@ -3961,11 +3971,11 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                     
                     
                     
-                    double dR_ij = delR(particles.at(i), particles2.at(j));
-                    double dR_js = delR(particles2.at(j), particles2.at(k));
-                    double dR_is = delR(particles2.at(k), particles.at(i));
+                    float dR_ij = delR(particles.at(i), particles2.at(j));
+                    float dR_js = delR(particles2.at(j), particles2.at(k));
+                    float dR_is = delR(particles2.at(k), particles.at(i));
                     
-                    double R_L = -1;
+                    float R_L = -1;
                     if(dR_ij>dR_js && dR_ij>dR_is){R_L = dR_ij;}
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
@@ -4418,11 +4428,11 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                     w_ijk_3D = (1./(jetpt*jetpt*jetpt))*(particles.at(i).pt()*particles2.at(j).pt()*particles3.at(k).pt());
                     w_ijk_tru_3D = (1./(pt*pt*pt))*(particles.at(i).pt()*particles2.at(j).pt()*particles3.at(k).pt());
                     
-                    double dR_ij = delR(particles.at(i), particles2.at(j));
-                    double dR_js = delR(particles2.at(j), particles3.at(k));
-                    double dR_is = delR(particles.at(i), particles3.at(k));
+                    float dR_ij = delR(particles.at(i), particles2.at(j));
+                    float dR_js = delR(particles2.at(j), particles3.at(k));
+                    float dR_is = delR(particles.at(i), particles3.at(k));
                     
-                    double R_L = -1;
+                    float R_L = -1;
                     if(dR_ij>dR_js && dR_ij>dR_is){R_L = dR_ij;}
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
@@ -4966,7 +4976,7 @@ double jet_pt = fJet->Pt();
 
     
 //ENC computation-------------------------------------------------------
-void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, double ptSub, AliJetContainer *fJetCont)
+void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJetContainer *fJetCont)
 {
     //General ENC computation: Need to loop over jets, then loop within a single jet to compute EECs.
     //NOTE: Already in the jet loop defined in the Fill Histogram function. This puts you in the jet loop. The event loop stuff is being taken care of by AliAnalysis manager
