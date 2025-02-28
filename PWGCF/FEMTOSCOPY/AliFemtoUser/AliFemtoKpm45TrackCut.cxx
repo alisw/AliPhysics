@@ -1,14 +1,15 @@
 /*
 ***************************************************************************
+* Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c
+* Konstantin.Mikhaylov@cern.ch:  created: 3 March 2016 
+* Modified: February 28, 2025: added mutable fMomemtumTOF45
+*              
+*
+***************************************************************************
 *
 * $Id: AliFemtoKpm45TrackCut.cxx 60781 2013-02-08 16:24:10Z akisiel $ 
 *
 * 
-***************************************************************************
-* Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c
-* Konstantin.Mikhaylov@cern.ch  3 March 2016 
-*              
-*
 ***************************************************************************
 *
 * $Log$
@@ -88,6 +89,7 @@ ClassImp(AliFemtoKpm45TrackCut)
     fLabel(0),
     fStatus(0),
     fPIDMethod(knSigma),
+    fMomemtumTOF45(0.45),
 //ml
   fNsigmaTPCle250(3.),
   fNsigmaTPC250_400(3.),
@@ -138,6 +140,8 @@ ClassImp(AliFemtoKpm45TrackCut)
   fminTPCclsF=0;
   fminITScls=0;
   fPIDMethod=knSigma;
+
+  fMomemtumTOF45=0.45;
 
   fNsigmaTPCle250=3.0;
   fNsigmaTPC250_400=3.0;
@@ -927,7 +931,7 @@ bool AliFemtoKpm45TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsig
 	}
     }
 
-  if(mom>=0.4 && mom<0.45)
+  if(mom>=0.4 && mom<fMomemtumTOF45)
     {
       if(TMath::Abs(nsigmaTPCK)<fNsigmaTPC400_450)
 	{ 
@@ -957,7 +961,7 @@ bool AliFemtoKpm45TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsig
   
   
   //if(mom>=0.5 && mom<0.8)
-  if(mom>=0.45 && mom<0.8) //extend TOF PID to 0.45 (was 0.5) GeV/c 
+  if(mom>=fMomemtumTOF45 && mom<0.8) //extend TOF PID to 0.45 (was 0.5) GeV/c 
     {
       if(TMath::Abs(nsigmaTOFK)<fNsigmaTOF500_800 && TMath::Abs(nsigmaTPCK)<fNsigmaTPCge500) 
 	{
@@ -1105,6 +1109,9 @@ Bool_t AliFemtoKpm45TrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClu
   return kFALSE;
 }
 
+void AliFemtoKpm45TrackCut::SetMomemtumTOF45(Double_t momentum){
+  fMomemtumTOF45 = momentum;
+}
 
 void AliFemtoKpm45TrackCut::SetNsigmaTPCle250(Double_t nsigma)
 {
