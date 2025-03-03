@@ -94,6 +94,7 @@ public:
   void   SetFillJetsFJBGConst(const Bool_t ifJetsFJBGConst = kTRUE)     {fFillJetsFJBGConst     = ifJetsFJBGConst;}
   void   SetDoIncTracks(const Bool_t ifdoIncTracks = kTRUE)               {fDoIncTracks        = ifdoIncTracks;}
   void   SetDoPerpCone(const Bool_t ifdoPerpCone = kTRUE)               {fDoPerpCone        = ifdoPerpCone;}
+  void   SetDoMatchPerpCone(const Bool_t ifdoMatchPerpCone = kTRUE)               {fDoMatchPerpCone        = ifdoMatchPerpCone;}
   void   SetDoRandCone(const Bool_t ifdoRandCone = kTRUE)               {fDoRandCone        = ifdoRandCone;}
   void   SetDoFastJet(const Bool_t ifFastJet = kTRUE)               {fDoFastJet         = ifFastJet;}
   void   SetDoEMCJet(const Bool_t ifEMCJet = kTRUE)               {fDoEMCJet         = ifEMCJet;}
@@ -262,6 +263,7 @@ private:
   Bool_t            fFillEMCJet;         // switch whether to fill EMC tree
   Bool_t            fDoIncTracks;         // switch whether to use inclusive tracks
   Bool_t            fDoPerpCone;         // switch whether to use perpendicular cone tracks
+  Bool_t            fDoMatchPerpCone;         // switch whether to use perpendicular cone tracks for matched jets only
   Bool_t            fDoRandCone;         // switch whether to use random cone tracks
   Bool_t            fDoFastJet;         // switch whether to use FJ jets
   Bool_t            fDoEMCJet;         // switch whether to use EMC jets
@@ -615,7 +617,7 @@ private:
   AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
   AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 6);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 7);
 
 };
 
