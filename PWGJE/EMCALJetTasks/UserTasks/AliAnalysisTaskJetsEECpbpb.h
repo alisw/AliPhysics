@@ -101,6 +101,7 @@ public:
     void SetAddEventCuts(Bool_t t) { fAddEventCuts = t; }
     void SetHighPtTrackCutEvent(Float_t t) { fHighPtTrackCutEvent = t; }
     void SetAxisShift(Float_t t) { fDeltaAxisShift = t; }
+    void SetEtaCutOnConeParticles(Float_t t) { fEtaCutValue = t; }
 
     
     
@@ -131,8 +132,8 @@ protected:
     void FillBkgSubJetsDataEEC(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, float jetpt, bool typeSame, std::string type);
     void FillBkgSubJetsDataE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, float jetpt, std::string typeSame, std::string type);
 
-    std::vector<fastjet::PseudoJet> FindConesDataEEC(AliEmcalJet *fJet,std::string axisType);
-    std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindConesDataE3C(AliEmcalJet *fJet);
+    std::pair<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindConesDataEEC(AliEmcalJet *fJet,AliVEvent* inputEvent);
+    std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindConesDataE3C(AliEmcalJet *fJet,AliVEvent* inputEvent);
 
     bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
     void DoJetMatching();
@@ -182,7 +183,7 @@ protected:
     Bool_t fCutDoubleCounts;   ///< turn off to avoid true-hybrid cuts to suppress double counting
     Float_t fPowerAlgo;        ///< power of the generickt algorithm
     Float_t fPhiCutValue;      ///< cuts from HBT
-    Float_t fEtaCutValue;      ///< cuts from HBT
+    Float_t fEtaCutValue;      ///< cuts for particle eta 
     Int_t fDerivSubtrOrder; //What does this do?????????
     Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
     
@@ -875,7 +876,7 @@ private:
     AliAnalysisTaskJetsEECpbpb &
     operator=(const AliAnalysisTaskJetsEECpbpb &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEECpbpb, 34) //change this to 35 if you add something new
+    ClassDef(AliAnalysisTaskJetsEECpbpb, 35) //change this to 36 if you add something new
 };
 #endif
 

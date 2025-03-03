@@ -77,9 +77,9 @@ fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.), fMinENCtr
 fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
-fEtaCutValue(0.02), fDerivSubtrOrder(0),
+fEtaCutValue(0.9), fDerivSubtrOrder(0),
 fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fMatchR(0.3), fjetMinPtSub(20), fjetMaxPtSub(200), fjetMinArea(0), fEmbTuthJetPtMin(0), fStoreTrig(kFALSE), fConeR(0.4), fpTcorr(0), fpaircut(0), 
-fpairfastsim(0), fUnfolding(0),fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJetPtMin(0),
+fpairfastsim(0), fUnfolding(0),fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(100), fJetPtMin(0),
 fDoEmbedding(kFALSE), fIsEmbeddedEvent(kFALSE),fDoPerpCone(kFALSE),fDoRandCone(kFALSE), fCout(kTRUE), fisGoodIncEvent(0),
 fDoPartLevelMatching(0),fDoDetLevelMatching(0),fTruthMinLabel(0),fTruthMaxLabel(0),fSaveMCInformation(0),fJetMatchingSharedPtFraction(0),fjetRhoVal(0),fjetRecoRhoVal(0),
 fjetEmbRhoVal(0),fjetGenRhoVal(0),fhasAcceptedEMCjet(0),fJetContainer(0),
@@ -178,9 +178,9 @@ fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.), fMinENCtr
 fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
-fEtaCutValue(0.02), fDerivSubtrOrder(0),
+fEtaCutValue(0.9), fDerivSubtrOrder(0),
 fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fMatchR(0.3), fjetMinPtSub(20), fjetMaxPtSub(200), fjetMinArea(0), fEmbTuthJetPtMin(0), fStoreTrig(kFALSE), fConeR(0.4), fpTcorr(0), fpaircut(0), 
-fpairfastsim(0), fUnfolding(0),fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJetPtMin(0),
+fpairfastsim(0), fUnfolding(0),fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(100), fJetPtMin(0),
 fDoEmbedding(kFALSE), fIsEmbeddedEvent(kFALSE),fDoPerpCone(kFALSE),fDoRandCone(kFALSE), fCout(kTRUE), fisGoodIncEvent(0),
 fDoPartLevelMatching(0),fDoDetLevelMatching(0),fTruthMinLabel(0),fTruthMaxLabel(0),fSaveMCInformation(0),fJetMatchingSharedPtFraction(0),fjetRhoVal(0),fjetRecoRhoVal(0),
 fjetEmbRhoVal(0),fjetGenRhoVal(0), fhasAcceptedEMCjet(0),fJetContainer(0),
@@ -1275,7 +1275,7 @@ else{
       } else
         rhoMassVal = rhomParam->GetVal();
     }
-
+    
     while ((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1)
         continue;
@@ -1388,15 +1388,17 @@ else{
           constituentIndexJet++;
           }
           if(fCout) cout<<"Now finding data cones for EEC"<<endl;
-          std::vector<fastjet::PseudoJet> cone1 = FindConesDataEEC(jet1,"plus");//Find one cone in data for EEC
-          std::vector<fastjet::PseudoJet> cone2 = FindConesDataEEC(jet1,"minus");//Find second cone in data for EEC
+
+          auto cones = FindConesDataEEC(jet1,InputEvent());
+          std::vector<fastjet::PseudoJet> cone1 = cones.first;
+          std::vector<fastjet::PseudoJet> cone2 = cones.second;
           FillBkgSubJetsDataEEC(cone1,cone1,ptSubtracted,true,"sameMB");
           FillBkgSubJetsDataEEC(cone1,cone2,ptSubtracted,false,"diffMB");
           FillBkgSubJetsDataEEC(jetConstituents,cone1,ptSubtracted,false,"jetMB");
 
           if(fCout) cout<<"Now finding data cones for E3C"<<endl;
           std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
-          std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindConesDataE3C(jet1);
+          std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindConesDataE3C(jet1,InputEvent());
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles,minBiasParticles,ptSubtracted,"all","sameMB");
           FillBkgSubJetsDataE3C(jetConstituents,jetConstituents,minBiasParticles,ptSubtracted,"two","jetjetMB");
           FillBkgSubJetsDataE3C(jetConstituents,minBiasParticles,minBiasParticles,ptSubtracted,"two","jetMBMB");
@@ -1404,7 +1406,7 @@ else{
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles2,minBiasParticles2,ptSubtracted,"two","MB1MB2MB2");
           FillBkgSubJetsDataE3C(jetConstituents,minBiasParticles2,minBiasParticles3,ptSubtracted,"none","jetMB1MB2");
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles2,minBiasParticles3,ptSubtracted,"none","MB1MB2MB3");
-
+ 
           }
         else if ((fJetShapeType == kPythiaDef) || (fJetShapeType == kMCTrue) || (fJetShapeType == kGenOnTheFly)){
           ptSubtracted = jet1->Pt();
@@ -1818,6 +1820,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
             std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
             std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
             if(fCout){cout<<"Filling regular histograms "<<endl;}
+            if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
+              if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" and cone 2 size " << minBiasParticles2.size()<<endl;
+              continue;
+             } 
             FillEmbJetsEEC(jetConstituents, jetConstituents, jet_embptsub, jet_embptsub,true, "sameJet", -1, -1,false,matchedType.c_str());
             FillEmbJetsEEC(minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,true,"sameMB" , -2, -2,false,matchedType.c_str());
             FillEmbJetsEEC(minBiasParticles, minBiasParticles2, jet_embptsub, jet_embptsub,false,"diffMB", -2, -3,false,matchedType.c_str());
@@ -1827,6 +1833,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
             if(fCout){cout<<"Unmatched Jet E3C cones"<<endl;}
             std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
             std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindThermalConeE3C(jet_emb,-2,-3,-4);
+             if(minBiasParticles.size()==0 || minBiasParticles2.size()==0 || minBiasParticles3.size()==0 ){
+              if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
+              continue;
+             } 
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
@@ -1845,6 +1855,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
             std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
             std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
           if(fCout){cout<<"counter is odd, cFactorHist is set to TRUE"<<endl;}
+          if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
+              if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" and cone 2 size " << minBiasParticles2.size()<<endl;
+              continue;
+             } 
           FillEmbJetsEEC(jetConstituents, jetConstituents, jet_embptsub, jet_embptsub,true, "sameJet", -1, -1,true,matchedType.c_str());
           FillEmbJetsEEC(minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,true,"sameMB" , -2, -2,true,matchedType.c_str());
           FillEmbJetsEEC(minBiasParticles, minBiasParticles2, jet_embptsub, jet_embptsub,false,"diffMB", -2, -3,true,matchedType.c_str());
@@ -1854,6 +1868,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
              if(fCout){cout<<"Unmatched Jet E3C cones"<<endl;}
              std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
              std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindThermalConeE3C(jet_emb,-2,-3,-4);
+              if(minBiasParticles.size()==0 || minBiasParticles2.size()==0 || minBiasParticles3.size()==0 ){
+              if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
+              continue;
+             } 
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
@@ -1901,6 +1919,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
             std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
             std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
             if(fCout){cout<<"Filling regular histograms "<<endl;}
+            if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
+              if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" add cone 2 size " << minBiasParticles2.size()<<endl;
+              continue;
+             } 
             FillEmbJetsEEC(jetConstituents, jetConstituents, jet_embptsub, jet_embptsub,true, "sameJet", -1, -1,false,matchedType.c_str());
             FillEmbJetsEEC(minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,true,"sameMB" , -2, -2,false,matchedType.c_str());
             FillEmbJetsEEC(minBiasParticles, minBiasParticles2, jet_embptsub, jet_embptsub,false,"diffMB", -2, -3,false,matchedType.c_str());
@@ -1910,6 +1932,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
             if(fCout){cout<<"MATCHED Jet E3C cones"<<endl;}
             std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
             std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindThermalConeE3C(jet_emb,-2,-3,-4);
+            if(minBiasParticles.size()==0 || minBiasParticles2.size()==0 || minBiasParticles3.size()==0 ){
+              if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
+              continue;
+             } 
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
@@ -1927,6 +1953,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
           if(ifeec){
             std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
             std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
+          if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
+              if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" and cone 2 size " << minBiasParticles2.size()<<endl;
+              continue;
+             } 
           if(fCout){cout<<"counter is odd, cFactorHist is set to TRUE"<<endl;}
           FillEmbJetsEEC(jetConstituents, jetConstituents, jet_embptsub, jet_embptsub,true, "sameJet", -1, -1,true,matchedType.c_str());
           FillEmbJetsEEC(minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,true,"sameMB" , -2, -2,true,matchedType.c_str());
@@ -1937,6 +1967,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
              if(fCout){cout<<"MATCHED Jet E3C cones"<<endl;}
              std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
              std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindThermalConeE3C(jet_emb,-2,-3,-4);
+             if(minBiasParticles.size()==0 || minBiasParticles2.size()==0 || minBiasParticles3.size()==0 ){
+              if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
+              continue;
+             } 
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
@@ -2243,7 +2277,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataEEC(std::vector<fastjet::Pseu
                  if(particles2.at(j).pt()<fMinENCtrackPt) continue;
                   
                   float pt_i = particles.at(i).pt();
-                  float pt_j =  particles.at(j).pt();
+                  float pt_j =  particles2.at(j).pt();
                     
                   w_eec = (1./(jetpt*jetpt))*(2*pt_i * pt_j);
                   w_eec_3D =  (1.0 /(jetpt*jetpt))*(pt_i * pt_j);
@@ -2511,70 +2545,101 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
     }
 }
 //________________________________________________________________________
-//Find cones in data to perform background subtraction with 
-std::vector<fastjet::PseudoJet> AliAnalysisTaskJetsEECpbpb::FindConesDataEEC(AliEmcalJet *fJet, std::string axisType){
+// //Find cones in data to perform background subtraction with 
+std::pair<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> 
+AliAnalysisTaskJetsEECpbpb::FindConesDataEEC(AliEmcalJet *fJet, AliVEvent* inputEvent) {
+    if (fCout) std::cout << "Creating cones for EEC data jets" << std::endl;
+    if (!fJet || !inputEvent) return {}; // Safety check
 
-  double jetEta = fJet->Eta();
-  Double_t Axis1 = 999, Axis2 = 999;
-  double dPhi1 = 999, dPhi2 = 999, dPhi = 999, dEta = 999;
-  std::vector<fastjet::PseudoJet> tracksInCone;
-  fastjet::PseudoJet PseudoTracks; //Creating a pseudojet object called PseduoTracks
-  tracksInCone.clear();
-  if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal ===== " << std::endl;
+    double jetEta = fJet->Eta();
+    double jet_embphi = fJet->Phi();
 
-  UInt_t fAOD_FilterBits = 1<<8 | 1<<9;
-
-  // Get the event
-  AliVEvent *event=InputEvent();
-  if (!event || CountEmptyEvents()) 
-        return {};
-  fisGoodIncEvent = 1;
-  fAOD = dynamic_cast<AliAODEvent*>( InputEvent() );
-  // --------------------------------------------------------------
-  //  Main track loop
-  // --------------------------------------------------------------
-
-  for (Int_t itrack=0;itrack<event->GetNumberOfTracks();++itrack) {   // Track loop
-
-    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
-    if (!track) continue;
-    // --------------------------------------------------------------
-    //      Get relevant track info and set cut bits
-    // --------------------------------------------------------------
-
-    Bool_t ifDefaultCuts = track->TestFilterBit(fAOD_FilterBits);
-
+    Double_t Axis1 = 999, Axis2 = 999;
+    double dPhi1, dPhi2, dEta, dPhi_plus, dPhi_minus;
     
-    if(ifDefaultCuts){
-      if(fCout) cout<<"Creating cones for EEC data jets" <<endl;
+    std::vector<fastjet::PseudoJet> tracksInConePlus;
+    std::vector<fastjet::PseudoJet> tracksInConeMinus;
 
-      if (track->Pt() < fMinENCtrackPt || track->Pt() > fMaxPtTrack) {
-          continue;
-       }
-                
+    if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal ===== " << std::endl;
+
+    UInt_t fAOD_FilterBits = (1 << 8) | (1 << 9);
+
+    // Apply Random Cone or Perpendicular Cone logic
+    if (fDoRandCone) {
+        TRandom3 fRandom;
+        double OffsetRandom = (1 + fRandom.Rndm()) * TMath::Pi() / 3; // Random Phi in range [π/3, 2π/3]
+        Axis1 = jet_embphi + OffsetRandom;
+        Axis2 = jet_embphi - OffsetRandom;
+        if (Axis1 > TMath::TwoPi()) Axis1 -= TMath::TwoPi();
+        if (Axis2 < 0) Axis2 += TMath::TwoPi();
+    } 
+    else if (fDoPerpCone) {
+        Axis1 = ((jet_embphi + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? jet_embphi - ((3. / 2.) * TMath::Pi()) : jet_embphi + (TMath::Pi() / 2.);
+        Axis2 = ((jet_embphi - (TMath::Pi() / 2.)) < 0) ? jet_embphi + ((3. / 2.) * TMath::Pi()) : jet_embphi - (TMath::Pi() / 2.);
+    }
+
+    // Get the event
+    AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inputEvent);
+    if (!fAOD) return {};
+    
+    if (fCout) std::cout << "Number of tracks in event: " << fAOD->GetNumberOfTracks() << std::endl;
+
+    // Track loop
+    for (Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); ++itrack) {
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if (!track) continue;
+
+        // Apply filter bit cuts
+        if (!track->TestFilterBit(fAOD_FilterBits)) continue;
+
+        // Apply track pT cuts
+        if (track->Pt() < fMinENCtrackPt || track->Pt() > fMaxPtTrack) continue;
+        if (fCout) std::cout << "Track passed pT cuts" << std::endl;
+
         Float_t mod_track_phi = track->Phi() + TMath::Pi();
-        //Check if the track is within the R=0.4 cone in eta, phi
+
+        // Compute dPhi and dEta
         dPhi1 = TMath::Abs(mod_track_phi - Axis1);
-        dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
+        dPhi1 = (dPhi1 > TMath::Pi()) ? (2 * TMath::Pi() - dPhi1) : dPhi1;
+
         dPhi2 = TMath::Abs(mod_track_phi - Axis2);
-        dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
+        dPhi2 = (dPhi2 > TMath::Pi()) ? (2 * TMath::Pi() - dPhi2) : dPhi2;
+
         dEta = jetEta - track->Eta();
 
-       
-        dPhi = (axisType == "plus") ? dPhi1 : dPhi2;
-        if (TMath::Sqrt(dPhi * dPhi + dEta * dEta) > fConeR) continue;
+        dPhi_plus = dPhi1;
+        dPhi_minus = dPhi2;
 
-        PseudoTracks.reset(track->Px(), track->Py(), track->Pz(), track->E());
-        tracksInCone.push_back(PseudoTracks);
+        double dist_plus = TMath::Sqrt(dPhi_plus * dPhi_plus + dEta * dEta);
+        double dist_minus = TMath::Sqrt(dPhi_minus * dPhi_minus + dEta * dEta);
+
+        fastjet::PseudoJet PseudoTracks(track->Px(), track->Py(), track->Pz(), track->E());
+        PseudoTracks.set_user_index(itrack); // Store track index for reference
+
+        // Assign to correct cone
+        if (dist_plus <= fConeR) {
+            tracksInConePlus.push_back(PseudoTracks);
+        }
+        if (dist_minus <= fConeR) {
+            tracksInConeMinus.push_back(PseudoTracks);
+        }
+
+        if (fCout) std::cout << "Tracks in cone sizes: Plus = " 
+                             << tracksInConePlus.size() 
+                             << ", Minus = " 
+                             << tracksInConeMinus.size() << std::endl;
     }
-  }
-  return tracksInCone;
+
+    return {tracksInConePlus, tracksInConeMinus}; // Return both vectors as a pair
 }
+
+
 
 //________________________________________________________________________
 std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>>
-AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet)
+AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet, AliVEvent* inputEvent)
 {
+  if(fCout) cout<<"Creating cones for E3C data jets" <<endl;
   std::vector<fastjet::PseudoJet> coneParticles1, coneParticles2, coneParticles3; // Separate vectors for each cone
 
    // Jet kinematics
@@ -2625,16 +2690,15 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet)
     }
 
 
-  if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal ===== " << std::endl;
+  if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal for E3C ===== " << std::endl;
 
   UInt_t fAOD_FilterBits = 1<<8 | 1<<9;
 
   // Get the event
-  AliVEvent *event=InputEvent();
-  if (!event || CountEmptyEvents()) 
-        return {};
+   AliVEvent *event=inputEvent;
+  if (!event) return {};
   fisGoodIncEvent = 1;
-  fAOD = dynamic_cast<AliAODEvent*>( InputEvent() );
+  fAOD = dynamic_cast<AliAODEvent*>(event);
   // --------------------------------------------------------------
   //  Main track loop
   // --------------------------------------------------------------
@@ -2648,9 +2712,7 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet)
     // --------------------------------------------------------------
 
     Bool_t ifDefaultCuts = track->TestFilterBit(fAOD_FilterBits);
-
-    if(ifDefaultCuts){
-      if(fCout) cout<<"Creating cones for E3C data jets" <<endl;
+    if (!ifDefaultCuts) continue;
 
       if (track->Pt() < fMinENCtrackPt || track->Pt() > fMaxPtTrack) {
           continue;
@@ -2686,7 +2748,6 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet)
                 PseudoTracks.reset(track->Px(), track->Py(), track->Pz(), track->E());
                 coneParticles3.push_back(PseudoTracks);
             }
-    }
   }
   return std::make_tuple(coneParticles1, coneParticles2, coneParticles3);
 }
@@ -2905,7 +2966,7 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                  if(particles2.at(j).pt()<fMinENCtrackPt) continue;
                   
                    float pt_i = particles.at(i).pt();
-                   float pt_j =  particles.at(j).pt();
+                   float pt_j =  particles2.at(j).pt();
                     
                     w_eec = (1./(jetpt*jetpt))*(2*pt_i * pt_j);
                     w_eec_tru = (1./(pt*pt))*(2*pt_i * pt_j);
@@ -2920,6 +2981,7 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                 
                 if(type == "jetMB")
                 {
+                  if(fCout) cout<<"In jetMB"<<endl;
                     h_JMB->Fill(jetpt, pt, dR, w_eec);
                    
                     h3Jet_deltaR_JMB->Fill(jetpt, dR, w_eec_3D);
@@ -2948,6 +3010,8 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
 
                   if(((i1 == bkgIndex1) && (i2 == bkgIndex2)) || ((i1 == bkgIndex2) && (i2 == bkgIndex1)))
                   {
+
+                    if(fCout) cout<<"In BMB"<<endl;
                          h_BMB->Fill(jetpt, pt, dR, w_eec); //background + MB
 
                          h3Jet_deltaR_BMB->Fill(jetpt, dR, w_eec_3D);
@@ -2981,7 +3045,8 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                   }
                    
                   else
-                  {
+                  {     
+                    if(fCout) cout<<"In SMB"<<endl;
                          h_SMB->Fill(jetpt, pt, dR, w_eec); //background + MB
 
                          h3Jet_deltaR_SMB->Fill(jetpt, dR, w_eec_3D);
@@ -3016,6 +3081,7 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                 }
                 if(type == "diffMB")
                 {
+                  if(fCout) cout<<"In diffMB"<<endl;
                     if ((i1 ==  bkgIndex1) && (i2 ==  bkgIndex2))
                     {
                     
@@ -4665,10 +4731,9 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskJetsEECpbpb::FindThermalConeEEC(A
       Axis2 = ((jet_embphi - (TMath::Pi() / 2.)) < 0) ? jet_embphi + ((3. / 2.) * TMath::Pi()) : jet_embphi - (TMath::Pi() / 2.);
     }
 
-    AliParticleContainer * partCont = 0;
+    AliParticleContainer *partCont = 0;
     TIter nextPartCont(&fParticleCollArray);
-    // TIter nextPartCont(&fGeneratorLevel);
-    while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
+    while ((partCont = static_cast<AliParticleContainer *>(nextPartCont()))) {
       AliParticleIterableMomentumContainer itcont = partCont->accepted_momentum();
       for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
         AliVTrack * particle = static_cast<AliVTrack*>(it->second); //partIter.second);
@@ -4703,10 +4768,12 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskJetsEECpbpb::FindThermalConeEEC(A
           dPhi = dPhi2;
         }
         
-        if ((TMath::Sqrt(dPhi * dPhi + dEta * dEta) > fConeR)) continue; //scale the yields by 1/(2Ncones*piR^2) offline
+        if ((TMath::Sqrt(dPhi * dPhi + dEta * dEta) < fConeR)) {
         PseudoTracks.reset(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E());
         PseudoTracks.set_user_index(index);
         coneParticles.push_back(PseudoTracks);
+        } 
+       
       }
     }
   return  coneParticles;
@@ -4932,7 +4999,6 @@ double jet_pt = fJet->Pt();
                     if (del_sk_eta < 0.008 || del_js_eta < 0.008 || del_kj_eta < 0.008) continue;
                     else
                     {
-                        E3C_hist->Fill(RL,eee_jsk);
                         E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
 
                         OptUn_e3c->Fill(deltaR,jet_pt,eee_jsk_3D);
@@ -4947,7 +5013,6 @@ double jet_pt = fJet->Pt();
                 }
                 else
                 {
-                        E3C_hist->Fill(RL,eee_jsk);
                         E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
 
                         OptUn_e3c->Fill(deltaR,jet_pt,eee_jsk_3D);
@@ -4998,40 +5063,40 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
         constituentIndex++;
     }
     
-        //Initializing objects for det level
-        std::vector<Double_t> R_dist;
+    if(fCout)cout<<"In Compute ENC"<<endl;
        
         //Looping over the jet
         // double jet_pt = fJet->Pt();
-        double jet_pt = ptSub;
-        
+        float jet_pt = ptSub;
+        if(fCout)cout<<"Got subtracted jet pT"<<endl;
           //Looping over the det jet
      for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
         {
             for(int s=j+1; s<int(fConstituents.size()) ; s++)
             {
-                double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
-                double eee_jjs =((3*fConstituents[j].pt()*fConstituents[j].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+              // if(fCout)cout<<"in loop s"<<endl;
 
-                double eee_jss_3D =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
-                double eee_jjs_3D =((fConstituents[j].pt()*fConstituents[j].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                float eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                float eee_jjs =((3*fConstituents[j].pt()*fConstituents[j].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
 
-                double deltaR = delR(fConstituents[j],fConstituents[s]);
+                float eee_jss_3D =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                float eee_jjs_3D =((fConstituents[j].pt()*fConstituents[j].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
 
-                double ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
-                double ee_js_3D = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+                float deltaR = delR(fConstituents[j],fConstituents[s]);
+
+                float ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+                float ee_js_3D = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
 
                 if(fpaircut == 1)
                 {
-                    double j_eta = fConstituents[j].eta();
-                    double s_eta = fConstituents[s].eta();
-                    double del_js_eta = abs(j_eta-s_eta);
+                    float j_eta = fConstituents[j].eta();
+                    float s_eta = fConstituents[s].eta();
+                    float del_js_eta = abs(j_eta-s_eta);
                     if (del_js_eta < 0.008) continue;
                     else
                     {
 
                         E3C_pt_hist->Fill(deltaR,jet_pt,eee_jss);
-
                         E3C_pt_hist->Fill(deltaR,jet_pt,eee_jjs);
 
                         EEC_pt_hist->Fill(deltaR,jet_pt,ee_js);
@@ -5073,15 +5138,17 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
             
            for(int k=s+1; k<int(fConstituents.size()) ; k++)
             { 
-                double eee_jsk =((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[k].pt())/(pow(jet_pt,3)));
+              // if(fCout)cout<<"in loop k"<<endl;
 
-                double eee_jsk_3D =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[k].pt())/(pow(jet_pt,3)));
+                float eee_jsk =((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[k].pt())/(pow(jet_pt,3)));
+
+                float eee_jsk_3D =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[k].pt())/(pow(jet_pt,3)));
               
-                double dR_js = delR(fConstituents[j],fConstituents[s]);
-                double dR_sk = delR(fConstituents[s],fConstituents[k]);
-                double dR_kj = delR(fConstituents[j],fConstituents[k]);
+                float dR_js = delR(fConstituents[j],fConstituents[s]);
+                float dR_sk = delR(fConstituents[s],fConstituents[k]);
+                float dR_kj = delR(fConstituents[j],fConstituents[k]);
 
-                double RL = -1;
+                float RL = -1;
 
                 if(dR_js>dR_sk && dR_js>dR_sk){RL = dR_js;}
                 else if(dR_sk>dR_js && dR_sk>dR_kj){RL = dR_sk;}
@@ -5089,16 +5156,15 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
 
                  if(fpaircut == 1)
                 {
-                    double s_eta = fConstituents[s].eta();
-                    double k_eta = fConstituents[k].eta();
-                    double j_eta = fConstituents[j].eta();
-                    double del_js_eta = abs(j_eta-s_eta);
-                    double del_sk_eta = abs(s_eta-k_eta);
-                    double del_kj_eta = abs(k_eta-j_eta);
+                    float s_eta = fConstituents[s].eta();
+                    float k_eta = fConstituents[k].eta();
+                    float j_eta = fConstituents[j].eta();
+                    float del_js_eta = abs(j_eta-s_eta);
+                    float del_sk_eta = abs(s_eta-k_eta);
+                    float del_kj_eta = abs(k_eta-j_eta);
                     if (del_sk_eta < 0.008 || del_js_eta < 0.008 || del_kj_eta < 0.008) continue;
                     else
                     {
-                        E3C_hist->Fill(RL,eee_jsk);
                         E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
 
                         OptUn_e3c->Fill(deltaR,jet_pt,eee_jsk_3D);
@@ -5113,7 +5179,6 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
                 }
                 else
                 {
-                        E3C_hist->Fill(RL,eee_jsk);
                         E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
 
                         OptUn_e3c->Fill(deltaR,jet_pt,eee_jsk_3D);
@@ -5130,7 +5195,7 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
         }
     }
 
-
+ if(fCout)cout<<"Computed ENC"<<endl;
     
     //catch (fastjet::Error)
     // {
