@@ -102,6 +102,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_Event_TimeStamp(0),
   fProton_Event_RandomCrossCheckNumber(0),
   fProton_ID(0),
+  fProton_OrigID(0),
+  fProton_Label(0),
   fProton_x(0),
   fProton_y(0),
   fProton_z(0),
@@ -149,6 +151,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_Event_TimeStamp(0),
   fDeuteron_Event_RandomCrossCheckNumber(0),
   fDeuteron_ID(0),
+  fDeuteron_OrigID(0),
+  fDeuteron_Label(0),
   fDeuteron_x(0),
   fDeuteron_y(0),
   fDeuteron_z(0),
@@ -196,6 +200,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_Event_TimeStamp(0),
   fAntiProton_Event_RandomCrossCheckNumber(0),
   fAntiProton_ID(0),
+  fAntiProton_OrigID(0),
+  fAntiProton_Label(0),
   fAntiProton_x(0),
   fAntiProton_y(0),
   fAntiProton_z(0),
@@ -243,6 +249,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_Event_TimeStamp(0),
   fAntiDeuteron_Event_RandomCrossCheckNumber(0),
   fAntiDeuteron_ID(0),
+  fAntiDeuteron_OrigID(0),
+  fAntiDeuteron_Label(0),
   fAntiDeuteron_x(0),
   fAntiDeuteron_y(0),
   fAntiDeuteron_z(0)
@@ -307,6 +315,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_Event_TimeStamp(0),
   fProton_Event_RandomCrossCheckNumber(0),
   fProton_ID(0),
+  fProton_OrigID(0),
+  fProton_Label(0),
   fProton_x(0),
   fProton_y(0),
   fProton_z(0),
@@ -354,6 +364,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_Event_TimeStamp(0),
   fDeuteron_Event_RandomCrossCheckNumber(0),
   fDeuteron_ID(0),
+  fDeuteron_OrigID(0),
+  fDeuteron_Label(0),
   fDeuteron_x(0),
   fDeuteron_y(0),
   fDeuteron_z(0),
@@ -401,6 +413,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_Event_TimeStamp(0),
   fAntiProton_Event_RandomCrossCheckNumber(0),
   fAntiProton_ID(0),
+  fAntiProton_OrigID(0),
+  fAntiProton_Label(0),
   fAntiProton_x(0),
   fAntiProton_y(0),
   fAntiProton_z(0),
@@ -448,6 +462,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_Event_TimeStamp(0),
   fAntiDeuteron_Event_RandomCrossCheckNumber(0),
   fAntiDeuteron_ID(0),
+  fAntiDeuteron_OrigID(0),
+  fAntiDeuteron_Label(0),
   fAntiDeuteron_x(0),
   fAntiDeuteron_y(0),
   fAntiDeuteron_z(0)
@@ -545,6 +561,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Proton->Branch("Proton_Event_TimeStamp",&fProton_Event_TimeStamp,"Proton_Event_TimeStamp/i");
   fSaveTree_Proton->Branch("Proton_Event_RandomCrossCheckNumber",&fProton_Event_RandomCrossCheckNumber,"Proton_Event_RandomCrossCheckNumber/i");
   fSaveTree_Proton->Branch("Proton_ID",&fProton_ID,"Proton_ID/I");
+  fSaveTree_Proton->Branch("Proton_OrigID",&fProton_OrigID,"Proton_OrigID/I");
+  fSaveTree_Proton->Branch("Proton_Label",&fProton_Label,"Proton_Label/I");
   fSaveTree_Proton->Branch("Proton_x",&fProton_x,"Proton_x/F");
   fSaveTree_Proton->Branch("Proton_y",&fProton_y,"Proton_y/F");
   fSaveTree_Proton->Branch("Proton_z",&fProton_z,"Proton_z/F");
@@ -600,6 +618,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Deuteron->Branch("Deuteron_Event_TimeStamp",&fDeuteron_Event_TimeStamp,"Deuteron_Event_TimeStamp/i");
   fSaveTree_Deuteron->Branch("Deuteron_Event_RandomCrossCheckNumber",&fDeuteron_Event_RandomCrossCheckNumber,"Deuteron_Event_RandomCrossCheckNumber/i");
   fSaveTree_Deuteron->Branch("Deuteron_ID",&fDeuteron_ID,"Deuteron_ID/I");
+  fSaveTree_Deuteron->Branch("Deuteron_OrigID",&fDeuteron_OrigID,"Deuteron_OrigID/I");
+  fSaveTree_Deuteron->Branch("Deuteron_Label",&fDeuteron_Label,"Deuteron_Label/I");
   fSaveTree_Deuteron->Branch("Deuteron_x",&fDeuteron_x,"Deuteron_x/F");
   fSaveTree_Deuteron->Branch("Deuteron_y",&fDeuteron_y,"Deuteron_y/F");
   fSaveTree_Deuteron->Branch("Deuteron_z",&fDeuteron_z,"Deuteron_z/F");
@@ -654,6 +674,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiProton->Branch("AntiProton_Event_TimeStamp",&fAntiProton_Event_TimeStamp,"AntiProton_Event_TimeStamp/i");
   fSaveTree_AntiProton->Branch("AntiProton_Event_RandomCrossCheckNumber",&fAntiProton_Event_RandomCrossCheckNumber,"AntiProton_Event_RandomCrossCheckNumber/i");
   fSaveTree_AntiProton->Branch("AntiProton_ID",&fAntiProton_ID,"AntiProton_ID/I");
+  fSaveTree_AntiProton->Branch("AntiProton_OrigID",&fAntiProton_OrigID,"AntiProton_OrigID/I");
+  fSaveTree_AntiProton->Branch("AntiProton_Label",&fAntiProton_Label,"AntiProton_Label/I");
   fSaveTree_AntiProton->Branch("AntiProton_x",&fAntiProton_x,"AntiProton_x/F");
   fSaveTree_AntiProton->Branch("AntiProton_y",&fAntiProton_y,"AntiProton_y/F");
   fSaveTree_AntiProton->Branch("AntiProton_z",&fAntiProton_z,"AntiProton_z/F");
@@ -708,6 +730,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_TimeStamp",&fAntiDeuteron_Event_TimeStamp,"AntiDeuteron_Event_TimeStamp/i");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_RandomCrossCheckNumber",&fAntiDeuteron_Event_RandomCrossCheckNumber,"AntiDeuteron_Event_RandomCrossCheckNumber/i");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ID",&fAntiDeuteron_ID,"AntiDeuteron_ID/I");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_OrigID",&fAntiDeuteron_OrigID,"AntiDeuteron_OrigID/I");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Label",&fAntiDeuteron_Label,"AntiDeuteron_Label/I");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_x",&fAntiDeuteron_x,"AntiDeuteron_x/F");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_y",&fAntiDeuteron_y,"AntiDeuteron_y/F");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_z",&fAntiDeuteron_z,"AntiDeuteron_z/F");
@@ -778,9 +802,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   Int_t nTracks = fAODEvent->GetNumberOfTracks();
   if((nTracks == 0) || (nTracks < 0)) return;
 
-  // use only events containing v0s
-  Int_t nV0s = fAODEvent->GetNumberOfV0s();
-  if((nV0s == 0) || (nV0s < 0)) return;
 
   // get primary vertex
   AliAODVertex *PrimaryVertex = fAODEvent->GetPrimaryVertex();
@@ -1110,7 +1131,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
       } // end of TOFisOK
 
+      Int_t OrigID = -99;
+      OrigID = Track->GetID();
 
+      Int_t OrigLabel = -99;
+      OrigLabel = Track->GetLabel();
 
 
       Float_t ITS_dEdx = -999.0;
@@ -1177,6 +1202,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fDeuteron_Event_TimeStamp = TimeStamp;
 	fDeuteron_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
 	fDeuteron_ID = track;
+	fDeuteron_OrigID = OrigID;
+	fDeuteron_Label = OrigLabel;
 	fDeuteron_x = x;
 	fDeuteron_y = y;
 	fDeuteron_z = z;
@@ -1235,6 +1262,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiDeuteron_Event_TimeStamp = TimeStamp;
 	fAntiDeuteron_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
 	fAntiDeuteron_ID = track;
+	fAntiDeuteron_OrigID = OrigID;
+	fAntiDeuteron_Label = OrigLabel;
 	fAntiDeuteron_x = x;
 	fAntiDeuteron_y = y;
 	fAntiDeuteron_z = z;
@@ -1340,6 +1369,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       } // end of TOFisOK
 
 
+      Int_t OrigID = -99;
+      OrigID = Track->GetID();
+
+      Int_t OrigLabel = -99;
+      OrigLabel = Track->GetLabel();
 
 
       Float_t ITS_dEdx = -999.0;
@@ -1406,6 +1440,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fProton_Event_TimeStamp = TimeStamp;
 	fProton_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
 	fProton_ID = track;
+	fProton_OrigID = OrigID;
+	fProton_Label = OrigLabel;
 	fProton_x = x;
 	fProton_y = y;
 	fProton_z = z;
@@ -1464,6 +1500,8 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiProton_Event_TimeStamp = TimeStamp;
 	fAntiProton_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
 	fAntiProton_ID = track;
+	fAntiProton_OrigID = OrigID;
+	fAntiProton_Label = OrigLabel;
 	fAntiProton_x = x;
 	fAntiProton_y = y;
 	fAntiProton_z = z;
@@ -2161,7 +2199,8 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   Float_t Proton_pT_max = 3.0;
   Float_t Proton_eta_min = -0.8;
   Float_t Proton_eta_max = +0.8;
-  Float_t Proton_DCAxy_max = 2.0; // cm
+  //Float_t Proton_DCAxy_max = 2.0; // cm
+  Float_t Proton_DCAxy_max = 0.2; // cm
   Float_t Proton_DCAz_max = 0.1; // cm
   Float_t Proton_p_max = 30.0;
   Float_t Proton_TPC_RatioRowsFindableCluster_min = 0.8;
@@ -2269,13 +2308,8 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   if(fIsMC == true)   TPC_dEdx_Sigma = CalculateSigmadEdxTPC(Track,ParticleSpecies);
   if(TMath::IsNaN(TPC_dEdx_Sigma)) return PassedParticleCuts;
 
-  if(fUseOpenCuts == false){
-    if(TMath::Abs(TPC_dEdx_Sigma) > Proton_TPC_dEdx_Sigma_max) return PassedParticleCuts;
-  }
+  if(TMath::Abs(TPC_dEdx_Sigma) > Proton_TPC_dEdx_Sigma_max) return PassedParticleCuts;
 
-  if(fUseOpenCuts == true){
-    if(TMath::Abs(TPC_dEdx_Sigma) > 7.0) return PassedParticleCuts;
-  }
 
   TPC_dEdx = Track.GetTPCsignal();
   if(TMath::IsNaN(TPC_dEdx)) return PassedParticleCuts;
@@ -2412,7 +2446,8 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   Float_t Deuteron_pT_max = 3.0;
   Float_t Deuteron_eta_min = -0.8;
   Float_t Deuteron_eta_max = +0.8;
-  Float_t Deuteron_DCAxy_max = 2.0; // cm
+  //Float_t Deuteron_DCAxy_max = 2.0; // cm
+  Float_t Deuteron_DCAxy_max = 0.2; // cm
   Float_t Deuteron_DCAz_max = 0.1; // cm
   Float_t Deuteron_p_max = 30.0;
   Float_t Deuteron_TPC_RatioRowsFindableCluster_min = 0.8;
@@ -2530,13 +2565,8 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
 
   if(TMath::IsNaN(TPC_dEdx_Sigma)) return PassedParticleCuts;
 
-  if(fUseOpenCuts == false){
-    if(TMath::Abs(TPC_dEdx_Sigma) > Deuteron_TPC_dEdx_Sigma_max) return PassedParticleCuts;
-  }
+  if(TMath::Abs(TPC_dEdx_Sigma) > Deuteron_TPC_dEdx_Sigma_max) return PassedParticleCuts;
 
-  if(fUseOpenCuts == true){
-    if(TMath::Abs(TPC_dEdx_Sigma) > 7.0) return PassedParticleCuts;
-  }
 
   TPC_dEdx = Track.GetTPCsignal();
   if(TMath::IsNaN(TPC_dEdx)) return PassedParticleCuts;
