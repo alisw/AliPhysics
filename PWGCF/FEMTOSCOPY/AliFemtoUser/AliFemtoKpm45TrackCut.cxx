@@ -2,7 +2,7 @@
 ***************************************************************************
 * Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c
 * Konstantin.Mikhaylov@cern.ch:  created: 3 March 2016 
-* Modified: February 28, 2025: added mutable fMomemtumTOF45
+* Modified: March 4, 2025: added mutable fMomentumTOF45
 *              
 *
 ***************************************************************************
@@ -89,7 +89,7 @@ ClassImp(AliFemtoKpm45TrackCut)
     fLabel(0),
     fStatus(0),
     fPIDMethod(knSigma),
-    fMomemtumTOF45(0.45),
+    fMomentumTOF45(0.45),
 //ml
   fNsigmaTPCle250(3.),
   fNsigmaTPC250_400(3.),
@@ -141,7 +141,7 @@ ClassImp(AliFemtoKpm45TrackCut)
   fminITScls=0;
   fPIDMethod=knSigma;
 
-  fMomemtumTOF45=0.45;
+  fMomentumTOF45=0.45;
 
   fNsigmaTPCle250=3.0;
   fNsigmaTPC250_400=3.0;
@@ -931,7 +931,7 @@ bool AliFemtoKpm45TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsig
 	}
     }
 
-  if(mom>=0.4 && mom<fMomemtumTOF45)
+  if(mom>=0.4 && mom<fMomentumTOF45)
     {
       if(TMath::Abs(nsigmaTPCK)<fNsigmaTPC400_450)
 	{ 
@@ -961,7 +961,7 @@ bool AliFemtoKpm45TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsig
   
   
   //if(mom>=0.5 && mom<0.8)
-  if(mom>=fMomemtumTOF45 && mom<0.8) //extend TOF PID to 0.45 (was 0.5) GeV/c 
+  if(mom>=fMomentumTOF45 && mom<0.8) //extend TOF PID to 0.45 (was 0.5) GeV/c 
     {
       if(TMath::Abs(nsigmaTOFK)<fNsigmaTOF500_800 && TMath::Abs(nsigmaTPCK)<fNsigmaTPCge500) 
 	{
@@ -1110,7 +1110,8 @@ Bool_t AliFemtoKpm45TrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClu
 }
 
 void AliFemtoKpm45TrackCut::SetMomemtumTOF45(Double_t momentum){
-  fMomemtumTOF45 = momentum;
+  if(momentum<0.4000001 || momentum>0.45) fMomentumTOF45 = 0.45;
+  else fMomentumTOF45 = momentum;
 }
 
 void AliFemtoKpm45TrackCut::SetNsigmaTPCle250(Double_t nsigma)
