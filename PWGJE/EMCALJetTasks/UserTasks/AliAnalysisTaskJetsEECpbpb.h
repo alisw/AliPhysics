@@ -125,7 +125,7 @@ protected:
 
     void FillEmbJetsE3C(std::vector<fastjet::PseudoJet> particles, std::vector<fastjet::PseudoJet> particles2, std::vector<fastjet::PseudoJet> particles3, float jetpt, float pt, std::string typeSame, std::string type, bool ifMatchedJet);
 
-    std::vector<fastjet::PseudoJet> FindThermalConeEEC(AliEmcalJet *fJetEmb, std::string axisType, int index);
+    std::pair<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>>  FindThermalConeEEC(AliEmcalJet *fJetEmb, int index1, int index2);
 
     std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>> FindThermalConeE3C(AliEmcalJet *fJetEmb, int index1, int index2, int index3);
 

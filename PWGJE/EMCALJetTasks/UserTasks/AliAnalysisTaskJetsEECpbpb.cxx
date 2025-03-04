@@ -406,15 +406,37 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     
     
     double wtbins[] = {
-        0.0005,0.001,0.00346737,0.00912011, 0.0138038,0.0165959,0.0190546,
-        0.0288403,
-        0.0346737,
-        0.0457088, 0.060256,
-        0.0794328,
-        0.104713,0.138038, 0.18197,0.26};
+        0.00005, 0.0001, 0.000346737, 0.000912011, 0.00138038, 0.00165959, 0.00190546,
+        0.00288403, 0.00346737, 0.00457088, 0.0060256, 0.00794328, 0.0104713, 
+        0.0138038, 0.018197, 0.025, 
+        0.0005, 0.001, 0.00346737, 0.00912011, 0.0138038, 0.0165959, 0.0190546,
+        0.0288403, 0.0346737, 0.0457088, 0.060256, 0.0794328, 0.104713, 
+        0.138038, 0.18197, 0.25};
     
     
     double wtbinst[] = {
+        0.000001,0.00005, 0.0001, 0.000346737, 0.000912011, 0.00138038, 0.00165959, 0.00190546,
+        0.00288403, 0.00346737, 0.00457088, 0.0060256, 0.00794328, 0.0104713, 
+        0.0138038, 0.018197, 0.025, 
+        0.0005, 0.001, 0.00346737, 0.00912011, 0.0138038, 0.0165959, 0.0190546,
+        0.0288403, 0.0346737, 0.0457088, 0.060256, 0.0794328, 0.104713, 
+        0.138038, 0.18197, 0.25};
+
+    double wtbins_e3c[] = {
+        1e-06, 1.51356e-06, 5.62341e-06,1.01158e-05,1.12202e-05, 1.24451e-05,  1.38038e-05, 1.53109e-05,
+        1.69824e-05,1.88365e-05, 
+        2.0893e-05, 2.31739e-05, 2.5704e-05, 2.85102e-05, 3.16228e-05, 3.50752e-05,
+        3.89045e-05, 4.31519e-05, 
+        4.7863e-05, 5.30884e-05, 5.88844e-05, 6.53131e-05, 7.24436e-05, 8.03526e-05,
+        8.91251e-05,  9.88553e-05, 0.000102329,0.000121619,0.000251189, 0.000501187,
+        0.00151356, 0.00301995, 0.00506991, 0.00716143, 0.00912011, 0.0101158,  0.0108393,  0.0128825,  0.0153109,
+        0.0175792, 0.0201837,
+        0.0363078, 0.0462381, 0.0512861,0.0724436,
+        0.0988553,
+        0.1485};
+    
+    
+    double wtbinst_e3c[] = {
         0.0001,0.0005,0.001,0.00346737,0.00912011, 0.0138038,0.0165959,0.0190546,
         0.0288403,
         0.0346737,
@@ -423,10 +445,12 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
         0.104713,0.138038, 0.18197,0.26
     };
 
+    int nWtbins_e3c = sizeof(wtbins_e3c) / sizeof(wtbins_e3c[0]) - 1;
     int nWtbins = sizeof(wtbins) / sizeof(wtbins[0]) - 1;
     int ndRbins = sizeof(dRbins) / sizeof(dRbins[0]) - 1;
     int nJetPtbins = sizeof(xbins) / sizeof(xbins[0]) - 1;
-     
+    
+    int nWtbinst_e3c = sizeof(wtbinst_e3c) / sizeof(wtbinst_e3c[0]) - 1;
     int nWtbinst = sizeof(wtbinst) / sizeof(wtbinst[0]) - 1;
     int ndRbinst = sizeof(dRbinst) / sizeof(dRbinst[0]) - 1;
     int nJetPtbinst = sizeof(tbins) / sizeof(tbins[0]) - 1;
@@ -447,7 +471,7 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     fOutput->Add(E3C_pt_hist);
 
     if(fCout) cout<<"###########------subtraction histograms for EEC data----########"<<endl;
-
+  if(ifeec){
     h_MB1_dat = new TH2F("h_MB1_dat", "h_MB1_dat", 13, new_bins_const,21, new_bins);//min bias data
     fOutput->Add(h_MB1_dat);
     h_JMB_dat = new TH2F("h_JMB_dat", "h_JMB_dat", 13, new_bins_const,21, new_bins);//Jet*MINBIAS data
@@ -455,13 +479,14 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     h_MB1MB2_dat = new TH2F("h_MB1MB2_dat", "h_MB1MB2_dat", 13, new_bins_const,21, new_bins);//Jet*MINBIAS data
     fOutput->Add(h_JMB_dat);
 
-    h3Jet_deltaR_MB1_dat = new TH3F("h3Jet_deltaR_MB1_dat", "h3Jet_deltaR_MB1_dat", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);//Jet*MINBIAS
+    h3Jet_deltaR_MB1_dat = new TH3F("h3Jet_deltaR_MB1_dat", "h3Jet_deltaR_MB1_dat", nJetPtbins, xbins, ndRbins, dRbins,200 ,wt_new_bins);//Jet*MINBIAS
     fOutput->Add(h3Jet_deltaR_MB1_dat);
-    h3Jet_deltaR_JMB_dat = new TH3F("h3Jet_deltaR_JMB_dat", "h3Jet_deltaR_JMB_dat", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);//Jet*MINBIAS
+    h3Jet_deltaR_JMB_dat = new TH3F("h3Jet_deltaR_JMB_dat", "h3Jet_deltaR_JMB_dat", nJetPtbins, xbins, ndRbins, dRbins,200, wt_new_bins);//Jet*MINBIAS
     fOutput->Add(h3Jet_deltaR_JMB_dat);
-    h3Jet_deltaR_MB1MB2_dat = new TH3F("h3Jet_deltaR_MB1MB2_dat", "h3_deltaR_MB1MB2_dat",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);//Jet*MINBIAS data
+    h3Jet_deltaR_MB1MB2_dat = new TH3F("h3Jet_deltaR_MB1MB2_dat", "h3_deltaR_MB1MB2_dat",nJetPtbins, xbins, ndRbins, dRbins,200, wt_new_bins);//Jet*MINBIAS data
     fOutput->Add(h3Jet_deltaR_MB1MB2_dat);
-   
+  }
+   if(ife3c){
    if(fCout) cout<<"###########------subtraction histograms for E3C data----########"<<endl;
     h_MB1MB1MB1_dat = new TH2F("h_MB1MB1MB1_dat", "h_MB1MB1MB1_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB1_dat);
@@ -478,21 +503,21 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     h_MB1MB2MB3_dat = new TH2F("h_MB1MB2MB3_dat", "h_MB1MB2MB3_dat",13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB2MB3_dat);
 
-    h3_MB1MB1MB1_dat = new TH3F("h3_MB1MB1MB1", "h3_MB1MB1MB1",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB1MB1_dat = new TH3F("h3_MB1MB1MB1_dat", "h3_MB1MB1MB1_dat",nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_MB1MB1MB1_dat);
-    h3_JJMB_dat = new TH3F("h3_JJMB_dat", "h3_JJMB_dat", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_JJMB_dat = new TH3F("h3_JJMB_dat", "h3_JJMB_dat", nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_JJMB_dat);
-    h3_JMB1MB2_dat = new TH3F("h3_JMB1MB2_dat", "h3_JMB1MB2_dat", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_JMB1MB2_dat = new TH3F("h3_JMB1MB2_dat", "h3_JMB1MB2_dat", nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_JMB1MB2_dat);
-    h3_JMBMB_dat = new TH3F("h3_JMBMB_dat", "h3_JMBMB_dat",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_JMBMB_dat = new TH3F("h3_JMBMB_dat", "h3_JMBMB_dat",nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_JMBMB_dat);
-    h3_MB1MB1MB2_dat = new TH3F("h3_MB1MB1MB2_dat", "h3_MB1MB1MB2_dat",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB1MB2_dat = new TH3F("h3_MB1MB1MB2_dat", "h3_MB1MB1MB2_dat",nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_MB1MB1MB2_dat);
-    h3_MB1MB2MB2_dat = new TH3F("h3_MB1MB2MB2_dat", "h3_MB1MB2MB2_dat",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB2MB2_dat = new TH3F("h3_MB1MB2MB2_dat", "h3_MB1MB2MB2_dat",nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_MB1MB2MB2_dat);
-    h3_MB1MB2MB3_dat = new TH3F("h3_MB1MB2MB3_dat", "h3_MB1MB2MB3_dat",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB2MB3_dat = new TH3F("h3_MB1MB2MB3_dat", "h3_MB1MB2MB3_dat",nJetPtbins, xbins, ndRbins, dRbins, 400,wt_new_bins_e3c);
     fOutput->Add(h3_MB1MB2MB3_dat);
-
+   }
 
     }
     // //////////////////////////////////////////////////////////////////////////////////////////
@@ -944,162 +969,162 @@ if(fCout)cout<<"#####################---Declaring 3D Embedding Histograms EEC---
     fOutput->Add(h_SSMB_um);
 
   if(fCout) cout<<"subtraction histograms for E3C unfolding bins 3D"<<endl;
-    h3Jet_deltaR_MJ_e3c = new TH3F("h3Jet_deltaR_MJ_e3c", "h3Jet_deltaR_MJ_e3c", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ_e3c = new TH3F("h3Jet_deltaR_MJ_e3c", "h3Jet_deltaR_MJ_e3c", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ_e3c);
-    h3Jet_deltaR_MJ0_e3c = new TH3F("h3Jet_deltaR_MJ0_e3c", "h3Jet_deltaR_MJ0_e3c", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ0_e3c = new TH3F("h3Jet_deltaR_MJ0_e3c", "h3Jet_deltaR_MJ0_e3c", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ0_e3c);
-    h3Jet_deltaR_MJ1_e3c = new TH3F("h3Jet_deltaR_MJ1_e3c", "h3Jet_deltaR_MJ1_e3c",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ1_e3c = new TH3F("h3Jet_deltaR_MJ1_e3c", "h3Jet_deltaR_MJ1_e3c",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ1_e3c);
-    h3Jet_deltaR_MJ2_e3c = new TH3F("h3Jet_deltaR_MJ2_e3c", "h3Jet_deltaR_MJ2_e3c",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ2_e3c = new TH3F("h3Jet_deltaR_MJ2_e3c", "h3Jet_deltaR_MJ2_e3c",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ2_e3c);
-    h3Jet_deltaR_MJ3_e3c = new TH3F("h3Jet_deltaR_MJ3_e3c", "h3Jet_deltaR_MJ3_e3c", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ3_e3c = new TH3F("h3Jet_deltaR_MJ3_e3c", "h3Jet_deltaR_MJ3_e3c", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ3_e3c);
     
-    h3_MB1MB1MB1 = new TH3F("h3_MB1MB1MB1", "h3_MB1MB1MB1",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB1MB1 = new TH3F("h3_MB1MB1MB1", "h3_MB1MB1MB1",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB1);
-    h3_JJMB = new TH3F("h3_JJMB", "h3_JJMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_JJMB = new TH3F("h3_JJMB", "h3_JJMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JJMB);
-    h3_JMBMB = new TH3F("h3_JMBMB", "h3_JMBMB",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_JMBMB = new TH3F("h3_JMBMB", "h3_JMBMB",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMBMB);
-    h3_MB1MB1MB2 = new TH3F("h3_MB1MB1MB2", "h3_MB1MB1MB2",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB1MB2 = new TH3F("h3_MB1MB1MB2", "h3_MB1MB1MB2",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB2);
-    h3_MB1MB2MB2 = new TH3F("h3_MB1MB2MB2", "h3_MB1MB2MB2",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB2MB2 = new TH3F("h3_MB1MB2MB2", "h3_MB1MB2MB2",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB2);
-    h3_JMB1MB2 = new TH3F("h3_JMB1MB2", "h3_JMB1MB2", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_JMB1MB2 = new TH3F("h3_JMB1MB2", "h3_JMB1MB2", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMB1MB2);
-    h3_MB1MB2MB3 = new TH3F("h3_MB1MB2MB3", "h3_MB1MB2MB3",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_MB1MB2MB3 = new TH3F("h3_MB1MB2MB3", "h3_MB1MB2MB3",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB3);
-    h3_BMBMB = new TH3F("h3_BMBMB", "h3_BMBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_BMBMB = new TH3F("h3_BMBMB", "h3_BMBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMBMB);
-    h3_SMBMB = new TH3F("h3_SMBMB", "h3_SMBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_SMBMB = new TH3F("h3_SMBMB", "h3_SMBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMBMB);
-    h3_BMB1MB2 = new TH3F("h3_BMB1MB2", "h3_BMB1MB2", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_BMB1MB2 = new TH3F("h3_BMB1MB2", "h3_BMB1MB2", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMB1MB2);
-    h3_SMB1MB2 = new TH3F("h3_SMB1MB2", "h3_SMB1MB2", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_SMB1MB2 = new TH3F("h3_SMB1MB2", "h3_SMB1MB2", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMB1MB2);
-    h3_BBMB = new TH3F("h3_BBMB", "h3_BBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_BBMB = new TH3F("h3_BBMB", "h3_BBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BBMB);
-    h3_SBMB = new TH3F("h3_SBMB", "h3_SBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_SBMB = new TH3F("h3_SBMB", "h3_SBMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SBMB);
-    h3_SSMB = new TH3F("h3_SSMB", "h3_SSMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3_SSMB = new TH3F("h3_SSMB", "h3_SSMB", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SSMB);
 
   if(fCout) cout<<"matched jets only"<<endl;
-    h3Jet_deltaR_MJ_e3c_m = new TH3F("h3Jet_deltaR_MJ_e3c_m", "h3Jet_deltaR_MJ_e3c_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ_e3c_m = new TH3F("h3Jet_deltaR_MJ_e3c_m", "h3Jet_deltaR_MJ_e3c_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ_e3c_m);
-    h3Jet_deltaR_MJ0_e3c_m = new TH3F("h3Jet_deltaR_MJ0_e3c_m", "h3Jet_deltaR_MJ0_e3c_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ0_e3c_m = new TH3F("h3Jet_deltaR_MJ0_e3c_m", "h3Jet_deltaR_MJ0_e3c_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ0_e3c_m);
-    h3Jet_deltaR_MJ1_e3c_m = new TH3F("h3Jet_deltaR_MJ1_e3c_m", "h3Jet_deltaR_MJ1_e3c_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ1_e3c_m = new TH3F("h3Jet_deltaR_MJ1_e3c_m", "h3Jet_deltaR_MJ1_e3c_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ1_e3c_m);
-    h3Jet_deltaR_MJ2_e3c_m = new TH3F("h3Jet_deltaR_MJ2_e3c_m", "h3Jet_deltaR_MJ2_e3c_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ2_e3c_m = new TH3F("h3Jet_deltaR_MJ2_e3c_m", "h3Jet_deltaR_MJ2_e3c_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ2_e3c_m);
-    h3Jet_deltaR_MJ3_e3c_m = new TH3F("h3Jet_deltaR_MJ3_e3c_m", "h3Jet_deltaR_MJ3_e3c_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ3_e3c_m = new TH3F("h3Jet_deltaR_MJ3_e3c_m", "h3Jet_deltaR_MJ3_e3c_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ3_e3c_m);
-    h3_MB1MB1MB1_m = new TH3F("h3_MB1MB1MB1_m", "h3_MB1MB1MB1_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB1MB1_m = new TH3F("h3_MB1MB1MB1_m", "h3_MB1MB1MB1_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB1_m);
-    h3_JJMB_m = new TH3F("h3_JJMB_m", "h3_JJMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JJMB_m = new TH3F("h3_JJMB_m", "h3_JJMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JJMB_m);
-    h3_JMBMB_m = new TH3F("h3_JMBMB_m", "h3_JMBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JMBMB_m = new TH3F("h3_JMBMB_m", "h3_JMBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMBMB_m);
-    h3_MB1MB1MB2_m = new TH3F("h3_MB1MB1MB2_m", "h3_MB1MB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB1MB2_m = new TH3F("h3_MB1MB1MB2_m", "h3_MB1MB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB2_m);
-    h3_MB1MB2MB2_m = new TH3F("h3_MB1MB2MB2_m", "h3_MB1MB2MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB2MB2_m = new TH3F("h3_MB1MB2MB2_m", "h3_MB1MB2MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB2_m);
-    h3_JMB1MB2_m = new TH3F("h3_JMB1MB2_m", "h3_JMB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JMB1MB2_m = new TH3F("h3_JMB1MB2_m", "h3_JMB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMB1MB2_m);
-    h3_MB1MB2MB3_m = new TH3F("h3_MB1MB2MB3_m", "h3_MB1MB2MB3_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB2MB3_m = new TH3F("h3_MB1MB2MB3_m", "h3_MB1MB2MB3_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB3_m);
-    h3_BMBMB_m = new TH3F("h3_BMBMB_m", "h3_BMBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BMBMB_m = new TH3F("h3_BMBMB_m", "h3_BMBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMBMB_m);
-    h3_SMBMB_m = new TH3F("h3_SMBMB_m", "h3_SMBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SMBMB_m = new TH3F("h3_SMBMB_m", "h3_SMBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMBMB_m);
-    h3_BMB1MB2_m = new TH3F("h3_BMB1MB2_m", "h3_BMB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BMB1MB2_m = new TH3F("h3_BMB1MB2_m", "h3_BMB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMB1MB2_m);
-    h3_SMB1MB2_m = new TH3F("h3_SMB1MB2_m", "h3_SMB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SMB1MB2_m = new TH3F("h3_SMB1MB2_m", "h3_SMB1MB2_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMB1MB2_m);
-    h3_BBMB_m = new TH3F("h3_BBMB_m", "h3_BBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BBMB_m = new TH3F("h3_BBMB_m", "h3_BBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BBMB_m);
-    h3_SBMB_m = new TH3F("h3_SBMB_m", "h3_SBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SBMB_m = new TH3F("h3_SBMB_m", "h3_SBMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SBMB_m);
-    h3_SSMB_m = new TH3F("h3_SSMB_m", "h3_SSMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SSMB_m = new TH3F("h3_SSMB_m", "h3_SSMB_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SSMB_m);
     
-    h3Jet_deltaR_MJ_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ_e3c_tru_m", "h3Jet_deltaR_MJ_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ_e3c_tru_m", "h3Jet_deltaR_MJ_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ_e3c_tru_m);
-    h3Jet_deltaR_MJ0_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ0_e3c_tru_m", "h3Jet_deltaR_MJ0_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ0_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ0_e3c_tru_m", "h3Jet_deltaR_MJ0_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ0_e3c_tru_m);
-    h3Jet_deltaR_MJ1_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ1_e3c_tru_m", "h3Jet_deltaR_MJ1_e3c_tru_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ1_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ1_e3c_tru_m", "h3Jet_deltaR_MJ1_e3c_tru_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ1_e3c_tru_m);
-    h3Jet_deltaR_MJ2_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ2_e3c_tru_m", "h3Jet_deltaR_MJ2_e3c_tru_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ2_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ2_e3c_tru_m", "h3Jet_deltaR_MJ2_e3c_tru_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ2_e3c_tru_m);
-    h3Jet_deltaR_MJ3_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ3_e3c_tru_m", "h3Jet_deltaR_MJ3_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ3_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ3_e3c_tru_m", "h3Jet_deltaR_MJ3_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ3_e3c_tru_m);
-    h3_JJMB_tru_m = new TH3F("h3_JJMB_tru_m", "h3_JJMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JJMB_tru_m = new TH3F("h3_JJMB_tru_m", "h3_JJMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JJMB_tru_m);
-    h3_JMBMB_tru_m = new TH3F("h3_JMBMB_tru_m", "h3_JMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JMBMB_tru_m = new TH3F("h3_JMBMB_tru_m", "h3_JMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMBMB_tru_m);
-    h3_MB1MB1MB2_tru_m = new TH3F("h3_MB1MB1MB2_tru_m", "h3_MB1MB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB1MB2_tru_m = new TH3F("h3_MB1MB1MB2_tru_m", "h3_MB1MB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB2_tru_m);
-    h3_MB1MB2MB2_tru_m = new TH3F("h3_MB1MB2MB2_tru_m", "h3_MB1MB2MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB2MB2_tru_m = new TH3F("h3_MB1MB2MB2_tru_m", "h3_MB1MB2MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB2_tru_m);
-    h3_JMB1MB2_tru_m = new TH3F("h3_JMB1MB2_tru_m", "h3_JMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JMB1MB2_tru_m = new TH3F("h3_JMB1MB2_tru_m", "h3_JMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMB1MB2_tru_m);
-    h3_MB1MB2MB3_tru_m = new TH3F("h3_MB1MB2MB3_tru_m", "h3_MB1MB2MB3_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB2MB3_tru_m = new TH3F("h3_MB1MB2MB3_tru_m", "h3_MB1MB2MB3_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB3_tru_m);
-    h3_BMBMB_tru_m = new TH3F("h3_BMBMB_tru_m", "h3_BMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BMBMB_tru_m = new TH3F("h3_BMBMB_tru_m", "h3_BMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMBMB_tru_m);
-    h3_SMBMB_tru_m = new TH3F("h3_SMBMB_tru_m", "h3_SMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SMBMB_tru_m = new TH3F("h3_SMBMB_tru_m", "h3_SMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMBMB_tru_m);
-    h3_BMB1MB2_tru_m = new TH3F("h3_BMB1MB2_tru_m", "h3_BMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BMB1MB2_tru_m = new TH3F("h3_BMB1MB2_tru_m", "h3_BMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMB1MB2_tru_m);
-    h3_BBMB_tru_m = new TH3F("h3_BBMB_tru_m", "h3_BBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BBMB_tru_m = new TH3F("h3_BBMB_tru_m", "h3_BBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BBMB_tru_m);
-    h3_SBMB_tru_m = new TH3F("h3_SBMB_tru_m", "h3_SBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SBMB_tru_m = new TH3F("h3_SBMB_tru_m", "h3_SBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SBMB_tru_m);
-    h3_SSMB_tru_m = new TH3F("h3_SSMB_tru_m", "h3_SSMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SSMB_tru_m = new TH3F("h3_SSMB_tru_m", "h3_SSMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SSMB_tru_m);
-    h3_SMB1MB2_tru_m = new TH3F("h3_SMB1MB2_tru_m", "h3_SMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SMB1MB2_tru_m = new TH3F("h3_SMB1MB2_tru_m", "h3_SMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMB1MB2_tru_m);
 
 if(fCout)cout<<"Unmatched jets only"<<endl;
-    h3Jet_deltaR_MJ_e3c_um = new TH3F("h3Jet_deltaR_MJ_e3c_um", "h3Jet_deltaR_MJ_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ_e3c_um = new TH3F("h3Jet_deltaR_MJ_e3c_um", "h3Jet_deltaR_MJ_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ_e3c_um);
-    h3Jet_deltaR_MJ0_e3c_um = new TH3F("h3Jet_deltaR_MJ0_e3c_um", "h3Jet_deltaR_MJ0_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ0_e3c_um = new TH3F("h3Jet_deltaR_MJ0_e3c_um", "h3Jet_deltaR_MJ0_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ0_e3c_um);
-    h3Jet_deltaR_MJ1_e3c_um = new TH3F("h3Jet_deltaR_MJ1_e3c_um", "h3Jet_deltaR_MJ1_e3c_um",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ1_e3c_um = new TH3F("h3Jet_deltaR_MJ1_e3c_um", "h3Jet_deltaR_MJ1_e3c_um",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ1_e3c_um);
-    h3Jet_deltaR_MJ2_e3c_um = new TH3F("h3Jet_deltaR_MJ2_e3c_um", "h3Jet_deltaR_MJ2_e3c_um",nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ2_e3c_um = new TH3F("h3Jet_deltaR_MJ2_e3c_um", "h3Jet_deltaR_MJ2_e3c_um",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ2_e3c_um);
-    h3Jet_deltaR_MJ3_e3c_um = new TH3F("h3Jet_deltaR_MJ3_e3c_um", "h3Jet_deltaR_MJ3_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins,wtbins);
+    h3Jet_deltaR_MJ3_e3c_um = new TH3F("h3Jet_deltaR_MJ3_e3c_um", "h3Jet_deltaR_MJ3_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3Jet_deltaR_MJ3_e3c_um);
     
-    h3_MB1MB1MB1_um = new TH3F("h3_MB1MB1MB1_um", "h3_MB1MB1MB1_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB1MB1_um = new TH3F("h3_MB1MB1MB1_um", "h3_MB1MB1MB1_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB1_um);
-    h3_JJMB_um = new TH3F("h3_JJMB_um", "h3_JJMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JJMB_um = new TH3F("h3_JJMB_um", "h3_JJMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JJMB_um);
-    h3_JMBMB_um = new TH3F("h3_JMBMB_um", "h3_JMBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JMBMB_um = new TH3F("h3_JMBMB_um", "h3_JMBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMBMB_um);
-    h3_MB1MB1MB2_um = new TH3F("h3_MB1MB1MB2_um", "h3_MB1MB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB1MB2_um = new TH3F("h3_MB1MB1MB2_um", "h3_MB1MB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB1MB2_um);
-    h3_MB1MB2MB2_um = new TH3F("h3_MB1MB2MB2_um", "h3_MB1MB2MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB2MB2_um = new TH3F("h3_MB1MB2MB2_um", "h3_MB1MB2MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB2_um);
-    h3_JMB1MB2_um = new TH3F("h3_JMB1MB2_um", "h3_JMB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_JMB1MB2_um = new TH3F("h3_JMB1MB2_um", "h3_JMB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_JMB1MB2_um);
-    h3_MB1MB2MB3_um = new TH3F("h3_MB1MB2MB3_um", "h3_MB1MB2MB3_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_MB1MB2MB3_um = new TH3F("h3_MB1MB2MB3_um", "h3_MB1MB2MB3_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_MB1MB2MB3_um);
-    h3_BMBMB_um = new TH3F("h3_BMBMB_um", "h3_BMBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BMBMB_um = new TH3F("h3_BMBMB_um", "h3_BMBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMBMB_um);
-    h3_SMBMB_um = new TH3F("h3_SMBMB_um", "h3_SMBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SMBMB_um = new TH3F("h3_SMBMB_um", "h3_SMBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMBMB_um);
-    h3_BMB1MB2_um = new TH3F("h3_BMB1MB2_um", "h3_BMB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BMB1MB2_um = new TH3F("h3_BMB1MB2_um", "h3_BMB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BMB1MB2_um);
-    h3_SMB1MB2_um = new TH3F("h3_SMB1MB2_um", "h3_SMB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SMB1MB2_um = new TH3F("h3_SMB1MB2_um", "h3_SMB1MB2_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SMB1MB2_um);
-    h3_BBMB_um = new TH3F("h3_BBMB_um", "h3_BBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_BBMB_um = new TH3F("h3_BBMB_um", "h3_BBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_BBMB_um);
-    h3_SBMB_um = new TH3F("h3_SBMB_um", "h3_SBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SBMB_um = new TH3F("h3_SBMB_um", "h3_SBMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SBMB_um);
-    h3_SSMB_um = new TH3F("h3_SSMB_um", "h3_SSMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins, wtbins);
+    h3_SSMB_um = new TH3F("h3_SSMB_um", "h3_SSMB_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     fOutput->Add(h3_SSMB_um);
 
   }
@@ -1387,15 +1412,17 @@ else{
           jetConstituents.push_back(PseudoTracksJet);
           constituentIndexJet++;
           }
+          if(ifeec){
           if(fCout) cout<<"Now finding data cones for EEC"<<endl;
-
           auto cones = FindConesDataEEC(jet1,InputEvent());
           std::vector<fastjet::PseudoJet> cone1 = cones.first;
           std::vector<fastjet::PseudoJet> cone2 = cones.second;
           FillBkgSubJetsDataEEC(cone1,cone1,ptSubtracted,true,"sameMB");
           FillBkgSubJetsDataEEC(cone1,cone2,ptSubtracted,false,"diffMB");
           FillBkgSubJetsDataEEC(jetConstituents,cone1,ptSubtracted,false,"jetMB");
+          }
 
+          if(ife3c){
           if(fCout) cout<<"Now finding data cones for E3C"<<endl;
           std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
           std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindConesDataE3C(jet1,InputEvent());
@@ -1406,7 +1433,7 @@ else{
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles2,minBiasParticles2,ptSubtracted,"two","MB1MB2MB2");
           FillBkgSubJetsDataE3C(jetConstituents,minBiasParticles2,minBiasParticles3,ptSubtracted,"none","jetMB1MB2");
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles2,minBiasParticles3,ptSubtracted,"none","MB1MB2MB3");
- 
+          }
           }
         else if ((fJetShapeType == kPythiaDef) || (fJetShapeType == kMCTrue) || (fJetShapeType == kGenOnTheFly)){
           ptSubtracted = jet1->Pt();
@@ -1817,8 +1844,9 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
            if(!ifcFactorHist){
             if(ifeec){
               if(fCout){cout<<"Unmatched Jet EEC cones"<<endl;}
-            std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
-            std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
+            auto cones = FindThermalConeEEC(jet_emb,-2,-3);
+            std::vector<fastjet::PseudoJet> minBiasParticles = cones.first;
+            std::vector<fastjet::PseudoJet> minBiasParticles2 = cones.second;
             if(fCout){cout<<"Filling regular histograms "<<endl;}
             if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
               if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" and cone 2 size " << minBiasParticles2.size()<<endl;
@@ -1852,8 +1880,9 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
         if(fCout){cout<<"counter is odd, in cFactor loop "<<EvCounter<<endl;}
         if(ifcFactorHist){
           if(ifeec){
-            std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
-            std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
+            auto cones = FindThermalConeEEC(jet_emb,-2,-3);
+            std::vector<fastjet::PseudoJet> minBiasParticles = cones.first;
+            std::vector<fastjet::PseudoJet> minBiasParticles2 = cones.second;
           if(fCout){cout<<"counter is odd, cFactorHist is set to TRUE"<<endl;}
           if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
               if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" and cone 2 size " << minBiasParticles2.size()<<endl;
@@ -1916,8 +1945,9 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
            if(!ifcFactorHist){
             if(ifeec){
               if(fCout){cout<<"MATCHED Jet EEC cones"<<endl;}
-            std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
-            std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
+            auto cones = FindThermalConeEEC(jet_emb,-2,-3);
+            std::vector<fastjet::PseudoJet> minBiasParticles = cones.first;
+            std::vector<fastjet::PseudoJet> minBiasParticles2 = cones.second;
             if(fCout){cout<<"Filling regular histograms "<<endl;}
             if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
               if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" add cone 2 size " << minBiasParticles2.size()<<endl;
@@ -1951,8 +1981,9 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
         if(fCout){cout<<"counter is odd, in cFactor loop "<<EvCounter<<endl;}
         if(ifcFactorHist){
           if(ifeec){
-            std::vector<fastjet::PseudoJet> minBiasParticles = FindThermalConeEEC(jet_emb, "plus", -2);
-            std::vector<fastjet::PseudoJet> minBiasParticles2 = FindThermalConeEEC(jet_emb, "minus", -3);
+            auto cones = FindThermalConeEEC(jet_emb,-2,-3);
+            std::vector<fastjet::PseudoJet> minBiasParticles = cones.first;
+            std::vector<fastjet::PseudoJet> minBiasParticles2 = cones.second;
           if(minBiasParticles.size()==0 || minBiasParticles2.size()==0){
               if(fCout)cout<<" cone 1 size "<< minBiasParticles.size()<<" and cone 2 size " << minBiasParticles2.size()<<endl;
               continue;
@@ -2552,10 +2583,10 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataEEC(AliEmcalJet *fJet, AliVEvent* input
     if (!fJet || !inputEvent) return {}; // Safety check
 
     double jetEta = fJet->Eta();
-    double jet_embphi = fJet->Phi();
+    double jet_phi = fJet->Phi();
 
     Double_t Axis1 = 999, Axis2 = 999;
-    double dPhi1, dPhi2, dEta, dPhi_plus, dPhi_minus;
+    float dPhi1, dPhi2, dEta, dPhi_plus, dPhi_minus;
     
     std::vector<fastjet::PseudoJet> tracksInConePlus;
     std::vector<fastjet::PseudoJet> tracksInConeMinus;
@@ -2568,14 +2599,14 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataEEC(AliEmcalJet *fJet, AliVEvent* input
     if (fDoRandCone) {
         TRandom3 fRandom;
         double OffsetRandom = (1 + fRandom.Rndm()) * TMath::Pi() / 3; // Random Phi in range [π/3, 2π/3]
-        Axis1 = jet_embphi + OffsetRandom;
-        Axis2 = jet_embphi - OffsetRandom;
+        Axis1 = jet_phi + OffsetRandom;
+        Axis2 = jet_phi - OffsetRandom;
         if (Axis1 > TMath::TwoPi()) Axis1 -= TMath::TwoPi();
         if (Axis2 < 0) Axis2 += TMath::TwoPi();
     } 
     else if (fDoPerpCone) {
-        Axis1 = ((jet_embphi + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? jet_embphi - ((3. / 2.) * TMath::Pi()) : jet_embphi + (TMath::Pi() / 2.);
-        Axis2 = ((jet_embphi - (TMath::Pi() / 2.)) < 0) ? jet_embphi + ((3. / 2.) * TMath::Pi()) : jet_embphi - (TMath::Pi() / 2.);
+        Axis1 = ((jet_phi + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? jet_phi - ((3. / 2.) * TMath::Pi()) : jet_phi + (TMath::Pi() / 2.);
+        Axis2 = ((jet_phi - (TMath::Pi() / 2.)) < 0) ? jet_phi + ((3. / 2.) * TMath::Pi()) : jet_phi - (TMath::Pi() / 2.);
     }
 
     // Get the event
@@ -2595,33 +2626,39 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataEEC(AliEmcalJet *fJet, AliVEvent* input
         // Apply track pT cuts
         if (track->Pt() < fMinENCtrackPt || track->Pt() > fMaxPtTrack) continue;
         if (fCout) std::cout << "Track passed pT cuts" << std::endl;
-
-        Float_t mod_track_phi = track->Phi() + TMath::Pi();
+        
+        Float_t track_phi = track->Phi();
+        Float_t track_eta = track->Eta();
 
         // Compute dPhi and dEta
-        dPhi1 = TMath::Abs(mod_track_phi - Axis1);
+        dPhi1 = TMath::Abs(track_phi - Axis1);
         dPhi1 = (dPhi1 > TMath::Pi()) ? (2 * TMath::Pi() - dPhi1) : dPhi1;
-
-        dPhi2 = TMath::Abs(mod_track_phi - Axis2);
+        dPhi2 = TMath::Abs(track_phi - Axis2);
         dPhi2 = (dPhi2 > TMath::Pi()) ? (2 * TMath::Pi() - dPhi2) : dPhi2;
 
         dEta = jetEta - track->Eta();
 
-        dPhi_plus = dPhi1;
-        dPhi_minus = dPhi2;
+        if ((TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) < fConeR)) {
+            Float_t rotated_phi = jet_phi + (track_phi - Axis1);
+            if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+            if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+            fastjet::PseudoJet pseudoTrack(track->Pt() * TMath::Cos(rotated_phi), 
+                                                track->Pt() * TMath::Sin(rotated_phi),
+                                                track->Pt() * TMath::SinH(track_eta),
+                                                track->E());
+            tracksInConePlus.push_back(pseudoTrack);
+          }
 
-        double dist_plus = TMath::Sqrt(dPhi_plus * dPhi_plus + dEta * dEta);
-        double dist_minus = TMath::Sqrt(dPhi_minus * dPhi_minus + dEta * dEta);
+        if ((TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) < fConeR)) {
+              Float_t rotated_phi = jet_phi + (track_phi - Axis2);
+              if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+              if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
 
-        fastjet::PseudoJet PseudoTracks(track->Px(), track->Py(), track->Pz(), track->E());
-        PseudoTracks.set_user_index(itrack); // Store track index for reference
-
-        // Assign to correct cone
-        if (dist_plus <= fConeR) {
-            tracksInConePlus.push_back(PseudoTracks);
-        }
-        if (dist_minus <= fConeR) {
-            tracksInConeMinus.push_back(PseudoTracks);
+              fastjet::PseudoJet pseudoTrack(track->Pt() * TMath::Cos(rotated_phi), 
+                                               track->Pt() * TMath::Sin(rotated_phi),
+                                               track->Pt() * TMath::SinH(track_eta),
+                                               track->E());
+              tracksInConeMinus.push_back(pseudoTrack);
         }
 
         if (fCout) std::cout << "Tracks in cone sizes: Plus = " 
@@ -2633,16 +2670,14 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataEEC(AliEmcalJet *fJet, AliVEvent* input
     return {tracksInConePlus, tracksInConeMinus}; // Return both vectors as a pair
 }
 
-
-
 //________________________________________________________________________
 std::tuple<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>>
 AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet, AliVEvent* inputEvent)
 {
-  if(fCout) cout<<"Creating cones for E3C data jets" <<endl;
-  std::vector<fastjet::PseudoJet> coneParticles1, coneParticles2, coneParticles3; // Separate vectors for each cone
+    if(fCout) cout<<"Creating cones for E3C data jets" <<endl;
+    std::vector<fastjet::PseudoJet> coneParticles1, coneParticles2, coneParticles3; // Separate vectors for each cone
 
-   // Jet kinematics
+    // Jet kinematics
     Float_t jet_phi = fJet->Phi();
     Float_t jet_eta = fJet->Eta();
 
@@ -2652,105 +2687,103 @@ AliAnalysisTaskJetsEECpbpb::FindConesDataE3C(AliEmcalJet *fJet, AliVEvent* input
 
     Double_t Axis1_Perp, Axis2_Shifted, Axis3_Offset;
     Double_t dPhi1, dPhi2, dPhi3, dEta1, dEta2, dEta3;
-    fastjet::PseudoJet PseudoTracks;
 
     // **Cone 1: Perpendicular to jet axis (π/2 shift)**
     Axis1_Perp = jet_phi + (TMath::Pi() / 2.);
     if (Axis1_Perp > TMath::TwoPi()) Axis1_Perp -= TMath::TwoPi();
 
-    // Ensure Cone 1 does not overlap with anti-jet
-    if (TMath::Abs(Axis1_Perp - anti_jet_phi) < fConeR) {
-        Axis1_Perp += fConeR;
-        if (Axis1_Perp > TMath::TwoPi()) Axis1_Perp -= TMath::TwoPi();
-    }
-    // **Cone 2: Shift φ by fDeltaAxisShift radians and reflect in η**
+    // **Cone 2: Shift φ by fDeltaAxisShift and reflect η relative to the jet**
     Axis2_Shifted = jet_phi + fDeltaAxisShift;
     if (Axis2_Shifted > TMath::TwoPi()) Axis2_Shifted -= TMath::TwoPi();
-    Float_t eta_reflected = -jet_eta; // Reflect in eta
-
-    // Ensure Cone 2 does not overlap with Jet or Anti-Jet
-    if (TMath::Sqrt((jet_phi - Axis2_Shifted) * (jet_phi - Axis2_Shifted) +
-                    (jet_eta - eta_reflected) * (jet_eta - eta_reflected)) < fConeR ||
-        TMath::Sqrt((anti_jet_phi - Axis2_Shifted) * (anti_jet_phi - Axis2_Shifted)) < fConeR) {
-        Axis2_Shifted += fConeR;
-        if (Axis2_Shifted > TMath::TwoPi()) Axis2_Shifted -= TMath::TwoPi();
-    }
+    Float_t eta_reflected = -jet_eta; // Use reflected η for track selection
 
     // **Cone 3: fDeltaAxisShift away from Cone 2, same η as the jet**
     Axis3_Offset = Axis2_Shifted + fDeltaAxisShift;
     if (Axis3_Offset > TMath::TwoPi()) Axis3_Offset -= TMath::TwoPi();
 
-    // Ensure Cone 3 does not overlap with Cone 1, Cone 2, or Anti-Jet
-    if (TMath::Sqrt((Axis3_Offset - Axis1_Perp) * (Axis3_Offset - Axis1_Perp) +
-                    (jet_eta - eta_reflected) * (jet_eta - eta_reflected)) < fConeR ||
-        TMath::Sqrt((Axis3_Offset - Axis2_Shifted) * (Axis3_Offset - Axis2_Shifted)) < fConeR ||
-        TMath::Sqrt((Axis3_Offset - anti_jet_phi) * (Axis3_Offset - anti_jet_phi)) < fConeR) {
-        Axis3_Offset += fConeR;
-        if (Axis3_Offset > TMath::TwoPi()) Axis3_Offset -= TMath::TwoPi();
+    if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal for E3C ===== " << std::endl;
+
+    UInt_t fAOD_FilterBits = 1<<8 | 1<<9;
+
+    // Get the event
+    AliVEvent *event = inputEvent;
+    if (!event) return {};
+    fisGoodIncEvent = 1;
+    fAOD = dynamic_cast<AliAODEvent*>(event);
+
+    // --------------------------------------------------------------
+    //  Main track loop
+    // --------------------------------------------------------------
+
+    for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); ++itrack) {   // Track loop
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if (!track) continue;
+
+        // Apply filter cuts
+        if (!track->TestFilterBit(fAOD_FilterBits)) continue;
+
+        // Apply pT cuts
+        if (track->Pt() < fMinENCtrackPt || track->Pt() > fMaxPtTrack) continue;
+
+        // Store original track η and φ for selection
+        Float_t track_phi = track->Phi();
+        Float_t track_eta = track->Eta();
+
+        // Compute distances to cones using original η-φ values
+        dPhi1 = TMath::Abs(track_phi - Axis1_Perp);
+        dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
+        dEta1 = jet_eta - track_eta;
+        double distanceCone1 = TMath::Sqrt(dPhi1 * dPhi1 + dEta1 * dEta1);
+
+        dPhi2 = TMath::Abs(track_phi - Axis2_Shifted);
+        dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
+        dEta2 = eta_reflected - track_eta;
+        double distanceCone2 = TMath::Sqrt(dPhi2 * dPhi2 + dEta2 * dEta2);
+
+        dPhi3 = TMath::Abs(track_phi - Axis3_Offset);
+        dPhi3 = (dPhi3 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi3 : dPhi3;
+        dEta3 = jet_eta - track_eta;
+        double distanceCone3 = TMath::Sqrt(dPhi3 * dPhi3 + dEta3 * dEta3);
+
+
+        // Assign to correct cone
+        if (distanceCone1 < fConeR) {
+          Float_t rotated_phi = jet_phi + (track_phi - Axis1_Perp);  // Rotation in φ
+          if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+          if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+          fastjet::PseudoJet PseudoTracks(track->Pt() * TMath::Cos(rotated_phi), 
+                                          track->Pt() * TMath::Sin(rotated_phi),
+                                          track->Pt() * TMath::SinH(track_eta), // Keeping η the same
+                                          track->E());
+          coneParticles1.push_back(PseudoTracks);
+          }
+        if (distanceCone2 < fConeR) {
+          Float_t rotated_phi = jet_phi + (track_phi - Axis2_Shifted);  // Rotation in φ
+          if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+          if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+          Float_t new_eta = -track_eta;
+          fastjet::PseudoJet PseudoTracks(track->Pt() * TMath::Cos(rotated_phi), 
+                                          track->Pt() * TMath::Sin(rotated_phi),
+                                          track->Pt() * TMath::SinH(new_eta), 
+                                          track->E());     
+          coneParticles2.push_back(PseudoTracks);
+          }
+        if (distanceCone3 < fConeR) {
+          Float_t rotated_phi = jet_phi + (track_phi - Axis3_Offset);  // Rotation in φ
+          if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+          if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+          fastjet::PseudoJet PseudoTracks(track->Pt() * TMath::Cos(rotated_phi), 
+                                          track->Pt() * TMath::Sin(rotated_phi),
+                                          track->Pt() * TMath::SinH(track_eta), // Keeping η the same
+                                          track->E());
+          coneParticles3.push_back(PseudoTracks);
+        }
     }
 
-
-  if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal for E3C ===== " << std::endl;
-
-  UInt_t fAOD_FilterBits = 1<<8 | 1<<9;
-
-  // Get the event
-   AliVEvent *event=inputEvent;
-  if (!event) return {};
-  fisGoodIncEvent = 1;
-  fAOD = dynamic_cast<AliAODEvent*>(event);
-  // --------------------------------------------------------------
-  //  Main track loop
-  // --------------------------------------------------------------
-
-  for (Int_t itrack=0;itrack<event->GetNumberOfTracks();++itrack) {   // Track loop
-
-    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
-    if (!track) continue;
-    // --------------------------------------------------------------
-    //      Get relevant track info and set cut bits
-    // --------------------------------------------------------------
-
-    Bool_t ifDefaultCuts = track->TestFilterBit(fAOD_FilterBits);
-    if (!ifDefaultCuts) continue;
-
-      if (track->Pt() < fMinENCtrackPt || track->Pt() > fMaxPtTrack) {
-          continue;
-       }
-                
-        Float_t mod_track_phi = track->Phi() + TMath::Pi();
-        // Calculate distances to cones
-            dPhi1 = TMath::Abs(mod_track_phi - Axis1_Perp);
-            dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
-            dEta1 = jet_eta - track->Eta();
-            double distanceCone1 = TMath::Sqrt(dPhi1 * dPhi1 + dEta1 * dEta1);
-
-            dPhi2 = TMath::Abs(mod_track_phi - Axis2_Shifted);
-            dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
-            dEta2 = eta_reflected - track->Eta();
-            double distanceCone2 = TMath::Sqrt(dPhi2 * dPhi2 + dEta2 * dEta2);
-
-            dPhi3 = TMath::Abs(mod_track_phi - Axis3_Offset);
-            dPhi3 = (dPhi3 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi3 : dPhi3;
-            dEta3 = jet_eta - track->Eta();
-            double distanceCone3 = TMath::Sqrt(dPhi3 * dPhi3 + dEta3 * dEta3);
-
-            // Check if the track is within any of the cones
-            if (distanceCone1 < fConeR) {
-                PseudoTracks.reset(track->Px(), track->Py(), track->Pz(), track->E());
-                coneParticles1.push_back(PseudoTracks);
-            }
-            if (distanceCone2 < fConeR) {
-                PseudoTracks.reset(track->Px(), track->Py(), track->Pz(), track->E());
-                coneParticles2.push_back(PseudoTracks);
-            }
-            if (distanceCone3 < fConeR) {
-                PseudoTracks.reset(track->Px(), track->Py(), track->Pz(), track->E());
-                coneParticles3.push_back(PseudoTracks);
-            }
-  }
-  return std::make_tuple(coneParticles1, coneParticles2, coneParticles3);
+    return std::make_tuple(coneParticles1, coneParticles2, coneParticles3);
 }
+
+
 
 //________________________________________________________________________
 //bkgindex = -1 for jet background particle, -2 for a thermal cone, -3 for second thermal cone
@@ -3082,6 +3115,7 @@ if(fCout) cout<<"In FillEmbJetsEEC"<<endl;
                 if(type == "diffMB")
                 {
                   if(fCout) cout<<"In diffMB"<<endl;
+                  if(fCout) cout<<"distance "<<dR<<endl;
                     if ((i1 ==  bkgIndex1) && (i2 ==  bkgIndex2))
                     {
                     
@@ -4701,9 +4735,10 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
 }
 // //______________________________________________________________________
 // //for embedded, det level and truth jets 
-std::vector<fastjet::PseudoJet> AliAnalysisTaskJetsEECpbpb::FindThermalConeEEC(AliEmcalJet *fJetEmb, std::string axisType, int index)
+std::pair<std::vector<fastjet::PseudoJet>, std::vector<fastjet::PseudoJet>>  AliAnalysisTaskJetsEECpbpb::FindThermalConeEEC(AliEmcalJet *fJetEmb, int index1, int index2)
 {
-    std::vector<fastjet::PseudoJet> coneParticles;
+    std::vector<fastjet::PseudoJet> coneParticlesPlus;
+    std::vector<fastjet::PseudoJet> coneParticlesMinus;
 
     Float_t jet_embpt = fJetEmb->Pt();
     Float_t jet_embphi = fJetEmb->Phi();
@@ -4716,14 +4751,14 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskJetsEECpbpb::FindThermalConeEEC(A
     Double_t dEta = 999.;
     Double_t Axis1 = 999, Axis2 = 999;
     Double_t fEtaMC = 999;
-    fastjet::PseudoJet PseudoTracks; //Creating a pseudojet object called PseduoTracks
+    fastjet::PseudoJet PseudoTracks; // Creating a pseudojet object
 
     if (fDoRandCone){
-      double OffsetRandom = (1 + fRandom->Rndm()) * TMath::Pi()/3; // creating random Phi in the range of PI/3 and 2PI/3
-      Axis1 = jet_embphi + OffsetRandom;  // adding the random Phi to the Phi of leading jet, to get the Phi of random cone
-      Axis2 = jet_embphi - OffsetRandom; // mirroring it, so you get Phi of the 2nd random cone
-      if(Axis1 > TMath::TwoPi()) Axis1 -= TMath::TwoPi(); // checking if it's larger than 2PI (leading jet phi is distributed in range of 0 and 2PI
-      if(Axis2 < 0) Axis2 += TMath::TwoPi(); // checking if 2nd cone is smaller than 0
+      double OffsetRandom = (1 + fRandom->Rndm()) * TMath::Pi()/3; // Random Phi in the range of π/3 and 2π/3
+      Axis1 = jet_embphi + OffsetRandom;
+      Axis2 = jet_embphi - OffsetRandom;
+      if(Axis1 > TMath::TwoPi()) Axis1 -= TMath::TwoPi();
+      if(Axis2 < 0) Axis2 += TMath::TwoPi();
     }
 
     if (fDoPerpCone){
@@ -4736,47 +4771,50 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskJetsEECpbpb::FindThermalConeEEC(A
     while ((partCont = static_cast<AliParticleContainer *>(nextPartCont()))) {
       AliParticleIterableMomentumContainer itcont = partCont->accepted_momentum();
       for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-        AliVTrack * particle = static_cast<AliVTrack*>(it->second); //partIter.second);
+        AliVTrack * particle = static_cast<AliVTrack*>(it->second);
         AliAODTrack* trackReal = (AliAODTrack*)(particle);
         
-        if (trackReal==NULL) {
-        //   if (fUseCouts) std::cout << "Didn't have a reco track" << std::endl;
-          continue;
-        }
+            if (!trackReal) continue;
+            if (TMath::Abs(trackReal->Eta()) > fEtaCutValue) continue;
+            if (trackReal->Pt() < fMinENCtrackPt || trackReal->Pt() > fMaxPtTrack ) continue;
 
-        fEtaMC = trackReal->Eta();
-        if (TMath::Abs(fEtaMC) > fEtaCutValue) {
-          continue;
-        }
+            Float_t track_phi = trackReal->Phi();
+            Float_t track_eta = trackReal->Eta();
 
-        if (trackReal->Pt() < fMinENCtrackPt) {
-          continue;
-        }
-                      
-        Float_t mod_track_phi = trackReal->Phi() + TMath::Pi();
-        //Check if the track is within the R=0.4 cone in eta, phi
-        dPhi1 = TMath::Abs(mod_track_phi - Axis1);
-        dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
-        dPhi2 = TMath::Abs(mod_track_phi - Axis2);
-        dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
-        dEta = jet_embeta - trackReal->Eta();
+            Double_t dPhi1 = TMath::Abs(track_phi - Axis1);
+            dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
+            Double_t dPhi2 = TMath::Abs(track_phi - Axis2);
+            dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
+            Double_t dEta = jet_embeta - track_eta;
 
-        if(axisType=="plus"){
-          dPhi = dPhi1;
+            if ((TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) < fConeR)) {
+                Float_t rotated_phi = jet_embphi + (track_phi - Axis1);
+                if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+                if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+
+                fastjet::PseudoJet pseudoTrack(trackReal->Pt() * TMath::Cos(rotated_phi), 
+                                               trackReal->Pt() * TMath::Sin(rotated_phi),
+                                               trackReal->Pt() * TMath::SinH(track_eta),
+                                               trackReal->E());
+                pseudoTrack.set_user_index(index1);
+                coneParticlesPlus.push_back(pseudoTrack);
+            }
+
+            if ((TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) < fConeR)) {
+                Float_t rotated_phi = jet_embphi + (track_phi - Axis2);
+                if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+                if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+
+                fastjet::PseudoJet pseudoTrack(trackReal->Pt() * TMath::Cos(rotated_phi), 
+                                               trackReal->Pt() * TMath::Sin(rotated_phi),
+                                               trackReal->Pt() * TMath::SinH(track_eta),
+                                               trackReal->E());
+                pseudoTrack.set_user_index(index2);
+                coneParticlesMinus.push_back(pseudoTrack);
+            }
         }
-        else{
-          dPhi = dPhi2;
-        }
-        
-        if ((TMath::Sqrt(dPhi * dPhi + dEta * dEta) < fConeR)) {
-        PseudoTracks.reset(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E());
-        PseudoTracks.set_user_index(index);
-        coneParticles.push_back(PseudoTracks);
-        } 
-       
-      }
     }
-  return  coneParticles;
+    return std::make_pair(coneParticlesPlus, coneParticlesMinus);
 }
 // //______________________________________________________________________
 // //outputs three cones 
@@ -4802,37 +4840,14 @@ AliAnalysisTaskJetsEECpbpb::FindThermalConeE3C(AliEmcalJet *fJetEmb, int index1,
     Axis1_Perp = jet_embphi + (TMath::Pi() / 2.);
     if (Axis1_Perp > TMath::TwoPi()) Axis1_Perp -= TMath::TwoPi();
 
-    // Ensure Cone 1 does not overlap with anti-jet
-    if (TMath::Abs(Axis1_Perp - anti_jet_phi) < fConeR) {
-        Axis1_Perp += fConeR;
-        if (Axis1_Perp > TMath::TwoPi()) Axis1_Perp -= TMath::TwoPi();
-    }
-
-    // **Cone 2: Shift φ by fDeltaAxisShift radians and reflect in eta**
+    // **Cone 2: Shift φ by fDeltaAxisShift radians and reflect in η**
     Axis2_Shifted = jet_embphi + fDeltaAxisShift;
     if (Axis2_Shifted > TMath::TwoPi()) Axis2_Shifted -= TMath::TwoPi();
-    Float_t eta_reflected = -jet_embeta; // Reflect in eta
+    Float_t eta_reflected = -jet_embeta; // Reflect in η for selection
 
-    // Ensure Cone 2 does not overlap with Jet or Anti-Jet
-    if (TMath::Sqrt((jet_embphi - Axis2_Shifted) * (jet_embphi - Axis2_Shifted) +
-                    (jet_embeta - eta_reflected) * (jet_embeta - eta_reflected)) < fConeR ||
-        TMath::Sqrt((anti_jet_phi - Axis2_Shifted) * (anti_jet_phi - Axis2_Shifted)) < fConeR) {
-        Axis2_Shifted += fConeR;
-        if (Axis2_Shifted > TMath::TwoPi()) Axis2_Shifted -= TMath::TwoPi();
-    }
-
-    // **Cone 3: fDeltaAxisShift away from Cone 2, same eta as the jet**
+    // **Cone 3: fDeltaAxisShift away from Cone 2, same η as the jet**
     Axis3_Offset = Axis2_Shifted + fDeltaAxisShift;
     if (Axis3_Offset > TMath::TwoPi()) Axis3_Offset -= TMath::TwoPi();
-
-    // Ensure Cone 3 does not overlap with Cone 1, Cone 2, or Anti-Jet
-    if (TMath::Sqrt((Axis3_Offset - Axis1_Perp) * (Axis3_Offset - Axis1_Perp) +
-                    (jet_embeta - eta_reflected) * (jet_embeta - eta_reflected)) < fConeR ||
-        TMath::Sqrt((Axis3_Offset - Axis2_Shifted) * (Axis3_Offset - Axis2_Shifted)) < fConeR ||
-        TMath::Sqrt((Axis3_Offset - anti_jet_phi) * (Axis3_Offset - anti_jet_phi)) < fConeR) {
-        Axis3_Offset += fConeR;
-        if (Axis3_Offset > TMath::TwoPi()) Axis3_Offset -= TMath::TwoPi();
-    }
 
     AliParticleContainer *partCont = 0;
     TIter nextPartCont(&fParticleCollArray);
@@ -4846,46 +4861,69 @@ AliAnalysisTaskJetsEECpbpb::FindThermalConeE3C(AliEmcalJet *fJetEmb, int index1,
 
             fEtaMC = trackReal->Eta();
             if (TMath::Abs(fEtaMC) > fEtaCutValue) continue;
-            if (trackReal->Pt() < fMinENCtrackPt) continue;
+            if (trackReal->Pt() < fMinENCtrackPt || trackReal->Pt() > fMaxPtTrack) continue;
 
-            Float_t mod_track_phi = trackReal->Phi() + TMath::Pi();
+            Float_t track_phi = trackReal->Phi();
+            Float_t track_eta = trackReal->Eta();
 
-            // Calculate distances to cones
-            dPhi1 = TMath::Abs(mod_track_phi - Axis1_Perp);
+            // Compute distances to cones using original η-φ values
+            dPhi1 = TMath::Abs(track_phi - Axis1_Perp);
             dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
-            dEta1 = jet_embeta - trackReal->Eta();
+            dEta1 = jet_embeta - track_eta;
             double distanceCone1 = TMath::Sqrt(dPhi1 * dPhi1 + dEta1 * dEta1);
 
-            dPhi2 = TMath::Abs(mod_track_phi - Axis2_Shifted);
+            dPhi2 = TMath::Abs(track_phi - Axis2_Shifted);
             dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
-            dEta2 = eta_reflected - trackReal->Eta();
+            dEta2 = eta_reflected - track_eta;
             double distanceCone2 = TMath::Sqrt(dPhi2 * dPhi2 + dEta2 * dEta2);
 
-            dPhi3 = TMath::Abs(mod_track_phi - Axis3_Offset);
+            dPhi3 = TMath::Abs(track_phi - Axis3_Offset);
             dPhi3 = (dPhi3 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi3 : dPhi3;
-            dEta3 = jet_embeta - trackReal->Eta();
+            dEta3 = jet_embeta - track_eta;
             double distanceCone3 = TMath::Sqrt(dPhi3 * dPhi3 + dEta3 * dEta3);
 
-            // Check if the track is within any of the cones
+
+            // Assign to correct cone
             if (distanceCone1 < fConeR) {
-                PseudoTracks.reset(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E());
-                PseudoTracks.set_user_index(index1);
-                coneParticles1.push_back(PseudoTracks);
+              Float_t rotated_phi = jet_embphi + (track_phi - Axis1_Perp);  // Rotation in φ
+              if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+              if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+              fastjet::PseudoJet PseudoTracks(trackReal->Pt() * TMath::Cos(rotated_phi), 
+                                          trackReal->Pt() * TMath::Sin(rotated_phi),
+                                          trackReal->Pt() * TMath::SinH(track_eta), // Keeping η the same
+                                          trackReal->E());
+              PseudoTracks.set_user_index(index1);  
+              coneParticles1.push_back(PseudoTracks);
             }
             if (distanceCone2 < fConeR) {
-                PseudoTracks.reset(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E());
-                PseudoTracks.set_user_index(index2);
-                coneParticles2.push_back(PseudoTracks);
+              Float_t rotated_phi = jet_embphi + (track_phi - Axis2_Shifted);  // Rotation in φ
+              if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+              if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+              Float_t new_eta = -track_eta;
+              fastjet::PseudoJet PseudoTracks(trackReal->Pt() * TMath::Cos(rotated_phi), 
+                                          trackReal->Pt() * TMath::Sin(rotated_phi),
+                                          trackReal->Pt() * TMath::SinH(new_eta), // Keeping η the same
+                                          trackReal->E());
+              PseudoTracks.set_user_index(index2); // Assign index to track            
+              coneParticles2.push_back(PseudoTracks);
             }
             if (distanceCone3 < fConeR) {
-                PseudoTracks.reset(trackReal->Px(), trackReal->Py(), trackReal->Pz(), trackReal->E());
-                PseudoTracks.set_user_index(index3);
-                coneParticles3.push_back(PseudoTracks);
+              Float_t rotated_phi = jet_embphi + (track_phi - Axis3_Offset);  // Rotation in φ
+              if (rotated_phi > TMath::Pi()) rotated_phi -= 2 * TMath::Pi();
+              if (rotated_phi < -TMath::Pi()) rotated_phi += 2 * TMath::Pi();
+              fastjet::PseudoJet PseudoTracks(trackReal->Pt() * TMath::Cos(rotated_phi), 
+                                          trackReal->Pt() * TMath::Sin(rotated_phi),
+                                          trackReal->Pt() * TMath::SinH(track_eta), // Keeping η the same
+                                          trackReal->E());
+              PseudoTracks.set_user_index(index3); // Assign index to track           
+              coneParticles3.push_back(PseudoTracks);
             }
         }
     }
+
     return std::make_tuple(coneParticles1, coneParticles2, coneParticles3);
 }
+
 // //______________________________________________________________________
 void AliAnalysisTaskJetsEECpbpb::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, Int_t km)
 {
@@ -5058,7 +5096,7 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
         PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E()); //part is the constituent at that point in the loop, part keeps getting redefined in each step.
         const AliVParticle* part2 = part.GetParticle(); //"hack", leave this in , to get the index of the jet from AliPhysics
         PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part2, fJet)); //leave this in for the same reason as above
-        if (PseudoTracks.pt() < fMinENCtrackPt) continue; //remove tracks below cut for ENCs
+        if (PseudoTracks.pt() < fMinENCtrackPt || PseudoTracks.pt() > fMaxPtTrack) continue; //remove tracks below cut for ENCs
         fConstituents.push_back(PseudoTracks);
         constituentIndex++;
     }
