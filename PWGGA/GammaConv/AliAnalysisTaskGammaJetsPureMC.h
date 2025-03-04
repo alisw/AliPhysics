@@ -126,6 +126,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     TH1D*                 fHistPrimaryParticles; //!
 
     TH3F*                 fHistEnergyFracParticleCat; //!
+    TH3F*                 fHistEnergyFracParticleCatJetPt; //!
 
     // jet finding
     double fJetRadius;                                      // jet radius parameter

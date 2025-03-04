@@ -89,6 +89,7 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(): AliAnalysisTas
   fHistJetPtPartFragVsPartLead(nullptr),
   fHistPrimaryParticles(nullptr),
   fHistEnergyFracParticleCat(nullptr),
+  fHistEnergyFracParticleCatJetPt(nullptr),
   fJetRadius(0.4),
   fJetMinE(5.),
   fJetAccEta(0.8),
@@ -145,6 +146,7 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(const char *name)
   fHistJetPtPartFragVsPartLead(nullptr),
   fHistPrimaryParticles(nullptr),
   fHistEnergyFracParticleCat(nullptr),
+  fHistEnergyFracParticleCatJetPt(nullptr),
   fJetRadius(0.4),
   fJetMinE(5.),
   fJetAccEta(0.8),
@@ -322,6 +324,10 @@ void AliAnalysisTaskGammaJetsPureMC::UserCreateOutputObjects(){
   fHistEnergyFracParticleCat = new TH3F("HistEnergyFracParticleCat", "HistEnergyFracParticleCat", vec001Binning.size()-1, vec001Binning.data(), vecEquidistant.size()-1, vecEquidistant.data(), vecJetPt.size()-1, vecJetPt.data());
   fHistEnergyFracParticleCat->Sumw2();
   fOutputContainer->Add(fHistEnergyFracParticleCat);
+
+  fHistEnergyFracParticleCatJetPt = new TH3F("HistEnergyFracParticleCatVsJetPt", "HistEnergyFracParticleCatVsJetPt", vec001Binning.size()-1, vec001Binning.data(), vecEquidistant.size()-1, vecEquidistant.data(), vecJetPt.size()-1, vecJetPt.data());
+  fHistEnergyFracParticleCatJetPt->Sumw2();
+  fOutputContainer->Add(fHistEnergyFracParticleCatJetPt);
 
 
   std::vector<double> vecParticleSpec;
@@ -518,6 +524,7 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
 
     // only select stable particles for jet finder
     if(!particle->IsPhysicalPrimary()) continue; // Only consider primary particles
+    if(std::abs(particle->Eta()) > 1.5 ) continue;
     bool isAccepted = AcceptParticle(particle);
     int pdg = std::abs(particle->PdgCode());
     bool isNonMeas = IsNonMeasureable(pdg, particle->Charge());
@@ -608,31 +615,17 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
   std::vector<double> vecLeadingE(fVecJets_Std.size());
   for(auto & i : vecLeadingE) i = 0.;
   std::array<double, 4> arrEnergyFracPart = {0., 0., 0., 0.};
+  std::vector<std::array<double, 4>> vecArrEnergyFracPart(fVecJets_Std.size());
+  for(auto & i : vecArrEnergyFracPart){
+    i = {0., 0., 0., 0.};
+  }
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     // fill primary histograms
     AliVParticle* particle     = nullptr;
     particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
     if(!particle->IsPhysicalPrimary()) continue; // Only consider primary particles
-    if(std::abs(particle->Eta()) < 1.0){
-      fHistPrimaryParticles->Fill(particle->Pt());
-
-      arrEnergyFracPart[0]+=particle->Pt();
-      int pdg = std::abs(particle->PdgCode());
-      bool isNonMeas = IsNonMeasureable(pdg, particle->Charge());
-      if(isNonMeas) arrEnergyFracPart[1] += particle->Pt();
-      else if(particle->Charge() != 0) arrEnergyFracPart[2] += particle->Pt();
-      else arrEnergyFracPart[3] += particle->Pt();
-
-    }
-
-    int iMother = particle->GetMother();
-    auto particleMother                    = (AliVParticle *)fMCEvent->GetTrack(iMother);
-    int pdgMother = -1;
-    if(particleMother){
-      pdgMother = particleMother->PdgCode();
-    }
-
+    if(std::abs(particle->Eta()) > 1.0) continue;
     int jetindex = -1;
     double minR = 10000;
     for(size_t j = 0; j < fVecJets_Std.size(); ++j){
@@ -646,6 +639,30 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
       }
     }
     double jetPt = jetindex == -1 ? 0 : fVecJets_Std[jetindex].pt();
+
+    
+    fHistPrimaryParticles->Fill(particle->Pt());
+
+    arrEnergyFracPart[0]+=particle->Pt();
+    if(jetindex>=0) vecArrEnergyFracPart[jetindex][0]+=particle->Pt();
+    int indexParticle = 0;
+    int pdg = std::abs(particle->PdgCode());
+    bool isNonMeas = IsNonMeasureable(pdg, particle->Charge());
+    if(isNonMeas) indexParticle = 1;
+    else if(particle->Charge() != 0) indexParticle = 2;
+    else indexParticle = 3;
+    arrEnergyFracPart[indexParticle] += particle->Pt();
+    if(jetindex>=0) vecArrEnergyFracPart[jetindex][indexParticle]+=particle->Pt();
+
+
+    int iMother = particle->GetMother();
+    auto particleMother                    = (AliVParticle *)fMCEvent->GetTrack(iMother);
+    int pdgMother = -1;
+    if(particleMother){
+      pdgMother = particleMother->PdgCode();
+    }
+
+    
     int partIndex = GetParticleIndex(std::abs(particle->PdgCode()), std::abs(pdgMother));
     fHistJetPtPartPtVsPart->Fill(partIndex, particle->Pt(), jetPt);
     if(jetPt > 0)fHistJetPtPartFragVsPart->Fill(partIndex, particle->Pt()/jetPt, jetPt);
@@ -669,7 +686,14 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
   for(size_t j = 0; j < fVecJets_Std.size(); ++j){
     int partIndex = GetParticleIndex(std::abs(vecLeadingPDG[j]), std::abs(vecLeadingMotherPDG[j]));
     fHistJetPtPartPtVsPartLead->Fill(partIndex, vecLeadingE[j], fVecJets_Std[j].pt());
-    if(fVecJets_Std[j].pt() > 0)fHistJetPtPartFragVsPartLead->Fill(partIndex, vecLeadingE[j]/fVecJets_Std[j].pt(), fVecJets_Std[j].pt());
+    if(fVecJets_Std[j].pt() > 0){
+      fHistJetPtPartFragVsPartLead->Fill(partIndex, vecLeadingE[j]/fVecJets_Std[j].pt(), fVecJets_Std[j].pt());
+
+      fHistEnergyFracParticleCatJetPt->Fill(vecArrEnergyFracPart[j][1]/fVecJets_Std[j].pt(), 0., fVecJets_Std[j].pt());
+      fHistEnergyFracParticleCatJetPt->Fill(vecArrEnergyFracPart[j][2]/fVecJets_Std[j].pt(), 1., fVecJets_Std[j].pt());
+      fHistEnergyFracParticleCatJetPt->Fill(vecArrEnergyFracPart[j][3]/fVecJets_Std[j].pt(), 2., fVecJets_Std[j].pt());
+    }
+
   }
 
 }
