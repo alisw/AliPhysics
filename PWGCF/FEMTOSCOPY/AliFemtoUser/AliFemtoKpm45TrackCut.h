@@ -3,7 +3,7 @@
 // Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c//
 //  Konstantin.Mikhaylov@cern.ch ~~~>                                    //
 //  first created 3 Mar 2016                                             //
-//  Midified on February 28, 2025: added muteble fMomemtumTOF45          //
+//  Modified on March 4, 2025: added muteble fMomentumTOF45              //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // AliFemtoESDTrackCut: A basic track cut that used information from     //
 // ALICE ESD to accept or reject the track.                              //  
@@ -14,7 +14,7 @@
 // Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c//
 //  Konstantin.Mikhaylov@cern.ch
 //  first created 3 Mar 2016
-//  February 28, 2025: added fMomemtumTOF45
+//  February 28, 2025: added fMomentumTOF45
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 #include "AliESDtrackCuts.h"
@@ -110,7 +110,7 @@ class AliFemtoKpm45TrackCut : public AliFemtoTrackCut
   long              fStatus;             // staus flag
   ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
 
-  Double_t fMomemtumTOF45;//KM: a mutable boundary where the TOF starts working
+  Double_t fMomentumTOF45;//KM: a mutable boundary where the TOF starts working
   //ml
  Double_t fNsigmaTPCle250;
  Double_t fNsigmaTPC250_400;
