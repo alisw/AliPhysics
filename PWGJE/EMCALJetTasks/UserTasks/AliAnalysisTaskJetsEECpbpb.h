@@ -139,6 +139,7 @@ protected:
     void DoJetMatching();
     void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
     void GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance, Float_t& JetEmbPtSub);
+    void FillDelPtCones(AliEmcalJet *fJet, AliVEvent* inputEvent, float rho);
     Long64_t GetUniqueEventID(AliVEvent* inputEvent);
     Bool_t CheckHighPtTrackInEvent(AliVEvent* inputEvent);
 
@@ -177,7 +178,7 @@ protected:
     
     Bool_t fCheckResolution;   ///< check subjet energy resolution
     
-    Float_t fMinPtConst;       ///< constituent pt cutoff
+    Float_t fMinPtConst;       ///< in this task this is the cutoff to consider a cone
     Float_t fHardCutoff;       ///< hard cutoff in the iterative declustering
     Bool_t fDoTwoTrack;        ///< switch to consider 2 track effects
     Bool_t fCutDoubleCounts;   ///< turn off to avoid true-hybrid cuts to suppress double counting
@@ -869,6 +870,12 @@ protected:
     Float_t fDeltaAxisShift;///< shift cone axis in phi wrt jet 
 
     TH2F* h_dpt;//!<!Histograms for checking delta_pt as a function of pt
+    TH1F* delta_pt_cone;//!<!del pt cone for random cones from data
+    TH1F* delta_pt_coneBias1;//!<!del pt cone for random cones from data satisfying 1 GeV cut
+    TH1F* delta_pt_coneBias2;//!<!del pt cone for random cones from data satisfying 5 Gev cut
+    TH1F* delta_pt_ENCcone;//!<!del pt cone for random cones from data with all tracks greater than 1 GeV
+    TH1F* delta_pt_coneBias3;//!<!del pt cone for random cones from data satisfying fMinPtConst - 2
+    TH1F* delta_pt_coneBias4;//!<!del pt cone for random cones from data satisfying fMinPtConst + 2
     
 private:
     AliAnalysisTaskJetsEECpbpb(
@@ -876,7 +883,7 @@ private:
     AliAnalysisTaskJetsEECpbpb &
     operator=(const AliAnalysisTaskJetsEECpbpb &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEECpbpb, 35) //change this to 36 if you add something new
+    ClassDef(AliAnalysisTaskJetsEECpbpb, 37) //change this to 38 if you add something new
 };
 #endif
 

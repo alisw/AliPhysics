@@ -75,7 +75,7 @@ AliAnalysisTaskJetsEECpbpb::AliAnalysisTaskJetsEECpbpb(): AliAnalysisTaskEmcalJe
 fContainer(0), fMinFractionShared(0), fJetShapeType(kData),
 fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.), fMinENCtrackPt(1.0), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
 fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
-fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
+fMinPtConst(5), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.9), fDerivSubtrOrder(0),
 fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fMatchR(0.3), fjetMinPtSub(20), fjetMaxPtSub(200), fjetMinArea(0), fEmbTuthJetPtMin(0), fStoreTrig(kFALSE), fConeR(0.4), fpTcorr(0), fpaircut(0), 
@@ -156,7 +156,7 @@ h3_SSMB_tru_m(0),h3Jet_deltaR_MJ3_e3c_um(0),h3_MB1MB1MB1_um(0),h3_JJMB_um(0),h3_
 h3_JMB1MB2_um(0),h3_MB1MB2MB3_um(0),h3_BMBMB_um(0),h3_SMBMB_um(0),h3_BMB1MB2_um(0),h3_SMB1MB2_um(0),h3_BBMB_um(0),h3_SBMB_um(0),
 h3_SSMB_um(0),fTreeMatchTracks(0), fTreeData(0), fMCParticleArrayName("mcparticles"), fMCParticleArray(0),
 fRandom(0x0), ifeec(1), ife3c(0), ifMinPtHist(0), ifcFactorHist(0), fAddEventCuts(0), fHighPtTrackCutEvent(0),fDeltaAxisShift(0.6),
-h_dpt(0)
+h_dpt(0),delta_pt_cone(0),delta_pt_coneBias1(0),delta_pt_coneBias2(0),delta_pt_ENCcone(0),delta_pt_coneBias3(0),delta_pt_coneBias4(0)
 {
   if(fCout){
   std::cout << " Info::anrai:===================================================================================="<< std::endl;
@@ -176,7 +176,7 @@ AliAnalysisTaskJetsEECpbpb::AliAnalysisTaskJetsEECpbpb(const char *name): AliAna
 fContainer(0), fMinFractionShared(0), fJetShapeType(kData),
 fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.), fMinENCtrackPt(1.0), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
 fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
-fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
+fMinPtConst(5), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.9), fDerivSubtrOrder(0),
 fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fMatchR(0.3), fjetMinPtSub(20), fjetMaxPtSub(200), fjetMinArea(0), fEmbTuthJetPtMin(0), fStoreTrig(kFALSE), fConeR(0.4), fpTcorr(0), fpaircut(0), 
@@ -257,7 +257,7 @@ h3_SSMB_tru_m(0),h3Jet_deltaR_MJ3_e3c_um(0),h3_MB1MB1MB1_um(0),h3_JJMB_um(0),h3_
 h3_JMB1MB2_um(0),h3_MB1MB2MB3_um(0),h3_BMBMB_um(0),h3_SMBMB_um(0),h3_BMB1MB2_um(0),h3_SMB1MB2_um(0),h3_BBMB_um(0),h3_SBMB_um(0),
 h3_SSMB_um(0),fTreeMatchTracks(0), fTreeData(0), fMCParticleArrayName("mcparticles"), fMCParticleArray(0),
 fRandom(0x0), ifeec(1), ife3c(0), ifMinPtHist(0), ifcFactorHist(0), fAddEventCuts(0), fHighPtTrackCutEvent(0),fDeltaAxisShift(0.6),
-h_dpt(0)
+h_dpt(0),delta_pt_cone(0),delta_pt_coneBias1(0),delta_pt_coneBias2(0),delta_pt_ENCcone(0),delta_pt_coneBias3(0),delta_pt_coneBias4(0)
 {
   if(fCout){
   std::cout << " Info::anrai:===================================================================================="<< std::endl;
@@ -469,6 +469,24 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     
     E3C_pt_hist = new TH2F("E3C_pt_hist", "EEEC and jet_pt 2D", 21, new_bins, 13,10,140);
     fOutput->Add(E3C_pt_hist);
+
+    delta_pt_cone = new TH1F("del_pt_cone","del_pt_cone",1000,-100,100); //all cones
+    fOutput->Add(delta_pt_cone);
+
+    delta_pt_coneBias1 = new TH1F("del_pt_cone_1","del_pt_cone_1Gev",1000,-100,100); //cones should at least have one 1 GeV particle
+    fOutput->Add(delta_pt_coneBias1);
+
+    delta_pt_coneBias2 = new TH1F("del_pt_cone_5Gev","del_pt_cone_5Gev",1000,-100,100); //cones should at least have one 5 GeV partilce
+    fOutput->Add(delta_pt_coneBias2);
+
+    delta_pt_coneBias3 = new TH1F("del_pt_cone_fMinPtConstMinus2","del_pt_cone_fMinPtConstMinus2",1000,-100,100); //cones should at least have one 5 GeV partilce
+    fOutput->Add(delta_pt_coneBias3);
+
+    delta_pt_coneBias4 = new TH1F("del_pt_cone_fMinPtConstPlus2","del_pt_cone_fMinPtConstPlus2",1000,-100,100); //cones should at least have one 5 GeV partilce
+    fOutput->Add(delta_pt_coneBias4);
+
+    delta_pt_ENCcone = new TH1F("del_pt_ENC_cone","del_pt_ENC_cone",1000,- 100,100); //cones should have all greater than 1 gev particles
+    fOutput->Add(delta_pt_ENCcone);
 
     if(fCout) cout<<"###########------subtraction histograms for EEC data----########"<<endl;
   if(ifeec){
@@ -1234,7 +1252,8 @@ Bool_t AliAnalysisTaskJetsEECpbpb::CheckHighPtTrackInEvent(AliVEvent* inputEvent
   for (Int_t itrack=0;itrack<fAOD->GetNumberOfTracks();itrack++) {   // Track loop
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
     if(!track || !track->TestFilterBit(fAOD_FilterBits)) continue;
-    if (track->Pt()> fHighPtTrackCutEvent) { 
+    //if a data track is greater than fHighPtTrackCutEvent, skip event
+    if (track->Pt()> fHighPtTrackCutEvent && track->GetLabel()==-1) { 
       skipEvent= kTRUE;
       break;
     }
@@ -1398,7 +1417,7 @@ else{
           if(fCout) cout<<"data loop"<<endl;
           ComputeENC(jet1, ptSubtracted, jetCont);//Computing ENC on raw data
           if(fCout) cout<<"computed ENC in data loop"<<endl;
-
+          FillDelPtCones(jet1,InputEvent(),GetRhoVal(0));
           std::vector<fastjet::PseudoJet> jetConstituents; 
           jetConstituents.clear();
           fastjet::PseudoJet PseudoTracksJet; //Creating a pseudojet object called PseduoTracks
@@ -2072,6 +2091,104 @@ Double_t AliAnalysisTaskJetsEECpbpb::GetDownscaleWeight(string trigString)
   return weight;
 }
 
+// //_______________________________________________________________________
+void AliAnalysisTaskJetsEECpbpb::FillDelPtCones(AliEmcalJet *fJet, AliVEvent* inputEvent, float rho){
+ if (fCout) std::cout << "Creating del_pt cones for data jets" << std::endl;
+    if (!fJet || !inputEvent) return; // Safety check
+
+    double jetEta = fJet->Eta();
+    double jet_phi = fJet->Phi();
+    std::vector<fastjet::PseudoJet> tracksInCone;  
+    Double_t Axis1 = 999, Axis2 = 999;
+    float dPhi1, dPhi2, dEta, dPhi_plus, dPhi_minus;
+    float trackptSum = 0.0; float trackptSum_bias1 = 0.0; float trackptSum_bias2 = 0.0;float ENCRandomConePt=0.0;
+    float trackptSum_bias3 = 0.0; float trackptSum_bias4 = 0.0;
+    bool fill_bias1 = false;
+    bool fill_bias2 = false;
+    bool fill_bias3 = false;
+    bool fill_bias4 = false;
+    if (fCout) std::cout << " Info:: ===== In the FillIncTracksReal ===== " << std::endl;
+
+    UInt_t fAOD_FilterBits = (1 << 8) | (1 << 9);
+
+    // Apply Random Cone or Perpendicular Cone logic
+    if (fDoRandCone) {
+        TRandom3 fRandom;
+        double OffsetRandom = (1 + fRandom.Rndm()) * TMath::Pi() / 3; // Random Phi in range [π/3, 2π/3]
+        Axis1 = jet_phi + OffsetRandom;
+        Axis2 = jet_phi - OffsetRandom;
+        if (Axis1 > TMath::TwoPi()) Axis1 -= TMath::TwoPi();
+        if (Axis2 < 0) Axis2 += TMath::TwoPi();
+    } 
+    else if (fDoPerpCone) {
+        Axis1 = ((jet_phi + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? jet_phi - ((3. / 2.) * TMath::Pi()) : jet_phi + (TMath::Pi() / 2.);
+    }
+
+    // Get the event
+    AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inputEvent);
+    if (!fAOD) return;
+    
+    if (fCout) std::cout << "Number of tracks in event: " << fAOD->GetNumberOfTracks() << std::endl;
+
+    // Track loop
+    for (Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); ++itrack) {
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if (!track) continue;
+
+        // Apply filter bit cuts
+        if (!track->TestFilterBit(fAOD_FilterBits)) continue;
+
+        // Apply track pT cuts
+        if (track->Pt() > fMaxPtTrack) continue;
+        if (fCout) std::cout << "Track passed pT cuts" << std::endl;
+        
+        Float_t track_phi = track->Phi();
+        Float_t track_eta = track->Eta();
+
+        // Compute dPhi and dEta
+        dPhi1 = TMath::Abs(track_phi - Axis1);
+        dPhi1 = (dPhi1 > TMath::Pi()) ? (2 * TMath::Pi() - dPhi1) : dPhi1;
+        dEta = jetEta - track->Eta();
+
+        if ((dPhi1 * dPhi1 + dEta * dEta) < (fConeR*fConeR)){
+
+          if (track->Pt() > fMinENCtrackPt) {fill_bias1 = true;}//cone has one track greater than fMinENCtrackPt
+          if (track->Pt() > fMinPtConst){fill_bias2 = true;}//cone has one track greater than fMinPtConst
+          if (track->Pt() > fMinPtConst-2){fill_bias3 = true;}//cone has one track greater than fMinPtConst - 2
+          if (track->Pt() > fMinPtConst+2){fill_bias4 = true;}//cone has one track greater than fMinPtConst + 2
+
+         // Always add track to total sum
+            trackptSum += track->Pt();
+
+            if (track->Pt() > fMinENCtrackPt) ENCRandomConePt += track->Pt();
+        }
+    }
+
+    // If a flag is set, sum all tracks for that bias
+    if (fill_bias1) trackptSum_bias1 = trackptSum;
+    if (fill_bias2) trackptSum_bias2 = trackptSum;
+    if (fill_bias3) trackptSum_bias3 = trackptSum;
+    if (fill_bias4) trackptSum_bias4 = trackptSum;
+
+    float rhoArea = rho*(TMath::Pi())*fConeR*fConeR;
+
+    delta_pt_cone->Fill(trackptSum - rhoArea);
+    if(fill_bias1){
+    delta_pt_coneBias1->Fill(trackptSum_bias1 - rhoArea);
+    }
+    if(fill_bias2){
+    delta_pt_coneBias2->Fill(trackptSum_bias2 - rhoArea);
+    }
+    if(fill_bias3){
+    delta_pt_coneBias3->Fill(trackptSum_bias3 - rhoArea);
+    }
+    if(fill_bias4){
+    delta_pt_coneBias4->Fill(trackptSum_bias4 - rhoArea);
+    }
+
+    delta_pt_ENCcone->Fill(ENCRandomConePt - rhoArea);
+
+}
 // //_______________________________________________________________________
 // //Perform jet matching on embedded jets
 void AliAnalysisTaskJetsEECpbpb::DoJetMatching(){
