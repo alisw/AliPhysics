@@ -17,6 +17,13 @@ class TH3D;
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronPair.h"
 
+#include "KFParticleBase.h"
+#include "KFParticle.h"
+#include "KFPTrack.h"
+#include "KFPVertex.h"
+#include "KFVertex.h"
+
+
 #define PRECISION 1e-6
 
 #ifndef ALIANALYSISTASKSE_H
@@ -110,6 +117,7 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
 
       void SetTrackID(int id) {fTrackID = id;}
       void SetTrackLabel(int label) {fTrackLabel = label;}
+      void SetTrackNumber(int number) {fTrackNumber = number;}
 
       void SetMotherID(int id) {fMotherID = id;}
       void SetMCSignalPair (bool value) {fMCSignalPair = value;}
@@ -122,6 +130,8 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
       int  GetTrackID() {return fTrackID;}
       int  GetMotherID() {return fMotherID;}
       int  GetTrackLabel() {return fTrackLabel;}
+      int  GetTrackNumber() {return fTrackNumber;}
+
       bool GetMCSignalPair() {return fMCSignalPair;}
       bool GetULSSignalPair() {return fULSSignalPair;}
 
@@ -142,6 +152,7 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
 
       int     fTrackID;
       int     fTrackLabel;
+      int     fTrackNumber;
 
       int     fMotherID;
       bool    fMCSignalPair;
@@ -173,10 +184,11 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
 
 //  std::vector<Int_t> IsBG;
 
+  Int_t eventNumber;
   Int_t runNumber;
   Int_t nTracks;
   std::vector<Int_t> nPairs;
-
+  Int_t nPairsFilled;
   Double_t cent;
 
   AliAnalysisManager *man;
@@ -197,6 +209,19 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   void CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t CheckIfOneIsTrue(std::vector<Bool_t>& vec);
   Particle CreateParticle(AliVParticle* mcPart1);
+
+  //from AliVertexingHFUtils
+  KFParticle CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg);
+  KFParticle CreateKFParticle(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg);
+  KFVertex CreateKFVertex(Double_t *param, Double_t *cov);
+  KFParticle CreateKFParticleV0(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
+  Double_t DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV);
+  Double_t DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV);
+  Double_t ldlFromKF(KFParticle kfpParticle, KFParticle PV);
+  Double_t ldlXYFromKF(KFParticle kfpParticle, KFParticle PV);
+  Double_t CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother);
+  Double_t CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother);
+
 
   AliAnalysisTaskMLTreeMaker2018& operator=(const AliAnalysisTaskMLTreeMaker2018&); // not implemented
 
@@ -304,6 +329,8 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
 
   Int_t fFillPairSignalOffset;
 
+  std::vector<std::vector<Int_t>> ID_tracks1;
+
   std::vector<std::vector<Float_t>> eta_tracks1;
   std::vector<std::vector<Float_t>> phi_tracks1;
   std::vector<std::vector<Float_t>> pt_tracks1;
@@ -323,9 +350,14 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   std::vector<std::vector<Float_t>> dcaXY_res_tracks1;    //DCA
   std::vector<std::vector<Float_t>> dcaZ_res_tracks1;
 
-  std::vector<std::vector<Float_t>> verticesX_tracks1;
-  std::vector<std::vector<Float_t>> verticesY_tracks1;
-  std::vector<std::vector<Float_t>> verticesZ_tracks1;
+  std::vector<std::vector<Float_t>> X_tracks1;
+  std::vector<std::vector<Float_t>> Y_tracks1;
+  std::vector<std::vector<Float_t>> Z_tracks1;
+
+  std::vector<std::vector<Float_t>> cosPointAng_tracks1;
+
+
+  std::vector<std::vector<Int_t>> ID_tracks2;
 
   std::vector<std::vector<Float_t>> eta_tracks2;
   std::vector<std::vector<Float_t>> phi_tracks2;
@@ -346,10 +378,11 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   std::vector<std::vector<Float_t>> dcaXY_res_tracks2;    //DCA
   std::vector<std::vector<Float_t>> dcaZ_res_tracks2;
 
-  std::vector<std::vector<Float_t>> verticesX_tracks2;
-  std::vector<std::vector<Float_t>> verticesY_tracks2;
-  std::vector<std::vector<Float_t>> verticesZ_tracks2;
+  std::vector<std::vector<Float_t>> X_tracks2;
+  std::vector<std::vector<Float_t>> Y_tracks2;
+  std::vector<std::vector<Float_t>> Z_tracks2;
 
+  std::vector<std::vector<Float_t>> cosPointAng_tracks2;
 
 
   std::vector<std::vector<Float_t>> primVerticesX;
@@ -360,16 +393,22 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   std::vector<std::vector<Float_t>> pairPtees;
   std::vector<std::vector<Float_t>> pairOpAngs;
   std::vector<std::vector<Float_t>> pairDCAee;
-  
+
+  std::vector<std::vector<Float_t>> pairPhiVs;
+  std::vector<std::vector<Float_t>> pairPsis;
+
   std::vector<std::vector<Float_t>> pairCosPointAngs;
   std::vector<std::vector<Float_t>> pairDecayLengths;
+  std::vector<std::vector<Float_t>> pairChiSquares;
   std::vector<std::vector<Float_t>> pairRs;
+  std::vector<std::vector<Float_t>> pairArmAlphas;
+
 
 //  TH2D* fHistTrackStats;//QA histogram for track filter bit statistics vs. centrality
 
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution
 
 
-  ClassDef(AliAnalysisTaskMLTreeMaker2018, 3);
+  ClassDef(AliAnalysisTaskMLTreeMaker2018, 5);
 
 };
