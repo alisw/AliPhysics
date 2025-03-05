@@ -78,8 +78,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_DCAxy(-999.0),
   fProton_DCAz(-999.0),
   fProton_Event_Centrality(-999.0),
-  fProton_Event_PrimaryVertexX(-999.0),
-  fProton_Event_PrimaryVertexY(-999.0),
   fProton_Event_PrimaryVertexZ(-999.0),
   fProton_Event_BField(0),
   fProton_TPC_nCrossedRows(0),
@@ -104,9 +102,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_ID(0),
   fProton_OrigID(0),
   fProton_Label(0),
-  fProton_x(0),
-  fProton_y(0),
-  fProton_z(0),
   fSaveTree_Deuteron(0),
   fDeuteron_px(-999.0),
   fDeuteron_py(-999.0),
@@ -127,8 +122,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_DCAxy(-999.0),
   fDeuteron_DCAz(-999.0),
   fDeuteron_Event_Centrality(-999.0),
-  fDeuteron_Event_PrimaryVertexX(-999.0),
-  fDeuteron_Event_PrimaryVertexY(-999.0),
   fDeuteron_Event_PrimaryVertexZ(-999.0),
   fDeuteron_Event_BField(0),
   fDeuteron_TPC_nCrossedRows(0),
@@ -153,9 +146,9 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_ID(0),
   fDeuteron_OrigID(0),
   fDeuteron_Label(0),
-  fDeuteron_x(0),
-  fDeuteron_y(0),
-  fDeuteron_z(0),
+  fDeuteron_PassedOverlap1Sigma(0),
+  fDeuteron_PassedOverlap2Sigma(0),
+  fDeuteron_PassedOverlap3Sigma(0),
   fSaveTree_AntiProton(0),
   fAntiProton_px(-999.0),
   fAntiProton_py(-999.0),
@@ -176,8 +169,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_DCAxy(-999.0),
   fAntiProton_DCAz(-999.0),
   fAntiProton_Event_Centrality(-999.0),
-  fAntiProton_Event_PrimaryVertexX(-999.0),
-  fAntiProton_Event_PrimaryVertexY(-999.0),
   fAntiProton_Event_PrimaryVertexZ(-999.0),
   fAntiProton_Event_BField(0),
   fAntiProton_TPC_nCrossedRows(0),
@@ -202,9 +193,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_ID(0),
   fAntiProton_OrigID(0),
   fAntiProton_Label(0),
-  fAntiProton_x(0),
-  fAntiProton_y(0),
-  fAntiProton_z(0),
   fSaveTree_AntiDeuteron(0),
   fAntiDeuteron_px(-999.0),
   fAntiDeuteron_py(-999.0),
@@ -225,8 +213,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_DCAxy(-999.0),
   fAntiDeuteron_DCAz(-999.0),
   fAntiDeuteron_Event_Centrality(-999.0),
-  fAntiDeuteron_Event_PrimaryVertexX(-999.0),
-  fAntiDeuteron_Event_PrimaryVertexY(-999.0),
   fAntiDeuteron_Event_PrimaryVertexZ(-999.0),
   fAntiDeuteron_Event_BField(0),
   fAntiDeuteron_TPC_nCrossedRows(0),
@@ -251,9 +237,9 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_ID(0),
   fAntiDeuteron_OrigID(0),
   fAntiDeuteron_Label(0),
-  fAntiDeuteron_x(0),
-  fAntiDeuteron_y(0),
-  fAntiDeuteron_z(0)
+  fAntiDeuteron_PassedOverlap1Sigma(0),
+  fAntiDeuteron_PassedOverlap2Sigma(0),
+  fAntiDeuteron_PassedOverlap3Sigma(0)
 {
 
 
@@ -291,8 +277,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_DCAxy(-999.0),
   fProton_DCAz(-999.0),
   fProton_Event_Centrality(-999.0),
-  fProton_Event_PrimaryVertexX(-999.0),
-  fProton_Event_PrimaryVertexY(-999.0),
   fProton_Event_PrimaryVertexZ(-999.0),
   fProton_Event_BField(0),
   fProton_TPC_nCrossedRows(0),
@@ -317,9 +301,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_ID(0),
   fProton_OrigID(0),
   fProton_Label(0),
-  fProton_x(0),
-  fProton_y(0),
-  fProton_z(0),
   fSaveTree_Deuteron(0),
   fDeuteron_px(-999.0),
   fDeuteron_py(-999.0),
@@ -340,8 +321,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_DCAxy(-999.0),
   fDeuteron_DCAz(-999.0),
   fDeuteron_Event_Centrality(-999.0),
-  fDeuteron_Event_PrimaryVertexX(-999.0),
-  fDeuteron_Event_PrimaryVertexY(-999.0),
   fDeuteron_Event_PrimaryVertexZ(-999.0),
   fDeuteron_Event_BField(0),
   fDeuteron_TPC_nCrossedRows(0),
@@ -366,9 +345,9 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_ID(0),
   fDeuteron_OrigID(0),
   fDeuteron_Label(0),
-  fDeuteron_x(0),
-  fDeuteron_y(0),
-  fDeuteron_z(0),
+  fDeuteron_PassedOverlap1Sigma(0),
+  fDeuteron_PassedOverlap2Sigma(0),
+  fDeuteron_PassedOverlap3Sigma(0),
   fSaveTree_AntiProton(0),
   fAntiProton_px(-999.0),
   fAntiProton_py(-999.0),
@@ -389,8 +368,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_DCAxy(-999.0),
   fAntiProton_DCAz(-999.0),
   fAntiProton_Event_Centrality(-999.0),
-  fAntiProton_Event_PrimaryVertexX(-999.0),
-  fAntiProton_Event_PrimaryVertexY(-999.0),
   fAntiProton_Event_PrimaryVertexZ(-999.0),
   fAntiProton_Event_BField(0),
   fAntiProton_TPC_nCrossedRows(0),
@@ -415,9 +392,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_ID(0),
   fAntiProton_OrigID(0),
   fAntiProton_Label(0),
-  fAntiProton_x(0),
-  fAntiProton_y(0),
-  fAntiProton_z(0),
   fSaveTree_AntiDeuteron(0),
   fAntiDeuteron_px(-999.0),
   fAntiDeuteron_py(-999.0),
@@ -438,8 +412,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_DCAxy(-999.0),
   fAntiDeuteron_DCAz(-999.0),
   fAntiDeuteron_Event_Centrality(-999.0),
-  fAntiDeuteron_Event_PrimaryVertexX(-999.0),
-  fAntiDeuteron_Event_PrimaryVertexY(-999.0),
   fAntiDeuteron_Event_PrimaryVertexZ(-999.0),
   fAntiDeuteron_Event_BField(0),
   fAntiDeuteron_TPC_nCrossedRows(0),
@@ -464,9 +436,9 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_ID(0),
   fAntiDeuteron_OrigID(0),
   fAntiDeuteron_Label(0),
-  fAntiDeuteron_x(0),
-  fAntiDeuteron_y(0),
-  fAntiDeuteron_z(0)
+  fAntiDeuteron_PassedOverlap1Sigma(0),
+  fAntiDeuteron_PassedOverlap2Sigma(0),
+  fAntiDeuteron_PassedOverlap3Sigma(0)
 {
 
   DefineInput(0,TChain::Class());
@@ -535,8 +507,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Proton->Branch("Proton_DCAxy",&fProton_DCAxy,"Proton_DCAxy/F");
   fSaveTree_Proton->Branch("Proton_DCAz",&fProton_DCAz,"Proton_DCAz/F");
   fSaveTree_Proton->Branch("Proton_Event_Centrality",&fProton_Event_Centrality,"Proton_Event_Centrality/F");
-  fSaveTree_Proton->Branch("Proton_Event_PrimaryVertexX",&fProton_Event_PrimaryVertexX,"Proton_Event_PrimaryVertexX/F");
-  fSaveTree_Proton->Branch("Proton_Event_PrimaryVertexY",&fProton_Event_PrimaryVertexY,"Proton_Event_PrimaryVertexY/F");
   fSaveTree_Proton->Branch("Proton_Event_PrimaryVertexZ",&fProton_Event_PrimaryVertexZ,"Proton_Event_PrimaryVertexZ/F");
   fSaveTree_Proton->Branch("Proton_Event_BField",&fProton_Event_BField,"Proton_Event_BField/O");
   fSaveTree_Proton->Branch("Proton_TPC_nCrossedRows",&fProton_TPC_nCrossedRows,"Proton_TPC_nCrossedRows/s");
@@ -563,9 +533,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Proton->Branch("Proton_ID",&fProton_ID,"Proton_ID/I");
   fSaveTree_Proton->Branch("Proton_OrigID",&fProton_OrigID,"Proton_OrigID/I");
   fSaveTree_Proton->Branch("Proton_Label",&fProton_Label,"Proton_Label/I");
-  fSaveTree_Proton->Branch("Proton_x",&fProton_x,"Proton_x/F");
-  fSaveTree_Proton->Branch("Proton_y",&fProton_y,"Proton_y/F");
-  fSaveTree_Proton->Branch("Proton_z",&fProton_z,"Proton_z/F");
 
 
 
@@ -592,8 +559,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Deuteron->Branch("Deuteron_DCAxy",&fDeuteron_DCAxy,"Deuteron_DCAxy/F");
   fSaveTree_Deuteron->Branch("Deuteron_DCAz",&fDeuteron_DCAz,"Deuteron_DCAz/F");
   fSaveTree_Deuteron->Branch("Deuteron_Event_Centrality",&fDeuteron_Event_Centrality,"Deuteron_Event_Centrality/F");
-  fSaveTree_Deuteron->Branch("Deuteron_Event_PrimaryVertexX",&fDeuteron_Event_PrimaryVertexX,"Deuteron_Event_PrimaryVertexX/F");
-  fSaveTree_Deuteron->Branch("Deuteron_Event_PrimaryVertexY",&fDeuteron_Event_PrimaryVertexY,"Deuteron_Event_PrimaryVertexY/F");
   fSaveTree_Deuteron->Branch("Deuteron_Event_PrimaryVertexZ",&fDeuteron_Event_PrimaryVertexZ,"Deuteron_Event_PrimaryVertexZ/F");
   fSaveTree_Deuteron->Branch("Deuteron_Event_BField",&fDeuteron_Event_BField,"Deuteron_Event_BField/O");
   fSaveTree_Deuteron->Branch("Deuteron_TPC_nCrossedRows",&fDeuteron_TPC_nCrossedRows,"Deuteron_TPC_nCrossedRows/s");
@@ -620,9 +585,9 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Deuteron->Branch("Deuteron_ID",&fDeuteron_ID,"Deuteron_ID/I");
   fSaveTree_Deuteron->Branch("Deuteron_OrigID",&fDeuteron_OrigID,"Deuteron_OrigID/I");
   fSaveTree_Deuteron->Branch("Deuteron_Label",&fDeuteron_Label,"Deuteron_Label/I");
-  fSaveTree_Deuteron->Branch("Deuteron_x",&fDeuteron_x,"Deuteron_x/F");
-  fSaveTree_Deuteron->Branch("Deuteron_y",&fDeuteron_y,"Deuteron_y/F");
-  fSaveTree_Deuteron->Branch("Deuteron_z",&fDeuteron_z,"Deuteron_z/F");
+  fSaveTree_Deuteron->Branch("Deuteron_PassedOverlap1Sigma",&fDeuteron_PassedOverlap1Sigma,"Deuteron_PassedOverlap1Sigma/O");
+  fSaveTree_Deuteron->Branch("Deuteron_PassedOverlap2Sigma",&fDeuteron_PassedOverlap2Sigma,"Deuteron_PassedOverlap2Sigma/O");
+  fSaveTree_Deuteron->Branch("Deuteron_PassedOverlap3Sigma",&fDeuteron_PassedOverlap3Sigma,"Deuteron_PassedOverlap3Sigma/O");
 
 
 
@@ -648,8 +613,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiProton->Branch("AntiProton_DCAxy",&fAntiProton_DCAxy,"AntiProton_DCAxy/F");
   fSaveTree_AntiProton->Branch("AntiProton_DCAz",&fAntiProton_DCAz,"AntiProton_DCAz/F");
   fSaveTree_AntiProton->Branch("AntiProton_Event_Centrality",&fAntiProton_Event_Centrality,"AntiProton_Event_Centrality/F");
-  fSaveTree_AntiProton->Branch("AntiProton_Event_PrimaryVertexX",&fAntiProton_Event_PrimaryVertexX,"AntiProton_Event_PrimaryVertexX/F");
-  fSaveTree_AntiProton->Branch("AntiProton_Event_PrimaryVertexY",&fAntiProton_Event_PrimaryVertexY,"AntiProton_Event_PrimaryVertexY/F");
   fSaveTree_AntiProton->Branch("AntiProton_Event_PrimaryVertexZ",&fAntiProton_Event_PrimaryVertexZ,"AntiProton_Event_PrimaryVertexZ/F");
   fSaveTree_AntiProton->Branch("AntiProton_Event_BField",&fAntiProton_Event_BField,"AntiProton_Event_BField/O");
   fSaveTree_AntiProton->Branch("AntiProton_TPC_nCrossedRows",&fAntiProton_TPC_nCrossedRows,"AntiProton_TPC_nCrossedRows/s");
@@ -676,9 +639,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiProton->Branch("AntiProton_ID",&fAntiProton_ID,"AntiProton_ID/I");
   fSaveTree_AntiProton->Branch("AntiProton_OrigID",&fAntiProton_OrigID,"AntiProton_OrigID/I");
   fSaveTree_AntiProton->Branch("AntiProton_Label",&fAntiProton_Label,"AntiProton_Label/I");
-  fSaveTree_AntiProton->Branch("AntiProton_x",&fAntiProton_x,"AntiProton_x/F");
-  fSaveTree_AntiProton->Branch("AntiProton_y",&fAntiProton_y,"AntiProton_y/F");
-  fSaveTree_AntiProton->Branch("AntiProton_z",&fAntiProton_z,"AntiProton_z/F");
 
 
 
@@ -704,8 +664,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_DCAxy",&fAntiDeuteron_DCAxy,"AntiDeuteron_DCAxy/F");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_DCAz",&fAntiDeuteron_DCAz,"AntiDeuteron_DCAz/F");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_Centrality",&fAntiDeuteron_Event_Centrality,"AntiDeuteron_Event_Centrality/F");
-  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_PrimaryVertexX",&fAntiDeuteron_Event_PrimaryVertexX,"AntiDeuteron_Event_PrimaryVertexX/F");
-  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_PrimaryVertexY",&fAntiDeuteron_Event_PrimaryVertexY,"AntiDeuteron_Event_PrimaryVertexY/F");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_PrimaryVertexZ",&fAntiDeuteron_Event_PrimaryVertexZ,"AntiDeuteron_Event_PrimaryVertexZ/F");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_BField",&fAntiDeuteron_Event_BField,"AntiDeuteron_Event_BField/O");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_TPC_nCrossedRows",&fAntiDeuteron_TPC_nCrossedRows,"AntiDeuteron_TPC_nCrossedRows/s");
@@ -732,9 +690,9 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ID",&fAntiDeuteron_ID,"AntiDeuteron_ID/I");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_OrigID",&fAntiDeuteron_OrigID,"AntiDeuteron_OrigID/I");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Label",&fAntiDeuteron_Label,"AntiDeuteron_Label/I");
-  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_x",&fAntiDeuteron_x,"AntiDeuteron_x/F");
-  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_y",&fAntiDeuteron_y,"AntiDeuteron_y/F");
-  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_z",&fAntiDeuteron_z,"AntiDeuteron_z/F");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_PassedOverlap1Sigma",&fAntiDeuteron_PassedOverlap1Sigma,"AntiDeuteron_PassedOverlap1Sigma/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_PassedOverlap2Sigma",&fAntiDeuteron_PassedOverlap2Sigma,"AntiDeuteron_PassedOverlap2Sigma/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_PassedOverlap3Sigma",&fAntiDeuteron_PassedOverlap3Sigma,"AntiDeuteron_PassedOverlap3Sigma/O");
 
 
 
@@ -776,7 +734,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(!fMCEvent)::Fatal("AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec","No MC event found!");
 
   }
-
 
   // debug analysis
   Bool_t DebugEventSelection = false;
@@ -962,8 +919,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
   // if there are no Deuterons AND no Antideuterons get rid of this event
   if((fSavePairsOnly == true) && (nDeuteronsSelected == 0) && (nAntiDeuteronsSelected == 0)) return;
-
-
+  
 
 
 
@@ -1032,9 +988,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
-
-
-
   Bool_t SaveMatter = false;
   if((fSavePairsOnly == true) && (nDeuteronsSelected > 0) && (nProtonsSelected > 0)) SaveMatter = true;
   if((fSavePairsOnly == false) && ((nDeuteronsSelected > 0) || (nProtonsSelected > 0))) SaveMatter = true;
@@ -1068,17 +1021,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       Float_t Generated_pz = -999.0;
       Int_t PDG = 0;
       Int_t MotherPDG = 0;
-      Float_t x = -99.0;
-      Float_t y = -99.0;
-      Float_t z = -99.0;
 
       if(fIsMC == true){
 
 	MCParticle = (AliMCParticle*) fMCEvent->GetTrack(Label);
 	PDG = MCParticle->PdgCode();
-	x = MCParticle->Xv();
-	y = MCParticle->Yv();
-	z = MCParticle->Zv();
 	if(MCParticle->IsPhysicalPrimary() == true) MotherPDG = 1;
 	if(MCParticle->IsSecondaryFromMaterial() == true) MotherPDG = 2;
 	if(MCParticle->IsSecondaryFromWeakDecay() == true){
@@ -1155,6 +1102,9 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
       } // end of ITSisOK
 
+      Bool_t PassedOverlap1Sigma = CheckDeuteronOverlapBands(*Track,*fPIDResponse,1.0);
+      Bool_t PassedOverlap2Sigma = CheckDeuteronOverlapBands(*Track,*fPIDResponse,2.0);
+      Bool_t PassedOverlap3Sigma = CheckDeuteronOverlapBands(*Track,*fPIDResponse,3.0);
 
       if((DeuteronIsMatter == true) && (SaveMatter == true)){
 
@@ -1192,8 +1142,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fDeuteron_ITS_Layer5 = Track->HasPointOnITSLayer(5);
 	fDeuteron_Event_Multiplicity = Multiplicity;
 	fDeuteron_Event_Centrality = Centrality;
-	fDeuteron_Event_PrimaryVertexX = PrimaryVertexX;
-	fDeuteron_Event_PrimaryVertexY = PrimaryVertexY;
 	fDeuteron_Event_PrimaryVertexZ = PrimaryVertexZ;
 	fDeuteron_Event_BField = IsPositiveBFieldPolarity;
 	fDeuteron_Event_Identifier = EventID;
@@ -1204,9 +1152,9 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fDeuteron_ID = track;
 	fDeuteron_OrigID = OrigID;
 	fDeuteron_Label = OrigLabel;
-	fDeuteron_x = x;
-	fDeuteron_y = y;
-	fDeuteron_z = z;
+	fDeuteron_PassedOverlap1Sigma = PassedOverlap1Sigma;
+	fDeuteron_PassedOverlap2Sigma = PassedOverlap2Sigma;
+	fDeuteron_PassedOverlap3Sigma = PassedOverlap3Sigma;
 
 	fSaveTree_Deuteron->Fill();
 
@@ -1252,8 +1200,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiDeuteron_ITS_Layer5 = Track->HasPointOnITSLayer(5);
 	fAntiDeuteron_Event_Multiplicity = Multiplicity;
 	fAntiDeuteron_Event_Centrality = Centrality;
-	fAntiDeuteron_Event_PrimaryVertexX = PrimaryVertexX;
-	fAntiDeuteron_Event_PrimaryVertexY = PrimaryVertexY;
 	fAntiDeuteron_Event_PrimaryVertexZ = PrimaryVertexZ;
 	fAntiDeuteron_Event_BField = IsPositiveBFieldPolarity;
 	fAntiDeuteron_Event_Identifier = EventID;
@@ -1264,9 +1210,9 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiDeuteron_ID = track;
 	fAntiDeuteron_OrigID = OrigID;
 	fAntiDeuteron_Label = OrigLabel;
-	fAntiDeuteron_x = x;
-	fAntiDeuteron_y = y;
-	fAntiDeuteron_z = z;
+	fAntiDeuteron_PassedOverlap1Sigma = PassedOverlap1Sigma;
+	fAntiDeuteron_PassedOverlap2Sigma = PassedOverlap2Sigma;
+	fAntiDeuteron_PassedOverlap3Sigma = PassedOverlap3Sigma;
 
 	fSaveTree_AntiDeuteron->Fill();
 
@@ -1304,17 +1250,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       Float_t Generated_pz = -999.0;
       Int_t PDG = 0;
       Int_t MotherPDG = 0;
-      Float_t x = -99.0;
-      Float_t y = -99.0;
-      Float_t z = -99.0;
 
       if(fIsMC == true){
 
 	MCParticle = (AliMCParticle*) fMCEvent->GetTrack(Label);
 	PDG = MCParticle->PdgCode();
-	x = MCParticle->Xv();
-	y = MCParticle->Yv();
-	z = MCParticle->Zv();
 	if(MCParticle->IsPhysicalPrimary() == true) MotherPDG = 1;
 	if(MCParticle->IsSecondaryFromMaterial() == true) MotherPDG = 2;
 	if(MCParticle->IsSecondaryFromWeakDecay() == true){
@@ -1430,8 +1370,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fProton_ITS_Layer5 = Track->HasPointOnITSLayer(5);
 	fProton_Event_Multiplicity = Multiplicity;
 	fProton_Event_Centrality = Centrality;
-	fProton_Event_PrimaryVertexX = PrimaryVertexX;
-	fProton_Event_PrimaryVertexY = PrimaryVertexY;
 	fProton_Event_PrimaryVertexZ = PrimaryVertexZ;
 	fProton_Event_BField = IsPositiveBFieldPolarity;
 	fProton_Event_Identifier = EventID;
@@ -1442,9 +1380,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fProton_ID = track;
 	fProton_OrigID = OrigID;
 	fProton_Label = OrigLabel;
-	fProton_x = x;
-	fProton_y = y;
-	fProton_z = z;
 
 	fSaveTree_Proton->Fill();
 
@@ -1490,8 +1425,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiProton_ITS_Layer5 = Track->HasPointOnITSLayer(5);
 	fAntiProton_Event_Multiplicity = Multiplicity;
 	fAntiProton_Event_Centrality = Centrality;
-	fAntiProton_Event_PrimaryVertexX = PrimaryVertexX;
-	fAntiProton_Event_PrimaryVertexY = PrimaryVertexY;
 	fAntiProton_Event_PrimaryVertexZ = PrimaryVertexZ;
 	fAntiProton_Event_BField = IsPositiveBFieldPolarity;
 	fAntiProton_Event_Identifier = EventID;
@@ -1502,9 +1435,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiProton_ID = track;
 	fAntiProton_OrigID = OrigID;
 	fAntiProton_Label = OrigLabel;
-	fAntiProton_x = x;
-	fAntiProton_y = y;
-	fAntiProton_z = z;
 
 	fSaveTree_AntiProton->Fill();
 
@@ -2196,9 +2126,9 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   // #######################################
 
   Float_t Proton_pT_min = 0.0;
-  Float_t Proton_pT_max = 3.0;
-  Float_t Proton_eta_min = -0.8;
-  Float_t Proton_eta_max = +0.8;
+  Float_t Proton_pT_max = 3.1;
+  Float_t Proton_eta_min = -0.85;
+  Float_t Proton_eta_max = +0.85;
   //Float_t Proton_DCAxy_max = 2.0; // cm
   Float_t Proton_DCAxy_max = 0.2; // cm
   Float_t Proton_DCAz_max = 0.1; // cm
@@ -2216,7 +2146,7 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   Int_t Proton_ITS_nCluster_min = 0;
   Bool_t UseTOF = true;
   Bool_t UseITS = true;
-
+  Bool_t AtLeastOneHitInSPD = true;
 
   // #######################################
   // ######## declare variables ############
@@ -2255,12 +2185,6 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   Bool_t TPCisOK = false;
   Bool_t TOFisOK = false;
   Bool_t ITSisOK = false;
-
-  Float_t TPC_dEdx_Sigma_Pion = -999.0;
-  Float_t TPC_dEdx_Sigma_Kaon = -999.0;
-  Float_t TPC_dEdx_Sigma_Proton = -999.0;
-  Float_t TPC_dEdx_Sigma_Electron = -999.0;
-  Float_t TPC_dEdx_Sigma_Muon = -999.0;
 
 
 
@@ -2320,9 +2244,16 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   DCAz = xv[1];
   if(TMath::IsNaN(DCAxy)) return PassedParticleCuts;
   if(TMath::IsNaN(DCAz)) return PassedParticleCuts;
-  
+
   // apply DCAxy cut
-  if(TMath::Abs(DCAxy) > Proton_DCAxy_max) return PassedParticleCuts;
+
+  if(fUseOpenCuts == true){
+    if(TMath::Abs(DCAxy) > 2.0) return PassedParticleCuts;
+  }
+
+  if(fUseOpenCuts == false){
+    if(TMath::Abs(DCAxy) > Proton_DCAxy_max) return PassedParticleCuts;
+  }
 
   // apply DCAz cut
   if(TMath::Abs(DCAz) > Proton_DCAz_max) return PassedParticleCuts;
@@ -2381,6 +2312,15 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
   if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
 
 
+  Bool_t HitInSPD1 = Track.HasPointOnITSLayer(0);
+  Bool_t HitInSPD2 = Track.HasPointOnITSLayer(1);
+
+  if(AtLeastOneHitInSPD == true){
+
+    if((HitInSPD1 == false) && (HitInSPD2 == false)) return PassedParticleCuts;
+
+  }
+
 
   if((ITSisOK == true) && (UseITS == true)){
     
@@ -2411,7 +2351,13 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
     TOF_Mass2_Sigma = CalculateSigmaMassSquareTOF(pT,TOF_Mass2,ParticleSpecies,RunNumber);
     if(TMath::IsNaN(TOF_Mass2_Sigma)) return PassedParticleCuts;
 
-    if(TMath::Abs(TOF_Mass2_Sigma) > Proton_TOF_Mass2_Sigma_max) return PassedParticleCuts;
+    if(fUseOpenCuts == true){
+      if(TMath::Abs(TOF_Mass2_Sigma) > 8.0) return PassedParticleCuts;
+    }
+
+    if(fUseOpenCuts == false){
+      if(TMath::Abs(TOF_Mass2_Sigma) > Proton_TOF_Mass2_Sigma_max) return PassedParticleCuts;
+    }
 
   } // end of TOFisOK
 
@@ -2443,9 +2389,10 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   // #######################################
 
   Float_t Deuteron_pT_min = 0.0;
-  Float_t Deuteron_pT_max = 3.0;
-  Float_t Deuteron_eta_min = -0.8;
-  Float_t Deuteron_eta_max = +0.8;
+  if(fUseOpenCuts == false) Deuteron_pT_min = 0.75;
+  Float_t Deuteron_pT_max = 2.1;
+  Float_t Deuteron_eta_min = -0.85;
+  Float_t Deuteron_eta_max = +0.85;
   //Float_t Deuteron_DCAxy_max = 2.0; // cm
   Float_t Deuteron_DCAxy_max = 0.2; // cm
   Float_t Deuteron_DCAz_max = 0.1; // cm
@@ -2463,15 +2410,7 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   Int_t Deuteron_ITS_nCluster_min = 0;
   Bool_t UseTOF = true;
   Bool_t UseITS = true;
-
-  Bool_t Extend_pT_range = true;
-  Float_t pT_ExtensionThreshold = 1.6;
-  Float_t Pion_TPC_dEdx_Sigma_max     = 3.0;
-  Float_t Kaon_TPC_dEdx_Sigma_max     = 3.0;
-  Float_t Proton_TPC_dEdx_Sigma_max   = 3.0;
-  Float_t Electron_TPC_dEdx_Sigma_max = 3.0;
-  Float_t Muon_TPC_dEdx_Sigma_max     = 3.0;
-
+  Bool_t AtLeastOneHitInSPD = true;
 
 
   // #######################################
@@ -2511,12 +2450,6 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   Bool_t TPCisOK = false;
   Bool_t TOFisOK = false;
   Bool_t ITSisOK = false;
-
-  Float_t TPC_dEdx_Sigma_Pion = -999.0;
-  Float_t TPC_dEdx_Sigma_Kaon = -999.0;
-  Float_t TPC_dEdx_Sigma_Proton = -999.0;
-  Float_t TPC_dEdx_Sigma_Electron = -999.0;
-  Float_t TPC_dEdx_Sigma_Muon = -999.0;
 
 
 
@@ -2579,7 +2512,13 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   if(TMath::IsNaN(DCAz)) return PassedParticleCuts;
   
   // apply DCAxy cut
-  if(TMath::Abs(DCAxy) > Deuteron_DCAxy_max) return PassedParticleCuts;
+  if(fUseOpenCuts == true){
+    if(TMath::Abs(DCAxy) > 2.0) return PassedParticleCuts;
+  }
+
+  if(fUseOpenCuts == false){
+    if(TMath::Abs(DCAxy) > Deuteron_DCAxy_max) return PassedParticleCuts;
+  }
 
   // apply DCAz cut
   if(TMath::Abs(DCAz) > Deuteron_DCAz_max) return PassedParticleCuts;
@@ -2632,37 +2571,20 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   if(TPC_Chi2perNDF > Deuteron_TPC_Chi2perNDF_max) return PassedParticleCuts; 
 
 
-  if(Extend_pT_range == true){
-
-    // cut out dEdx band of other particles above pT = 1.6 GeV/c²
-
-    TPC_dEdx_Sigma_Pion = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kPion);
-    if(TMath::IsNaN(TPC_dEdx_Sigma_Pion)) return PassedParticleCuts;
-    if((pT >= pT_ExtensionThreshold) && (TMath::Abs(TPC_dEdx_Sigma_Pion) < Pion_TPC_dEdx_Sigma_max)) return PassedParticleCuts;
-
-    TPC_dEdx_Sigma_Kaon = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kKaon);
-    if(TMath::IsNaN(TPC_dEdx_Sigma_Kaon)) return PassedParticleCuts;
-    if((pT >= pT_ExtensionThreshold) && (TMath::Abs(TPC_dEdx_Sigma_Kaon) < Kaon_TPC_dEdx_Sigma_max)) return PassedParticleCuts;
-
-    TPC_dEdx_Sigma_Proton = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kProton);
-    if(TMath::IsNaN(TPC_dEdx_Sigma_Proton)) return PassedParticleCuts;
-    if((pT >= pT_ExtensionThreshold) && (TMath::Abs(TPC_dEdx_Sigma_Proton) < Proton_TPC_dEdx_Sigma_max)) return PassedParticleCuts;
-
-    TPC_dEdx_Sigma_Electron = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kElectron);
-    if(TMath::IsNaN(TPC_dEdx_Sigma_Electron)) return PassedParticleCuts;
-    if((pT >= pT_ExtensionThreshold) && (TMath::Abs(TPC_dEdx_Sigma_Electron) < Electron_TPC_dEdx_Sigma_max)) return PassedParticleCuts;
-
-    TPC_dEdx_Sigma_Muon = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kMuon);
-    if(TMath::IsNaN(TPC_dEdx_Sigma_Muon)) return PassedParticleCuts;
-    if((pT >= pT_ExtensionThreshold) && (TMath::Abs(TPC_dEdx_Sigma_Muon) < Muon_TPC_dEdx_Sigma_max)) return PassedParticleCuts;
-
-  } // end of Extend_pT_range
-
 
   // check if ITS information is available
   AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
   if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
 
+
+  Bool_t HitInSPD1 = Track.HasPointOnITSLayer(0);
+  Bool_t HitInSPD2 = Track.HasPointOnITSLayer(1);
+
+  if(AtLeastOneHitInSPD == true){
+
+    if((HitInSPD1 == false) && (HitInSPD2 == false)) return PassedParticleCuts;
+
+  }
 
 
   if((ITSisOK == true) && (UseITS == true)){
@@ -2694,7 +2616,13 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
     TOF_Mass2_Sigma = CalculateSigmaMassSquareTOF(pT,TOF_Mass2,ParticleSpecies,RunNumber);
     if(TMath::IsNaN(TOF_Mass2_Sigma)) return PassedParticleCuts;
 
-    if(TMath::Abs(TOF_Mass2_Sigma) > Deuteron_TOF_Mass2_Sigma_max) return PassedParticleCuts;
+    if(fUseOpenCuts == true){
+      if(TMath::Abs(TOF_Mass2_Sigma) > 8.0) return PassedParticleCuts;
+    }
+
+    if(fUseOpenCuts == false){
+      if(TMath::Abs(TOF_Mass2_Sigma) > Deuteron_TOF_Mass2_Sigma_max) return PassedParticleCuts;
+    }
 
   } // end of TOFisOK
 
@@ -2708,6 +2636,39 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
 
 
 
+
+Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronOverlapBands(AliAODTrack &Track, AliPIDResponse &fPIDResponse, Float_t TPC_dEdx_Sigma_max){
+
+  Bool_t PassedParticleCuts = false;
+
+  // cut out dEdx band of other particles
+
+  Float_t TPC_dEdx_Sigma_Pion = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kPion);
+  if(TMath::IsNaN(TPC_dEdx_Sigma_Pion)) return PassedParticleCuts;
+  if(TMath::Abs(TPC_dEdx_Sigma_Pion) < TPC_dEdx_Sigma_max) return PassedParticleCuts;
+
+  Float_t TPC_dEdx_Sigma_Kaon = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kKaon);
+  if(TMath::IsNaN(TPC_dEdx_Sigma_Kaon)) return PassedParticleCuts;
+  if(TMath::Abs(TPC_dEdx_Sigma_Kaon) < TPC_dEdx_Sigma_max) return PassedParticleCuts;
+
+  Float_t TPC_dEdx_Sigma_Proton = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kProton);
+  if(TMath::IsNaN(TPC_dEdx_Sigma_Proton)) return PassedParticleCuts;
+  if(TMath::Abs(TPC_dEdx_Sigma_Proton) < TPC_dEdx_Sigma_max) return PassedParticleCuts;
+
+  Float_t TPC_dEdx_Sigma_Electron = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kElectron);
+  if(TMath::IsNaN(TPC_dEdx_Sigma_Electron)) return PassedParticleCuts;
+  if(TMath::Abs(TPC_dEdx_Sigma_Electron) < TPC_dEdx_Sigma_max) return PassedParticleCuts;
+
+  Float_t TPC_dEdx_Sigma_Muon = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kMuon);
+  if(TMath::IsNaN(TPC_dEdx_Sigma_Muon)) return PassedParticleCuts;
+  if(TMath::Abs(TPC_dEdx_Sigma_Muon) < TPC_dEdx_Sigma_max) return PassedParticleCuts;
+
+  PassedParticleCuts = true;
+
+  return PassedParticleCuts;
+
+
+}
 
 
 
