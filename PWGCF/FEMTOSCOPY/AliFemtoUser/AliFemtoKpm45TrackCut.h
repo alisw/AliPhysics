@@ -3,7 +3,8 @@
 // Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c//
 //  Konstantin.Mikhaylov@cern.ch ~~~>                                    //
 //  first created 3 Mar 2016                                             //
-//  Modified on March 4, 2025: added muteble fMomentumTOF45              //
+//   Modified: March 6, 2025: added mutable low limit of TOF using       //
+//             fMomentumTOF45 and  SetMomentumTOF45                      //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // AliFemtoESDTrackCut: A basic track cut that used information from     //
 // ALICE ESD to accept or reject the track.                              //  
@@ -11,10 +12,6 @@
 // pid probabilities, number of ITS and TPC clusters                     //
 // Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
 //                                                                       //
-// Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c//
-//  Konstantin.Mikhaylov@cern.ch
-//  first created 3 Mar 2016
-//  February 28, 2025: added fMomentumTOF45
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 #include "AliESDtrackCuts.h"
@@ -78,9 +75,9 @@ class AliFemtoKpm45TrackCut : public AliFemtoTrackCut
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
   void SetMomRangeITSpidIs(const float& minp, const float& maxp);
-
-  void SetMomemtumTOF45(Double_t);
-  //ml
+  //2025
+  void SetMomentumTOF45(Double_t);
+  //2016
  void SetNsigmaTPCle250(Double_t);
  void SetNsigmaTPC250_400(Double_t);
  void SetNsigmaTPC400_450(Double_t);
