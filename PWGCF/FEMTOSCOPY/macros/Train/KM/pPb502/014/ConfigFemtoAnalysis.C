@@ -9,7 +9,7 @@
 //
 // ---> March 5, 2025 <---
 // NEW: AliFemtoKpm45TrackCut
-//                           ->SetMomentumTOF45(0.405)
+//                           ->SetPMinTOF45(0.405)
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -128,8 +128,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	pid_[pa][ix]->SetCharge(zar[pa]);
 	
 	//The low limit of TOF using	
-	//pid_[pa][ix]->SetMomemtumTOF45(0.405); //mistype before March4 
-	pid_[pa][ix]->SetMomentumTOF45(0.405); //Since vAN-20250304<-March5,2025
+	pid_[pa][ix]->SetPMinTOF45(0.405); //Since March6,2025
 
 	
 	pid_[pa][ix]->SetPt(0.14,1.5);
