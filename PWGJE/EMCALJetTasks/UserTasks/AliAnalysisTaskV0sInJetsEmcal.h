@@ -170,14 +170,15 @@ private:
   TRandom* fRandom; //! random-number generator
   AliEventPoolManager* fPoolMgr; //! event pool manager
   AliEventCuts fEventCutsStrictAntipileup; //! Event cuts class
-  TList* fOutputListStd; //! Output list for standard analysis results
+  TList* fOutputListStd; //! Output list for inclusive analysis results
+  TList* fOutputListJet; //! Output list for jet analysis results
   TList* fOutputListQA; //! Output list for quality assurance
   TList* fOutputListCuts; //! Output list for checking cuts
   TList* fOutputListMC; //! Output list for MC related results
 //------------------------------------------------------------------------------------------
-  TList* fOutputListStdCascade; //! Output list for standard analysis results for cascades
+  TList* fOutputListStdCascade; //! Output list for inclusive analysis results for cascades
+  TList* fOutputListJetCascade; //! Output list for jet analysis results for cascades
   TList* fOutputListQACascade; //! Output list for quality assurance for cascades
-  TList* fOutputListMCCascade; //! Output list for MC related results for cascades
 //------------------------------------------------------------------------------------------
 
   // Data selection
@@ -322,7 +323,7 @@ private:
   THnSparse* fhnPtDaughterK0s[fgkiNBinsCent]; //! pt correlations, in a centrality bin, pt_neg-daughter;pt_pos-daughter;pt_V0;pt_jet;pt_leading-track
 
   // K0S correlations
-  THnSparse* fhnV0CorrelSEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in same events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
+  THnSparse* fhnV0CorrelSEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in same events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet; delta R_V0-jet
   THnSparse* fhnV0CorrelMEK0s[fgkiNBinsCent]; //! V0-jet phi,eta correlations in mixed events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet
 
   TH2D* fh2V0PtJetAngleK0s[fgkiNBinsCent]; //! pt jet vs angle V0-jet, in centrality bins
@@ -400,10 +401,12 @@ private:
   TH2D* fh2V0LambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0LambdaMCPtGenPtRec[fgkiNBinsCent]; //!
   // feed-down
-  THnSparse* fhnV0LambdaInclMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInclMCFromXi[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInclMCFromXi0[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
   TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
 
   // ALambda
   TH1D* fh1V0CounterCentALambda[fgkiNBinsCent]; //! number of ALambda candidates after various cuts
@@ -427,6 +430,11 @@ private:
   THnSparse* fhnV0NoJetALambda[fgkiNBinsCent]; //!
 
   THnSparse* fhnPtDaughterALambda[fgkiNBinsCent]; //! pt correlations, in a centrality bin, pt_neg-daughter;pt_pos-daughter;pt_V0;pt_jet;pt_leading-track
+
+  // ALambda correlations
+  THnSparse* fhnV0CorrelSEALambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0CorrelMEALambda[fgkiNBinsCent]; //!
+
 
   TH2D* fh2V0PtJetAngleALambda[fgkiNBinsCent]; //!
   // MC histograms
@@ -452,10 +460,12 @@ private:
   TH2D* fh2V0ALambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaMCPtGenPtRec[fgkiNBinsCent]; //!
   // feed-down
-  THnSparse* fhnV0ALambdaInclMCFD[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInclMCFromAXi[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInclMCFromAXi0[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
   TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
 
   TH2D* fh2QAV0PhiPtK0sPeak[fgkiNQAIndeces]; //! K0S candidate in peak: azimuth; pt
   TH2D* fh2QAV0PhiPtLambdaPeak[fgkiNQAIndeces]; //! Lambda candidate in peak: azimuth; pt
@@ -477,7 +487,6 @@ private:
 
   // Cut tuning
   // crossed/findable, daughter pt, dca, cpa, r, pseudorapidity, y, decay length, PID sigma
-  /*
   TH2D* fh2CutTPCRowsK0s[fgkiNQAIndeces]; //! inv mass vs TPC rows
   TH2D* fh2CutTPCRowsLambda[fgkiNQAIndeces]; //!
   TH2D* fh2CutPtPosK0s[fgkiNQAIndeces]; //! inv mass vs pt of positive daughter
@@ -498,9 +507,7 @@ private:
   TH2D* fh2CutPIDNegK0s[fgkiNQAIndeces]; //! inv mass vs number of dE/dx sigmas for negative daughter
   TH2D* fh2CutPIDPosLambda[fgkiNQAIndeces]; //!
   TH2D* fh2CutPIDNegLambda[fgkiNQAIndeces]; //!
-
   TH2D* fh2Tau3DVs2D[fgkiNQAIndeces]; //! pt vs ratio 3D lifetime / 2D lifetime
-  */
 
 //New private parameters and histograms for the Xi selection
 //------------------------------------------------------------------------------------------
@@ -604,6 +611,9 @@ private:
   TH2D* fh2CascadePtJetAngleXiPlus[fgkiNBinsCent]; //!
   TH1D* fh1DCAInXiPlus[fgkiNBinsCent]; //!
   TH1D* fh1DCAOutXiPlus[fgkiNBinsCent]; //! 
+  //Correlations
+  THnSparse* fhnV0CorrelSEXiMinus[fgkiNBinsCent]; //! V0-jet phi,eta correlations in same events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet; delta R_V0-jet
+  THnSparse* fhnV0CorrelSEXiPlus[fgkiNBinsCent]; //! V0-jet phi,eta correlations in same events, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet; delta-phi_V0-jet; delta-eta_V0-jet; delta R_V0-jet
   // MC histograms
   // inclusive
   TH1D* fh1CascadeXiPlusPtMCGen[fgkiNBinsCent]; //!
@@ -757,7 +767,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 26) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 27) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
