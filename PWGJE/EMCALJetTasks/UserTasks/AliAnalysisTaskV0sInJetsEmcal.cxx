@@ -198,6 +198,10 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCPACascadeMin(0.97),
   fdCutCPACascadeV0Min(0.97), 
   fdCutNTauXMax(5.0),
+  fdCutEtaCascadeMax(0.7),
+  fdCutCascadeEtaDaughterMax(0.8),
+  fdCutCascadeRadiusDecayMin(0.6),
+  fdCutCascadeV0RadiusDecayMin(1.2),
   
   fh1CascadeCandPerEvent(0)
 //------------------------------------------
@@ -718,6 +722,10 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCPACascadeMin(0.97),
   fdCutCPACascadeV0Min(0.97),  
   fdCutNTauXMax(5.0),
+  fdCutEtaCascadeMax(0.7), 
+  fdCutCascadeEtaDaughterMax(0.8),
+  fdCutCascadeRadiusDecayMin(0.6),
+  fdCutCascadeV0RadiusDecayMin(1.2),
   
   fh1CascadeCandPerEvent(0)
 //------------------------------------------  
@@ -2458,6 +2466,20 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   
   if(fbCutArmPod) printf("Armenteros-Podolanski cut for K0S\n");
   if(fbCutCross) printf("cross-contamination cut\n");
+  printf("-------------------------------------------------------\nCascade cuts:\n");
+  if(fdCutDCACascadeBachToPrimVtxMin > 0.) printf("min DCA of bach track to the prim vtx [cm]: %g\n", fdCutDCACascadeBachToPrimVtxMin);
+  if(fdCutDCACascadeV0ToPrimVtxMin > 0.) printf("min min DCA of V0 (from cascade decay) to the prim vtx [cm]: %g\n", fdCutDCACascadeV0ToPrimVtxMin);
+  if(fdCutDCACascadeDaughtersToPrimVtxMin > 0.) printf("min DCA of daughters (from secondary V0 decay) to the prim vtx[cm]: %g\n", fdCutDCACascadeDaughtersToPrimVtxMin);
+  if(fdCutDCACascadeV0DaughtersMax > 0.) printf("max DCA between Cascade V0 daughters [sigma of TPC tracking]: %g\n", fdCutDCACascadeV0DaughtersMax);
+  if(fdCutDCACascadeBachToV0Max > 0.) printf("max DCA between bachelor track to V0 [cm]: %g\n", fdCutDCACascadeBachToV0Max);
+  if(fdCutCPACascadeMin > 0.) printf("min Cascade CPA: %g\n", fdCutCPACascadeMin);
+  if(fdCutCPACascadeV0Min > 0.) printf("min daughter v0 CPA: %g\n", fdCutCPACascadeV0Min);
+  if(fdCutEtaCascadeMax > 0.) printf("max |eta| of Cascade: %g\n", fdCutEtaCascadeMax);
+  if(fdCutCascadeEtaDaughterMax > 0.) printf( "max |pseudorapidity| of Cascade daughter tracks: %g\n", fdCutCascadeEtaDaughterMax);
+  if(fdCutCascadeRadiusDecayMin > 0.) printf("min cascade decay radius: %g\n", fdCutCascadeRadiusDecayMin);
+  if(fdCutCascadeV0RadiusDecayMin > 0.) printf( "min V0 from cascade decay radius: %g\n", fdCutCascadeV0RadiusDecayMin);
+
+
   printf("-------------------------------------------------------\nJet analysis:\n");
   printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
   if(fbJetSelection) {
@@ -2678,18 +2700,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dDCACascadeDaughtersToPrimVtxMin = fdCutDCACascadeDaughtersToPrimVtxMin; // 0.03; // [cm] min DCA of daughters (from secondary V0 decay) to the prim vtx  
   Double_t dDCACascadeV0DaughtersMax = fdCutDCACascadeV0DaughtersMax; // 1.5; // [sigma of TPC tracking] max DCA between Cascade V0 daughters  
   Double_t dDCACascadeBachToV0Max = fdCutDCACascadeBachToV0Max; // 1.3; // [cm] max DCA between bachelor track to V0     
-  Double_t dCascadeEtaDaughterMax = 0.8; // max |pseudorapidity| of daughter tracks in cascade 
+  Double_t dCascadeEtaDaughterMax = fdCutCascadeEtaDaughterMax; // max |pseudorapidity| of daughter tracks in cascade 
+  Double_t dCascadeV0RadiusDecayMin = fdCutCascadeV0RadiusDecayMin; // 1.2 [cm] min radial distance of the decay vertex of the V0 (from the cascade)  
   // Cascade candidate
   Double_t dCPACascadeMin = fdCutCPACascadeMin;// 0.97; // min cosine of the pointing angle of the cascade
   Double_t dCPACascadeV0Min = fdCutCPACascadeV0Min;// 0.97; // min cosine of the pointing angle of the V0 in the cascade   
-  Double_t dCascadeRadiusDecayMin =0.6; // [cm] min radial distance of the decay vertex of the cascade
-  Double_t dCascadeV0RadiusDecayMin = 1.2; // [cm] min radial distance of the decay vertex of the V0 (from the cascade)  
-  Double_t dCascadeEtaMax = 0.75; // max |pseudorapidity| of Cascade
-  // Selection of active cuts
-  Bool_t bCutEtaV0Daughter = 1; // V0 daughter pseudorapidity
-  // Bool_t bCutRapCascade = 0; // Cascade rapidity
-  Bool_t bCutEtaCascade = 1; // Cascade pseudorapidity
-  //Bool_t bCutCascadeTau = 1; // Cascade lifetime  
+  Double_t dCascadeRadiusDecayMin  = fdCutCascadeRadiusDecayMin; // 0.6 [cm] min radial distance of the decay vertex of the cascade
+
+ 
   Double_t dCTauXi = 4.917; // [cm] c tau of Xi
   Double_t dCTauOmega = 2.463 ; // [cm] c tau of Omega
   // Load PDG values of particle masses
@@ -4084,13 +4102,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     iCutIndex++;
  
     // Skip candidates outside the histogram range
-    if((dMassCascadeXi < fgkdMassXiMin) || (dMassCascadeXi >= fgkdMassXiMax))
-    {
+    if((dMassCascadeXi < fgkdMassXiMin) || (dMassCascadeXi >= fgkdMassXiMax)) {
       bIsCandidateXiMinus = kFALSE; 
       bIsCandidateXiPlus  = kFALSE;
     }
-    if((dMassCascadeOmega < fgkdMassOmegaMin) || (dMassCascadeOmega >= fgkdMassOmegaMax))
-    {
+    if((dMassCascadeOmega < fgkdMassOmegaMin) || (dMassCascadeOmega >= fgkdMassOmegaMax)) {
       bIsCandidateOmegaMinus = kFALSE; 
       bIsCandidateOmegaPlus  = kFALSE;
     }
@@ -4101,7 +4117,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     vecCascadeMomentum = TVector3(Cascade->MomXiX(), Cascade->MomXiY(), Cascade->MomXiZ()); // set the vector of Cascade momentum
 
     // Sigma of the mass peak window
-    Double_t dMassPeakWindowXi = dNSigmaMassMax * MassPeakSigmaOld(dPtCascade, 2); // revisit the masspeaksigmaold function!!! 
+    Double_t dMassPeakWindowXi = dNSigmaMassMax * MassPeakSigmaOld(dPtCascade, 2); 
     Double_t dMassPeakWindowOmega = dNSigmaMassMax * MassPeakSigmaOld(dPtCascade, 3);
     
     // Invariant mass peak selection
@@ -4110,15 +4126,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     if(TMath::Abs(dMassCascadeOmega - dMassPDGOmegaMinus) < dMassPeakWindowOmega)
       bIsInPeakOmega = kTRUE;
 
-    if(Cascade->ChargeXi() > 0) 
-    {
-		bIsCandidateXiMinus = kFALSE;
-		bIsCandidateOmegaMinus = kFALSE;
+    if(Cascade->ChargeXi() > 0) {
+		  bIsCandidateXiMinus = kFALSE;
+		  bIsCandidateOmegaMinus = kFALSE;
     }
-    if(Cascade->ChargeXi() < 0) 
-    {
-		bIsCandidateXiPlus = kFALSE;
-		bIsCandidateOmegaPlus = kFALSE;
+    if(Cascade->ChargeXi() < 0) {
+		  bIsCandidateXiPlus = kFALSE;
+		  bIsCandidateOmegaPlus = kFALSE;
     } 
         
     // Retrieving all relevant properties of the Cascade candidate
@@ -4135,12 +4149,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Cascade->GetSecondaryVtx(dV0VtxPos);
     Double_t dRadiusDecayV0 = TMath::Sqrt(dV0VtxPos[0] * dV0VtxPos[0] + dV0VtxPos[1] * dV0VtxPos[1]); // distance of the V0 vertex from the z-axis
  
-
-	// Tracks of the daughters variables 
+	  // Tracks of the daughters variables 
     const AliAODTrack* trackBach = (AliAODTrack*)Cascade->GetDecayVertexXi()->GetDaughter(0); // bachelor daughter track    
     const AliAODTrack* trackPos  = (AliAODTrack*)Cascade->GetDaughter(0); // positive daughter track
     const AliAODTrack* trackNeg  = (AliAODTrack*)Cascade->GetDaughter(1); // negative daughter track  
-  //Double_t dPtBach = trackBach->Pt(); 
+    //Double_t dPtBach = trackBach->Pt(); 
     Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track
     Double_t dPtDaughterNeg = trackNeg->Pt();
     Double_t dEtaDaughterNeg = trackNeg->Eta(); // = Cascade->EtaProng(1), pseudorapidity of a daughter track
@@ -4149,7 +4162,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dNRowsPos = trackPos->GetTPCClusterInfo(2, 1); // crossed TPC pad rows of a daughter track
     Double_t dNRowsNeg = trackNeg->GetTPCClusterInfo(2, 1);
  
-	//DCA and CPA variables 
+	  //DCA and CPA variables 
     Double_t dDCAToPrimVtxPos  = TMath::Abs(Cascade->DcaPosToPrimVertex()); // dca of a positive daughter to the primary vertex
     Double_t dDCAToPrimVtxNeg  = TMath::Abs(Cascade->DcaNegToPrimVertex()); // dca of a negative daughter to the primary vertex
     Double_t dDCAV0Daughters   = Cascade->DcaV0Daughters();                 // dca between V0 daughters
@@ -4158,10 +4171,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dDCABachToV0      = Cascade->DcaXiDaughters();                 // dca bachelor to V0 
     Double_t dCPAXi = Cascade->CosPointingAngleXi(dPrimVtxPos[0], dPrimVtxPos[1], dPrimVtxPos[2]); // cosine of the pointing angle of Xi          
     Double_t dCPAV0 = Cascade->CosPointingAngle(primVtx);  //??(dV0VtxPos); // cosine of the pointing angle
-
     Double_t dRapXi = Cascade->RapXi(); // rapidity calculated for Xi assumption
     Double_t dRapOmega = Cascade->RapOmega(); // rapidity calculated for Omega assumption
-    
     Double_t dEtaCascade = Cascade->Eta(); // Cascade  pseudorapidity
     Double_t dPhiCascade = Cascade->Phi(); 
  
@@ -4217,8 +4228,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     if(trackPos->Charge() != 1)  // daughters have expected charge?
       continue;
       
-    if(fbTPCRefit)
-    {
+    if(fbTPCRefit) {
       if(bPrintCuts) printf("Rec: Applying cut: TPC refit\n");
       if(!trackNeg->IsOn(AliAODTrack::kTPCrefit)) // TPC refit is ON?
         continue;
@@ -4226,8 +4236,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
     }
 
-    if(fbRejectKinks)
-    {
+    if(fbRejectKinks) {
       if(bPrintCuts) printf("Rec: Applying cut: Type of production vertex of daughter: No kinks\n");
       if(cTypeVtxProdNeg == AliAODVertex::kKink) // kink daughter rejection
         continue;
@@ -4235,8 +4244,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
     }
 
-    if(fdCutNCrossedRowsTPCMin > 0.)
-    {
+    if(fdCutNCrossedRowsTPCMin > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Number of TPC rows >= %g\n", fdCutNCrossedRowsTPCMin);
       if(dNRowsNeg < fdCutNCrossedRowsTPCMin) // Crossed TPC padrows
         continue;
@@ -4248,8 +4256,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     iCutIndex++; 
     // 4'
     // Daughters: transverse momentum cut
-    if(fdCutPtDaughterMin > 0.)
-    {
+    if(fdCutPtDaughterMin > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter pt >= %g\n", fdCutPtDaughterMin);
       if((dPtDaughterNeg < fdCutPtDaughterMin) || (dPtDaughterPos < fdCutPtDaughterMin))
         continue;
@@ -4322,8 +4329,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     iCutIndex++; 
     // 14'
     // Daughters: pseudorapidity cut
-    if(bCutEtaV0Daughter)
-    {
+    if(dCascadeEtaDaughterMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter |eta|: < %f\n", dCascadeEtaDaughterMax);
       if((TMath::Abs(dEtaDaughterNeg) > dCascadeEtaDaughterMax) || (TMath::Abs(dEtaDaughterPos) > dCascadeEtaDaughterMax))
         continue;
@@ -4335,47 +4341,39 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Start of particle-dependent cuts
     // 15'
     // Xi: rapidity cut & pseudorapidity cut
-    if(fdCutRapV0Max > 0.)
-    {
+    if(fdCutRapV0Max > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Cascade |y| < %g\n", fdCutRapV0Max);
-      if(TMath::Abs(dRapXi) > fdCutRapV0Max)
-      {  
+      if(TMath::Abs(dRapXi) > fdCutRapV0Max) {  
         bIsCandidateXiMinus = kFALSE;
         bIsCandidateXiPlus  = kFALSE;
       }   
-      if(TMath::Abs(dRapOmega) > fdCutRapV0Max)
-      {  
+      if(TMath::Abs(dRapOmega) > fdCutRapV0Max) {  
         bIsCandidateOmegaMinus = kFALSE;
         bIsCandidateOmegaPlus  = kFALSE;
       }   
     }
-    if(bCutEtaCascade)
-    {
-      if(bPrintCuts) printf("Rec: Applying cut: Cascade |eta|: < %f\n", dCascadeEtaMax);
-      if(TMath::Abs(dEtaCascade) > dCascadeEtaMax)
-      {
+    if(fdCutEtaCascadeMax) {
+      if(bPrintCuts) printf("Rec: Applying cut: Cascade |eta|: < %f\n", fdCutEtaCascadeMax);
+      if(TMath::Abs(dEtaCascade) > fdCutEtaCascadeMax) {
         bIsCandidateXiMinus = kFALSE;
         bIsCandidateXiPlus  = kFALSE;
         bIsCandidateOmegaMinus = kFALSE;
         bIsCandidateOmegaPlus  = kFALSE;
       }
-      if(bCutEtaCascade || fdCutRapV0Max > 0.)
+      if(fdCutEtaCascadeMax > 0 || fdCutRapV0Max > 0.)
       FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     }
     iCutIndex++;
 
     // 16'
     // Lifetime cut
-    if(fdCutNTauXMax > 0.)
-    {
+    if(fdCutNTauXMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Xi Proper lifetime: < %f\n", fdCutNTauXMax);
-      if(dMROverPtXi > fdCutNTauXMax * dCTauXi)
-      {
+      if(dMROverPtXi > fdCutNTauXMax * dCTauXi) {
         bIsCandidateXiMinus = kFALSE;
         bIsCandidateXiPlus  = kFALSE;
       }
-      if(dMROverPtOmega > fdCutNTauXMax * dCTauOmega)
-      {
+      if(dMROverPtOmega > fdCutNTauXMax * dCTauOmega) {
         bIsCandidateOmegaMinus = kFALSE;
         bIsCandidateOmegaPlus  = kFALSE;
       }
@@ -4385,18 +4383,15 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
  
     // 17'
     // Daughter PID
-    if(fdCutNSigmadEdxMax > 0.)
-    {
-      if(fbIsPbPb && fdPtProtonPIDMax > 0.) // Pb-Pb
-      {
+    if(fdCutNSigmadEdxMax > 0.) {
+      if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
         if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
         if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
           bIsCandidateXiMinus = kFALSE;
         if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
           bIsCandidateXiPlus = kFALSE;
       }
-      else // p-p
-      {
+      else {// p-p
         if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
         if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
           bIsCandidateXiMinus = kFALSE;
@@ -4416,12 +4411,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       continue;
 
     // Selection of Xis in jet cones, perpendicular cones, random cones, outside cones
-    if(iNJetSel && (bIsCandidateXiMinus || bIsCandidateXiPlus || bIsCandidateOmegaMinus || bIsCandidateOmegaPlus))
-    {
+    if(iNJetSel && (bIsCandidateXiMinus || bIsCandidateXiPlus || bIsCandidateOmegaMinus || bIsCandidateOmegaPlus)) {
       Double_t dDMin, dD = 0; // minimal / current value of V0-jet Distance (used for estimation of closest jet to V0)
       dDMin = 20.;
-      for(Int_t iJet = 0; iJet < iNJetSel; iJet++) // could be included in loop beneath
-      {
+      for(Int_t iJet = 0; iJet < iNJetSel; iJet++) {// could be included in loop beneath
         // finding the closest jet to the v0
         jet = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
         if(!jet)
@@ -4431,25 +4424,23 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           dDMin = dD;
       }
       if(bIsCandidateXiMinus)
-      fh1DistanceCascadeJetsXiMinus[iCentIndex]->Fill(dDMin);
+        fh1DistanceCascadeJetsXiMinus[iCentIndex]->Fill(dDMin);
       if(bIsCandidateXiPlus)
-      fh1DistanceCascadeJetsXiPlus[iCentIndex]->Fill(dDMin);
+        fh1DistanceCascadeJetsXiPlus[iCentIndex]->Fill(dDMin);
       if(bIsCandidateOmegaMinus)
-      fh1DistanceCascadeJetsOmegaMinus[iCentIndex]->Fill(dDMin);
+        fh1DistanceCascadeJetsOmegaMinus[iCentIndex]->Fill(dDMin);
       if(bIsCandidateOmegaPlus)
-      fh1DistanceCascadeJetsOmegaPlus[iCentIndex]->Fill(dDMin);
+        fh1DistanceCascadeJetsOmegaPlus[iCentIndex]->Fill(dDMin);
            
       // Selection of Cascades in jet cones
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for Cascade %d %d %d %d in %d jet cones", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iNJetSel));
-      for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
-      {
+      for(Int_t iJet = 0; iJet < iNJetSel; iJet++) {
         jet = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
         if(!jet)
           continue;
         vecJetMomentum.SetXYZ(jet->Px(), jet->Py(), jet->Pz()); // set the vector of jet momentum
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if Cascade %d %d %d %d in jet cone %d", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iJet));
-        if(IsParticleInCone(Cascade, jet, fdDistanceV0JetMax)) // If good jet in event, find out whether Cascade is in that jet
-        {
+        if(IsParticleInCone(Cascade, jet, fdDistanceV0JetMax)) {// If good jet in event, find out whether Cascade is in that jet
           if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cascade %d %d %d %d found in jet cone %d", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iJet));
           bIsInConeJet = kTRUE;
           dPtJetTrackLeading = jet->GetPtLeading();
@@ -4459,23 +4450,19 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }            
       // Selection of Cascades in perp. cones
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for Cascade %d %d %d %d in %d perp. cones",bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iNJetPerp));
-      for(Int_t iJet = 0; iJet < iNJetPerp; iJet++)
-      {
+      for(Int_t iJet = 0; iJet < iNJetPerp; iJet++) {
         jetPerp = (AliAODJet*)arrayJetPerp->At(iJet); // load a jet in the list
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if Cascade %d %d %d %d in perp. cone %d", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iJet));
-        if(IsParticleInCone(Cascade, jetPerp, fdDistanceV0JetMax)) // Cascade in perp. cone
-        {
+        if(IsParticleInCone(Cascade, jetPerp, fdDistanceV0JetMax)) {// Cascade in perp. cone
           if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cascade %d %d %d %d found in perp. cone %d", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iJet));
           bIsInConePerp = kTRUE;
           break;
         }
       }
       // Selection of Cascades in random cones
-      if(jetRnd)
-      {
+      if(jetRnd) {
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for Cascade %d %d %d %d in the rnd. cone", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus));
-        if(IsParticleInCone(Cascade, jetRnd, fdDistanceV0JetMax)) //Cascade in rnd. cone?
-        {
+        if(IsParticleInCone(Cascade, jetRnd, fdDistanceV0JetMax)) {//Cascade in rnd. cone
           if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cascade %d %d %d %d found in the rnd. cone", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus));
           bIsInConeRnd = kTRUE;
         }
@@ -4483,37 +4470,30 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       // Selection of Cascades in median-cluster cones
       if(jetMed) {
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for Cascade %d %d %d %d in the med. cone", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus));
-        if(IsParticleInCone(Cascade, jetMed, fdDistanceV0JetMax)) // Cascade in med. cone?
-        {
+        if(IsParticleInCone(Cascade, jetMed, fdDistanceV0JetMax)) {// Cascade in med. cone
           if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cascade %d %d %d %d found in the med. cone", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus));
           bIsInConeMed = kTRUE;
         }
       }
       // Selection of Cascades outside jet cones
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for Cascade %d %d %d %d outside jet cones", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus));
-      if(!OverlapWithJets(arrayJetSel, Cascade, dRadiusExcludeCone)) // Cascade oustide jet cones
-      {
+      if(!OverlapWithJets(arrayJetSel, Cascade, dRadiusExcludeCone)) {// Cascade oustide jet cones
         if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cascade %d  %d %d %d found outside jet cones", bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus));
         bIsOutsideCones = kTRUE;
       }
     }
 
-
     // QA histograms after cuts
     FillQAHistogramXi(primVtx, Cascade, 1, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, bIsInPeakXi, bIsInPeakOmega);
-
-
     //===== Start of filling Cascade spectra =====
 
     Double_t dAngle = TMath::Pi(); // angle between Cascade momentum and jet momentum
-    if(bIsInConeJet)
-    {
+    if(bIsInConeJet) {
       dAngle = vecCascadeMomentum.Angle(vecJetMomentum);
     }
 
     // iCutIndex = 18'
-    if(bIsCandidateXiMinus)
-    {
+    if(bIsCandidateXiMinus) {
       // 18' 
       //XiMinus candidates after cuts
       //printf("XiMinus: i = %d, m = %f, pT = %f, eta = %f \n",iXi,dMassCascadeXi,dPtCascade,dEtaCascade);
@@ -4521,18 +4501,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t valueXiIncl[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
       fhnCascadeInclusiveXiMinus[iCentIndex]->Fill(valueXiIncl);
       fh1CascadeInvMassXiMinusCent[iCentIndex]->Fill(dMassCascadeXi);
-
       //fh1QACascadeCTau2D[1]->Fill(dMROverPtXi / dCTauXi);
       //fh1QACascadeCTau3D[1]->Fill(dMLOverPXi / dCTauXi);
-
-      if(iNJetSel)
-      {
+      if(iNJetSel) {
         // 19'
         // Xi in jet events
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 1, iCentIndex);
       }
-      if(bIsInConeJet)
-      {
+      if(bIsInConeJet) {
         // 20'
         // Xi in jets
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 2, iCentIndex);
@@ -4540,36 +4516,30 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fhnCascadeInJetXiMinus[iCentIndex]->Fill(valueXiInJC);
         fh2CascadePtJetAngleXiMinus[iCentIndex]->Fill(jet->Pt(), dAngle);
       }
-      if(bIsOutsideCones)
-      {
+      if(bIsOutsideCones)  {
         Double_t valueXiOutJC[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeOutJetXiMinus[iCentIndex]->Fill(valueXiOutJC);
       }
-      if(bIsInConePerp)
-      {
+      if(bIsInConePerp) {
         Double_t valueXiInPC[4] = {dMassCascadeXi, dPtCascade, dEtaCascade, jet->Pt()};
         fhnCascadeInPerpXiMinus[iCentIndex]->Fill(valueXiInPC);
       }
-      if(bIsInConeRnd)
-      {
+      if(bIsInConeRnd) {
         Double_t valueXiInRnd[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeInRndXiMinus[iCentIndex]->Fill(valueXiInRnd);
       }
-      if(bIsInConeMed)
-      {
+      if(bIsInConeMed) {
         Double_t valueXiInMed[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeInMedXiMinus[iCentIndex]->Fill(valueXiInMed);
       }
-      if(!iNJetSel)
-      {
+      if(!iNJetSel) {
         Double_t valueXiNoJet[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeNoJetXiMinus[iCentIndex]->Fill(valueXiNoJet);
       }
       iNCascadeCandXiMinus++;
     }   
     
-    if(bIsCandidateXiPlus)
-    {
+    if(bIsCandidateXiPlus) {
       // 18' 
       //XiMinus candidates after cuts
       //printf("XiPlus: i = %d, m = %f, pT = %f, eta = %f \n",iXi,dMassCascadeXi,dPtCascade,dEtaCascade);
@@ -4581,14 +4551,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       //fh1QACascadeCTau2D[1]->Fill(dMROverPtXi / dCTauXi);
       //fh1QACascadeCTau3D[1]->Fill(dMLOverPXi / dCTauXi);
 
-      if(iNJetSel)
-      {
+      if(iNJetSel) {
         // 19'
         // Xi in jet events
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 1, iCentIndex);
       }
-      if(bIsInConeJet)
-      {
+      if(bIsInConeJet) {
         // 20'
         // Xi in jets
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 2, iCentIndex);
@@ -4596,35 +4564,29 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fhnCascadeInJetXiPlus[iCentIndex]->Fill(valueXiInJC);
         fh2CascadePtJetAngleXiPlus[iCentIndex]->Fill(jet->Pt(), dAngle);
       }
-      if(bIsOutsideCones)
-      {
+      if(bIsOutsideCones) {
         Double_t valueXiOutJC[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeOutJetXiPlus[iCentIndex]->Fill(valueXiOutJC);
       }
-      if(bIsInConePerp)
-      {
+      if(bIsInConePerp) {
         Double_t valueXiInPC[4] = {dMassCascadeXi, dPtCascade, dEtaCascade, jet->Pt()};
         fhnCascadeInPerpXiPlus[iCentIndex]->Fill(valueXiInPC);
       }
-      if(bIsInConeRnd)
-      {
+      if(bIsInConeRnd) {
         Double_t valueXiInRnd[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeInRndXiPlus[iCentIndex]->Fill(valueXiInRnd);
       }
-      if(bIsInConeMed)
-      {
+      if(bIsInConeMed) {
         Double_t valueXiInMed[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeInMedXiPlus[iCentIndex]->Fill(valueXiInMed);
       }
-      if(!iNJetSel)
-      {
+      if(!iNJetSel) {
         Double_t valueXiNoJet[3] = {dMassCascadeXi, dPtCascade, dEtaCascade};
         fhnCascadeNoJetXiPlus[iCentIndex]->Fill(valueXiNoJet);
       }
       iNCascadeCandXiPlus++;
     }   
-    if(bIsCandidateOmegaMinus)
-    {
+    if(bIsCandidateOmegaMinus) {
       // 18' 
       //OmegaMinus candidates after cuts
       //printf("OmegaMinus: i = %d, m = %f, pT = %f, eta = %f \n",iXi, dMassCascadeOmega, dPtCascade, dEtaCascade);
@@ -4636,14 +4598,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       //fh1QACascadeCTau2D[1]->Fill(dMROverPtOmega / dCTauOmega);
       //fh1QACascadeCTau3D[1]->Fill(dMLOverPOmega / dCTauOmega);
 
-      if(iNJetSel)
-      {
+      if(iNJetSel) {
         // 19'
         // Xi in jet events
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 1, iCentIndex);
       }
-      if(bIsInConeJet)
-      {
+      if(bIsInConeJet) {
         // 20'
         // Xi in jets
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 2, iCentIndex);
@@ -4651,36 +4611,30 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fhnCascadeInJetOmegaMinus[iCentIndex]->Fill(valueOmegaInJC);
         fh2CascadePtJetAngleOmegaMinus[iCentIndex]->Fill(jet->Pt(), dAngle);
       }
-      if(bIsOutsideCones)
-      {
+      if(bIsOutsideCones) {
         Double_t valueOmegaOutJC[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeOutJetOmegaMinus[iCentIndex]->Fill(valueOmegaOutJC);
       }
-      if(bIsInConePerp)
-      {
+      if(bIsInConePerp) {
         Double_t valueOmegaInPC[4] = {dMassCascadeXi, dPtCascade, dEtaCascade, jet->Pt()};
         fhnCascadeInPerpXiMinus[iCentIndex]->Fill(valueOmegaInPC);
       }
-      if(bIsInConeRnd)
-      {
+      if(bIsInConeRnd) {
         Double_t valueOmegaInRnd[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeInRndOmegaMinus[iCentIndex]->Fill(valueOmegaInRnd);
       }
-      if(bIsInConeMed)
-      {
+      if(bIsInConeMed) {
         Double_t valueOmegaInMed[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeInMedOmegaMinus[iCentIndex]->Fill(valueOmegaInMed);
       }
-      if(!iNJetSel)
-      {
+      if(!iNJetSel) {
         Double_t valueOmegaNoJet[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeNoJetOmegaMinus[iCentIndex]->Fill(valueOmegaNoJet);
       }
       iNCascadeCandOmegaMinus++;
     }   
     
-    if(bIsCandidateOmegaPlus)
-    {
+    if(bIsCandidateOmegaPlus) {
       // 18' 
       //OmegaMinus candidates after cuts
       //printf("XiPlus: i = %d, m = %f, pT = %f, eta = %f \n", iXi, dMassCascadeOmega, dPtCascade, dEtaCascade);
@@ -4692,14 +4646,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       //fh1QACascadeCTau2D[1]->Fill(dMROverPtOmega / dCTauOmega);
       //fh1QACascadeCTau3D[1]->Fill(dMLOverPOmega / dCTauOmega);
 
-      if(iNJetSel)
-      {
+      if(iNJetSel) {
         // 19'
         // Xi in jet events
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 1, iCentIndex);
       }
-      if(bIsInConeJet)
-      {
+      if(bIsInConeJet) {
         // 20'
         // Xi in jets
         FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex + 2, iCentIndex);
@@ -4707,42 +4659,34 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fhnCascadeInJetOmegaPlus[iCentIndex]->Fill(valueOmegaInJC);
         fh2CascadePtJetAngleOmegaPlus[iCentIndex]->Fill(jet->Pt(), dAngle);
       }
-      if(bIsOutsideCones)
-      {
+      if(bIsOutsideCones) {
         Double_t valueOmegaOutJC[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeOutJetOmegaPlus[iCentIndex]->Fill(valueOmegaOutJC);
       }
-      if(bIsInConePerp)
-      {
+      if(bIsInConePerp) {
         Double_t valueOmegaInPC[4] = {dMassCascadeOmega, dPtCascade, dEtaCascade, jet->Pt()};
         fhnCascadeInPerpOmegaPlus[iCentIndex]->Fill(valueOmegaInPC);
       }
-      if(bIsInConeRnd)
-      {
+      if(bIsInConeRnd) {
         Double_t valueOmegaInRnd[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeInRndOmegaPlus[iCentIndex]->Fill(valueOmegaInRnd);
       }
-      if(bIsInConeMed)
-      {
+      if(bIsInConeMed) {
         Double_t valueOmegaInMed[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeInMedOmegaPlus[iCentIndex]->Fill(valueOmegaInMed);
       }
-      if(!iNJetSel)
-      {
+      if(!iNJetSel) {
         Double_t valueOmegaNoJet[3] = {dMassCascadeOmega, dPtCascade, dEtaCascade};
         fhnCascadeNoJetOmegaPlus[iCentIndex]->Fill(valueOmegaNoJet);
       }
       iNCascadeCandOmegaPlus++;
     }   
     
-    
       // V0-jet correlations
-    if(fbCorrelations && iNJetSel)
-    {
+    if(fbCorrelations && iNJetSel) {
       Double_t dDPhi, dDEta, dDR;
       // Fill V0-jet correlations in same events
-      for(Int_t iJet = 0; iJet < iNJetSel; iJet++)
-      {
+      for(Int_t iJet = 0; iJet < iNJetSel; iJet++) {
         AliAODJet* jetCorrel = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
         dDPhi = GetNormalPhi(dPhiCascade - jetCorrel->Phi());
         dDEta = dEtaCascade - jetCorrel->Eta();
@@ -4759,8 +4703,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     //===== End of filling Cascade spectra =====
 
     //===== Association of reconstructed Cascade candidates with MC particles =====
-   if(fbMCAnalysis)
-    {
+   if(fbMCAnalysis) {
       // Associate selected candidates only
       if(!(bIsCandidateXiMinus) && !(bIsCandidateXiPlus) && !(bIsCandidateOmegaMinus) && !(bIsCandidateOmegaPlus)) // chosen candidates with any mass
         continue;
@@ -4836,17 +4779,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dRapCascadeGen = particleMCMother->Y();
       Double_t dEtaCascadeGen = particleMCMother->Eta();      
       
-      
       // Cascade pseudorapidity cut applied on generated particles
-      if(fdCutEtaV0Max > 0.)
-      {
+      if(fdCutEtaV0Max > 0.) {
         if(bPrintCuts) printf("Rec->Gen: Applying cut: Cascade |eta|: < %g\n", fdCutEtaV0Max);
         if((TMath::Abs(dEtaCascadeGen) > fdCutEtaV0Max))
           continue;
       }
       // Cascade rapidity cut applied on generated particles
-      if(fdCutRapV0Max > 0.)
-      {
+      if(fdCutRapV0Max > 0.) {
         if(bPrintCuts) printf("Rec->Gen: Applying cut: Cascade |y|: < %g\n", fdCutRapV0Max);
         if((TMath::Abs(dRapCascadeGen) > fdCutRapV0Max))
           continue;
@@ -4864,10 +4804,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Bool_t bCascadeMCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
 
       //XiMinus
-      if(bIsCandidateXiMinus) // selected candidates with any mass
-      {
-        if(bCascadeMCIsXiMinus && bCascadeMCIsPrimaryDist) // well reconstructed candidates
-        {
+      if(bIsCandidateXiMinus) {// selected candidates with any mass
+        if(bCascadeMCIsXiMinus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
           fh2CascadeXiMinusPtMassMCRec[iCentIndex]->Fill(dPtCascadeGen, dMassCascadeXi);
           Double_t valueEtaXiMinus[3] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen};
           fh3CascadeXiMinusEtaPtMassMCRec[iCentIndex]->Fill(valueEtaXiMinus);
@@ -4879,8 +4817,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
           fh2CascadeXiMinusMCResolMPt[iCentIndex]->Fill(dMassCascadeXi - dMassPDGXiMinus, dPtCascade);
           fh2CascadeXiMinusMCPtGenPtRec[iCentIndex]->Fill(dPtCascadeGen, dPtCascade);
-          if(bIsInConeJet) // true V0 associated to a reconstructed candidate in jet
-          {
+          if(bIsInConeJet) {// true V0 associated to a reconstructed candidate in jet
             Double_t valueXiMinusInJCMC[4] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt()};
             fh3CascadeXiMinusInJetPtMassMCRec[iCentIndex]->Fill(valueXiMinusInJCMC);
             Double_t valueEtaXiMinusIn[5] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt(), dEtaCascadeGen - jet->Eta()};
@@ -4894,10 +4831,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
       } 
       //XiPlus
-      if(bIsCandidateXiPlus) // selected candidates with any mass
-      {
-        if(bCascadeMCIsXiPlus && bCascadeMCIsPrimaryDist) // well reconstructed candidates
-        {
+      if(bIsCandidateXiPlus) {// selected candidates with any mass
+        if(bCascadeMCIsXiPlus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
           fh2CascadeXiPlusPtMassMCRec[iCentIndex]->Fill(dPtCascadeGen, dMassCascadeXi);
           Double_t valueEtaXiPlus[3] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen};
           fh3CascadeXiPlusEtaPtMassMCRec[iCentIndex]->Fill(valueEtaXiPlus);
@@ -4909,8 +4844,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
           fh2CascadeXiPlusMCResolMPt[iCentIndex]->Fill(dMassCascadeXi - dMassPDGXiMinus, dPtCascade);
           fh2CascadeXiPlusMCPtGenPtRec[iCentIndex]->Fill(dPtCascadeGen, dPtCascade);
-          if(bIsInConeJet) // true V0 associated to a reconstructed candidate in jet
-          {
+          if(bIsInConeJet) {// true V0 associated to a reconstructed candidate in jet
             Double_t valueXiPlusInJCMC[4] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt()};
             fh3CascadeXiPlusInJetPtMassMCRec[iCentIndex]->Fill(valueXiPlusInJCMC);
             Double_t valueEtaXiPlusIn[5] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt(), dEtaCascadeGen - jet->Eta()};
@@ -4924,10 +4858,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
       }               
       //OmegaMinus
-      if(bIsCandidateOmegaMinus) // selected candidates with any mass
-      {
-        if(bCascadeMCIsOmegaMinus && bCascadeMCIsPrimaryDist) // well reconstructed candidates
-        {
+      if(bIsCandidateOmegaMinus) {// selected candidates with any mass
+        if(bCascadeMCIsOmegaMinus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
           fh2CascadeOmegaMinusPtMassMCRec[iCentIndex]->Fill(dPtCascadeGen, dMassCascadeOmega);
           Double_t valueEtaOmegaMinus[3] = {dMassCascadeOmega, dPtCascadeGen, dEtaCascadeGen};
           fh3CascadeOmegaMinusEtaPtMassMCRec[iCentIndex]->Fill(valueEtaOmegaMinus);
@@ -4939,8 +4871,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
           fh2CascadeOmegaMinusMCResolMPt[iCentIndex]->Fill(dMassCascadeOmega - dMassPDGOmegaMinus, dPtCascade);
           fh2CascadeOmegaMinusMCPtGenPtRec[iCentIndex]->Fill(dPtCascadeGen, dPtCascade);
-          if(bIsInConeJet) // true Cascade associated to a reconstructed candidate in jet
-          {
+          if(bIsInConeJet) {// true Cascade associated to a reconstructed candidate in jet
             Double_t valueOmegaMinusInJCMC[4] = {dMassCascadeOmega, dPtCascadeGen, dEtaCascadeGen, jet->Pt()};
             fh3CascadeOmegaMinusInJetPtMassMCRec[iCentIndex]->Fill(valueOmegaMinusInJCMC);
             Double_t valueEtaOmegaMinusIn[5] = {dMassCascadeOmega, dPtCascadeGen, dEtaCascadeGen, jet->Pt(), dEtaCascadeGen - jet->Eta()};
@@ -4954,10 +4885,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
       } 
       //OmegaPlus
-      if(bIsCandidateOmegaPlus) // selected candidates with any mass
-      {
-        if(bCascadeMCIsOmegaPlus && bCascadeMCIsPrimaryDist) // well reconstructed candidates
-        {
+      if(bIsCandidateOmegaPlus) {// selected candidates with any mass
+        if(bCascadeMCIsOmegaPlus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
           fh2CascadeOmegaPlusPtMassMCRec[iCentIndex]->Fill(dPtCascadeGen, dMassCascadeOmega);
           Double_t valueEtaOmegaPlus[3] = {dMassCascadeOmega, dPtCascadeGen, dEtaCascadeGen};
           fh3CascadeOmegaPlusEtaPtMassMCRec[iCentIndex]->Fill(valueEtaOmegaPlus);
@@ -4969,8 +4898,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
           fh2CascadeOmegaPlusMCResolMPt[iCentIndex]->Fill(dMassCascadeOmega - dMassPDGOmegaMinus, dPtCascade);
           fh2CascadeOmegaPlusMCPtGenPtRec[iCentIndex]->Fill(dPtCascadeGen, dPtCascade);
-          if(bIsInConeJet) // true V0 associated to a reconstructed candidate in jet
-          {
+          if(bIsInConeJet) {// true V0 associated to a reconstructed candidate in jet
             Double_t valueOmegaPlusInJCMC[4] = {dMassCascadeOmega, dPtCascadeGen, dEtaCascadeGen, jet->Pt()};
             fh3CascadeOmegaPlusInJetPtMassMCRec[iCentIndex]->Fill(valueOmegaPlusInJCMC);
             Double_t valueEtaOmegaPlusIn[5] = {dMassCascadeOmega, dPtCascadeGen, dEtaCascadeGen, jet->Pt(), dEtaCascadeGen - jet->Eta()};
