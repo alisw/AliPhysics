@@ -140,12 +140,18 @@ public:
   void FillQAHistogramXi(AliAODVertex* vtx, const AliAODcascade* cascade, Int_t iIndexHisto,  Bool_t IsCandXiMinus, Bool_t IsCandXiPlus, Bool_t IsCandOmegaMinus, Bool_t IsCandOmegaPlus, Bool_t IsInPeakXi, Bool_t IsInPeakOmega);
   // set functions 
   void SetCutDCACascadeBachToPrimVtxMin(Double_t val = 0.04) {fdCutDCACascadeBachToPrimVtxMin = val;}
-  void SetCutDCACascadeV0ToPrimVtxMin(Double_t val = 0.1) {fdCutDCACascadeV0ToPrimVtxMin = val;}
+  void SetCutDCACascadeV0ToPrimVtxMin(Double_t val = 0.06) {fdCutDCACascadeV0ToPrimVtxMin = val;}
   void SetCutDCACascadeDaughtersToPrimVtxMin(Double_t val = 0.03) {fdCutDCACascadeDaughtersToPrimVtxMin = val;}
-  void SetCutDCACascadeV0DaughtersMax(Double_t val = 1.) {fdCutDCACascadeV0DaughtersMax = val;}
+  void SetCutDCACascadeV0DaughtersMax(Double_t val = 1.5) {fdCutDCACascadeV0DaughtersMax = val;}
   void SetCutDCACascadeBachToV0Max(Double_t val = 1.3) {fdCutDCACascadeBachToV0Max = val;}
   void SetCutCPACascadeMin(Double_t val = 0.97) {fdCutCPACascadeMin = val;} 
-  void SetCutCPACascadeV0Min(Double_t val = 0.998) {fdCutCPACascadeV0Min = val;} 
+  void SetCutCPACascadeV0Min(Double_t val = 0.97) {fdCutCPACascadeV0Min = val;} 
+  void SetCutEtaCascadeMax(Double_t val = 0.7) {fdCutEtaCascadeMax = val;}
+  void SetCutEtaCascadeDaughtersMax(Double_t val = 0.8) {fdCutCascadeEtaDaughterMax = val;}
+  void SetCutCascadeRadiusDecayMin(Double_t val = 0.6) {fdCutCascadeRadiusDecayMin = val;}
+  void SetCutCascadeV0RadiusDecayMin(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMin = val;}
+  
+  
   // axis: Xi invariant mass
   static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
   static const Double_t fgkdMassXiMin; // minimum
@@ -518,6 +524,10 @@ private:
   Double_t fdCutDCACascadeBachToV0Max; // 1.3; // [cm] max DCA between bachelor track to V0   
   Double_t fdCutCPACascadeMin;   // min cosine of the pointing angle of the cascade
   Double_t fdCutCPACascadeV0Min; // min cosine of the pointing angle of the V0 in the cascade
+  Double_t fdCutEtaCascadeMax; // (0.7) max |pseudorapidity| of Cascade
+  Double_t fdCutCascadeEtaDaughterMax; //(0.8) max |pseudorapidity| of Cascade daughter tracks
+  Double_t fdCutCascadeRadiusDecayMin; //(0.6) min cascade decay radius
+  Double_t fdCutCascadeV0RadiusDecayMin; //(1.2) min V0 from cascade decay radius
 
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
 
@@ -767,7 +777,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 27) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 28) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
