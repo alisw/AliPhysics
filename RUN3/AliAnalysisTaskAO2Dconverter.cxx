@@ -1816,28 +1816,28 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   }
   else if (fAOD && fSaveEventBitsInAODConversion) {
     // // Get multiplicity selection
-    // AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     // AliMultSelection *multSelection = (AliMultSelection*) fVEvent->FindListObject("MultSelection");
-    // if (!multSelection)
-    //   AliFatal("MultSelection not found in input event");
+    if (!multSelection)
+      AliFatal("MultSelection not found in input event");
 
-    // if( multSelection->GetThisEventINELgtZERO() )
-    //   SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
+    if( multSelection->GetThisEventINELgtZERO() )
+      SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
 
-    // if( multSelection->GetThisEventIsNotPileupInMultBins() )
-    //   SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
+    if( multSelection->GetThisEventIsNotPileupInMultBins() )
+      SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
 
-    // if( multSelection->GetThisEventHasNoInconsistentVertices() )
-    //   SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
+    if( multSelection->GetThisEventHasNoInconsistentVertices() )
+      SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
 
-    // if( multSelection->GetThisEventPassesTrackletVsCluster() )
-    //   SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
+    if( multSelection->GetThisEventPassesTrackletVsCluster() )
+      SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
 
     if( fAOD->GetPrimaryVertex()->GetNContributors()>0 )
       SETBIT (run2bcinfo.fEventCuts, kNonZeroNContribs);
 
-    // if( multSelection->GetThisEventIsNotIncompleteDAQ() )
-    //   SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
+    if( multSelection->GetThisEventIsNotIncompleteDAQ() )
+      SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
 
     if (fEventCuts.PassedCut(AliEventCuts::kPileUp))
       SETBIT(run2bcinfo.fEventCuts, kPileUpMV);
