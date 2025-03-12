@@ -462,10 +462,10 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
     pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 13,10,140);
     fOutput->Add(pt_tru);
     
-    EEC_pt_hist = new TH2F("EEC_pt_hist", "EEC and jet_pt 2D", 21, new_bins, 13,10,140);
+    EEC_pt_hist = new TH2F("EEC_pt_hist", "EEC and jet_pt 2D", ndRbins, dRbins, 13,10,140);
     fOutput->Add(EEC_pt_hist);
     
-    E3C_pt_hist = new TH2F("E3C_pt_hist", "EEEC and jet_pt 2D", 21, new_bins, 13,10,140);
+    E3C_pt_hist = new TH2F("E3C_pt_hist", "EEEC and jet_pt 2D", ndRbins, dRbins, 13,10,140);
     fOutput->Add(E3C_pt_hist);
 
     delta_pt_cone = new TH1F("del_pt_cone","del_pt_cone",1000,-100,100); //all cones
@@ -488,12 +488,12 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
 
     if(fCout) cout<<"###########------subtraction histograms for EEC data----########"<<endl;
   if(ifeec){
-    h_MB1_dat = new TH2F("h_MB1_dat", "h_MB1_dat", 13, new_bins_const,21, new_bins);//min bias data
+    h_MB1_dat = new TH2F("h_MB1_dat", "h_MB1_dat", 13, new_bins_const, ndRbins, dRbins);//min bias data
     fOutput->Add(h_MB1_dat);
-    h_JMB_dat = new TH2F("h_JMB_dat", "h_JMB_dat", 13, new_bins_const,21, new_bins);//Jet*MINBIAS data
+    h_JMB_dat = new TH2F("h_JMB_dat", "h_JMB_dat", 13, new_bins_const, ndRbins, dRbins);//Jet*MINBIAS data
     fOutput->Add(h_JMB_dat);
-    h_MB1MB2_dat = new TH2F("h_MB1MB2_dat", "h_MB1MB2_dat", 13, new_bins_const,21, new_bins);//Jet*MINBIAS data
-    fOutput->Add(h_JMB_dat);
+    h_MB1MB2_dat = new TH2F("h_MB1MB2_dat", "h_MB1MB2_dat", 13, new_bins_const, ndRbins, dRbins);//Jet*MINBIAS data
+    fOutput->Add(h_MB1MB2_dat);
 
     h3Jet_deltaR_MB1_dat = new TH3F("h3Jet_deltaR_MB1_dat", "h3Jet_deltaR_MB1_dat", nJetPtbins, xbins, ndRbins, dRbins,nWtbins,wtbins);//Jet*MINBIAS
     fOutput->Add(h3Jet_deltaR_MB1_dat);
@@ -504,19 +504,19 @@ if(fCout)  std::cout << " Info::anrai: ===== In the UserCreateOutputObjects ====
   }
    if(ife3c){
    if(fCout) cout<<"###########------subtraction histograms for E3C data----########"<<endl;
-    h_MB1MB1MB1_dat = new TH2F("h_MB1MB1MB1_dat", "h_MB1MB1MB1_dat",13, new_bins_const,21, new_bins);
+    h_MB1MB1MB1_dat = new TH2F("h_MB1MB1MB1_dat", "h_MB1MB1MB1_dat",13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_MB1MB1MB1_dat);
-    h_JJMB_dat = new TH2F("h_JJMB_dat", "h_JJMB_dat", 13, new_bins_const,21, new_bins);
+    h_JJMB_dat = new TH2F("h_JJMB_dat", "h_JJMB_dat", 13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_JJMB_dat);
-    h_JMB1MB2_dat = new TH2F("h_JMB1MB2_dat", "h_JMB1MB2_dat", 13, new_bins_const,21, new_bins);
+    h_JMB1MB2_dat = new TH2F("h_JMB1MB2_dat", "h_JMB1MB2_dat", 13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_JMB1MB2_dat);
-    h_JMBMB_dat = new TH2F("h_JMBMB_dat", "h_JMBMB_dat",13, new_bins_const,21, new_bins);
+    h_JMBMB_dat = new TH2F("h_JMBMB_dat", "h_JMBMB_dat",13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_JMBMB_dat);
-    h_MB1MB2MB2_dat = new TH2F("h_MB1MB2MB2_dat", "h_MB1MB2MB2_dat",13, new_bins_const,21, new_bins);
+    h_MB1MB2MB2_dat = new TH2F("h_MB1MB2MB2_dat", "h_MB1MB2MB2_dat",13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_MB1MB2MB2_dat);
-    h_MB1MB1MB2_dat = new TH2F("h_MB1MB1MB2_dat", "h_MB1MB1MB2_dat",13, new_bins_const,21, new_bins);
+    h_MB1MB1MB2_dat = new TH2F("h_MB1MB1MB2_dat", "h_MB1MB1MB2_dat",13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_MB1MB1MB2_dat);
-    h_MB1MB2MB3_dat = new TH2F("h_MB1MB2MB3_dat", "h_MB1MB2MB3_dat",13, new_bins_const,21, new_bins);
+    h_MB1MB2MB3_dat = new TH2F("h_MB1MB2MB3_dat", "h_MB1MB2MB3_dat",13, new_bins_const,ndRbins, dRbins);
     fOutput->Add(h_MB1MB2MB3_dat);
 
     h3_MB1MB1MB1_dat = new TH3F("h3_MB1MB1MB1_dat", "h3_MB1MB1MB1_dat",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
@@ -1066,41 +1066,41 @@ if(fCout)cout<<"#####################---Declaring 3D Embedding Histograms EEC---
     fOutput->Add(h3_SSMB_m);
     
     h3Jet_deltaR_MJ_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ_e3c_tru_m", "h3Jet_deltaR_MJ_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3Jet_deltaR_MJ_e3c_tru_m);
+    // fOutput->Add(h3Jet_deltaR_MJ_e3c_tru_m);
     h3Jet_deltaR_MJ0_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ0_e3c_tru_m", "h3Jet_deltaR_MJ0_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3Jet_deltaR_MJ0_e3c_tru_m);
+    // fOutput->Add(h3Jet_deltaR_MJ0_e3c_tru_m);
     h3Jet_deltaR_MJ1_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ1_e3c_tru_m", "h3Jet_deltaR_MJ1_e3c_tru_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3Jet_deltaR_MJ1_e3c_tru_m);
+    // fOutput->Add(h3Jet_deltaR_MJ1_e3c_tru_m);
     h3Jet_deltaR_MJ2_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ2_e3c_tru_m", "h3Jet_deltaR_MJ2_e3c_tru_m",nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3Jet_deltaR_MJ2_e3c_tru_m);
+    // fOutput->Add(h3Jet_deltaR_MJ2_e3c_tru_m);
     h3Jet_deltaR_MJ3_e3c_tru_m = new TH3F("h3Jet_deltaR_MJ3_e3c_tru_m", "h3Jet_deltaR_MJ3_e3c_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3Jet_deltaR_MJ3_e3c_tru_m);
+    // fOutput->Add(h3Jet_deltaR_MJ3_e3c_tru_m);
     h3_JJMB_tru_m = new TH3F("h3_JJMB_tru_m", "h3_JJMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_JJMB_tru_m);
+    // fOutput->Add(h3_JJMB_tru_m);
     h3_JMBMB_tru_m = new TH3F("h3_JMBMB_tru_m", "h3_JMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_JMBMB_tru_m);
+    // fOutput->Add(h3_JMBMB_tru_m);
     h3_MB1MB1MB2_tru_m = new TH3F("h3_MB1MB1MB2_tru_m", "h3_MB1MB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_MB1MB1MB2_tru_m);
+    // fOutput->Add(h3_MB1MB1MB2_tru_m);
     h3_MB1MB2MB2_tru_m = new TH3F("h3_MB1MB2MB2_tru_m", "h3_MB1MB2MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_MB1MB2MB2_tru_m);
+    // fOutput->Add(h3_MB1MB2MB2_tru_m);
     h3_JMB1MB2_tru_m = new TH3F("h3_JMB1MB2_tru_m", "h3_JMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_JMB1MB2_tru_m);
+    // fOutput->Add(h3_JMB1MB2_tru_m);
     h3_MB1MB2MB3_tru_m = new TH3F("h3_MB1MB2MB3_tru_m", "h3_MB1MB2MB3_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_MB1MB2MB3_tru_m);
+    // fOutput->Add(h3_MB1MB2MB3_tru_m);
     h3_BMBMB_tru_m = new TH3F("h3_BMBMB_tru_m", "h3_BMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_BMBMB_tru_m);
+    // fOutput->Add(h3_BMBMB_tru_m);
     h3_SMBMB_tru_m = new TH3F("h3_SMBMB_tru_m", "h3_SMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_SMBMB_tru_m);
+    // fOutput->Add(h3_SMBMB_tru_m);
     h3_BMB1MB2_tru_m = new TH3F("h3_BMB1MB2_tru_m", "h3_BMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_BMB1MB2_tru_m);
+    // fOutput->Add(h3_BMB1MB2_tru_m);
     h3_BBMB_tru_m = new TH3F("h3_BBMB_tru_m", "h3_BBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_BBMB_tru_m);
+    // fOutput->Add(h3_BBMB_tru_m);
     h3_SBMB_tru_m = new TH3F("h3_SBMB_tru_m", "h3_SBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_SBMB_tru_m);
+    // fOutput->Add(h3_SBMB_tru_m);
     h3_SSMB_tru_m = new TH3F("h3_SSMB_tru_m", "h3_SSMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_SSMB_tru_m);
+    // fOutput->Add(h3_SSMB_tru_m);
     h3_SMB1MB2_tru_m = new TH3F("h3_SMB1MB2_tru_m", "h3_SMB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
-    fOutput->Add(h3_SMB1MB2_tru_m);
+    // fOutput->Add(h3_SMB1MB2_tru_m);
 
 if(fCout)cout<<"Unmatched jets only"<<endl;
     h3Jet_deltaR_MJ_e3c_um = new TH3F("h3Jet_deltaR_MJ_e3c_um", "h3Jet_deltaR_MJ_e3c_um", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
@@ -1882,13 +1882,21 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
               if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
               continue;
              } 
+            if(fCout){cout<<"######### Filling same jets E3C ######### "<<endl;}
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
+            if(fCout){cout<<"######### Filling same mb : mb1mb1mb1 ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
+            if(fCout){cout<<"######### Filling two same : mb*jj  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
+            if(fCout){cout<<"######### Filling two same : mbmb*j  ########### "<<endl;}
             FillEmbJetsE3C(jetConstituents,minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//j*mb*mb
+            if(fCout){cout<<"######### Filling two same : mb1mb2mb2  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles2,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb1mb2mb2
+            if(fCout){cout<<"######### Filling two same : mb2mb2mb1  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles2, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb2mb2*mb1
-            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//jet*mb1*mb2
+            if(fCout){cout<<"######### Filling all diff : jmb1mb2  ########### "<<endl;}
+            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"alldiff", "",ifmj);//jet*mb1*mb2
+            if(fCout){cout<<"######### Filling all diff : mb1mb2mb3  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles2, minBiasParticles3, jet_embptsub, jet_embptsub,"alldiff", "", ifmj);
            }
           }
@@ -1918,14 +1926,22 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
               if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
               continue;
              } 
+           if(fCout){cout<<"######### Filling same jets E3C ######### "<<endl;}
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
+            if(fCout){cout<<"######### Filling same mb : mb1mb1mb1 ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
+            if(fCout){cout<<"######### Filling two same : mb*jj  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
+            if(fCout){cout<<"######### Filling two same : mbmb*j  ########### "<<endl;}
             FillEmbJetsE3C(jetConstituents,minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//j*mb*mb
+            if(fCout){cout<<"######### Filling two same : mb1mb2mb2  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles2,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb1mb2mb2
+            if(fCout){cout<<"######### Filling two same : mb2mb2mb1  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles2, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb2mb2*mb1
-            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//jet*mb1*mb2
-            FillEmbJetsE3C(minBiasParticles, minBiasParticles2, minBiasParticles3, jet_embptsub, jet_embptsub,"alldiff", "",ifmj);
+            if(fCout){cout<<"######### Filling all diff : jmb1mb2  ########### "<<endl;}
+            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"alldiff", "",ifmj);//jet*mb1*mb2
+            if(fCout){cout<<"######### Filling all diff : mb1mb2mb3  ########### "<<endl;}
+            FillEmbJetsE3C(minBiasParticles, minBiasParticles2, minBiasParticles3, jet_embptsub, jet_embptsub,"alldiff", "", ifmj);
            }
           }
         }
@@ -1983,13 +1999,21 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
               if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
               continue;
              } 
+            if(fCout){cout<<"######### Filling same jets E3C ######### "<<endl;}
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
+            if(fCout){cout<<"######### Filling same mb : mb1mb1mb1 ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
+            if(fCout){cout<<"######### Filling two same : mb*jj  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
+            if(fCout){cout<<"######### Filling two same : mbmb*j  ########### "<<endl;}
             FillEmbJetsE3C(jetConstituents,minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//j*mb*mb
+            if(fCout){cout<<"######### Filling two same : mb1mb2mb2  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles2,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb1mb2mb2
+            if(fCout){cout<<"######### Filling two same : mb2mb2mb1  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles2, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb2mb2*mb1
-            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//jet*mb1*mb2
+            if(fCout){cout<<"######### Filling all diff : jmb1mb2  ########### "<<endl;}
+            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"alldiff", "",ifmj);//jet*mb1*mb2
+            if(fCout){cout<<"######### Filling all diff : mb1mb2mb3  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles2, minBiasParticles3, jet_embptsub, jet_embptsub,"alldiff", "", ifmj);
            }
           }
@@ -2019,14 +2043,22 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbHistograms(Long64_t EvCounter)
               if(fCout)cout<<"one cone, 2 cones or all cones are empty, skipping "<<endl;
               continue;
              } 
+           if(fCout){cout<<"######### Filling same jets E3C ######### "<<endl;}
             FillEmbJetsE3C(jetConstituents, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"all", "sameJet",ifmj);//jjj
+            if(fCout){cout<<"######### Filling same mb : mb1mb1mb1 ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"all", "sameMB",ifmj);//mb^3
+            if(fCout){cout<<"######### Filling two same : mb*jj  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, jetConstituents,jetConstituents, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb*j^2
+            if(fCout){cout<<"######### Filling two same : mbmb*j  ########### "<<endl;}
             FillEmbJetsE3C(jetConstituents,minBiasParticles, minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//j*mb*mb
+            if(fCout){cout<<"######### Filling two same : mb1mb2mb2  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles, minBiasParticles2,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb1mb2mb2
+            if(fCout){cout<<"######### Filling two same : mb2mb2mb1  ########### "<<endl;}
             FillEmbJetsE3C(minBiasParticles2, minBiasParticles,minBiasParticles, jet_embptsub, jet_embptsub,"two", "",ifmj);//mb2mb2*mb1
-            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"two", "",ifmj);//jet*mb1*mb2
-            FillEmbJetsE3C(minBiasParticles, minBiasParticles2, minBiasParticles3, jet_embptsub, jet_embptsub,"alldiff", "",ifmj);
+            if(fCout){cout<<"######### Filling all diff : jmb1mb2  ########### "<<endl;}
+            FillEmbJetsE3C(jetConstituents, minBiasParticles,minBiasParticles2, jet_embptsub, jet_embptsub,"alldiff", "",ifmj);//jet*mb1*mb2
+            if(fCout){cout<<"######### Filling all diff : mb1mb2mb3  ########### "<<endl;}
+            FillEmbJetsE3C(minBiasParticles, minBiasParticles2, minBiasParticles3, jet_embptsub, jet_embptsub,"alldiff", "", ifmj);
            }
           }
         }
@@ -5039,159 +5071,7 @@ AliAnalysisTaskJetsEECpbpb::FindThermalConeE3C(AliEmcalJet *fJetEmb, int index1,
     return std::make_tuple(coneParticles1, coneParticles2, coneParticles3);
 }
 
-// //______________________________________________________________________
-void AliAnalysisTaskJetsEECpbpb::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, Int_t km)
-{
-    //Truth level
-    AliJetContainer *jetCont = GetJetContainer(km); //get the container for the matched true level jet
-    std::vector<fastjet::PseudoJet> fConstituents_tru; //Is a pseudojet object with constituents of the jet
-    fConstituents_tru.clear();
-    fastjet::PseudoJet PseudoTracks_tru; //Creating a pseudojet object called PseduoTracks
-    unsigned int constituentIndex_tru = 0;
-    for (auto part_tru: fJet_tru->GetParticleConstituents())
-    {
-        PseudoTracks_tru.reset(part_tru.Px(), part_tru.Py(), part_tru.Pz(), part_tru.E()); //part is the constituent at that point in the loop, part keeps getting redefined in each step.
-        const AliVParticle* part_tru2 = part_tru.GetParticle(); //"hack", leave this in , to get the index of the jet from AliPhysics
-        PseudoTracks_tru.set_user_index(GetConstituentID(constituentIndex_tru, part_tru2, fJet_tru)); //leave this in for the same reason as above
-        if (PseudoTracks_tru.pt() < fMinENCtrackPt) continue; //remove tracks below cut for ENCs
-        fConstituents_tru.push_back(PseudoTracks_tru);
-        constituentIndex_tru++;
-    }
-double jet_pt = fJet->Pt();
-jet_pt_hist->Fill(jet_pt);
-    //Looping over the det jet
-            //Looping over the det jet
-     for(int j=0; j<int(fConstituents_tru.size()); j++)  //looping over constituents of the fConstituents_tru object
-        {
-            for(int s=j+1; s<int(fConstituents_tru.size()) ; s++)
-            {
-                double eee_jss =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt,3)));
-                double eee_jjs =((3*fConstituents_tru[j].pt()*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow(jet_pt,3)));
-
-                double eee_jss_3D =((fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt,3)));
-                double eee_jjs_3D =((fConstituents_tru[j].pt()*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow(jet_pt,3)));
-
-                double deltaR = delR(fConstituents_tru[j],fConstituents_tru[s]);
-
-                double ee_js = (2*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt),2));
-                double ee_js_3D = (fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt),2));
-
-                if(fpaircut == 1)
-                {
-                    double j_eta = fConstituents_tru[j].eta();
-                    double s_eta = fConstituents_tru[s].eta();
-                    double del_js_eta = abs(j_eta-s_eta);
-                    if (del_js_eta < 0.008) continue;
-                    else
-                    {
-
-                        E3C_pt_hist->Fill(deltaR,jet_pt,eee_jss);
-                        E3C_pt_hist->Fill(deltaR,jet_pt,eee_jjs);
-
-                        EEC_pt_hist->Fill(deltaR,jet_pt,ee_js);
-
-                        OptUn_eec->Fill(jet_pt,deltaR,ee_js_3D);
-                        OptUn_eec->Fill(jet_pt,deltaR,ee_js_3D);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jss_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jss_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jss_3D);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jjs_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jjs_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jjs_3D);
-
-
-                    }
-                }
-                else
-                {
-                        E3C_pt_hist->Fill(deltaR,jet_pt,eee_jss);
-                        E3C_pt_hist->Fill(deltaR,jet_pt,eee_jjs);
-
-                        EEC_pt_hist->Fill(deltaR,jet_pt,ee_js);
-
-                        OptUn_eec->Fill(jet_pt,deltaR,ee_js_3D);
-                        OptUn_eec->Fill(jet_pt,deltaR,ee_js_3D);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jss_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jss_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jss_3D);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jjs_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jjs_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jjs_3D);
-
-
-                      
-                }
-            
-           for(int k=s+1; k<int(fConstituents_tru.size()) ; k++)
-            { 
-                double eee_jsk =((6*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[k].pt())/(pow(jet_pt,3)));
-
-                double eee_jsk_3D =((fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[k].pt())/(pow(jet_pt,3)));
-              
-                double dR_js = delR(fConstituents_tru[j],fConstituents_tru[s]);
-                double dR_sk = delR(fConstituents_tru[s],fConstituents_tru[k]);
-                double dR_kj = delR(fConstituents_tru[j],fConstituents_tru[k]);
-
-                double RL = -1;
-
-                if(dR_js>dR_sk && dR_js>dR_sk){RL = dR_js;}
-                else if(dR_sk>dR_js && dR_sk>dR_kj){RL = dR_sk;}
-                else{RL = dR_kj;}
-
-                 if(fpaircut == 1)
-                {
-                    double s_eta = fConstituents_tru[s].eta();
-                    double k_eta = fConstituents_tru[k].eta();
-                    double j_eta = fConstituents_tru[j].eta();
-                    double del_js_eta = abs(j_eta-s_eta);
-                    double del_sk_eta = abs(s_eta-k_eta);
-                    double del_kj_eta = abs(k_eta-j_eta);
-                    if (del_sk_eta < 0.008 || del_js_eta < 0.008 || del_kj_eta < 0.008) continue;
-                    else
-                    {
-                        E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                    }
-                }
-                else
-                {
-                        E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                }
-             }
-            
-        }
-    }
-   
-
-    
-    //catch (fastjet::Error)
-    // {
-    //    AliError(" [w] FJ Exception caught.");
-    //    // return -1;
-    // } //end error message
-    return;
-}
-
-    
+// //______________________________________________________________________   
 //ENC computation-------------------------------------------------------
 void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJetContainer *fJetCont)
 {
@@ -5304,8 +5184,8 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
 
                 float RL = -1;
 
-                if(dR_js>dR_sk && dR_js>dR_sk){RL = dR_js;}
-                else if(dR_sk>dR_js && dR_sk>dR_kj){RL = dR_sk;}
+                if(dR_js > dR_sk && dR_js > dR_kj){RL = dR_js;}
+                else if(dR_sk > dR_js && dR_sk > dR_kj){RL = dR_sk;}
                 else{RL = dR_kj;}
 
                  if(fpaircut == 1)
@@ -5321,30 +5201,29 @@ void AliAnalysisTaskJetsEECpbpb::ComputeENC(AliEmcalJet *fJet, float ptSub, AliJ
                     {
                         E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
 
-                       OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
 
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
                     }
                 }
                 else
                 {
                         E3C_pt_hist->Fill(RL,jet_pt,eee_jsk);
 
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
 
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
-                        OptUn_e3c->Fill(jet_pt,deltaR,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
+                        OptUn_e3c->Fill(jet_pt,RL,eee_jsk_3D);
 
                 }
              }
-            
         }
     }
 
