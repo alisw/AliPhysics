@@ -6074,12 +6074,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
   // 0 direct gamma; 1 pi0; 2 pi0 decay; 3 eta decay; 4 other decay; 5 electron; 6 other (hadron)
   if ( histoIndex < fMCGenTypeMin || histoIndex > fMCGenTypeMax ) return ;
     
-  Double_t eprim   = 0 ;
-  Double_t ptprim  = 0 ;
-  Double_t phiprim = 0 ;
-  Double_t etaprim = 0 ;
-  Int_t iParticle  = 0 ;
-    
   // Get the particle
   AliVParticle * primary = GetMC()->GetTrack(label);
   if ( !primary )
@@ -6088,16 +6082,47 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     return;
   }
   
-  eprim   = primary->E();
-  ptprim  = primary->Pt();
-  etaprim = primary->Eta();
-  phiprim = primary->Phi();
+  Double_t eprim   = primary->E();
+  Double_t ptprim  = primary->Pt();
+  Double_t etaprim = primary->Eta();
+  Double_t phiprim = primary->Phi();
+  Int_t    pdg     = primary->PdgCode();
+  Int_t    status  = primary->MCStatusCode();
+  AliDebug(2,Form("Trigger gen level: E %2.2f, pT %2.2f, eta %2.2f, phi %2.2f, pdg %d, status %d, label %d, histoIndex %d\n",
+         eprim, ptprim, etaprim, GetPhi(phiprim), pdg, status, label, histoIndex));
+    
+  // In case of merged or single photons from pi0 (1,2) or eta (3,4),
+  // assign as generator level particle the pi0 or eta parent, not the daughter photon
+  if ( histoIndex > 0 &&  histoIndex < 5 )
+  {
+    Bool_t ok = kFALSE;
+    Int_t  momLabel  = -1;
+    if ( histoIndex < 3 ) GetMCAnalysisUtils()->GetMotherWithPDG(label, 111, GetMC(),ok, momLabel);
+    if ( histoIndex > 2 ) GetMCAnalysisUtils()->GetMotherWithPDG(label, 221, GetMC(),ok, momLabel);
+    primary = GetMC()->GetTrack(momLabel);
+    eprim   = primary->E();
+    ptprim  = primary->Pt();
+    etaprim = primary->Eta();
+    phiprim = primary->Phi();
+    pdg     = primary->PdgCode();
+    status  = primary->MCStatusCode();
+    AliDebug(2,Form("\t Meson: E %2.2f, pT %2.2f, eta %2.2f, phi %2.2f, pdg %d, status %d, found ok %d, momLabel %d, N daughters %d: label daugh1 %d, daugh2 %d\n",
+                    eprim, ptprim, etaprim, GetPhi(phiprim), pdg, status, ok, momLabel,
+                    primary->GetNDaughters(), primary->GetDaughterLabel(0), primary->GetDaughterLabel(1)));
+//    AliVParticle * primaryD1 = GetMC()->GetTrack(primary->GetDaughterLabel(0));
+//    AliVParticle * primaryD2 = GetMC()->GetTrack(primary->GetDaughterLabel(1));
+//    printf("\t Daughters 1) E %2.2f pT %2.2f eta %2.2f phi %2.2f -- 2) E %2.2f pT %2.2f eta %2.2f phi %2.2f\n",
+//           primaryD1->E(),primaryD1->Pt(),primaryD1->Eta(),GetPhi(primaryD1->Phi()),
+//           primaryD2->E(),primaryD2->Pt(),primaryD2->Eta(),GetPhi(primaryD2->Phi()) );
+  }
+ 
   if ( phiprim < 0 ) phiprim+=TMath::TwoPi();
   
   if ( ptprim < 0.01 || eprim < 0.01 ) return ;
   
   Bool_t leadTrig = kTRUE; 
 
+  Int_t iParticle  = 0 ;
   for (iParticle = 0; iParticle < nTracks; iParticle++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
