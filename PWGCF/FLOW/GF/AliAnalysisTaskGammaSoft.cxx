@@ -720,8 +720,8 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
     wpNeg.clear(); wpNeg.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   }
 
-  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
-  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
+  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
+  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
@@ -902,24 +902,24 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
 
     //v22pt4
     double wABCCCC = getStdABCCCC(wabcd);
-    if(wABCCCC!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCCC(abcd)/wABCCCC,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    if(wABCCCC!=0.) fCovariance[13]->FillProfile(l_Multi,getStdABCCCC(abcd)/wABCCCC,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
     double wABCCCD = getStdABCCCD(wabcd);
-    if(wABCCCD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCCD(abcd)/wABCCCD,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    if(wABCCCD!=0.) fCovariance[14]->FillProfile(l_Multi,getStdABCCCD(abcd)/wABCCCD,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
     double wABCCDD = getStdABCCDD(wabcd);
-    if(wABCCDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCDD(abcd)/wABCCDD,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    if(wABCCDD!=0.) fCovariance[15]->FillProfile(l_Multi,getStdABCCDD(abcd)/wABCCDD,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
     double wABCDDD = getStdABCDDD(wabcd);
-    if(wABCDDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCDDD(abcd)/wABCDDD,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    if(wABCDDD!=0.) fCovariance[16]->FillProfile(l_Multi,getStdABCDDD(abcd)/wABCDDD,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
     double wABDDDD = getStdABDDDD(wabcd);
-    if(wABDDDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABDDDD(abcd)/wABDDDD,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    if(wABDDDD!=0.) fCovariance[17]->FillProfile(l_Multi,getStdABDDDD(abcd)/wABDDDD,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
     //v22pt3
     double wABCCC = getStdABCCC(wabcd);
-    if(wABCCC!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCC(abcd)/wABCCC,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    if(wABCCC!=0.) fCovariance[9]->FillProfile(l_Multi,getStdABCCC(abcd)/wABCCC,(fUseEventWeightOne)?1.:wABCCC,l_Random);
     double wABCCD = getStdABCCD(wabcd);
-    if(wABCCD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCD(abcd)/wABCCD,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    if(wABCCD!=0.) fCovariance[10]->FillProfile(l_Multi,getStdABCCD(abcd)/wABCCD,(fUseEventWeightOne)?1.:wABCCD,l_Random);
     double wABCDD = getStdABCDD(wabcd);
-    if(wABCDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCDD(abcd)/wABCDD,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    if(wABCDD!=0.) fCovariance[11]->FillProfile(l_Multi,getStdABCDD(abcd)/wABCDD,(fUseEventWeightOne)?1.:wABCDD,l_Random);
     double wABDDD = getStdABDDD(wabcd);
-    if(wABDDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABDDD(abcd)/wABDDD,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    if(wABDDD!=0.) fCovariance[12]->FillProfile(l_Multi,getStdABDDD(abcd)/wABDDD,(fUseEventWeightOne)?1.:wABDDD,l_Random);
     //v22pt2
     double wABCC = getStdABCC(wabcd);
     if(wABCC!=0.) fCovariance[2]->FillProfile(l_Multi,getStdABCC(abcd)/wABCC,(fUseEventWeightOne)?1.:wABCC,l_Random);
@@ -963,8 +963,8 @@ void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
     wpPos.clear(); wpPos.resize(fPtMpar+1,vector<double>(fPtMpar+1));
     wpNeg.clear(); wpNeg.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   }
-  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
-  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
+  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
+  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
   fGFW->Clear();
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
@@ -1086,24 +1086,24 @@ void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
 
     //v22pt4
     double wABCCCC = getStdABCCCC(wabcd);
-    if(wABCCCC!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCCC(abcd)/wABCCCC,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    if(wABCCCC!=0.) fCovariance[13]->FillProfile(l_Multi,getStdABCCCC(abcd)/wABCCCC,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
     double wABCCCD = getStdABCCCD(wabcd);
-    if(wABCCCD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCCD(abcd)/wABCCCD,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    if(wABCCCD!=0.) fCovariance[14]->FillProfile(l_Multi,getStdABCCCD(abcd)/wABCCCD,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
     double wABCCDD = getStdABCCDD(wabcd);
-    if(wABCCDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCDD(abcd)/wABCCDD,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    if(wABCCDD!=0.) fCovariance[15]->FillProfile(l_Multi,getStdABCCDD(abcd)/wABCCDD,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
     double wABCDDD = getStdABCDDD(wabcd);
-    if(wABCDDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCDDD(abcd)/wABCDDD,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    if(wABCDDD!=0.) fCovariance[16]->FillProfile(l_Multi,getStdABCDDD(abcd)/wABCDDD,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
     double wABDDDD = getStdABDDDD(wabcd);
-    if(wABDDDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABDDDD(abcd)/wABDDDD,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    if(wABDDDD!=0.) fCovariance[17]->FillProfile(l_Multi,getStdABDDDD(abcd)/wABDDDD,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
     //v22pt3
     double wABCCC = getStdABCCC(wabcd);
-    if(wABCCC!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCC(abcd)/wABCCC,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    if(wABCCC!=0.) fCovariance[9]->FillProfile(l_Multi,getStdABCCC(abcd)/wABCCC,(fUseEventWeightOne)?1.:wABCCC,l_Random);
     double wABCCD = getStdABCCD(wabcd);
-    if(wABCCD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCCD(abcd)/wABCCD,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    if(wABCCD!=0.) fCovariance[10]->FillProfile(l_Multi,getStdABCCD(abcd)/wABCCD,(fUseEventWeightOne)?1.:wABCCD,l_Random);
     double wABCDD = getStdABCDD(wabcd);
-    if(wABCDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABCDD(abcd)/wABCDD,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    if(wABCDD!=0.) fCovariance[11]->FillProfile(l_Multi,getStdABCDD(abcd)/wABCDD,(fUseEventWeightOne)?1.:wABCDD,l_Random);
     double wABDDD = getStdABDDD(wabcd);
-    if(wABDDD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABDDD(abcd)/wABDDD,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    if(wABDDD!=0.) fCovariance[12]->FillProfile(l_Multi,getStdABDDD(abcd)/wABDDD,(fUseEventWeightOne)?1.:wABDDD,l_Random);
     //v22pt2
     double wABCC = getStdABCC(wabcd);
     if(wABCC!=0.) fCovariance[2]->FillProfile(l_Multi,getStdABCC(abcd)/wABCC,(fUseEventWeightOne)?1.:wABCC,l_Random);
