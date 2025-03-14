@@ -4386,6 +4386,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     }
   } // Per T-Card index
   
+  
+  fhFractionSinglePhotonDecayOverPi0 = new TH2F
+  ("hFractionSinglePhotonDecayOverPi0","Cluster tagged as #pi^{0}-decay, generator level fraction p_{T}^{#gamma-dec}/p_{T}^{#pi^{0}}",
+   nptbins,ptmin,ptmax, 101 ,0.,1.01);
+  fhFractionSinglePhotonDecayOverPi0->SetYTitle("p_{T, gen}^{#gamma-dec}/p_{T, gen}^{#pi^{0}}");
+  fhFractionSinglePhotonDecayOverPi0->SetXTitle("#it{p}_{T, reco}^{trigger} (GeV/#it{c})");
+  outputContainer->Add(fhFractionSinglePhotonDecayOverPi0) ;
+  
+  fhFractionSinglePhotonDecayOverEta = new TH2F
+  ("hFractionSinglePhotonDecayOverEta","Cluster tagged as #eta-decay, generator level fraction p_{T}^{#gamma-dec}/p_{T}^{#eta}",
+   nptbins,ptmin,ptmax, 101 ,0.,1.01);
+  fhFractionSinglePhotonDecayOverEta->SetYTitle("p_{T, gen}^{#gamma-dec}/p_{T, gen}^{#eta}");
+  fhFractionSinglePhotonDecayOverEta->SetXTitle("#it{p}_{T, reco}^{trigger} (GeV/#it{c})");
+  outputContainer->Add(fhFractionSinglePhotonDecayOverEta) ;
+  
   return outputContainer;
 }
 
@@ -4985,7 +5000,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     {
       mcIndex = GetMCTagHistogramIndex(mcTag);
       lostDecayPair = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost);
-      MakeMCChargedCorrelation(particle->GetLabel(), mcIndex, lostDecayPair);
+      MakeMCChargedCorrelation(particle->GetLabel(), mcIndex, lostDecayPair, pt);
     }
     
     //
@@ -6042,7 +6057,7 @@ void AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliCaloTrackParticl
 //__________________________________________________________________________________________________________________
 /// Make the trigger-charged particles correlation at the generator level.
 //__________________________________________________________________________________________________________________
-void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int_t histoIndex, Bool_t lostDecayPair)
+void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int_t histoIndex, Bool_t lostDecayPair, Float_t ptCluster)
 {
   AliDebug(1,"Make trigger particle - charged hadron correlation in AOD MC level");
   
@@ -6100,6 +6115,7 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     if ( histoIndex < 3 ) GetMCAnalysisUtils()->GetMotherWithPDG(label, 111, GetMC(),ok, momLabel);
     if ( histoIndex > 2 ) GetMCAnalysisUtils()->GetMotherWithPDG(label, 221, GetMC(),ok, momLabel);
     primary = GetMC()->GetTrack(momLabel);
+    Float_t ptprimOrg = ptprim;
     eprim   = primary->E();
     ptprim  = primary->Pt();
     etaprim = primary->Eta();
@@ -6114,6 +6130,20 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
 //    printf("\t Daughters 1) E %2.2f pT %2.2f eta %2.2f phi %2.2f -- 2) E %2.2f pT %2.2f eta %2.2f phi %2.2f\n",
 //           primaryD1->E(),primaryD1->Pt(),primaryD1->Eta(),GetPhi(primaryD1->Phi()),
 //           primaryD2->E(),primaryD2->Pt(),primaryD2->Eta(),GetPhi(primaryD2->Phi()) );
+    
+    if(ptprim > ptprimOrg)
+    {
+      if(histoIndex == 2) // Single cluster from pi0 decay
+      {
+        fhFractionSinglePhotonDecayOverPi0->Fill(ptCluster, ptprimOrg/ptprim);
+      }
+      if(histoIndex == 4) // Single cluster from eta decay
+      {
+        fhFractionSinglePhotonDecayOverEta->Fill(ptCluster, ptprimOrg/ptprim);
+      }
+    }
+    else
+      AliInfo("Photon decay has larger momentum than parent meson!");
   }
  
   if ( phiprim < 0 ) phiprim+=TMath::TwoPi();
