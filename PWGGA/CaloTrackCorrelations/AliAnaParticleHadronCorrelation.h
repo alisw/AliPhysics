@@ -58,7 +58,7 @@ public:
   
   void         MakeNeutralCorrelation   (AliCaloTrackParticleCorrelation * particle) ;
   
-  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex, Bool_t lostDecayPair) ;
+  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex, Bool_t lostDecayPair, Float_t ptCluster) ;
   
   void         MakeChargedMixCorrelation(AliCaloTrackParticleCorrelation * particle) ;
   
@@ -743,6 +743,9 @@ private:
   TH2F *       fhDeltaPhiChargedPtA3GeVPerTCardIndex[16];//!<! Difference of charged particle phi with pT > 3 GeV and trigger particle phi as function of trigger pT, per T-Card index
   
   TH1F *       fhCentrality;                             //!<! Control histogram in case centrality selection in done in the analysis
+  
+  TH2F *       fhFractionSinglePhotonDecayOverPi0;       //!<! Control fraction of pi0 momentum carried by the decay photon generating the cluster tagged as pi0 decay
+  TH2F *       fhFractionSinglePhotonDecayOverEta;       //!<! Control fraction of eta momentum carried by the decay photon generating the cluster tagged as eta decay
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
   
@@ -750,7 +753,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,44) ;
+  ClassDef(AliAnaParticleHadronCorrelation,45) ;
   /// \endcond
   
 } ;
