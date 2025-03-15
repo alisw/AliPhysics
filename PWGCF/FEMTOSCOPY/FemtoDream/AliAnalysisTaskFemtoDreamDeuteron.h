@@ -76,10 +76,14 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   TList* fAntiDeuteronMCNoTOFList;//!
   TList *fResults;                          //!
   TList *fResultsQA;                        //!
+  TH1F  *fPionPTRecontructed;               //!
+  TH1F  *fAntiPionPTRecontructed;           //!
+  TH1F  *fPionPTGenerated;                  //!
+  TH1F  *fAntiPionPTGenerated;              //!
   TH2F  *fDeuteronRestMass;                 //!
   TH2F  *fAntiDeuteronRestMass;             //!
   TH2F  *fDeuteronRestMassNoTOF;            //!
   TH2F  *fAntiDeuteronRestMassNoTOF;        //!
-  ClassDef(AliAnalysisTaskFemtoDreamDeuteron, 6)
+  ClassDef(AliAnalysisTaskFemtoDreamDeuteron, 7)
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOTUTORIAL_H_ */
