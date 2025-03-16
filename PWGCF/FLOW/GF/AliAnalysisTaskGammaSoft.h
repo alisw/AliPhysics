@@ -104,6 +104,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
   void SetCentralPileup(double newval) {fCentralPU = newval;}
   void SetFillPtSubEvent(bool newval) { fFillPtSubevent = newval; }
+  void SetUseIP(bool newval) { fUseIP = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -144,6 +145,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Bool_t fUseNUAOne;
   Bool_t fUseNUEOne;
   Bool_t fUseEventWeightOne;
+  Bool_t fUseIP;
   Int_t fPtMpar;
   Double_t fEtaMpt;
   Double_t fEtaLow;
@@ -154,6 +156,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   TH1D *fMultiDist;
   TH2D *fNchTrueVsReco; //!
   AliPtPtContainer  *fPtCont;
+  AliPtPtContainer  *fPtContMid;
   TList *fCovList;
   TList *fptList;
   AliProfileBS **fCovariance; //!
@@ -213,13 +216,29 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   void FillAdditionalTrackQAPlots(AliAODTrack &track, const Double_t &cent, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   template<typename T>
   void FillABCDCounter(vector<vector<vector<vector<T>>>> &inarr, T a, T b, T c, T d);
+  //v24pt2
   double getStdAABBCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   double getStdAABBCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   double getStdAABBDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  //v24pt
   double getStdAABBC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdAABBD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  //v22pt4
+  double getStdABCCCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCCCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCCDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCDDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABDDDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  //v22pt3
+  double getStdABCCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABDDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  //v22pt2
   double getStdABCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   double getStdABCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   double getStdABDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  //v22pt
   double getStdABC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   double getStdABD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   template<typename... args>
