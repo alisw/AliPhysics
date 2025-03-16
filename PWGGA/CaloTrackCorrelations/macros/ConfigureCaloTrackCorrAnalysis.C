@@ -2728,6 +2728,10 @@ void ConfigureCaloTrackCorrAnalysis
       cen[0] = -1; cen[1] = -1;
     }
     
+    // Background shower shape low limit, max limit next in array
+    Int_t nShArr = 5;
+    Float_t shshArr[] = {0.4, 0.5, 0.6, 1.0, 1.5, 2.0};
+    
     for(Int_t icen = 0; icen < nCen; icen++)
     {
       if( analysisString.Contains("Correlation") )
@@ -2777,6 +2781,15 @@ void ConfigureCaloTrackCorrAnalysis
   //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 1.0, 2,
   //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
   //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
+          else if( analysisString.Contains("MultiArrBkgBoth") )
+          {
+            for(Int_t ilimit = 0; ilimit < nShArr; ilimit++)
+            {
+              anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                             ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshArr[ilimit], shshArr[ilimit+1], isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                              col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            }
           }
           else if( !analysisString.Contains("MultiBkg"))
           {
@@ -2838,6 +2851,15 @@ void ConfigureCaloTrackCorrAnalysis
   //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 1.0, 2,
   //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
   //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
+          else if ( analysisString.Contains("MultiArrBkg") )
+          {
+            for(Int_t ilimit = 0; ilimit < nShArr; ilimit++)
+            {
+              anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                             ("Photon", leading, cen[icen],cen[icen+1], kTRUE, shshArr[ilimit], shshArr[ilimit+1], isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                              col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            }
           }
           else
           {
@@ -3065,7 +3087,7 @@ void ConfigureCaloTrackCorrAnalysis
     anaList->AddAt(ConfigureChargedAnalysis(simulation,printSettings,debug,histoString), n++); // track selection checks
   }
  
-  // Charged analysis
+  // Electron analysis
   if ( analysisString.Contains("Electron") ) 
   { 
     anaList->AddAt(ConfigureElectronAnalysis
