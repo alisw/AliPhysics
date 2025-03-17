@@ -47,6 +47,10 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fAntiDeuteronMCNoTOFList(nullptr),
     fResults(nullptr),
     fResultsQA(nullptr),
+    fPionPTRecontructed(nullptr),
+    fPionPTGenerated(nullptr),
+    fAntiPionPTRecontructed(nullptr),
+    fAntiPionPTGenerated(nullptr),
     fDeuteronRestMass(nullptr),
     fAntiDeuteronRestMass(nullptr),
     fDeuteronRestMassNoTOF(nullptr),
@@ -87,6 +91,10 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fAntiDeuteronMCNoTOFList(nullptr),
     fResults(nullptr),
     fResultsQA(nullptr),
+    fPionPTRecontructed(nullptr),
+    fPionPTGenerated(nullptr),
+    fAntiPionPTRecontructed(nullptr),
+    fAntiPionPTGenerated(nullptr),
     fDeuteronRestMass(nullptr),
     fAntiDeuteronRestMass(nullptr),
     fDeuteronRestMassNoTOF(nullptr),
@@ -147,6 +155,14 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   } else {
     fTrackCutsProtonDCA->Init();
     fProtonList = fTrackCutsProtonDCA->GetQAHists();
+    fPionPTRecontructed = new TH1F("PionPTRecontructed" ,"PionPTRecontructed",100, 0, 5);
+    fPionPTRecontructed->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fPionPTRecontructed->GetYaxis()->SetTitle("Entries");
+    fProtonList->Add(fPionPTRecontructed);
+    fPionPTGenerated = new TH1F("PionPTGenerated" ,"PionPTGenerated",100, 0, 5);
+    fPionPTGenerated->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fPionPTGenerated->GetYaxis()->SetTitle("Entries");
+    fProtonList->Add(fPionPTGenerated);
     if (fIsMC) {
     fProtonMCList = fTrackCutsProtonDCA->GetMCQAHists();
     }
@@ -157,6 +173,16 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   } else {
     fTrackCutsAntiProtonDCA->Init();
     fAntiProtonList = fTrackCutsAntiProtonDCA->GetQAHists();
+    fAntiPionPTRecontructed = new TH1F("AntiPionPTRecontructed" ,"AntiPionPTRecontructed",100, 0, 5);
+    fAntiPionPTRecontructed->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fAntiPionPTRecontructed->GetYaxis()->SetTitle("Entries");
+    fAntiProtonList->Add(fAntiPionPTRecontructed);
+
+    fAntiPionPTGenerated = new TH1F("AntiPionPTGenerated" ,"AntiPionPTGenerated",100, 0, 5);
+    fAntiPionPTGenerated->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fAntiPionPTGenerated->GetYaxis()->SetTitle("Entries");
+    fAntiProtonList->Add(fAntiPionPTGenerated);
+
     if (fIsMC) {
       fAntiProtonMCList = fTrackCutsAntiProtonDCA->GetMCQAHists();
     }
@@ -318,9 +344,16 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
         fTrack->SetTrack(track);
         if (fTrackCutsProtonDCA->isSelected(fTrack)) {
           DCAProtons.push_back(*fTrack);
+          if(fTrack->GetMCPDGCode() == fTrackCutsProtonDCA->GetPDGCode()){
+              fPionPTRecontructed->Fill(fTrack->GetPt());
+          }
         }
         if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
           DCAAntiProtons.push_back(*fTrack);
+          if(fTrack->GetMCPDGCode() == fTrackCutsAntiProtonDCA->GetPDGCode()){
+              fAntiPionPTRecontructed->Fill(fTrack->GetPt());
+          }
+
         }
         if (fTrackCutsDeuteronMass->isSelected(fTrack)) {
           fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
@@ -348,11 +381,13 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
 
         for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
           AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
-          if (mcPart->IsPhysicalPrimary()) {
-            if (mcPart->GetPdgCode() == fTrackCutsProtonDCA->GetPDGCode()) {
+          if (mcPart->IsPhysicalPrimary()){
+            if (mcPart->GetPdgCode() == fTrackCutsProtonDCA->GetPDGCode() && (mcPart->Eta() < fTrackCutsProtonDCA->GetEtaMax()&& mcPart->Eta() > fTrackCutsProtonDCA->GetEtaMin())){
               fTrackCutsProtonDCA->FillGenerated(mcPart->Pt());
-            } else if (mcPart->GetPdgCode() == fTrackCutsAntiProtonDCA->GetPDGCode()) {
+              fPionPTGenerated->Fill(mcPart->Pt());
+            } else if (mcPart->GetPdgCode() == fTrackCutsAntiProtonDCA->GetPDGCode()&& (mcPart->Eta() < fTrackCutsAntiProtonDCA->GetEtaMax()&& mcPart->Eta() > fTrackCutsAntiProtonDCA->GetEtaMin())) {
               fTrackCutsAntiProtonDCA->FillGenerated(mcPart->Pt());
+              fAntiPionPTGenerated->Fill(mcPart->Pt());
             } else if (mcPart->GetPdgCode() == fTrackCutsDeuteronDCA->GetPDGCode()) {
               fTrackCutsDeuteronDCA->FillGenerated(mcPart->Pt());
             } else if (mcPart->GetPdgCode() == fTrackCutsAntiDeuteronDCA->GetPDGCode()) {
