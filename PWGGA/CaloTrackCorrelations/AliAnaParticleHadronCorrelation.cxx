@@ -205,7 +205,9 @@ fhPtLeadConeBinDecay(),         fhSumPtConeBinDecay(),
 fhPtLeadConeBinMC(),            fhSumPtConeBinMC(),
 fhTrackResolution(0),           fhTrackResolutionUE(0),
 fhPtTriggerPerSM(0),            fhPtTriggerPerTCardIndex(0),
-fhCentrality(0)
+fhCentrality(0),
+fhFractionSinglePhotonDecayOverPi0(0),
+fhFractionSinglePhotonDecayOverEta(0)
 {
   InitParameters();
   
