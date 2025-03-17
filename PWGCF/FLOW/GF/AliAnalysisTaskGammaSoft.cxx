@@ -297,7 +297,7 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
         vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
         for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
       }
-      const Double_t fNIPbins = 1000;
+      const int fNIPbins = 1000;
       Double_t* fIPbins = new Double_t[fNIPbins+1];
       for(int i = 0; i<=fNIPbins; ++i) fIPbins[i] = 30./1000*i;
       fIP = new TH1D("fIP","Impact parameter",1000,0.0,30.0);
