@@ -1447,12 +1447,19 @@ else{
           if(fCout) cout<<"Now finding data cones for E3C"<<endl;
           std::vector<fastjet::PseudoJet> minBiasParticles, minBiasParticles2, minBiasParticles3;
           std::tie(minBiasParticles, minBiasParticles2, minBiasParticles3) = FindConesDataE3C(jet1,InputEvent());
+          if(fCout){cout<<"######### Filling same mb : mb1mb1mb1 ########### "<<endl;}
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles,minBiasParticles,ptSubtracted,"all","sameMB");
-          FillBkgSubJetsDataE3C(jetConstituents,jetConstituents,minBiasParticles,ptSubtracted,"two","jetjetMB");
+          if(fCout){cout<<"######### Filling two same jetjetmb : jetjetmb ########### "<<endl;}
+          FillBkgSubJetsDataE3C(minBiasParticles,jetConstituents,jetConstituents,ptSubtracted,"two","jetjetMB");
+          if(fCout){cout<<"######### Filling two same : jetmbmb ########### "<<endl;}
           FillBkgSubJetsDataE3C(jetConstituents,minBiasParticles,minBiasParticles,ptSubtracted,"two","jetMBMB");
-          FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles,minBiasParticles2,ptSubtracted,"two","MB1MB1MB2");
+          if(fCout){cout<<"######### Filling two same : mb1mb1mb2 ########### "<<endl;}
+          FillBkgSubJetsDataE3C(minBiasParticles2,minBiasParticles,minBiasParticles,ptSubtracted,"two","MB1MB1MB2");
+          if(fCout){cout<<"######### Filling two same : mb1mb2mb2 ########### "<<endl;}
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles2,minBiasParticles2,ptSubtracted,"two","MB1MB2MB2");
+          if(fCout){cout<<"######### Filling all diff : jetmb1mb2 ########### "<<endl;}
           FillBkgSubJetsDataE3C(jetConstituents,minBiasParticles2,minBiasParticles3,ptSubtracted,"none","jetMB1MB2");
+          if(fCout){cout<<"######### Filling all diff : mb1mb2mb3 ########### "<<endl;}
           FillBkgSubJetsDataE3C(minBiasParticles,minBiasParticles2,minBiasParticles3,ptSubtracted,"none","MB1MB2MB3");
           }
           }
@@ -2550,6 +2557,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     else if(dR_js>dR_ij && dR_js>dR_is){R_L = dR_js;}
                     else{R_L = dR_is;}
                     
+                    if(type == "sameMB"){
                     h_MB1MB1MB1_dat->Fill(jetpt, R_L, w_ijs);
                             
                     h3_MB1MB1MB1_dat->Fill(jetpt, R_L, w_ijs_3D);
@@ -2558,13 +2566,15 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     h3_MB1MB1MB1_dat->Fill(jetpt, R_L, w_ijs_3D);
                     h3_MB1MB1MB1_dat->Fill(jetpt, R_L, w_ijs_3D);
                     h3_MB1MB1MB1_dat->Fill(jetpt, R_L, w_ijs_3D);
-
+                    }
                 }
             }
         }
     }  
     else if (typeSame == "two")
     {
+      if(fCout){cout<<"##########  type: "<<type<<endl;}
+      if(fCout){cout<<"in typeSame two: mult "<<mult<<" and mult2 "<<mult2<< endl;}
         for (int i = 0; i < mult; i++)
         {
             if(particles.at(i).pt()<fMinENCtrackPt) continue;
@@ -2579,6 +2589,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
               float R_L = delR(particles.at(i), particles2.at(j));
 
               if(type == "jetjetMB"){
+                if(fCout){cout<<"in type: "<<type<<endl;}
                 h_JJMB_dat->Fill(jetpt, R_L,w_twosame);
                     
                 h3_JJMB_dat->Fill(jetpt, R_L,w_twosame_3D);
@@ -2587,6 +2598,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
               }
               else if(type == "jetMBMB"){
+                if(fCout){cout<<"in type: "<<type<<endl;}
                 h_JMBMB_dat->Fill(jetpt, R_L,w_twosame);
                     
                 h3_JMBMB_dat->Fill(jetpt, R_L,w_twosame_3D);
@@ -2595,6 +2607,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
               }
               else if(type == "MB1MB1MB2"){
+                if(fCout){cout<<"in type: "<<type<<endl;}
                 h_MB1MB1MB2_dat->Fill(jetpt, R_L, w_twosame);
                     
                 h3_MB1MB1MB2_dat->Fill(jetpt, R_L, w_twosame_3D);
@@ -2603,6 +2616,7 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
               }
               else {
+                if(fCout){cout<<"in type: "<<type<<endl;}
                 h_MB1MB2MB2_dat->Fill(jetpt, R_L, w_twosame);
                     
                 h3_MB1MB2MB2_dat->Fill(jetpt, R_L, w_twosame_3D);
@@ -2625,6 +2639,9 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     else{R_L = dR_is;}
 
                     if(type == "jetjetMB"){
+                      
+                      if(fCout){cout<<"ijk in type: "<<type<<endl;}
+
                       h_JJMB_dat->Fill(jetpt, R_L,w_ijk);
                           
                       h3_JJMB_dat->Fill(jetpt, R_L,w_ijk_3D);
@@ -2636,6 +2653,9 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
                     }
                     else if(type == "jetMBMB"){
+
+                      if(fCout){cout<<"ijk in type: "<<type<<endl;}
+
                       h_JMBMB_dat->Fill(jetpt, R_L,w_ijk);
                           
                       h3_JMBMB_dat->Fill(jetpt, R_L,w_ijk_3D);
@@ -2647,6 +2667,9 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
                     }
                     else if(type == "MB1MB1MB2"){
+
+                      if(fCout){cout<<"ijk in type: "<<type<<endl;}
+
                       h_MB1MB1MB2_dat->Fill(jetpt, R_L, w_ijk);
                           
                       h3_MB1MB1MB2_dat->Fill(jetpt, R_L, w_ijk_3D);
@@ -2658,6 +2681,9 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
                     }
                     else {
+
+                      if(fCout){cout<<"ijk in type: "<<type<<endl;}
+
                       h_MB1MB2MB2_dat->Fill(jetpt, R_L, w_ijk);
                           
                       h3_MB1MB2MB2_dat->Fill(jetpt, R_L, w_ijk_3D);
@@ -2700,6 +2726,8 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
                     else{R_L = dR_is;}
 
                     if(type == "jetMB1MB2"){
+                      if(fCout){cout<<"ijk in type: "<<type<<endl;}
+
                       h_JMB1MB2_dat->Fill(jetpt, R_L,w_ijk);
                         
                       h3_JMB1MB2_dat->Fill(jetpt, R_L,w_ijk_3D);
@@ -2711,6 +2739,8 @@ void AliAnalysisTaskJetsEECpbpb::FillBkgSubJetsDataE3C(std::vector<fastjet::Pseu
 
                     }
                     if(type == "MB1MB2MB3"){
+                      if(fCout){cout<<"ijk in type: "<<type<<endl;}
+
                       h_MB1MB2MB3_dat->Fill(jetpt, R_L,w_ijk);
                         
                       h3_MB1MB2MB3_dat->Fill(jetpt, R_L,w_ijk_3D);
