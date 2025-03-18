@@ -921,6 +921,8 @@ if(fCout)cout<<"#####################---Declaring 3D Embedding Histograms EEC---
     fOutput->Add(h_JJMB_tru_m);
     h_JMBMB_tru_m = new TH3F("h_JMBMB_tru_m", "h_JMBMB_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_JMBMB_tru_m);
+    h_MB1MB1MB1_tru_m = new TH3F("h_MB1MB1MB1_tru_m", "h_MB1MB1MB1_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
+    fOutput->Add(h_MB1MB1MB1_tru_m);
     h_MB1MB1MB2_tru_m = new TH3F("h_MB1MB1MB2_tru_m", "h_MB1MB1MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
     fOutput->Add(h_MB1MB1MB2_tru_m);
     h_MB1MB2MB2_tru_m = new TH3F("h_MB1MB2MB2_tru_m", "h_MB1MB2MB2_tru_m", 13, new_bins_const,13, new_bins_const,21, new_bins);
@@ -1079,6 +1081,8 @@ if(fCout)cout<<"#####################---Declaring 3D Embedding Histograms EEC---
     // fOutput->Add(h3_JJMB_tru_m);
     h3_JMBMB_tru_m = new TH3F("h3_JMBMB_tru_m", "h3_JMBMB_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     // fOutput->Add(h3_JMBMB_tru_m);
+    h3_MB1MB1MB1_tru_m = new TH3F("h3_MB1MB1MB1_tru_m", "h3_MB1MB1MB1_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
+    // fOutput->Add(h3_MB1MB1MB1_tru_m);
     h3_MB1MB1MB2_tru_m = new TH3F("h3_MB1MB1MB2_tru_m", "h3_MB1MB1MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
     // fOutput->Add(h3_MB1MB1MB2_tru_m);
     h3_MB1MB2MB2_tru_m = new TH3F("h3_MB1MB2MB2_tru_m", "h3_MB1MB2MB2_tru_m", nJetPtbins, xbins, ndRbins, dRbins, nWtbins_e3c, wtbins_e3c);
@@ -3555,7 +3559,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                     
                     
                     if(ifMatchedJet){
-                        
+                        if(fCout){cout<<"fill same MB matched jet loop"<<endl;}
                         h_MB1MB1MB1_m->Fill(jetpt, pt, dR, w);
                         h_MB1MB1MB1_m->Fill(jetpt, pt, dR, w_iij);
                         
@@ -3574,7 +3578,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                         if(fCout){cout<<"matched same MB filled"<<endl;}
                     }
                     else{
-                        
+                        if(fCout){cout<<"fill same MB unmatched jet loop"<<endl;}
                         
                         h_MB1MB1MB1_um->Fill(jetpt, pt, dR, w);
                         h_MB1MB1MB1_um->Fill(jetpt, pt, dR, w_iij);
@@ -3583,7 +3587,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                         h3_MB1MB1MB1_um->Fill(jetpt, dR, w_e3c_3D);h3_MB1MB1MB1_um->Fill(jetpt, dR, w_iij_3D);
                         h3_MB1MB1MB1_um->Fill(jetpt, dR, w_e3c_3D);h3_MB1MB1MB1_um->Fill(jetpt, dR, w_iij_3D);
                         
-                        
+                        if(fCout){cout<<"unmatched same MB filled"<<endl;}
                         
                     }
                     
@@ -3710,7 +3714,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                                 
                             }
                         }
-                            else if (((i1 == -1) && (i2 == -1) && (i3 != 0)) ||((i1 == -1) && (i2 != 0) && (i3 == -1)) ||((i1 != 0) && (i2 == -1) && (i3 == -1)))
+                            else if (((i1 == -1) && (i2 == -1) && (i3 >= 0)) ||((i1 == -1) && (i2 >= 0) && (i3 == -1)) ||((i1 >= 0) && (i2 == -1) && (i3 == -1)))
                             {
                                 
                                 h_MJ1_e3c->Fill(jetpt, pt, R_L, w_ijs);
@@ -3758,7 +3762,7 @@ void AliAnalysisTaskJetsEECpbpb::FillEmbJetsE3C(std::vector<fastjet::PseudoJet> 
                                     
                                 }
                             }
-                            else if (((i1 == -1) && (i2 != 0) && (i3 != 0)) ||((i1 != 0) && (i2 != 0) && (i3 == -1)) ||((i1 != 0) && (i2 == -1) && (i3 != 0)))
+                            else if (((i1 == -1) && (i2 >= 0) && (i3 >= 0)) ||((i1 >= 0) && (i2 >= 0) && (i3 == -1)) ||((i1 >= 0) && (i2 == -1) && (i3 >= 0)))
                             {
                                 h_MJ2_e3c->Fill(jetpt, pt, R_L, w_ijs);
                                 
