@@ -64,6 +64,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fFillAdditionalQA(kFALSE),
   fPtAxis(0),
   fEtaAxis(0),
+  fIPAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
@@ -72,6 +73,8 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fNEtaBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fIPBins(0),
+  fNIPBins(0),
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
@@ -157,6 +160,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fFillAdditionalQA(kFALSE),
   fPtAxis(0),
   fEtaAxis(0),
+  fIPAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
@@ -165,6 +169,8 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fNEtaBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fIPBins(0),
+  fNIPBins(0),
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
@@ -296,16 +302,12 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
         vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
         for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
       }
-      const int fNIPbins = 1000;
-      Double_t* fIPbins = new Double_t[fNIPbins+1];
-      for(int i = 0; i<=fNIPbins; ++i) fIPbins[i] = 30./1000*i;
-      fIP = new TH1D("fIP","Impact parameter",1000,0.0,30.0);
-      if(fUseIP) {
-        fMultiBins = fIPbins;
-        fNMultiBins = fNIPbins;
-      }
-
+      fIP = new TH1D("fIP","Impact parameter",fNIPBins,fIPBins);
       printf("OTF objects created\n");
+      if(fUseIP){
+        fMultiBins = fIPBins;
+        fNMultiBins = fNIPBins;
+      }
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     printf("Creating pt-correlation objects\n");
@@ -1818,6 +1820,15 @@ void AliAnalysisTaskGammaSoft::SetupAxes() {
   if(!fEtaAxis) { printf("Setting default eta bins\n"); SetEtaBins(Neta_Default,l_eta_Default);}
   fEtaBins=GetBinsFromAxis(fEtaAxis);
   fNEtaBins=fEtaAxis->GetNbins();
+  if(fOnTheFly){
+    const int nipbins_default = 1000;
+    Double_t* ipbins_default = new Double_t[nipbins_default+1];
+    for(int i = 0; i<=nipbins_default; ++i) ipbins_default[i] = 30./1000*i;
+    if(!fIPAxis) { printf("Setting default IP bins\n"); SetIPBins(nipbins_default,ipbins_default);}
+    fIPBins = GetBinsFromAxis(fIPAxis);
+    fNIPBins = fIPAxis->GetNbins();
+  }
+
   return;
 }
 void AliAnalysisTaskGammaSoft::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
@@ -1835,6 +1846,10 @@ void AliAnalysisTaskGammaSoft::SetMultiBins(Int_t nMultiBins, Double_t *multibin
 void AliAnalysisTaskGammaSoft::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;
   fV0MMultiAxis = new TAxis(nMultiBins, multibins);
+}
+void AliAnalysisTaskGammaSoft::SetIPBins(Int_t nIPBins, Double_t *ipbins) {
+  if(fIPAxis) delete fIPAxis;
+  fIPAxis = new TAxis(nIPBins, ipbins);
 }
 Double_t *AliAnalysisTaskGammaSoft::GetBinsFromAxis(TAxis *inax) {
   Int_t lBins = inax->GetNbins();
