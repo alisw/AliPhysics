@@ -96,7 +96,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   void SetDisablePileup(bool disable) { fDisablePileup = disable; };
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
-  void SetIPBins(Int_t nBins, Double_t *multibins);
+  void SetIPBins(Int_t nBins, Double_t *bins);
   void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
   void SetPtMPar(int newval) { fPtMpar = newval; }
@@ -131,6 +131,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Bool_t fFillAdditionalQA;
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
+  TAxis *fIPAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
@@ -139,6 +140,8 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Int_t fNEtaBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
+  Double_t *fIPBins; //!
+  Int_t fNIPBins; //!
   Double_t *fV0MBinsDefault; //!
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
@@ -156,7 +159,6 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   TH1D *fMultiDist;
   TH2D *fNchTrueVsReco; //!
   AliPtPtContainer  *fPtCont;
-  AliPtPtContainer  *fPtContMid;
   TList *fCovList;
   TList *fptList;
   AliProfileBS **fCovariance; //!
