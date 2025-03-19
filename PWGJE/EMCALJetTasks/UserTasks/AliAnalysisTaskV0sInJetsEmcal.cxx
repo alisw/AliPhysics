@@ -1416,24 +1416,24 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   Double_t xmaxLInJC[iNDimInJC] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax};
   // binning in V0-jet correlations
   Int_t iNBinsDeltaPhi = 60;
-  Int_t iNBinsDeltaR = 100;
-  const Int_t iNDimCorrel = 7;
+  Int_t iNBinsDeltaR = 75;
+  const Int_t iNDimCorrel = 4;
   //  Double_t fdDeltaEtaMax = 2. * 0.7; // >= 2*eta_V0^max
   //  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fdDeltaEtaMax / 0.1); // does not work if fdDeltaEtaMax is Float_t
   //  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fdDeltaEtaMax / 0.7); // does not work if fdDeltaEtaMax is Float_t
   //  Int_t iNBinsDeltaEtaCorrel = 2 * Int_t(fdDeltaEtaMax / fdDeltaEtaMax); // does not work if fdDeltaEtaMax is Float_t
   Int_t iNBinsDeltaEtaCorrel = 1;
   //  printf("%s: %d\n", "iNBinsDeltaEtaCorrel", iNBinsDeltaEtaCorrel);
-  Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel, iNBinsDeltaR};
-  Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fdDeltaEtaMax, 0};
-  Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fdDeltaEtaMax, 1};
-  Int_t binsLCorrel[iNDimCorrel] = {fgkiNBinsMassLambda / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel, iNBinsDeltaR};
-  Double_t xminLCorrel[iNDimCorrel] = {fgkdMassLambdaMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fdDeltaEtaMax, 0};
-  Double_t xmaxLCorrel[iNDimCorrel] = {fgkdMassLambdaMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fdDeltaEtaMax, 1};
+  Int_t binsKCorrel[iNDimCorrel] = {fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNJetPtBins, iNBinsDeltaR};
+  Double_t xminKCorrel[iNDimCorrel] = {fgkdMassK0sMin, dPtV0Min, dJetPtMin, 0};
+  Double_t xmaxKCorrel[iNDimCorrel] = {fgkdMassK0sMax, dPtV0Max, dJetPtMax, 1.5};
+  Int_t binsLCorrel[iNDimCorrel] = {fgkiNBinsMassLambda / 2, iNBinsPtV0InJet, iNJetPtBins, iNBinsDeltaR};
+  Double_t xminLCorrel[iNDimCorrel] = {fgkdMassLambdaMin, dPtV0Min, dJetPtMin, 0};
+  Double_t xmaxLCorrel[iNDimCorrel] = {fgkdMassLambdaMax, dPtV0Max, dJetPtMax, 1.5};
 
-  Int_t binsXCorrel[iNDimCorrel] = {fgkiNBinsMassXi / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel, iNBinsDeltaR};
-  Double_t xminXCorrel[iNDimCorrel] = {fgkdMassXiMin, dPtV0Min, -dRangeEtaV0Max, dJetPtMin, fgkdDeltaPhiMin, -fdDeltaEtaMax, 0};
-  Double_t xmaxXCorrel[iNDimCorrel] = {fgkdMassXiMax, dPtV0Max, dRangeEtaV0Max, dJetPtMax, fgkdDeltaPhiMax, fdDeltaEtaMax, 1};
+  Int_t binsXCorrel[iNDimCorrel] = {fgkiNBinsMassXi / 2, iNBinsPtV0InJet, iNJetPtBins, iNBinsDeltaR};
+  Double_t xminXCorrel[iNDimCorrel] = {fgkdMassXiMin, dPtV0Min, dJetPtMin, 0};
+  Double_t xmaxXCorrel[iNDimCorrel] = {fgkdMassXiMax, dPtV0Max, dJetPtMax, 1.5};
   //  printf("binsKCorrel: %d %d %d %d %d %d\n", fgkiNBinsMassK0s / 2, iNBinsPtV0InJet, iNBinsEtaV0, iNJetPtBins, iNBinsDeltaPhi, iNBinsDeltaEtaCorrel);
 
   // binning eff inclusive vs eta-pT
@@ -1572,22 +1572,22 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fhnV0NoJetALambda[i] = new THnSparseD(Form("fhnV0NoJetALambda_%d", i), Form("ALambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0}", GetCentBinLabel(i).Data()), iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
     fOutputListJet->Add(fhnV0NoJetALambda[i]);
     // correlations
-    fhnV0CorrelSEK0s[i] = new THnSparseD(Form("fhnV0CorrelSEK0s_%d", i), Form("K0s: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsKCorrel, xminKCorrel, xmaxKCorrel);
+    fhnV0CorrelSEK0s[i] = new THnSparseD(Form("fhnV0CorrelSEK0s_%d", i), Form("K0s: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsKCorrel, xminKCorrel, xmaxKCorrel);
     fOutputListJet->Add(fhnV0CorrelSEK0s[i]);
-    fhnV0CorrelMEK0s[i] = new THnSparseD(Form("fhnV0CorrelMEK0s_%d", i), Form("K0s: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsKCorrel, xminKCorrel, xmaxKCorrel);
+    fhnV0CorrelMEK0s[i] = new THnSparseD(Form("fhnV0CorrelMEK0s_%d", i), Form("K0s: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsKCorrel, xminKCorrel, xmaxKCorrel);
     fOutputListJet->Add(fhnV0CorrelMEK0s[i]);
-    fhnV0CorrelSELambda[i] = new THnSparseD(Form("fhnV0CorrelSELambda_%d", i), Form("Lambda: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
+    fhnV0CorrelSELambda[i] = new THnSparseD(Form("fhnV0CorrelSELambda_%d", i), Form("Lambda: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
     fOutputListJet->Add(fhnV0CorrelSELambda[i]);
-    fhnV0CorrelMELambda[i] = new THnSparseD(Form("fhnV0CorrelMELambda_%d", i), Form("Lambda: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
+    fhnV0CorrelMELambda[i] = new THnSparseD(Form("fhnV0CorrelMELambda_%d", i), Form("Lambda: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
     fOutputListJet->Add(fhnV0CorrelMELambda[i]);
-    fhnV0CorrelSEALambda[i] = new THnSparseD(Form("fhnV0CorrelSEALambda_%d", i), Form("ALambda: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
+    fhnV0CorrelSEALambda[i] = new THnSparseD(Form("fhnV0CorrelSEALambda_%d", i), Form("ALambda: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
     fOutputListJet->Add(fhnV0CorrelSEALambda[i]);
-    fhnV0CorrelMEALambda[i] = new THnSparseD(Form("fhnV0CorrelMEALambda_%d", i), Form("ALambda: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
+    fhnV0CorrelMEALambda[i] = new THnSparseD(Form("fhnV0CorrelMEALambda_%d", i), Form("ALambda: Correlations with jets in mixed events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsLCorrel, xminLCorrel, xmaxLCorrel);
     fOutputListJet->Add(fhnV0CorrelMEALambda[i]);
 
-    fhnV0CorrelSEXiMinus[i] = new THnSparseD(Form("fhnV0CorrelSEXiMinus_%d", i), Form("XiMin: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsXCorrel, xminXCorrel, xmaxXCorrel);
+    fhnV0CorrelSEXiMinus[i] = new THnSparseD(Form("fhnV0CorrelSEXiMinus_%d", i), Form("XiMin: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsXCorrel, xminXCorrel, xmaxXCorrel);
     fOutputListJetCascade->Add(fhnV0CorrelSEXiMinus[i]);
-    fhnV0CorrelSEXiPlus[i] = new THnSparseD(Form("fhnV0CorrelSEXiPlus_%d", i), Form("XiPl: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c});#Delta#it{#phi}_{V0-jet};#Delta#it{#eta}_{V0-jet}; #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsXCorrel, xminXCorrel, xmaxXCorrel);
+    fhnV0CorrelSEXiPlus[i] = new THnSparseD(Form("fhnV0CorrelSEXiPlus_%d", i), Form("XiPl: Correlations with jets in same events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c}); #Delta#it{R}", GetCentBinLabel(i).Data()), iNDimCorrel, binsXCorrel, xminXCorrel, xmaxXCorrel);
     fOutputListJetCascade->Add(fhnV0CorrelSEXiPlus[i]);
 
     fh2V0PtJetAngleK0s[i] = new TH2D(Form("fh2V0PtJetAngleK0s_%d", i), Form("K0s: #it{p}_{T}^{jet} vs angle V0-jet, cent: %s;#it{p}_{T}^{jet};#it{#alpha}", GetCentBinLabel(i).Data()), 2 * iNJetPtBins, dJetPtMin, dJetPtMax, 100, 0, fdDistanceV0JetMax + 0.1);
@@ -3578,15 +3578,15 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if(TMath::Abs(dDEta) > fdDeltaEtaMax)
           continue;
         if(bIsCandidateK0s) {
-          Double_t valueKCorrel[7] = {dMassV0K0s, dPtV0, dEtaV0, jetCorrel->Pt(), dDPhi, dDEta, dDR};
+          Double_t valueKCorrel[4] = {dMassV0K0s, dPtV0, jetCorrel->Pt(), dDR};
           fhnV0CorrelSEK0s[iCentIndex]->Fill(valueKCorrel);
         }
         if(bIsCandidateLambda) {
-          Double_t valueLCorrel[7] = {dMassV0Lambda, dPtV0, dEtaV0, jetCorrel->Pt(), dDPhi, dDEta, dDR};
+          Double_t valueLCorrel[4] = {dMassV0Lambda, dPtV0, jetCorrel->Pt(), dDR};
           fhnV0CorrelSELambda[iCentIndex]->Fill(valueLCorrel);
         }
         if(bIsCandidateALambda) {
-          Double_t valueLCorrel[7] = {dMassV0Lambda, dPtV0, dEtaV0, jetCorrel->Pt(), dDPhi, dDEta, dDR};
+          Double_t valueLCorrel[4] = {dMassV0Lambda, dPtV0, jetCorrel->Pt(), dDR};
           fhnV0CorrelSEALambda[iCentIndex]->Fill(valueLCorrel); 
         }
       }
@@ -3606,15 +3606,15 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             if(TMath::Abs(dDEta) > fdDeltaEtaMax)
               continue;
             if(bIsCandidateK0s) {
-              Double_t valueKCorrel[7] = {dMassV0K0s, dPtV0, dEtaV0, jetMixed->Pt(), dDPhi, dDEta, dDR};
+              Double_t valueKCorrel[4] = {dMassV0K0s, dPtV0, jetMixed->Pt(), dDR};
               fhnV0CorrelMEK0s[iCentIndex]->Fill(valueKCorrel);
             }
             if(bIsCandidateLambda) {
-              Double_t valueLCorrel[7] = {dMassV0Lambda, dPtV0, dEtaV0, jetMixed->Pt(), dDPhi, dDEta, dDR};
+              Double_t valueLCorrel[4] = {dMassV0Lambda, dPtV0, jetMixed->Pt(), dDR};
               fhnV0CorrelMELambda[iCentIndex]->Fill(valueLCorrel);
             }
             if(bIsCandidateALambda) {
-              Double_t valueLCorrel[7] = {dMassV0Lambda, dPtV0, dEtaV0, jetMixed->Pt(), dDPhi, dDEta, dDR};
+              Double_t valueLCorrel[4] = {dMassV0Lambda, dPtV0, jetMixed->Pt(), dDR};
               fhnV0CorrelMEALambda[iCentIndex]->Fill(valueLCorrel); 
             }
           }
@@ -4693,7 +4693,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         dDR = TMath::Sqrt(dDEta * dDEta + dDPhi * dDPhi);
         if(TMath::Abs(dDEta) > fdDeltaEtaMax)
           continue;
-        Double_t valueXCorrel[7] = {dMassCascadeXi, dPtCascade, dEtaCascade, jetCorrel->Pt(), dDPhi, dDEta, dDR};  
+        Double_t valueXCorrel[4] = {dMassCascadeXi, dPtCascade, jetCorrel->Pt(), dDR};  
         if(bIsCandidateXiMinus)
           fhnV0CorrelSEXiMinus[iCentIndex]->Fill(valueXCorrel);
         if(bIsCandidateXiPlus)
