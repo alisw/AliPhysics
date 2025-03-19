@@ -1,5 +1,4 @@
 #include "AliAnalysisTaskGammaSoft.h"
-#include "AliEventCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisUtils.h"
@@ -18,7 +17,6 @@
 #include "AliInputEventHandler.h"
 #include "TList.h"
 #include "TProfile.h"
-#include "AliEventCuts.h"
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "AliStack.h"
@@ -242,6 +240,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
 AliAnalysisTaskGammaSoft::~AliAnalysisTaskGammaSoft() {
 };
 void AliAnalysisTaskGammaSoft::UserCreateOutputObjects(){
+  printf("Creating outputs\n");
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->PrintSetup();
   fSystFlag = fGFWSelection->GetSystFlagIndex();
@@ -412,7 +411,7 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     printf("Creating QA objects\n");
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
-    fEventCuts.AddQAplotsToList(fQAList,kTRUE);
+    //fEventCuts.AddQAplotsToList(fQAList,kTRUE);
     int nEventCutLabel = 7;
     fEventCount = new TH1D("fEventCount","Event counter",nEventCutLabel,0,nEventCutLabel);
     TString eventCutLabel[7]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Pileup","Tracks"};
