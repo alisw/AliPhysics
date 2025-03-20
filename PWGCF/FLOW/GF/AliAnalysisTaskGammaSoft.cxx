@@ -308,7 +308,6 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
         fMultiBins = fIPBins;
         fNMultiBins = fNIPBins;
       }
-      fptList->Add(fIP);
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     printf("Creating pt-correlation objects\n");
