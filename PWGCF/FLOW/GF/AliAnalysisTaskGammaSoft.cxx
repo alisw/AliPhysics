@@ -892,49 +892,120 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
   else {
     //v24pt2
     double wAABBCC = getStdAABBCC(wabcd);
-    if(wAABBCC!=0.) fCovariance[0]->FillProfile(l_Multi,getStdAABBCC(abcd)/wAABBCC,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    if(wAABBCC!=0.) {
+      double val = getStdAABBCC(abcd)/wAABBCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCC))
+        fCovariance[0]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    }
     double wAABBCD = getStdAABBCD(wabcd);
-    if(wAABBCD!=0.) fCovariance[4]->FillProfile(l_Multi,getStdAABBCD(abcd)/wAABBCD,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    if(wAABBCD!=0.) {
+      double val = getStdAABBCD(abcd)/wAABBCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCD))
+        fCovariance[4]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    }
     double wAABBDD = getStdAABBDD(wabcd);
-    if(wAABBDD!=0.) fCovariance[5]->FillProfile(l_Multi,getStdAABBDD(abcd)/wAABBDD,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    if(wAABBDD!=0.) {
+      double val = getStdAABBDD(abcd)/wAABBDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBDD))
+        fCovariance[5]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    }
     //v24pt
     double wAABBC = getStdAABBC(wabcd);
-    if(wAABBC!=0.) fCovariance[1]->FillProfile(l_Multi,getStdAABBC(abcd)/wAABBC,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    if(wAABBC!=0.) {
+      double val = getStdAABBC(abcd)/wAABBC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBC))
+        fCovariance[1]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    }
 
     //v22pt4
     double wABCCCC = getStdABCCCC(wabcd);
-    if(wABCCCC!=0.) fCovariance[13]->FillProfile(l_Multi,getStdABCCCC(abcd)/wABCCCC,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    if(wABCCCC!=0.) {
+      double val = getStdABCCCC(abcd)/wABCCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[13]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    }
     double wABCCCD = getStdABCCCD(wabcd);
-    if(wABCCCD!=0.) fCovariance[14]->FillProfile(l_Multi,getStdABCCCD(abcd)/wABCCCD,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    if(wABCCCD!=0.) {
+      double val = getStdABCCCD(abcd)/wABCCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCD))
+        fCovariance[14]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    }
     double wABCCDD = getStdABCCDD(wabcd);
-    if(wABCCDD!=0.) fCovariance[15]->FillProfile(l_Multi,getStdABCCDD(abcd)/wABCCDD,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    if(wABCCDD!=0.) {
+      double val = getStdABCCDD(abcd)/wABCCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCDD))
+        fCovariance[15]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    }
     double wABCDDD = getStdABCDDD(wabcd);
-    if(wABCDDD!=0.) fCovariance[16]->FillProfile(l_Multi,getStdABCDDD(abcd)/wABCDDD,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    if(wABCDDD!=0.) {
+      double val = getStdABCDDD(abcd)/wABCDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDDD))
+        fCovariance[16]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    }
     double wABDDDD = getStdABDDDD(wabcd);
-    if(wABDDDD!=0.) fCovariance[17]->FillProfile(l_Multi,getStdABDDDD(abcd)/wABDDDD,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    if(wABDDDD!=0.) {
+      double val = getStdABDDDD(abcd)/wABDDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDDD))
+        fCovariance[17]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    }
     //v22pt3
     double wABCCC = getStdABCCC(wabcd);
-    if(wABCCC!=0.) fCovariance[9]->FillProfile(l_Multi,getStdABCCC(abcd)/wABCCC,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    if(wABCCC!=0.) {
+      double val = getStdABCCC(abcd)/wABCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCC))
+        fCovariance[9]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    }
     double wABCCD = getStdABCCD(wabcd);
-    if(wABCCD!=0.) fCovariance[10]->FillProfile(l_Multi,getStdABCCD(abcd)/wABCCD,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    if(wABCCD!=0.) {
+      double val = getStdABCCD(abcd)/wABCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCD))
+        fCovariance[10]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    }
     double wABCDD = getStdABCDD(wabcd);
-    if(wABCDD!=0.) fCovariance[11]->FillProfile(l_Multi,getStdABCDD(abcd)/wABCDD,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    if(wABCDD!=0.) {
+      double val = getStdABCDD(abcd)/wABCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDD))
+        fCovariance[11]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    }
     double wABDDD = getStdABDDD(wabcd);
-    if(wABDDD!=0.) fCovariance[12]->FillProfile(l_Multi,getStdABDDD(abcd)/wABDDD,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    if(wABDDD!=0.) {
+      double val = getStdABDDD(abcd)/wABDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDD))
+        fCovariance[12]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    }
     //v22pt2
     double wABCC = getStdABCC(wabcd);
-    if(wABCC!=0.) fCovariance[2]->FillProfile(l_Multi,getStdABCC(abcd)/wABCC,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    if(wABCC!=0.) {
+      double val = getStdABCC(abcd)/wABCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCC))
+        fCovariance[2]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    }
     double wABCD = getStdABCD(wabcd);
-    if(wABCD!=0.) fCovariance[6]->FillProfile(l_Multi,getStdABCD(abcd)/wABCD,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    if(wABCD!=0.) {
+      double val = getStdABCD(abcd)/wABCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCD))
+        fCovariance[6]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    }
     double wABDD = getStdABDD(wabcd);
-    if(wABDD!=0.) fCovariance[7]->FillProfile(l_Multi,getStdABDD(abcd)/wABDD,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    if(wABDD!=0.) {
+      double val = getStdABDD(abcd)/wABDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDD))
+        fCovariance[7]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    }
     //v22pt
     double wABC = getStdABC(wabcd);
-    if(wABC!=0.) fCovariance[3]->FillProfile(l_Multi,getStdABC(abcd)/wABC,(fUseEventWeightOne)?1.:wABC,l_Random);
+    if(wABC!=0.) {
+      double val = getStdABC(abcd)/wABC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[3]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABC,l_Random);
+    }
     double wABD = getStdABD(wabcd);
-    if(wABD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABD(abcd)/wABD,(fUseEventWeightOne)?1.:wABD,l_Random);
+    if(wABD!=0.) {
+      double val = getStdABD(abcd)/wABD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[8]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABD,l_Random);
+    }
   }
-
   PostData(3,fCovList);
 }
 Bool_t AliAnalysisTaskGammaSoft::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t debug) {
@@ -1076,47 +1147,119 @@ void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
   else {
     //v24pt2
     double wAABBCC = getStdAABBCC(wabcd);
-    if(wAABBCC!=0.) fCovariance[0]->FillProfile(l_Multi,getStdAABBCC(abcd)/wAABBCC,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    if(wAABBCC!=0.) {
+      double val = getStdAABBCC(abcd)/wAABBCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCC))
+        fCovariance[0]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    }
     double wAABBCD = getStdAABBCD(wabcd);
-    if(wAABBCD!=0.) fCovariance[4]->FillProfile(l_Multi,getStdAABBCD(abcd)/wAABBCD,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    if(wAABBCD!=0.) {
+      double val = getStdAABBCD(abcd)/wAABBCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCD))
+        fCovariance[4]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    }
     double wAABBDD = getStdAABBDD(wabcd);
-    if(wAABBDD!=0.) fCovariance[5]->FillProfile(l_Multi,getStdAABBDD(abcd)/wAABBDD,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    if(wAABBDD!=0.) {
+      double val = getStdAABBDD(abcd)/wAABBDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBDD))
+        fCovariance[5]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    }
     //v24pt
     double wAABBC = getStdAABBC(wabcd);
-    if(wAABBC!=0.) fCovariance[1]->FillProfile(l_Multi,getStdAABBC(abcd)/wAABBC,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    if(wAABBC!=0.) {
+      double val = getStdAABBC(abcd)/wAABBC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBC))
+        fCovariance[1]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    }
 
     //v22pt4
     double wABCCCC = getStdABCCCC(wabcd);
-    if(wABCCCC!=0.) fCovariance[13]->FillProfile(l_Multi,getStdABCCCC(abcd)/wABCCCC,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    if(wABCCCC!=0.) {
+      double val = getStdABCCCC(abcd)/wABCCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[13]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    }
     double wABCCCD = getStdABCCCD(wabcd);
-    if(wABCCCD!=0.) fCovariance[14]->FillProfile(l_Multi,getStdABCCCD(abcd)/wABCCCD,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    if(wABCCCD!=0.) {
+      double val = getStdABCCCD(abcd)/wABCCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCD))
+        fCovariance[14]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    }
     double wABCCDD = getStdABCCDD(wabcd);
-    if(wABCCDD!=0.) fCovariance[15]->FillProfile(l_Multi,getStdABCCDD(abcd)/wABCCDD,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    if(wABCCDD!=0.) {
+      double val = getStdABCCDD(abcd)/wABCCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCDD))
+        fCovariance[15]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    }
     double wABCDDD = getStdABCDDD(wabcd);
-    if(wABCDDD!=0.) fCovariance[16]->FillProfile(l_Multi,getStdABCDDD(abcd)/wABCDDD,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    if(wABCDDD!=0.) {
+      double val = getStdABCDDD(abcd)/wABCDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDDD))
+        fCovariance[16]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    }
     double wABDDDD = getStdABDDDD(wabcd);
-    if(wABDDDD!=0.) fCovariance[17]->FillProfile(l_Multi,getStdABDDDD(abcd)/wABDDDD,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    if(wABDDDD!=0.) {
+      double val = getStdABDDDD(abcd)/wABDDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDDD))
+        fCovariance[17]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    }
     //v22pt3
     double wABCCC = getStdABCCC(wabcd);
-    if(wABCCC!=0.) fCovariance[9]->FillProfile(l_Multi,getStdABCCC(abcd)/wABCCC,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    if(wABCCC!=0.) {
+      double val = getStdABCCC(abcd)/wABCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCC))
+        fCovariance[9]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    }
     double wABCCD = getStdABCCD(wabcd);
-    if(wABCCD!=0.) fCovariance[10]->FillProfile(l_Multi,getStdABCCD(abcd)/wABCCD,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    if(wABCCD!=0.) {
+      double val = getStdABCCD(abcd)/wABCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCD))
+        fCovariance[10]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    }
     double wABCDD = getStdABCDD(wabcd);
-    if(wABCDD!=0.) fCovariance[11]->FillProfile(l_Multi,getStdABCDD(abcd)/wABCDD,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    if(wABCDD!=0.) {
+      double val = getStdABCDD(abcd)/wABCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDD))
+        fCovariance[11]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    }
     double wABDDD = getStdABDDD(wabcd);
-    if(wABDDD!=0.) fCovariance[12]->FillProfile(l_Multi,getStdABDDD(abcd)/wABDDD,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    if(wABDDD!=0.) {
+      double val = getStdABDDD(abcd)/wABDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDD))
+        fCovariance[12]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    }
     //v22pt2
     double wABCC = getStdABCC(wabcd);
-    if(wABCC!=0.) fCovariance[2]->FillProfile(l_Multi,getStdABCC(abcd)/wABCC,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    if(wABCC!=0.) {
+      double val = getStdABCC(abcd)/wABCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCC))
+        fCovariance[2]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    }
     double wABCD = getStdABCD(wabcd);
-    if(wABCD!=0.) fCovariance[6]->FillProfile(l_Multi,getStdABCD(abcd)/wABCD,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    if(wABCD!=0.) {
+      double val = getStdABCD(abcd)/wABCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCD))
+        fCovariance[6]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    }
     double wABDD = getStdABDD(wabcd);
-    if(wABDD!=0.) fCovariance[7]->FillProfile(l_Multi,getStdABDD(abcd)/wABDD,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    if(wABDD!=0.) {
+      double val = getStdABDD(abcd)/wABDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDD))
+        fCovariance[7]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    }
     //v22pt
     double wABC = getStdABC(wabcd);
-    if(wABC!=0.) fCovariance[3]->FillProfile(l_Multi,getStdABC(abcd)/wABC,(fUseEventWeightOne)?1.:wABC,l_Random);
+    if(wABC!=0.) {
+      double val = getStdABC(abcd)/wABC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[3]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABC,l_Random);
+    }
     double wABD = getStdABD(wabcd);
-    if(wABD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABD(abcd)/wABD,(fUseEventWeightOne)?1.:wABD,l_Random);
+    if(wABD!=0.) {
+      double val = getStdABD(abcd)/wABD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[8]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABD,l_Random);
+    }
   }
   PostData(3,fCovList);
   return;
