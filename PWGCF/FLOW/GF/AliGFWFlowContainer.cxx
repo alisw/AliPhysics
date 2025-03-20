@@ -11,6 +11,7 @@ AliGFWFlowContainer::AliGFWFlowContainer():
   TNamed("",""),
   fProf(0),
   fProfRand(0),
+  fInputList(0),
   fNRandom(0),
   fIDName("MidV"),
   fPtRebin(1),
@@ -27,6 +28,7 @@ AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
   TNamed(name,name),
   fProf(0),
   fProfRand(0),
+  fInputList(0),
   fNRandom(0),
   fIDName("MidV"),
   fPtRebin(1),
@@ -52,6 +54,7 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
     printf("Input list empty!\n");
     return;
   };
+  fInputList = inputList;
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, multiBins,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
@@ -75,6 +78,7 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
     printf("Input list empty!\n");
     return;
   };
+  fInputList = inputList;
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, MultiMin,MultiMax,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   fProf->SetDirectory(0);
   fProf->Sumw2();
