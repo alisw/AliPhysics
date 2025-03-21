@@ -41,7 +41,6 @@ class AliGFWFlowContainer:public TNamed {
   Double_t GetMultiAtBin(Int_t bin) { return fProf->GetXaxis()->GetBinCenter(bin); };
   Int_t FillProfile(const char *hname, Double_t multi, Double_t y, Double_t w, Double_t rn);
   TProfile2D *GetProfile() { return fProf; };
-  void SetProfile(TProfile2D* pf) { fProf = pf; };
   void OverrideProfileErrors(TProfile2D *inpf);
   void ReadAndMerge(const char *infile);
   void PickAndMerge(TFile *tfi);
@@ -50,7 +49,6 @@ class AliGFWFlowContainer:public TNamed {
   Bool_t RandomizeProfile(Int_t nSubsets=0);
   Bool_t CreateStatisticsProfile(StatisticsType StatType, Int_t arg);
   TObjArray *GetSubProfiles() { return fProfRand; };
-  void SetSubProfiles(TObjArray* subpfs) { fProfRand = subpfs; };
   Long64_t Merge(TCollection *collist);
   void SetIDName(TString newname); //! do not store
   void SetPtRebin(Int_t newval) { fPtRebin=newval; };
@@ -59,7 +57,6 @@ class AliGFWFlowContainer:public TNamed {
   Bool_t RebinYBlind(Int_t nbins); //Merge Y-bins and change y-titles to those of the first bin in the group. Does not affect anything else, so be extremely cautious when using this. In principle one could introduce a sorting function, but rearranging TProfile2D contents is a major pain
   Double_t *GetMultiRebin(Int_t &nBins);
   void SetPropagateErrors(Bool_t newval) { fPropagateErrors = newval; };
-  TObjArray* getObjectArray() { return fInputList; }
   TProfile *GetCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
   TProfile *GetCorrXXVsPt(const char *order, Double_t lminmulti=-1, Double_t lmaxmulti=-1); //0 for multi. integrated
   TH1D *GetHistCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
@@ -147,7 +144,6 @@ class AliGFWFlowContainer:public TNamed {
   TH1D *ProfToHist(TProfile *inpf);
   TProfile2D *fProf;
   TObjArray *fProfRand;
-  TObjArray *fInputList;
   Int_t fNRandom;
   TString fIDName;
   Int_t fPtRebin; //! do not store
