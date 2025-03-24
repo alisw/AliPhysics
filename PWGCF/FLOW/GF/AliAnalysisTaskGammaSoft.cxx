@@ -873,7 +873,7 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
       double mpt4 = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][1] - 6 * wp[2][2] * wp[1][1] * wp[1][1]
       + 3 * wp[2][2] * wp[2][2] + 8 * wp[3][3] * wp[1][1] - 6 * wp[4][4])/wmpt4;
       double mpt3_4w = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][0] - 3 * wp[2][2] * wp[1][1] * wp[1][0]
-      - 3 * wp[1][1] * wp[1][1] * wp[2][1] + 3 * wp[2][2] * wp[2][1]
+      - 3 * wp[1][1] * wp[1][1] * wp[2][1] + 3 * wp[2][2] * wp[2][1] + 2 * wp[3][3] * wp[1][0]
       + 6 * wp[1][1] * wp[3][2] - 6 * wp[4][3])/wmpt4;
       double mpt2_4w = (wp[1][1] * wp[1][1] * wp[1][0] * wp[1][0] - wp[2][2] * wp[1][0] * wp[1][0]
         - wp[2][0] * wp[1][1] * wp[1][1] + wp[2][0] * wp[2][2]
@@ -1128,7 +1128,7 @@ void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
       double mpt4 = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][1] - 6 * wp[2][2] * wp[1][1] * wp[1][1]
       + 3 * wp[2][2] * wp[2][2] + 8 * wp[3][3] * wp[1][1] - 6 * wp[4][4])/wmpt4;
       double mpt3_4w = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][0] - 3 * wp[2][2] * wp[1][1] * wp[1][0]
-      - 3 * wp[1][1] * wp[1][1] * wp[2][1] + 3 * wp[2][2] * wp[2][1]
+      - 3 * wp[1][1] * wp[1][1] * wp[2][1] + 3 * wp[2][2] * wp[2][1] + 2 * wp[3][3] * wp[1][0]
       + 6 * wp[1][1] * wp[3][2] - 6 * wp[4][3])/wmpt4;
       double mpt2_4w = (wp[1][1] * wp[1][1] * wp[1][0] * wp[1][0] - wp[2][2] * wp[1][0] * wp[1][0]
         - wp[2][0] * wp[1][1] * wp[1][1] + wp[2][0] * wp[2][2]
