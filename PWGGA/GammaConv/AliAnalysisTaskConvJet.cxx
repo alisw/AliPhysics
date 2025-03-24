@@ -302,10 +302,10 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         }
         jetEnergyWeight += 1.;
         // now scale it
-        fVectorJetPt[Imatch]*=jetEnergyWeight;
-        fVectorJetPx[Imatch]*=jetEnergyWeight;
-        fVectorJetPy[Imatch]*=jetEnergyWeight;
-        fVectorJetPz[Imatch]*=jetEnergyWeight;
+        fVectorJetPt[iRec]*=jetEnergyWeight;
+        fVectorJetPx[iRec]*=jetEnergyWeight;
+        fVectorJetPy[iRec]*=jetEnergyWeight;
+        fVectorJetPz[iRec]*=jetEnergyWeight;
       }
     }
   }
