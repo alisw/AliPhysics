@@ -2729,8 +2729,8 @@ void ConfigureCaloTrackCorrAnalysis
     }
     
     // Background shower shape low limit, max limit next in array
-    Int_t nShArr = 5;
-    Float_t shshArr[] = {0.4, 0.5, 0.6, 1.0, 1.5, 2.0};
+    Int_t nShArr = 7;
+    Float_t shshArr[] = {0.1, 0.3, 0.4, 0.5, 0.6, 1.0, 1.5, 2.0};
     
     for(Int_t icen = 0; icen < nCen; icen++)
     {
@@ -2782,7 +2782,7 @@ void ConfigureCaloTrackCorrAnalysis
   //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
   //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
           }
-          else if( analysisString.Contains("MultiArrBkgBoth") )
+          else if( analysisString.Contains("MultiArrBkg") )
           {
             for(Int_t ilimit = 0; ilimit < nShArr; ilimit++)
             {
