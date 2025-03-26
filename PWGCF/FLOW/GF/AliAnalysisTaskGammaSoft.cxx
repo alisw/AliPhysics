@@ -363,7 +363,7 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    const int ncovprofiles = 18;
+    const int ncovprofiles = 19;
     fCovariance = new AliProfileBS*[ncovprofiles];
     //Default terms, standard method
     fCovariance[0] = new AliProfileBS("v24pt2","v24pt2",fNMultiBins,fMultiBins);
@@ -406,6 +406,9 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     fCovList->Add(fCovariance[16]);
     fCovariance[17] = new AliProfileBS("v22_6w","v22_6w",fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[17]);
+
+    fCovariance[18] = new AliProfileBS("v24_5w","v24_5w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[18]);
 
     if(fNBootstrapProfiles) for(Int_t i=0;i<ncovprofiles;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
@@ -855,6 +858,7 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
     }
     double mpt = wp[1][1]/wp[1][0];
     FillCovariance(fCovariance[1],corrconfigs.at(1),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[18],corrconfigs.at(1),l_Multi,1.,wp[1][0],l_Random);
     FillCovariance(fCovariance[3],corrconfigs.at(0),l_Multi,mpt,wp[1][0],l_Random);
     FillCovariance(fCovariance[8],corrconfigs.at(0),l_Multi,1.,wp[1][0],l_Random);
     double wmpt3 = wp[1][0]*wp[1][0]*wp[1][0]-3*wp[2][0]*wp[1][0] + 2*wp[3][0];
@@ -915,6 +919,12 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
       double val = getStdAABBC(abcd)/wAABBC;
       if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBC))
         fCovariance[1]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    }
+    double wAABBD = getStdAABBD(wabcd);
+    if(wAABBD!=0.) {
+      double val = getStdAABBD(abcd)/wAABBD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBD))
+        fCovariance[18]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBD,l_Random);
     }
 
     //v22pt4
@@ -1110,6 +1120,7 @@ void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
     }
     double mpt = wp[1][1]/wp[1][0];
     FillCovariance(fCovariance[1],corrconfigs.at(1),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[18],corrconfigs.at(1),l_Multi,1.,wp[1][0],l_Random);
     FillCovariance(fCovariance[3],corrconfigs.at(0),l_Multi,mpt,wp[1][0],l_Random);
     FillCovariance(fCovariance[8],corrconfigs.at(0),l_Multi,1.,wp[1][0],l_Random);
     double wmpt3 = wp[1][0]*wp[1][0]*wp[1][0]-3*wp[2][0]*wp[1][0] + 2*wp[3][0];
@@ -1171,7 +1182,12 @@ void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
       if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBC))
         fCovariance[1]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBC,l_Random);
     }
-
+    double wAABBD = getStdAABBD(wabcd);
+    if(wAABBD!=0.) {
+      double val = getStdAABBD(abcd)/wAABBD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBD))
+        fCovariance[18]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBD,l_Random);
+    }
     //v22pt4
     double wABCCCC = getStdABCCCC(wabcd);
     if(wABCCCC!=0.) {
