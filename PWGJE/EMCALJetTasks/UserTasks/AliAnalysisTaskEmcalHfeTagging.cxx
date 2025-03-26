@@ -933,7 +933,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
 	// Inclusive and semi-inclusive histograms
     for(Int_t i = 0; i < 5; i++){
-        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 12, 0., 60.);
+        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 24, 0., 120.);
 		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
 		fRMUWPtSemiInclJet[i] = new THnSparseF(Form("fRMUWPtSemiInclJet%d", i), Form("fRMUWPtSemiInclJet%d", i), 2, 
