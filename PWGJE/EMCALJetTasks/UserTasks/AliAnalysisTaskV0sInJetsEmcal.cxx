@@ -1833,9 +1833,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fh2V0ALambdaMCPtGenPtRec[i] = new TH2D(Form("fh2V0ALambdaMCPtGenPtRec_%d", i), Form("MC ALambda associated: pt gen vs pt rec, cent %s;#it{p}_{T}^{gen} (GeV/#it{c});#it{p}_{T}^{rec} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtV0, dPtV0Min, dPtV0Max, iNBinsPtV0, dPtV0Min, dPtV0Max);
       fOutputListMC->Add(fh2V0ALambdaMCPtGenPtRec[i]);
 
-      Int_t iNBinsPtXi = 80;
+      Int_t iNBinsPtXi = 150;
       Double_t dPtXiMin = 0;
-      Double_t dPtXiMax = 8;
+      Double_t dPtXiMax = 15;
       const Int_t iNDimFD = 3;
       Int_t binsFD[iNDimFD] = {iNBinsPtV0, iNBinsPtXi, iNJetPtBins};
       Double_t xminFD[iNDimFD] = {dPtV0Min, dPtXiMin, dJetPtMin};
