@@ -1949,7 +1949,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       TString cutstringMeson          = "NoMesonCut";
       if(fDoMesonAnalysis)
         cutstringMeson                = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
-
       fMCList[iCut]                   = new TList();
       fMCList[iCut]->SetName(Form("%s_%s_%s MC histograms",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
       fMCList[iCut]->SetOwner(kTRUE);
@@ -2015,7 +2014,16 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
 
       if(fDoMesonAnalysis){
-        fHistoMCPi0Pt[iCut]                = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", nBinsPt, arrPtBinning);
+        auto &lPhotonCut = *((AliConversionPhotonCuts*)fCutArray->At(iCut));
+        float lPhotonEtaAbsMax = lPhotonCut.GetEtaCut();
+        auto &lMesonCut = *((AliConversionMesonCuts*)fMesonCutArray->At(iCut));
+        float lMesonYmin = lMesonCut.GetRapidityCutValueMin();
+        float lMesonYmax = lMesonCut.GetRapidityCutValueMax();
+        
+        fHistoMCPi0Pt[iCut] = new TH1F(
+          "MC_Pi0_Pt", 
+          Form("MC_Pi0_Pt;p_#mathrm{T};N_{#pi^0 #rightarrow 2 #gamma}^{%f.1 < y < %f.1}", lMesonYmin, lMesonYmax), 
+          nBinsPt, arrPtBinning);
         fHistoMCPi0Pt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0Pt[iCut]);
 
@@ -2039,7 +2047,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMCEtaPtNoVertex[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaPtNoVertex[iCut]);
 
-        fHistoMCEtaPt[iCut]                = new TH1F("MC_Eta_Pt", "MC_Eta_Pt", nBinsPt, arrPtBinning);
+        fHistoMCEtaPt[iCut] = new TH1F(
+          "MC_Eta_Pt", 
+          Form("MC_Eta_Pt;p_#mathrm{T};N_{#eta^0 #rightarrow 2 #gamma}^{%f.1 < y < %f.1}", lMesonYmin, lMesonYmax), 
+          nBinsPt, arrPtBinning);
         fHistoMCEtaPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaPt[iCut]);
 
@@ -2053,7 +2064,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMCEtaWOWeightInAccPt[iCut]   = new TH1F("MC_EtaWOWeightInAcc_Pt", "MC_EtaWOWeightInAcc_Pt", nBinsPt, arrPtBinning);
         fHistoMCEtaWOWeightInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaWOWeightInAccPt[iCut]);
-        fHistoMCPi0InAccPt[iCut]           = new TH1F("MC_Pi0InAcc_Pt", "MC_Pi0InAcc_Pt", nBinsPt, arrPtBinning);
+        fHistoMCPi0InAccPt[iCut] = new TH1F(
+          "MC_Pi0InAcc_Pt", 
+          Form("MC_Pi0InAcc_Pt;p_#mathrm{T};N_{#pi^0 #rightarrow 2 #gamma}^{%f.1 < y < %f.1 && #2 gamma's: |#gamma_{#eta}| < %.1f}",
+            lMesonYmin, lMesonYmax, lPhotonEtaAbsMax), 
+          nBinsPt, arrPtBinning);
         fHistoMCPi0InAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
         fHistoMCPi0InAccPtNotTriggered[iCut]           = new TH1F("MC_Pi0InAcc_Pt_NotTriggered", "MC_Pi0InAcc_Pt_NotTriggered", nBinsPt, arrPtBinning);
@@ -2062,7 +2077,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMCPi0InAccPtNoVertex[iCut]           = new TH1F("MC_Pi0InAcc_Pt_NoVertex", "MC_Pi0InAcc_Pt_NoVertex", nBinsPt, arrPtBinning);
         fHistoMCPi0InAccPtNoVertex[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0InAccPtNoVertex[iCut]);
-        fHistoMCEtaInAccPt[iCut]           = new TH1F("MC_EtaInAcc_Pt", "MC_EtaInAcc_Pt", nBinsPt, arrPtBinning);
+        fHistoMCEtaInAccPt[iCut] = new TH1F(
+          "MC_EtaInAcc_Pt", 
+          Form("MC_EtaInAcc_Pt;p_#mathrm{T};N_{#eta^0 #rightarrow 2 #gamma}^{%f.1 < y < %f.1 && #2 gamma's:| #gamma_{#eta|} < %.1f}",
+            lMesonYmin, lMesonYmax, lPhotonEtaAbsMax), 
+          nBinsPt, arrPtBinning);
         fHistoMCEtaInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaInAccPt[iCut]);
         fHistoMCEtaInAccPtNotTriggered[iCut]           = new TH1F("MC_EtaInAcc_Pt_NotTriggered", "MC_EtaInAcc_Pt_NotTriggered", nBinsPt, arrPtBinning);

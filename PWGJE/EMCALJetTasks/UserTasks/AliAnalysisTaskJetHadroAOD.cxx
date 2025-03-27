@@ -130,6 +130,7 @@ fFilljetsFJBGTree(kTRUE),
 fFillJetsFJBGConst(kTRUE),
 fDoIncTracks(kTRUE),
 fDoPerpCone(kTRUE),
+fDoMatchPerpCone(kTRUE),
 fDoRandCone(kTRUE),
 fDoFastJet(kTRUE),
 fDoEMCJet(kTRUE),
@@ -471,6 +472,7 @@ fFilljetsFJBGTree(kTRUE),
 fFillJetsFJBGConst(kTRUE),
 fDoIncTracks(kTRUE),
 fDoPerpCone(kTRUE),
+fDoMatchPerpCone(kTRUE),
 fDoRandCone(kTRUE),
 fDoFastJet(kTRUE),
 fDoEMCJet(kTRUE),
@@ -3811,6 +3813,7 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
   std::vector<fastjet::PseudoJet> jets_rec = sorted_by_pt(fFastJetWrapper_Rec->GetInclusiveJets());
 
   vector<pair<int, int>> matched_MC_jets_indexes;
+  vector<pair<int, int>> matched_MC_jets_passpT_indexes;
 
   Float_t leadJetPhi_Rec = 999;
   Float_t leadJetEta_Rec = 999;
@@ -3890,6 +3893,9 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
 
     if (found_match) {
         matched_MC_jets_indexes.push_back(std::make_pair(i_best_match,ijet_reco));
+        if (jet_recoptsub > fjetMinPtSub && jet_recoptsub < fjetMaxPtSub) {
+          matched_MC_jets_passpT_indexes.push_back(std::make_pair(i_best_match,ijet_reco));
+        }
     }
 
     if (jet_recoptsub > leadJetPtSub_Rec){
@@ -4003,6 +4009,13 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
   }
 
   if ( (fDoPerpCone || fDoRandCone) && (leadJetPtSub_Rec > fjetMinPtSub) ) {
+    //For matched PC setting only: If there isn't a matched reco jet that passes our pT cuts, don't fill the perp cone for the event
+    if (fDoMatchPerpCone && matched_MC_jets_passpT_indexes.empty()) {
+      if (fUseCouts) std::cout << "We are filling with matched PC and matched_MC_jets_passpT_indexes is empty." << std::endl;
+    }
+    else{
+      if (fUseCouts) std::cout << "We aren't filling with matched PC or matched_MC_jets_passpT_indexes is not empty." << std::endl;
+
     //now we find the eta,phi perp (and R.C.) to it
     //From the AliAnalysisTaskRhoPerpCone Task
     Double_t dPhi1 = 999.;
@@ -4146,6 +4159,7 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
 
     } // end inc tracks loop for cone
     fFilledUECone_Rec = kTRUE;
+    }
   } //end cone loop
 
 
@@ -4246,7 +4260,13 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
     }
   }
 
-  if ( (fDoPerpCone || fDoRandCone) && (leadJetPtSub_Gen > fjetMinPtSub) ) {
+  if ( (fDoPerpCone || fDoRandCone) && ((!fDoMatchPerpCone && (leadJetPtSub_Gen > fjetMinPtSub) ) || (fDoMatchPerpCone && !(matched_MC_jets_passpT_indexes.empty()))) ) {
+    //If we are filling for matched jet PCs only, draw the cone around where the match reco jet axis is
+    if (fDoMatchPerpCone) {
+      leadJetPhi_Gen = leadJetPhi_Rec;
+      leadJetEta_Gen = leadJetEta_Rec;
+    }
+
     //now we find the eta,phi perp (and R.C.) to it
     //From the AliAnalysisTaskRhoPerpCone Task
     Double_t dPhi1 = 999.;

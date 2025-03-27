@@ -334,7 +334,7 @@ void AliPtPtContainer::FillCMProfiles(const vector<vector<double>> &inarr, const
     return;
   fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][1] * inarr[1][1] - 6 * inarr[2][2] * inarr[1][1] * inarr[1][1] + 3 * inarr[2][2] * inarr[2][2] + 8 * inarr[3][3] * inarr[1][1] - 6 * inarr[4][4]));
   dynamic_cast<AliProfileBS*>(fCMTermList->At(6))->FillProfile(centmult, fcmNum[7], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);
-  fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][1] * inarr[1][0] - 3 * inarr[2][2] * inarr[1][1] * inarr[1][0] - 3 * inarr[1][1] * inarr[1][1] * inarr[2][1] + 3 * inarr[2][2] * inarr[2][1] + 6 * inarr[1][1] * inarr[3][2] - 6 * inarr[4][3]));
+  fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][1] * inarr[1][0] - 3 * inarr[2][2] * inarr[1][1] * inarr[1][0] - 3 * inarr[1][1] * inarr[1][1] * inarr[2][1] + 3 * inarr[2][2] * inarr[2][1] + 2 *inarr[3][3] * inarr[1][0] + 6 * inarr[1][1] * inarr[3][2] - 6 * inarr[4][3]));
   dynamic_cast<AliProfileBS*>(fCMTermList->At(7))->FillProfile(centmult, fcmNum[8], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);
   fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][0] * inarr[1][0] - inarr[2][2] * inarr[1][0] * inarr[1][0] - inarr[2][0] * inarr[1][1] * inarr[1][1] + inarr[2][0] * inarr[2][2] - 4 * inarr[2][1] * inarr[1][1] * inarr[1][0] + 4 * inarr[3][2] * inarr[1][0] + 4 * inarr[3][1] * inarr[1][1] + 2 * inarr[2][1] * inarr[2][1] - 6 * inarr[4][2]));
   dynamic_cast<AliProfileBS*>(fCMTermList->At(8))->FillProfile(centmult, fcmNum[9], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);

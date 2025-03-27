@@ -23,7 +23,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   TString prefix = TString::Format("%i",CollisionSystem);
 
 
-
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
   if(!manager)
   {

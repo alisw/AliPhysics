@@ -58,7 +58,7 @@ public:
   
   void         MakeNeutralCorrelation   (AliCaloTrackParticleCorrelation * particle) ;
   
-  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex, Bool_t lostDecayPair) ;
+  void         MakeMCChargedCorrelation (Int_t triggerMCLable, Int_t histoIndex, Bool_t lostDecayPair, Float_t ptCluster) ;
   
   void         MakeChargedMixCorrelation(AliCaloTrackParticleCorrelation * particle) ;
   
@@ -213,6 +213,9 @@ public:
   void         SwitchOnFillDeltaEtaPhiPtTrigZTHistograms()  { fFillDeltaPhiDeltaEtaZT = kTRUE  ; }
   void         SwitchOffFillDeltaEtaPhiPtTrigZTHistograms() { fFillDeltaPhiDeltaEtaZT = kFALSE ; }
  
+  void         SwitchOnFillEtaOrPhiTriggerHistograms()  { fFillEtaOrPhiTriggerHisto = kTRUE  ; }
+  void         SwitchOffFillEtaOrPhiTriggerHistograms() { fFillEtaOrPhiTriggerHisto = kFALSE ; }
+  
   void         SelectCentrality( Bool_t yn, Int_t min, Int_t max )
                                                  { fSelectCentrality = yn;
                                                    fCenBin[0] = min; fCenBin[1] = max;         ; }
@@ -271,6 +274,9 @@ public:
   
   void         SwitchOnFillXEHistograms()        { fFillXEHistograms = kTRUE  ; }
   void         SwitchOffFillXEHistograms()       { fFillXEHistograms = kFALSE ; }  
+
+  void         SwitchOnFillPoutHistograms()      { fFillPoutHistograms = kTRUE  ; }
+  void         SwitchOffFillPoutHistograms()     { fFillPoutHistograms = kFALSE ; }
   
   void         SwitchOnFillZTHistograms()        { fFillZTHistograms = kTRUE  ; }
   void         SwitchOffFillZTHistograms()       { fFillZTHistograms = kFALSE ; }  
@@ -336,6 +342,8 @@ private:
   Bool_t       fFillBradHisto ;                          ///<  DPhi histograms calculated differently.
   Bool_t       fFillDeltaPhiDeltaEtaAssocPt;             ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different associated pT bins, and do not fill other histograms to reduce output size.
   Bool_t       fFillDeltaPhiDeltaEtaZT;                   ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different zT bins, and do not fill other histograms to reduce output size.
+  Bool_t       fFillEtaOrPhiTriggerHisto;                   ///<  Activate histograms dedicated to locate the trigger particle
+  
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
   
@@ -388,6 +396,7 @@ private:
   Float_t      fDecayTagsM02Cut;                         ///<  Lambda0 cut for decay particles.
   
   Bool_t       fFillUePartHistograms;                    ///< Fill UePart histograms
+  Bool_t       fFillPoutHistograms;                      ///< Fill Pout histograms
   Bool_t       fFillXEHistograms;                        ///< Fill xE histograms
   Bool_t       fFillZTHistograms;                        ///< Fill zT histograms
   Bool_t       fFillHBPHistograms;                       ///< Fill hump back plateau histograms
@@ -743,6 +752,9 @@ private:
   TH2F *       fhDeltaPhiChargedPtA3GeVPerTCardIndex[16];//!<! Difference of charged particle phi with pT > 3 GeV and trigger particle phi as function of trigger pT, per T-Card index
   
   TH1F *       fhCentrality;                             //!<! Control histogram in case centrality selection in done in the analysis
+  
+  TH2F *       fhFractionSinglePhotonDecayOverPi0;       //!<! Control fraction of pi0 momentum carried by the decay photon generating the cluster tagged as pi0 decay
+  TH2F *       fhFractionSinglePhotonDecayOverEta;       //!<! Control fraction of eta momentum carried by the decay photon generating the cluster tagged as eta decay
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
   
@@ -750,7 +762,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,44) ;
+  ClassDef(AliAnaParticleHadronCorrelation,46) ;
   /// \endcond
   
 } ;

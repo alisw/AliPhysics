@@ -1,13 +1,17 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
+// Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c//
+//  Konstantin.Mikhaylov@cern.ch ~~~>                                    //
+//  first created 3 Mar 2016                                             //
+//   Modified: March 6, 2025: added mutable low limit of TOF using       //
+//             fPMinTOF45 and  SetMomentumTOF45                      //
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // AliFemtoESDTrackCut: A basic track cut that used information from     //
 // ALICE ESD to accept or reject the track.                              //  
 // Enables the selection on charge, transverse momentum, rapidity,       //
 // pid probabilities, number of ITS and TPC clusters                     //
 // Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
 //                                                                       //
-// Copy of AliFemtoKKTrackCut with extend TOF PID to 0.45 (was 0.5) GeV/c//
-//  Konstantin.Mikhaylov@cern.ch   3 Mar 2016                            //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 #include "AliESDtrackCuts.h"
@@ -71,8 +75,9 @@ class AliFemtoKpm45TrackCut : public AliFemtoTrackCut
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
   void SetMomRangeITSpidIs(const float& minp, const float& maxp);
-
-  //ml
+  //2025
+  void SetPMinTOF45(Double_t);
+  //2016
  void SetNsigmaTPCle250(Double_t);
  void SetNsigmaTPC250_400(Double_t);
  void SetNsigmaTPC400_450(Double_t);
@@ -102,6 +107,7 @@ class AliFemtoKpm45TrackCut : public AliFemtoTrackCut
   long              fStatus;             // staus flag
   ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
 
+  Double_t fPMinTOF45;//KM: a mutable boundary where the TOF starts working
   //ml
  Double_t fNsigmaTPCle250;
  Double_t fNsigmaTPC250_400;

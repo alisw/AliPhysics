@@ -1814,23 +1814,74 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
     }
   }
-  else {
+  else if (fAOD && fSaveEventBitsInAODConversion) {
     // // Get multiplicity selection
-    // AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-    // if (!multSelection)
-    //   AliFatal("MultSelection not found in input event");
+    AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    // AliMultSelection *multSelection = (AliMultSelection*) fVEvent->FindListObject("MultSelection");
+    if (!multSelection)
+      AliFatal("MultSelection not found in input event");
 
-    // if( multSelection->GetThisEventINELgtZERO() )
-    //   SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
+    if( multSelection->GetThisEventINELgtZERO() )
+      SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
 
-    // if( multSelection->GetThisEventIsNotPileupInMultBins() )
-    //   SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
+    if( multSelection->GetThisEventIsNotPileupInMultBins() )
+      SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
 
-    // if( multSelection->GetThisEventHasNoInconsistentVertices() )
-    //   SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
+    if( multSelection->GetThisEventHasNoInconsistentVertices() )
+      SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
 
-    // if( multSelection->GetThisEventPassesTrackletVsCluster() )
-    //   SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
+    if( multSelection->GetThisEventPassesTrackletVsCluster() )
+      SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
+
+    if( fAOD->GetPrimaryVertex()->GetNContributors()>0 )
+      SETBIT (run2bcinfo.fEventCuts, kNonZeroNContribs);
+
+    if( multSelection->GetThisEventIsNotIncompleteDAQ() )
+      SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kPileUp))
+      SETBIT(run2bcinfo.fEventCuts, kPileUpMV);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
+      SETBIT(run2bcinfo.fEventCuts, kTPCPileUp);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kTimeRangeCut))
+      SETBIT(run2bcinfo.fEventCuts, kTimeRangeCut);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kEMCALEDCut))
+      SETBIT(run2bcinfo.fEventCuts, kEMCALEDCut);
+
+    if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
+      SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
+
+    if (fUseTriggerAnalysis) {
+      if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
+
+      if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
+
+      if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
+
+      if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
+
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+    }
   }
 
   FillTree(kRun2BCInfo);
@@ -2082,7 +2133,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   {
     Int_t ntrk = fVEvent->GetNumberOfTracks();
     Int_t ntofcls_filled = 0; // total number of TOF clusters filled per event
-
     for (Int_t itrk = 0; itrk < ntrk; itrk++)
     {
       AliESDtrack *track = nullptr;
@@ -2094,12 +2144,15 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         AliVTrack * aodVTrack = fAOD->GetTrack(itrk);
         AliAODTrack * aodTrack = dynamic_cast<AliAODTrack *>(aodVTrack);
         if (!aodTrack) continue; // Should not happen
-        // Skip MUON tracks and constrained tracks
+        // Skip MUON tracks
         if (aodTrack->IsMuonTrack()) continue;
-        if (aodTrack->IsTPCConstrained()) continue;
-        if (aodTrack->IsGlobalConstrained()) continue;
-        if (aodTrack->IsHybridGlobalConstrainedGlobal()) continue;
-        if (aodTrack->IsHybridTPCConstrainedGlobal()) continue;
+        // Skip constrained tracks if relevant flag is off
+        if (!fSaveHybridTracksInAODConversion) {
+          if (aodTrack->IsTPCConstrained()) continue;
+          if (aodTrack->IsGlobalConstrained()) continue;
+          if (aodTrack->IsHybridGlobalConstrainedGlobal()) continue;
+          if (aodTrack->IsHybridTPCConstrainedGlobal()) continue;
+        }
 
         track = new AliESDtrack(aodVTrack);
         deleteTrack = kTRUE; // Since we use new, we have to delete at the end

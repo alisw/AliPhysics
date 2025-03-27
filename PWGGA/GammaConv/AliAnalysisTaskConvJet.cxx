@@ -35,6 +35,8 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 
+#include "AliMCEvent.h"
+
 #include "AliAnalysisTaskConvJet.h"
 
 /// \cond CLASSIMP
@@ -76,7 +78,8 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fEMCSMEdgesMode(0),
                                                    fDistEMCSMEdge(0),
                                                    fApplyEnergyWeight(false),
-                                                   funcEnergyWeights(nullptr)
+                                                   funcEnergyWeights(nullptr),
+                                                   fVecNonMeasurable({-1})
 {
 }
 
@@ -114,7 +117,8 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fEMCSMEdgesMode(0),
                                                                    fDistEMCSMEdge(0),
                                                                    fApplyEnergyWeight(false),
-                                                                   funcEnergyWeights(nullptr)
+                                                                   funcEnergyWeights(nullptr),
+                                                                   fVecNonMeasurable({-1})
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -181,21 +185,6 @@ void AliAnalysisTaskConvJet::DoJetLoop()
           continue;
         if (!IsJetAccepted(jet))
           continue;
-        double jetEnergyWeight = 1.;
-        if(fApplyEnergyWeight){
-          jetEnergyWeight = funcEnergyWeights->Eval(jet->Pt());
-        }
-        count++;
-        fVectorJetPt.push_back(jet->Pt()*jetEnergyWeight);
-        fVectorJetPx.push_back(jet->Px()*jetEnergyWeight);
-        fVectorJetPy.push_back(jet->Py()*jetEnergyWeight);
-        fVectorJetPz.push_back(jet->Pz()*jetEnergyWeight);
-        fVectorJetEta.push_back(jet->Eta());
-        fVectorJetPhi.push_back(jet->Phi());
-        fVectorJetR.push_back(jet->Area());
-        fVectorJetNEF.push_back(jet->NEF());
-        fVectorJetNClus.push_back(jet->Nn());
-        fVectorJetNCh.push_back(jet->Nch());
 
         std::vector<AliVCluster*> vecTmpClus;
         for(size_t cl = 0; cl < jet->GetNumberOfClusters(); ++cl){
@@ -208,6 +197,22 @@ void AliAnalysisTaskConvJet::DoJetLoop()
           vecTmpTracks.push_back(jet->Track(tr));
         }
         fVecJetTracks.push_back(vecTmpTracks);
+
+        double jetEnergyWeight = 1.;
+        if(fApplyEnergyWeight == 1){
+          jetEnergyWeight = funcEnergyWeights->Eval(jet->Pt());
+        } 
+        count++;
+        fVectorJetPt.push_back(jet->Pt()*jetEnergyWeight);
+        fVectorJetPx.push_back(jet->Px()*jetEnergyWeight);
+        fVectorJetPy.push_back(jet->Py()*jetEnergyWeight);
+        fVectorJetPz.push_back(jet->Pz()*jetEnergyWeight);
+        fVectorJetEta.push_back(jet->Eta());
+        fVectorJetPhi.push_back(jet->Phi());
+        fVectorJetR.push_back(jet->Area());
+        fVectorJetNEF.push_back(jet->NEF());
+        fVectorJetNClus.push_back(jet->Nn());
+        fVectorJetNCh.push_back(jet->Nch());
       }
       fNJets = count;
     } else {
@@ -251,6 +256,57 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fVecTrueJetMaxPartPDG.push_back(pdgcodeLead);
       }
       fTrueNJets = count;
+    }
+  }
+  if(fApplyEnergyWeight == 2){
+    // match true and rec jets and assign weights to rec. jet accoring to particle composition in true jet
+    for(size_t iRec = 0; iRec < fVectorJetPt.size(); ++iRec){
+      double etaRec = fVectorJetEta[iRec];
+      double phiRec = fVectorJetPhi[iRec];
+      double Rmatch = 100.;
+      size_t Imatch = 0;
+      for(size_t iTrue = 0; iTrue < fTrueVectorJetPt.size(); ++iTrue){
+        double etaTrue = fTrueVectorJetEta[iTrue];
+        double phiTrue = fTrueVectorJetPhi[iTrue];
+        double deltaEta = etaRec - etaTrue;
+        double deltaPhi = phiRec - phiTrue;
+        if (deltaPhi > M_PI) {
+          deltaPhi = 2 * M_PI - deltaPhi;
+        }
+        double R_jetjet = sqrt(pow((deltaEta), 2) + pow((deltaPhi), 2));
+        if (R_jetjet < Rmatch) {
+          Rmatch = R_jetjet;
+          Imatch = iTrue;
+        }
+      }
+      if(Rmatch < 0.3){ // hardcoded min distance requirement
+        double ptNonMeas = 0;
+        for(const auto & tr : fVecTrueJetParticles[Imatch]){
+          if(!tr) {
+            AliError("track from vecTmpPart is null");
+            continue;
+          }
+          int mcLabel = std::abs(tr->GetLabel());
+          auto mcParticle = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mcLabel));
+          if(!mcParticle) {
+            AliError("mcParticle is null");
+            continue;
+          }
+          if(IsNonMeasurable(std::abs(mcParticle->GetPdgCode()), tr->Charge())){
+            ptNonMeas+=tr->Pt();
+          }
+        }
+        double jetEnergyWeight = funcEnergyWeights->Eval(fTrueVectorJetPt[Imatch]) - 1.;
+        if(fTrueVectorJetPt[Imatch]>0){
+          jetEnergyWeight*= ptNonMeas/fTrueVectorJetPt[Imatch];
+        }
+        jetEnergyWeight += 1.;
+        // now scale it
+        fVectorJetPt[iRec]*=jetEnergyWeight;
+        fVectorJetPx[iRec]*=jetEnergyWeight;
+        fVectorJetPy[iRec]*=jetEnergyWeight;
+        fVectorJetPz[iRec]*=jetEnergyWeight;
+      }
     }
   }
 }
@@ -540,7 +596,40 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
 }
 
 
-void AliAnalysisTaskConvJet::setWeightEnergyJets(const char * formula){
-  fApplyEnergyWeight = true;
+void AliAnalysisTaskConvJet::setWeightEnergyJets(const char * formula, const int mode){
+  printf("setWeightEnergyJets %i\n", mode);
+  fApplyEnergyWeight = mode;
   funcEnergyWeights = new TF1("funcEnergyWeightsJets", formula, 0, 10000);
+}
+
+void AliAnalysisTaskConvJet::SetNonMeasurablePart(TString str){
+  fVecNonMeasurable.clear();  // Ensure the vector is empty
+
+  // Split the input by semicolons
+  TObjArray* tokens = str.Tokenize(";");
+
+  if (tokens) {
+      for (int i = 0; i < tokens->GetEntries(); ++i) {
+          TObjString* objStr = (TObjString*)tokens->At(i);
+          if (objStr) {
+              TString token = objStr->GetString();
+              if (!token.IsWhitespace()) {  // Skip empty tokens
+                  fVecNonMeasurable.push_back(token.Atoi());  // Convert to int and add to vector
+              }
+          }
+      }
+      delete tokens; // Clean up to avoid memory leaks
+    }
+}
+
+bool AliAnalysisTaskConvJet::IsNonMeasurable(const int pdg, const int charge){
+  if(fVecNonMeasurable[0] == -1){
+    if(charge == 0 && pdg != 22){ // neutral particle that is not photon
+      return true;
+    }
+  }
+  if(std::find(fVecNonMeasurable.begin(), fVecNonMeasurable.end(), pdg) != fVecNonMeasurable.end()) {
+    return true;
+  }
+  return false;
 }

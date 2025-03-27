@@ -35,6 +35,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Int_t ParticleSpecies, Int_t RunNumber);
     Double_t CalculateSigmadEdxTPC(AliAODTrack &Track, Int_t ParticleSpecies);
     Double_t CalculateSigmadEdxITS(AliAODTrack &Track, Int_t ParticleSpecies, Int_t RunNumber);
+    Bool_t CheckDeuteronOverlapBands(AliAODTrack &Track, AliPIDResponse &fPIDResponse, Float_t TPC_dEdx_Sigma_max);
+
 
 
   private:
@@ -70,8 +72,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fProton_DCAxy;
     Float_t   fProton_DCAz;
     Float_t   fProton_Event_Centrality;
-    Float_t   fProton_Event_PrimaryVertexX;
-    Float_t   fProton_Event_PrimaryVertexY;
     Float_t   fProton_Event_PrimaryVertexZ;
     Bool_t    fProton_Event_BField;
     UShort_t  fProton_TPC_nCrossedRows;
@@ -94,6 +94,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fProton_Event_TimeStamp;
     UInt_t  fProton_Event_RandomCrossCheckNumber;
     Int_t     fProton_ID;
+    Int_t     fProton_OrigID;
+    Int_t     fProton_Label;
     Float_t     fProton_x;
     Float_t     fProton_y;
     Float_t     fProton_z;
@@ -119,8 +121,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fDeuteron_DCAxy;
     Float_t   fDeuteron_DCAz;
     Float_t   fDeuteron_Event_Centrality;
-    Float_t   fDeuteron_Event_PrimaryVertexX;
-    Float_t   fDeuteron_Event_PrimaryVertexY;
     Float_t   fDeuteron_Event_PrimaryVertexZ;
     Bool_t    fDeuteron_Event_BField;
     UShort_t  fDeuteron_TPC_nCrossedRows;
@@ -143,9 +143,14 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fDeuteron_Event_TimeStamp;
     UInt_t  fDeuteron_Event_RandomCrossCheckNumber;
     Int_t     fDeuteron_ID;
+    Int_t     fDeuteron_OrigID;
+    Int_t     fDeuteron_Label;
     Float_t     fDeuteron_x;
     Float_t     fDeuteron_y;
     Float_t     fDeuteron_z;
+    Bool_t	fDeuteron_PassedOverlap1Sigma;
+    Bool_t	fDeuteron_PassedOverlap2Sigma;
+    Bool_t	fDeuteron_PassedOverlap3Sigma;
 
 
     TTree *fSaveTree_AntiProton;
@@ -168,8 +173,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fAntiProton_DCAxy;
     Float_t   fAntiProton_DCAz;
     Float_t   fAntiProton_Event_Centrality;
-    Float_t   fAntiProton_Event_PrimaryVertexX;
-    Float_t   fAntiProton_Event_PrimaryVertexY;
     Float_t   fAntiProton_Event_PrimaryVertexZ;
     Bool_t    fAntiProton_Event_BField;
     UShort_t  fAntiProton_TPC_nCrossedRows;
@@ -192,6 +195,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fAntiProton_Event_TimeStamp;
     UInt_t  fAntiProton_Event_RandomCrossCheckNumber;
     Int_t     fAntiProton_ID;
+    Int_t     fAntiProton_OrigID;
+    Int_t     fAntiProton_Label;
     Float_t     fAntiProton_x;
     Float_t     fAntiProton_y;
     Float_t     fAntiProton_z;
@@ -217,8 +222,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t   fAntiDeuteron_DCAxy;
     Float_t   fAntiDeuteron_DCAz;
     Float_t   fAntiDeuteron_Event_Centrality;
-    Float_t   fAntiDeuteron_Event_PrimaryVertexX;
-    Float_t   fAntiDeuteron_Event_PrimaryVertexY;
     Float_t   fAntiDeuteron_Event_PrimaryVertexZ;
     Bool_t    fAntiDeuteron_Event_BField;
     UShort_t  fAntiDeuteron_TPC_nCrossedRows;
@@ -241,9 +244,14 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     UInt_t    fAntiDeuteron_Event_TimeStamp;
     UInt_t  fAntiDeuteron_Event_RandomCrossCheckNumber;
     Int_t     fAntiDeuteron_ID;
+    Int_t     fAntiDeuteron_OrigID;
+    Int_t     fAntiDeuteron_Label;
     Float_t     fAntiDeuteron_x;
     Float_t     fAntiDeuteron_y;
     Float_t     fAntiDeuteron_z;
+    Bool_t	fAntiDeuteron_PassedOverlap1Sigma;
+    Bool_t	fAntiDeuteron_PassedOverlap2Sigma;
+    Bool_t	fAntiDeuteron_PassedOverlap3Sigma;
 
 
     ClassDef(AliAnalysisTask_pd_CreateTrees_PairsOnly,1);

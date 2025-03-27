@@ -1,5 +1,4 @@
 #include "AliAnalysisTaskGammaSoft.h"
-#include "AliEventCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisUtils.h"
@@ -18,7 +17,6 @@
 #include "AliInputEventHandler.h"
 #include "TList.h"
 #include "TProfile.h"
-#include "AliEventCuts.h"
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "AliStack.h"
@@ -66,6 +64,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fFillAdditionalQA(kFALSE),
   fPtAxis(0),
   fEtaAxis(0),
+  fIPAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
@@ -74,12 +73,15 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fNEtaBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fIPBins(0),
+  fNIPBins(0),
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
   fUseEventWeightOne(kFALSE),
+  fUseIP(kFALSE),
   fPtMpar(8),
   fEtaMpt(0.4),
   fEtaAcceptance(0.8),
@@ -158,6 +160,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fFillAdditionalQA(kFALSE),
   fPtAxis(0),
   fEtaAxis(0),
+  fIPAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
@@ -166,12 +169,15 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fNEtaBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fIPBins(0),
+  fNIPBins(0),
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
   fUseEventWeightOne(kFALSE),
+  fUseIP(kFALSE),
   fPtMpar(8),
   fEtaMpt(0.4),
   fEtaAcceptance(0.8),
@@ -240,6 +246,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
 AliAnalysisTaskGammaSoft::~AliAnalysisTaskGammaSoft() {
 };
 void AliAnalysisTaskGammaSoft::UserCreateOutputObjects(){
+  printf("Creating outputs\n");
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->PrintSetup();
   fSystFlag = fGFWSelection->GetSystFlagIndex();
@@ -295,9 +302,12 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
         vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
         for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
       }
-
-      fIP = new TH1D("fIP","Impact parameter",1000,0.0,30.0);
+      fIP = new TH1D("fIP","Impact parameter",fNIPBins,fIPBins);
       printf("OTF objects created\n");
+      if(fUseIP){
+        fMultiBins = fIPBins;
+        fNMultiBins = fNIPBins;
+      }
     }
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     printf("Creating pt-correlation objects\n");
@@ -353,7 +363,7 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    const int ncovprofiles = 9;
+    const int ncovprofiles = 19;
     fCovariance = new AliProfileBS*[ncovprofiles];
     //Default terms, standard method
     fCovariance[0] = new AliProfileBS("v24pt2","v24pt2",fNMultiBins,fMultiBins);
@@ -375,13 +385,38 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     fCovList->Add(fCovariance[7]);
     fCovariance[8] = new AliProfileBS("v22_3w","v22_3w",fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[8]);
+
+    //Extra observables for algo paper
+    fCovariance[9] = new AliProfileBS("v22pt3","v22pt3",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[9]);
+    fCovariance[10] = new AliProfileBS("v22pt2_5w","v22pt2_5w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[10]);
+    fCovariance[11] = new AliProfileBS("v22pt_5w","v22pt_5w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[11]);
+    fCovariance[12] = new AliProfileBS("v22_5w","v22_5w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[12]);
+
+    fCovariance[13] = new AliProfileBS("v22pt4","v22pt4",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[13]);
+    fCovariance[14] = new AliProfileBS("v22pt3_6w","v22pt3_6w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[14]);
+    fCovariance[15] = new AliProfileBS("v22pt2_6w","v22pt2_6w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[15]);
+    fCovariance[16] = new AliProfileBS("v22pt_6w","v22pt_6w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[16]);
+    fCovariance[17] = new AliProfileBS("v22_6w","v22_6w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[17]);
+
+    fCovariance[18] = new AliProfileBS("v24_5w","v24_5w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[18]);
+
     if(fNBootstrapProfiles) for(Int_t i=0;i<ncovprofiles;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
     PostData(3,fCovList);
     printf("Creating QA objects\n");
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
-    fEventCuts.AddQAplotsToList(fQAList,kTRUE);
+    //fEventCuts.AddQAplotsToList(fQAList,kTRUE);
     int nEventCutLabel = 7;
     fEventCount = new TH1D("fEventCount","Event counter",nEventCutLabel,0,nEventCutLabel);
     TString eventCutLabel[7]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Pileup","Tracks"};
@@ -676,8 +711,8 @@ void AliAnalysisTaskGammaSoft::FillABCDCounter(vector<vector<vector<vector<T>>>>
 {
   for(int i = 0; i<3; ++i)
     for(int j = 0; j < 3; ++j)
-      for(int k = 0; k < 3; ++k)
-        for(int l = 0; l < 3; ++l)
+      for(int k = 0; k < 5; ++k)
+        for(int l = 0; l < 5; ++l)
           inarr[i][j][k][l] += pow(a,i)*pow(b,j)*pow(c,k)*pow(d,l);
   return;
 }
@@ -689,8 +724,8 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
     wpNeg.clear(); wpNeg.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   }
 
-  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
-  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
+  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
+  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
@@ -823,30 +858,164 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
     }
     double mpt = wp[1][1]/wp[1][0];
     FillCovariance(fCovariance[1],corrconfigs.at(1),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[18],corrconfigs.at(1),l_Multi,1.,wp[1][0],l_Random);
     FillCovariance(fCovariance[3],corrconfigs.at(0),l_Multi,mpt,wp[1][0],l_Random);
     FillCovariance(fCovariance[8],corrconfigs.at(0),l_Multi,1.,wp[1][0],l_Random);
+    double wmpt3 = wp[1][0]*wp[1][0]*wp[1][0]-3*wp[2][0]*wp[1][0] + 2*wp[3][0];
+    if(wmpt3!=0.){
+      double mpt3 = (wp[1][1]*wp[1][1]*wp[1][1] - 3*wp[2][2]*wp[1][1] + 2*wp[3][3])/wmpt3;
+      double mpt2_3w = (wp[1][1] * wp[1][1] * wp[1][0] - 2 * wp[2][1] * wp[1][1] + 2 * wp[3][2] - wp[2][2] * wp[1][0])/wmpt3;
+      double mpt_3w = (wp[1][1] * wp[1][0] * wp[1][0] - 2 * wp[2][1] * wp[1][0] + 2 * wp[3][1] - wp[1][1] * wp[2][0])/wmpt3;
+      FillCovariance(fCovariance[9],corrconfigs.at(0),l_Multi,mpt3,wmpt3,l_Random);
+      FillCovariance(fCovariance[10],corrconfigs.at(0),l_Multi,mpt2_3w,wmpt3,l_Random);
+      FillCovariance(fCovariance[11],corrconfigs.at(0),l_Multi,mpt_3w,wmpt3,l_Random);
+      FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,1.,wmpt3,l_Random);
+    }
+    double wmpt4 =wp[1][0] * wp[1][0] * wp[1][0] * wp[1][0] - 6 * wp[2][0] * wp[1][0] * wp[1][0]
+    + 3 * wp[2][0] * wp[2][0] + 8 * wp[3][0] * wp[1][0] - 6 * wp[4][0];
+    if(wmpt4!=0.){
+      double mpt4 = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][1] - 6 * wp[2][2] * wp[1][1] * wp[1][1]
+      + 3 * wp[2][2] * wp[2][2] + 8 * wp[3][3] * wp[1][1] - 6 * wp[4][4])/wmpt4;
+      double mpt3_4w = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][0] - 3 * wp[2][2] * wp[1][1] * wp[1][0]
+      - 3 * wp[1][1] * wp[1][1] * wp[2][1] + 3 * wp[2][2] * wp[2][1] + 2 * wp[3][3] * wp[1][0]
+      + 6 * wp[1][1] * wp[3][2] - 6 * wp[4][3])/wmpt4;
+      double mpt2_4w = (wp[1][1] * wp[1][1] * wp[1][0] * wp[1][0] - wp[2][2] * wp[1][0] * wp[1][0]
+        - wp[2][0] * wp[1][1] * wp[1][1] + wp[2][0] * wp[2][2]
+        - 4 * wp[2][1] * wp[1][1] * wp[1][0] + 4 * wp[3][2] * wp[1][0]
+        + 4 * wp[3][1] * wp[1][1] + 2 * wp[2][1] * wp[2][1] - 6 * wp[4][2])/wmpt4;
+      double mpt_4w = (wp[1][1] * wp[1][0] * wp[1][0] * wp[1][0] - 3 * wp[2][1] * wp[1][0] * wp[1][0]
+      - 3 * wp[1][1] * wp[2][0] * wp[1][0] + 3 * wp[2][1] * wp[2][0]
+      + 2 * wp[1][1] * wp[3][0] + 6 * wp[3][1] * wp[1][0] - 6 * wp[4][1])/wmpt4;
+      FillCovariance(fCovariance[13],corrconfigs.at(0),l_Multi,mpt4,wmpt4,l_Random);
+      FillCovariance(fCovariance[14],corrconfigs.at(0),l_Multi,mpt3_4w,wmpt4,l_Random);
+      FillCovariance(fCovariance[15],corrconfigs.at(0),l_Multi,mpt2_4w,wmpt4,l_Random);
+      FillCovariance(fCovariance[16],corrconfigs.at(0),l_Multi,mpt_4w,wmpt4,l_Random);
+      FillCovariance(fCovariance[17],corrconfigs.at(0),l_Multi,1.,wmpt4,l_Random);
+    }
   }
   else {
+    //v24pt2
     double wAABBCC = getStdAABBCC(wabcd);
-    if(wAABBCC!=0.) fCovariance[0]->FillProfile(l_Multi,getStdAABBCC(abcd)/wAABBCC,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
-    double wAABBC = getStdAABBC(wabcd);
-    if(wAABBC!=0.) fCovariance[1]->FillProfile(l_Multi,getStdAABBC(abcd)/wAABBC,(fUseEventWeightOne)?1.:wAABBC,l_Random);
-    double wABCC = getStdABCC(wabcd);
-    if(wABCC!=0.) fCovariance[2]->FillProfile(l_Multi,getStdABCC(abcd)/wABCC,(fUseEventWeightOne)?1.:wABCC,l_Random);
-    double wABC = getStdABC(wabcd);
-    if(wABC!=0.) fCovariance[3]->FillProfile(l_Multi,getStdABC(abcd)/wABC,(fUseEventWeightOne)?1.:wABC,l_Random);
+    if(wAABBCC!=0.) {
+      double val = getStdAABBCC(abcd)/wAABBCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCC))
+        fCovariance[0]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    }
     double wAABBCD = getStdAABBCD(wabcd);
-    if(wAABBCD!=0.) fCovariance[4]->FillProfile(l_Multi,getStdAABBCD(abcd)/wAABBCD,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    if(wAABBCD!=0.) {
+      double val = getStdAABBCD(abcd)/wAABBCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCD))
+        fCovariance[4]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    }
     double wAABBDD = getStdAABBDD(wabcd);
-    if(wAABBDD!=0.) fCovariance[5]->FillProfile(l_Multi,getStdAABBDD(abcd)/wAABBDD,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
-    double wABCD = getStdABCD(wabcd);
-    if(wABCD!=0.) fCovariance[6]->FillProfile(l_Multi,getStdABCD(abcd)/wABCD,(fUseEventWeightOne)?1.:wABCD,l_Random);
-    double wABDD = getStdABDD(wabcd);
-    if(wABDD!=0.) fCovariance[7]->FillProfile(l_Multi,getStdABDD(abcd)/wABDD,(fUseEventWeightOne)?1.:wABDD,l_Random);
-    double wABD = getStdABD(wabcd);
-    if(wABD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABD(abcd)/wABD,(fUseEventWeightOne)?1.:wABD,l_Random);
-  }
+    if(wAABBDD!=0.) {
+      double val = getStdAABBDD(abcd)/wAABBDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBDD))
+        fCovariance[5]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    }
+    //v24pt
+    double wAABBC = getStdAABBC(wabcd);
+    if(wAABBC!=0.) {
+      double val = getStdAABBC(abcd)/wAABBC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBC))
+        fCovariance[1]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    }
+    double wAABBD = getStdAABBD(wabcd);
+    if(wAABBD!=0.) {
+      double val = getStdAABBD(abcd)/wAABBD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBD))
+        fCovariance[18]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBD,l_Random);
+    }
 
+    //v22pt4
+    double wABCCCC = getStdABCCCC(wabcd);
+    if(wABCCCC!=0.) {
+      double val = getStdABCCCC(abcd)/wABCCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[13]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    }
+    double wABCCCD = getStdABCCCD(wabcd);
+    if(wABCCCD!=0.) {
+      double val = getStdABCCCD(abcd)/wABCCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCD))
+        fCovariance[14]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    }
+    double wABCCDD = getStdABCCDD(wabcd);
+    if(wABCCDD!=0.) {
+      double val = getStdABCCDD(abcd)/wABCCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCDD))
+        fCovariance[15]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    }
+    double wABCDDD = getStdABCDDD(wabcd);
+    if(wABCDDD!=0.) {
+      double val = getStdABCDDD(abcd)/wABCDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDDD))
+        fCovariance[16]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    }
+    double wABDDDD = getStdABDDDD(wabcd);
+    if(wABDDDD!=0.) {
+      double val = getStdABDDDD(abcd)/wABDDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDDD))
+        fCovariance[17]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    }
+    //v22pt3
+    double wABCCC = getStdABCCC(wabcd);
+    if(wABCCC!=0.) {
+      double val = getStdABCCC(abcd)/wABCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCC))
+        fCovariance[9]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    }
+    double wABCCD = getStdABCCD(wabcd);
+    if(wABCCD!=0.) {
+      double val = getStdABCCD(abcd)/wABCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCD))
+        fCovariance[10]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    }
+    double wABCDD = getStdABCDD(wabcd);
+    if(wABCDD!=0.) {
+      double val = getStdABCDD(abcd)/wABCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDD))
+        fCovariance[11]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    }
+    double wABDDD = getStdABDDD(wabcd);
+    if(wABDDD!=0.) {
+      double val = getStdABDDD(abcd)/wABDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDD))
+        fCovariance[12]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    }
+    //v22pt2
+    double wABCC = getStdABCC(wabcd);
+    if(wABCC!=0.) {
+      double val = getStdABCC(abcd)/wABCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCC))
+        fCovariance[2]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    }
+    double wABCD = getStdABCD(wabcd);
+    if(wABCD!=0.) {
+      double val = getStdABCD(abcd)/wABCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCD))
+        fCovariance[6]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    }
+    double wABDD = getStdABDD(wabcd);
+    if(wABDD!=0.) {
+      double val = getStdABDD(abcd)/wABDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDD))
+        fCovariance[7]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    }
+    //v22pt
+    double wABC = getStdABC(wabcd);
+    if(wABC!=0.) {
+      double val = getStdABC(abcd)/wABC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[3]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABC,l_Random);
+    }
+    double wABD = getStdABD(wabcd);
+    if(wABD!=0.) {
+      double val = getStdABD(abcd)/wABD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[8]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABD,l_Random);
+    }
+  }
   PostData(3,fCovList);
 }
 Bool_t AliAnalysisTaskGammaSoft::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t debug) {
@@ -865,40 +1034,249 @@ Bool_t AliAnalysisTaskGammaSoft::FillFCs(const AliGFW::CorrConfig &corconf, cons
 };
 void AliAnalysisTaskGammaSoft::ProcessOnTheFly() {
   fMCEvent = getMCEvent();
-  fIP->Fill(fImpactParameterMC);
+  double vz = fMCEvent->GetPrimaryVertex()->GetZ();
+  if(TMath::Abs(vz)>10) return;
   Double_t l_Cent = getGeneratorCentrality();
   Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
   if(nTracks < 1) { return; }
+  fIP->Fill(fImpactParameterMC);
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  if(fFillPtSubevent){
+    wpPos.clear(); wpPos.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+    wpNeg.clear(); wpNeg.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  }
+  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
+  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(5,vector<std::complex<double>>(5))));
   fGFW->Clear();
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
+  Int_t nTotNoTracksGen = 0;
+  Int_t lPosCount = 0, lNegCount = 0;
   for(Int_t i=0;i<nTracks;i++) {
     AliMCParticle* lPart = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(i));
     if(!lPart) { continue; };
-    if(!lPart->IsPhysicalPrimary()) continue;
-    Double_t l_pt=lPart->Pt();
-    Double_t l_phi=lPart->Phi();
-    Double_t l_eta=lPart->Eta();
-    if (TMath::Abs(l_eta) > fEtaAcceptance) continue;
-    if (l_pt<ptMin || l_pt>ptMax) continue;
-    if(TMath::Abs(l_eta)<fEtaMpt) //for mean pt, only consider -0.4-0.4 region
-      FillWPCounter(wp,1,l_pt);
-    fGFW->Fill(l_eta,1,l_phi,1,3); //filling both gap (bit mask 1) and full (bit mas 2). Since this is MC, weight is 1.
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    //Hardcoded cuts to inhereted from AcceptAODTrack
+    Double_t leta = lPart->Eta();
+    if(TMath::Abs(leta) > 0.8) continue;
+    Double_t pt = lPart->Pt();
+    if(pt<ptMin || pt>ptMax) continue;
+    if(leta<-fEtaV2Sep) lNegCount++;
+    if(leta>fEtaV2Sep) lPosCount++;
+    if(TMath::Abs(leta)<fEtaAcceptance) nTotNoTracksGen++; //Nch calculated in EtaNch region
+    if(TMath::Abs(leta)<fEtaMpt)
+      FillWPCounter(wp,1,pt);
+    if(fFillPtSubevent){
+      if(leta<-fEtaV2Sep) FillWPCounter(wpNeg,1,pt);
+      if(leta>fEtaV2Sep) FillWPCounter(wpPos,1,pt);
+    }
+    fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
+    if(fFillAdditionalQA) {
+      fPhiEtaVz[1]->Fill(lPart->Phi(),lPart->Eta(),vz);
+      fPt[1]->Fill(lPart->Pt(),l_Cent);
+      if(TMath::Abs(leta)<fEtaMpt){
+        fEtaMptAcceptance->Fill(lPart->Eta());
+        fPtMptAcceptance->Fill(lPart->Pt());
+      }
+    }
+    if(fFillStdMethod){
+      FillABCDCounter(abcd,Q(1.,2*lPart->Phi()),Q(1.,-2*lPart->Phi()),std::complex<double>(pt,0.),std::complex<double>(1.,0.));
+      FillABCDCounter(wabcd,std::complex<double>(1.,0.),std::complex<double>(1.,0.),std::complex<double>(1.,0.),std::complex<double>(1.,0.));
+    }
+
   };
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   Double_t l_Random = fRndm->Rndm();
+  Double_t l_Multi = (fUseIP)?fImpactParameterMC:l_Cent;
   fPtCont->CalculateCorrelations(wp);
-  fPtCont->FillProfiles(l_Cent,l_Random);
-  fPtCont->FillCMProfiles(wp,l_Cent,l_Random);
+  fPtCont->FillProfiles(l_Multi,l_Random);
+  fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
+
+  if(fFillPtSubevent){
+    fPtCont->CalculateSubeventCorrelations(wpPos,wpNeg);
+    fPtCont->FillSubeventProfiles(l_Multi,l_Random);
+    fPtCont->FillCMSubeventProfiles(wpPos,wpNeg,l_Multi,l_Random);
+  }
   fV0MMulti->Fill(l_Cent);
-  fMultiDist->Fill(l_Cent);
+  fMultiDist->Fill(nTotNoTracksGen);
   PostData(1,fptList);
   //Filling FCs
   for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-    FillFCs(corrconfigs.at(l_ind),l_Cent,l_Random);
+    FillFCs(corrconfigs.at(l_ind),l_Multi,l_Random);
   };
   PostData(2,fFC);
+  if(!fFillStdMethod){
+    double wmpt2 = wp[1][0]*wp[1][0]-wp[2][0];
+    if(wmpt2!=0.){
+      double mpt2 = (wp[1][1]*wp[1][1]-wp[2][2])/wmpt2;
+      double mpt_2w = (wp[1][0]*wp[1][1]-wp[2][1])/wmpt2;
+      FillCovariance(fCovariance[0],corrconfigs.at(1),l_Multi,mpt2,wmpt2,l_Random);
+      FillCovariance(fCovariance[2],corrconfigs.at(0),l_Multi,mpt2,wmpt2,l_Random);
+      FillCovariance(fCovariance[4],corrconfigs.at(1),l_Multi,mpt_2w,wmpt2,l_Random);
+      FillCovariance(fCovariance[5],corrconfigs.at(1),l_Multi,1.,wmpt2,l_Random);
+      FillCovariance(fCovariance[6],corrconfigs.at(0),l_Multi,mpt_2w,wmpt2,l_Random);
+      FillCovariance(fCovariance[7],corrconfigs.at(0),l_Multi,1.,wmpt2,l_Random);
+    }
+    double mpt = wp[1][1]/wp[1][0];
+    FillCovariance(fCovariance[1],corrconfigs.at(1),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[18],corrconfigs.at(1),l_Multi,1.,wp[1][0],l_Random);
+    FillCovariance(fCovariance[3],corrconfigs.at(0),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[8],corrconfigs.at(0),l_Multi,1.,wp[1][0],l_Random);
+    double wmpt3 = wp[1][0]*wp[1][0]*wp[1][0]-3*wp[2][0]*wp[1][0] + 2*wp[3][0];
+    if(wmpt3!=0.){
+      double mpt3 = (wp[1][1]*wp[1][1]*wp[1][1] - 3*wp[2][2]*wp[1][1] + 2*wp[3][3])/wmpt3;
+      double mpt2_3w = (wp[1][1] * wp[1][1] * wp[1][0] - 2 * wp[2][1] * wp[1][1] + 2 * wp[3][2] - wp[2][2] * wp[1][0])/wmpt3;
+      double mpt_3w = (wp[1][1] * wp[1][0] * wp[1][0] - 2 * wp[2][1] * wp[1][0] + 2 * wp[3][1] - wp[1][1] * wp[2][0])/wmpt3;
+      FillCovariance(fCovariance[9],corrconfigs.at(0),l_Multi,mpt3,wmpt3,l_Random);
+      FillCovariance(fCovariance[10],corrconfigs.at(0),l_Multi,mpt2_3w,wmpt3,l_Random);
+      FillCovariance(fCovariance[11],corrconfigs.at(0),l_Multi,mpt_3w,wmpt3,l_Random);
+      FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,1.,wmpt3,l_Random);
+    }
+    double wmpt4 =wp[1][0] * wp[1][0] * wp[1][0] * wp[1][0] - 6 * wp[2][0] * wp[1][0] * wp[1][0]
+    + 3 * wp[2][0] * wp[2][0] + 8 * wp[3][0] * wp[1][0] - 6 * wp[4][0];
+    if(wmpt4!=0.){
+      double mpt4 = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][1] - 6 * wp[2][2] * wp[1][1] * wp[1][1]
+      + 3 * wp[2][2] * wp[2][2] + 8 * wp[3][3] * wp[1][1] - 6 * wp[4][4])/wmpt4;
+      double mpt3_4w = (wp[1][1] * wp[1][1] * wp[1][1] * wp[1][0] - 3 * wp[2][2] * wp[1][1] * wp[1][0]
+      - 3 * wp[1][1] * wp[1][1] * wp[2][1] + 3 * wp[2][2] * wp[2][1] + 2 * wp[3][3] * wp[1][0]
+      + 6 * wp[1][1] * wp[3][2] - 6 * wp[4][3])/wmpt4;
+      double mpt2_4w = (wp[1][1] * wp[1][1] * wp[1][0] * wp[1][0] - wp[2][2] * wp[1][0] * wp[1][0]
+        - wp[2][0] * wp[1][1] * wp[1][1] + wp[2][0] * wp[2][2]
+        - 4 * wp[2][1] * wp[1][1] * wp[1][0] + 4 * wp[3][2] * wp[1][0]
+        + 4 * wp[3][1] * wp[1][1] + 2 * wp[2][1] * wp[2][1] - 6 * wp[4][2])/wmpt4;
+      double mpt_4w = (wp[1][1] * wp[1][0] * wp[1][0] * wp[1][0] - 3 * wp[2][1] * wp[1][0] * wp[1][0]
+      - 3 * wp[1][1] * wp[2][0] * wp[1][0] + 3 * wp[2][1] * wp[2][0]
+      + 2 * wp[1][1] * wp[3][0] + 6 * wp[3][1] * wp[1][0] - 6 * wp[4][1])/wmpt4;
+      FillCovariance(fCovariance[13],corrconfigs.at(0),l_Multi,mpt4,wmpt4,l_Random);
+      FillCovariance(fCovariance[14],corrconfigs.at(0),l_Multi,mpt3_4w,wmpt4,l_Random);
+      FillCovariance(fCovariance[15],corrconfigs.at(0),l_Multi,mpt2_4w,wmpt4,l_Random);
+      FillCovariance(fCovariance[16],corrconfigs.at(0),l_Multi,mpt_4w,wmpt4,l_Random);
+      FillCovariance(fCovariance[17],corrconfigs.at(0),l_Multi,1.,wmpt4,l_Random);
+    }
+  }
+  else {
+    //v24pt2
+    double wAABBCC = getStdAABBCC(wabcd);
+    if(wAABBCC!=0.) {
+      double val = getStdAABBCC(abcd)/wAABBCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCC))
+        fCovariance[0]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    }
+    double wAABBCD = getStdAABBCD(wabcd);
+    if(wAABBCD!=0.) {
+      double val = getStdAABBCD(abcd)/wAABBCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBCD))
+        fCovariance[4]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    }
+    double wAABBDD = getStdAABBDD(wabcd);
+    if(wAABBDD!=0.) {
+      double val = getStdAABBDD(abcd)/wAABBDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBDD))
+        fCovariance[5]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    }
+    //v24pt
+    double wAABBC = getStdAABBC(wabcd);
+    if(wAABBC!=0.) {
+      double val = getStdAABBC(abcd)/wAABBC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBC))
+        fCovariance[1]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    }
+    double wAABBD = getStdAABBD(wabcd);
+    if(wAABBD!=0.) {
+      double val = getStdAABBD(abcd)/wAABBD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wAABBD))
+        fCovariance[18]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wAABBD,l_Random);
+    }
+    //v22pt4
+    double wABCCCC = getStdABCCCC(wabcd);
+    if(wABCCCC!=0.) {
+      double val = getStdABCCCC(abcd)/wABCCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[13]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCC,l_Random);
+    }
+    double wABCCCD = getStdABCCCD(wabcd);
+    if(wABCCCD!=0.) {
+      double val = getStdABCCCD(abcd)/wABCCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCD))
+        fCovariance[14]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCCD,l_Random);
+    }
+    double wABCCDD = getStdABCCDD(wabcd);
+    if(wABCCDD!=0.) {
+      double val = getStdABCCDD(abcd)/wABCCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCDD))
+        fCovariance[15]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCDD,l_Random);
+    }
+    double wABCDDD = getStdABCDDD(wabcd);
+    if(wABCDDD!=0.) {
+      double val = getStdABCDDD(abcd)/wABCDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDDD))
+        fCovariance[16]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDDD,l_Random);
+    }
+    double wABDDDD = getStdABDDDD(wabcd);
+    if(wABDDDD!=0.) {
+      double val = getStdABDDDD(abcd)/wABDDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDDD))
+        fCovariance[17]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDDD,l_Random);
+    }
+    //v22pt3
+    double wABCCC = getStdABCCC(wabcd);
+    if(wABCCC!=0.) {
+      double val = getStdABCCC(abcd)/wABCCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCC))
+        fCovariance[9]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCC,l_Random);
+    }
+    double wABCCD = getStdABCCD(wabcd);
+    if(wABCCD!=0.) {
+      double val = getStdABCCD(abcd)/wABCCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCD))
+        fCovariance[10]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCCD,l_Random);
+    }
+    double wABCDD = getStdABCDD(wabcd);
+    if(wABCDD!=0.) {
+      double val = getStdABCDD(abcd)/wABCDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCDD))
+        fCovariance[11]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCDD,l_Random);
+    }
+    double wABDDD = getStdABDDD(wabcd);
+    if(wABDDD!=0.) {
+      double val = getStdABDDD(abcd)/wABDDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDDD))
+        fCovariance[12]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDDD,l_Random);
+    }
+    //v22pt2
+    double wABCC = getStdABCC(wabcd);
+    if(wABCC!=0.) {
+      double val = getStdABCC(abcd)/wABCC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCC))
+        fCovariance[2]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    }
+    double wABCD = getStdABCD(wabcd);
+    if(wABCD!=0.) {
+      double val = getStdABCD(abcd)/wABCD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCD))
+        fCovariance[6]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    }
+    double wABDD = getStdABDD(wabcd);
+    if(wABDD!=0.) {
+      double val = getStdABDD(abcd)/wABDD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABDD))
+        fCovariance[7]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    }
+    //v22pt
+    double wABC = getStdABC(wabcd);
+    if(wABC!=0.) {
+      double val = getStdABC(abcd)/wABC;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[3]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABC,l_Random);
+    }
+    double wABD = getStdABD(wabcd);
+    if(wABD!=0.) {
+      double val = getStdABD(abcd)/wABD;
+      if(!TMath::IsNaN(val) && !TMath::IsNaN(wABCCCC))
+        fCovariance[8]->FillProfile(l_Multi,val,(fUseEventWeightOne)?1.:wABD,l_Random);
+    }
+  }
   PostData(3,fCovList);
   return;
 }
@@ -955,6 +1333,7 @@ void AliAnalysisTaskGammaSoft::FillAdditionalTrackQAPlots(AliAODTrack &track, co
     fTPCcls[1]->Fill(track.GetTPCncls());
   }
 }
+//v24pt2
 double AliAnalysisTaskGammaSoft::getStdAABBCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
   std::complex<double> a = abcdvec[1][0][0][0];
   std::complex<double> b = abcdvec[0][1][0][0];
@@ -1095,6 +1474,7 @@ double AliAnalysisTaskGammaSoft::getStdAABBDD(vector<vector<vector<vector<std::c
  2.*ab*ab*dd - 4.*a*abb*dd - 4.*aab*b*dd + 4.*a*ab*b*dd - a*a*b*b*dd +
  aa*b*b*dd + a*a*bb*dd - aa*bb*dd).real();
 }
+//v24pt
 double AliAnalysisTaskGammaSoft::getStdAABBC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
   std::complex<double> a = abcdvec[1][0][0][0];
   std::complex<double> b = abcdvec[0][1][0][0];
@@ -1117,6 +1497,350 @@ double AliAnalysisTaskGammaSoft::getStdAABBC(vector<vector<vector<vector<std::co
   + 2.*ab*ab*c + 4.*ab*ac*b + 4.*ab*bc*a + 8.*abc*a*b + 4.*aab*b*c + 2.*aac*b*b + 4.*abb*a*c + 2.*bbc*a*a + aa*bb*c + 2.*aa*b*bc + 2.*bb*a*ac
   - 12.*aabc*b - 12.*abbc*a - 6.*aabb*c - 8.*abc*ab - 2.*bbc*aa - 2.*aac*bb - 4.*aab*bc - 4.*abb*ac
   + 24.*aabbc).real(); }
+double AliAnalysisTaskGammaSoft::getStdAABBD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> aa = abcdvec[2][0][0][0];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bb = abcdvec[0][2][0][0];
+  std::complex<double> bd= abcdvec[0][1][0][1];
+  std::complex<double> aab = abcdvec[2][1][0][0];
+  std::complex<double> aad =  abcdvec[2][0][0][1];
+  std::complex<double> abb = abcdvec[1][2][0][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> bbd = abcdvec[0][2][0][1];
+  std::complex<double> aabb = abcdvec[2][2][0][0];
+  std::complex<double> aabd = abcdvec[2][1][0][1];
+  std::complex<double> abbd = abcdvec[1][2][0][1];
+  std::complex<double> aabbd= abcdvec[2][2][0][1];
+  return (a*a*b*b*d - aa*b*b*d - a*a*bb*d - 4.*ab*a*b*d - 2.*a*ad*b*b - 2.*a*a*bd*b
+  + 2.*ab*ab*d + 4.*ab*ad*b + 4.*ab*bd*a + 8.*abd*a*b + 4.*aab*b*d + 2.*aad*b*b + 4.*abb*a*d + 2.*bbd*a*a + aa*bb*d + 2.*aa*b*bd + 2.*bb*a*ad
+  - 12.*aabd*b - 12.*abbd*a - 6.*aabb*d - 8.*abd*ab - 2.*bbd*aa - 2.*aad*bb - 4.*aab*bd - 4.*abb*ad
+  + 24.*aabbd).real();
+}
+//v22pt4
+double AliAnalysisTaskGammaSoft::getStdABCCCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec)
+{
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> ccc = abcdvec[0][0][3][0];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
+  std::complex<double> accc = abcdvec[1][0][3][0];
+  std::complex<double> bccc = abcdvec[0][1][3][0];
+  std::complex<double> cccc = abcdvec[0][0][4][0];
+  std::complex<double> abccc = abcdvec[1][1][3][0];
+  std::complex<double> acccc = abcdvec[1][0][4][0];
+  std::complex<double> bcccc = abcdvec[0][1][4][0];
+  std::complex<double> abcccc = abcdvec[1][1][4][0];
+  return (-120.*abcccc + 24.*acccc*b + 24.*accc*bc + 24.*acc*bcc +
+    24.*ac*bccc + 24.*a*bcccc + 96.*abccc*c - 24.*accc*b*c - 24.*acc*bc*c -
+    24.*ac*bcc*c - 24.*a*bccc*c - 36.*abcc*c*c + 12.*acc*b*c*c +
+    12.*ac*bc*c*c + 12.*a*bcc*c*c + 8.*abc*c*c*c -4.*ac*b*c*c*c - 4.*a*bc*c*c*c -
+    ab*c*c*c*c + a*b*c*c*c*c + 36.*abcc*cc - 12.*acc*b*cc - 12.*ac*bc*cc - 12.*a*bcc*cc
+    - 24.*abc*c*cc + 12.*ac*b*c*cc + 12.*a*bc*c*cc + 6.*ab*c*c*cc - 6.*a*b*c*c*cc
+    - 3.*ab*cc*cc + 3.*a*b*cc*cc + 16.*abc*ccc - 8.*ac*b*ccc - 8.*a*bc*ccc - 8.*ab*c*ccc
+    + 8.*a*b*c*ccc + 6.*ab*cccc - 6.*a*b*cccc).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABCCCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> ccc = abcdvec[0][0][3][0];
+  std::complex<double> ccd = abcdvec[0][0][2][1];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
+  std::complex<double> accc = abcdvec[1][0][3][0];
+  std::complex<double> accd = abcdvec[1][0][2][1];
+  std::complex<double> bccc = abcdvec[0][1][3][0];
+  std::complex<double> bccd = abcdvec[0][1][2][1];
+  std::complex<double> cccd = abcdvec[0][0][3][1];
+  std::complex<double> abccc = abcdvec[1][1][3][0];
+  std::complex<double> abccd = abcdvec[1][1][2][1];
+  std::complex<double> acccd = abcdvec[1][0][3][1];
+  std::complex<double> bcccd = abcdvec[0][1][3][1];
+  std::complex<double> abcccd = abcdvec[1][1][3][1];
+  return (-120.*abcccd + 24.*acccd*b + 18.*accd*bc + 12.*acd*bcc + 6.*ad*bccc +
+ 24.*a*bcccd + 18.*ac*bccd + 12.*acc*bcd + 6.*accc*bd + 72.*abccd*c -
+ 18.*accd*b*c - 12.*acd*bc*c - 6.*ad*bcc*c - 18.*a*bccd*c - 12.*ac*bcd*c -
+ 6.*acc*bd*c - 18.*abcd*c*c + 6.*acd*b*c*c + 3.*ad*bc*c*c + 6.*a*bcd*c*c +
+ 3.*ac*bd*c*c + 2.*abd*c*c*c - ad*b*c*c*c - a*bd*c*c*c + 18.*abcd*cc -
+ 6.*acd*b*cc - 3.*ad*bc*cc - 6.*a*bcd*cc - 3.*ac*bd*cc - 6.*abd*c*cc +
+ 3.*ad*b*c*cc + 3.*a*bd*c*cc + 4.*abd*ccc - 2.*ad*b*ccc - 2.*a*bd*ccc +
+ 6.*ab*cccd - 6.*a*b*cccd + 12.*abc*ccd - 6.*ac*b*ccd - 6.*a*bc*ccd -
+ 6.*ab*c*ccd + 6.*a*b*c*ccd + 18.*abcc*cd - 6.*acc*b*cd - 6.*ac*bc*cd -
+ 6.*a*bcc*cd - 12.*abc*c*cd + 6.*ac*b*c*cd + 6.*a*bc*c*cd + 3.*ab*c*c*cd -
+ 3.*a*b*c*c*cd - 3.*ab*cc*cd + 3.*a*b*cc*cd + 24.*abccc*d - 6.*accc*b*d -
+ 6.*acc*bc*d - 6.*ac*bcc*d - 6.*a*bccc*d - 18.*abcc*c*d + 6.*acc*b*c*d +
+ 6.*ac*bc*c*d + 6.*a*bcc*c*d + 6.*abc*c*c*d - 3.*ac*b*c*c*d -
+ 3.*a*bc*c*c*d - ab*c*c*c*d + a*b*c*c*c*d - 6.*abc*cc*d + 3.*ac*b*cc*d +
+ 3.*a*bc*cc*d + 3.*ab*c*cc*d - 3.*a*b*c*cc*d - 2.*ab*ccc*d + 2.*a*b*ccc*d).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABCCDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> ccd = abcdvec[0][0][2][1];
+  std::complex<double> cdd = abcdvec[0][0][1][2];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  std::complex<double> accd = abcdvec[1][0][2][1];
+  std::complex<double> acdd = abcdvec[1][0][1][2];
+  std::complex<double> bccd = abcdvec[0][1][2][1];
+  std::complex<double> bcdd = abcdvec[0][1][1][2];
+  std::complex<double> ccdd = abcdvec[0][0][2][2];
+  std::complex<double> abccd = abcdvec[1][1][2][1];
+  std::complex<double> abcdd = abcdvec[1][1][1][2];
+  std::complex<double> accdd = abcdvec[1][0][2][2];
+  std::complex<double> bccdd = abcdvec[0][1][2][2];
+  std::complex<double> abccdd = abcdvec[1][1][2][2];
+  return (-120.*abccdd + 24.*accdd*b + 12.*acdd*bc + 4.*add*bcc + 12.*ad*bccd +
+ 24.*a*bccdd + 16.*acd*bcd + 12.*ac*bcdd + 12.*accd*bd + 4.*acc*bdd +
+ 48.*abcdd*c - 12.*acdd*b*c - 4.*add*bc*c - 8.*ad*bcd*c - 12.*a*bcdd*c -
+ 8.*acd*bd*c - 4.*ac*bdd*c - 6.*abdd*c*c + 2.*add*b*c*c + 2.*ad*bd*c*c +
+ 2.*a*bdd*c*c + 6.*abdd*cc - 2.*add*b*cc - 2.*ad*bd*cc - 2.*a*bdd*cc +
+ 8.*abd*ccd - 4.*ad*b*ccd - 4.*a*bd*ccd + 6.*ab*ccdd - 6.*a*b*ccdd +
+ 24.*abcd*cd - 8.*acd*b*cd - 4.*ad*bc*cd - 8.*a*bcd*cd - 4.*ac*bd*cd -
+ 8.*abd*c*cd + 4.*ad*b*c*cd + 4.*a*bd*c*cd - 2.*ab*cd*d + 2.*a*b*cd*d +
+ 8.*abc*cdd - 4.*ac*b*cdd - 4.*a*bc*cdd - 4.*ab*c*cdd + 4.*a*b*c*cdd +
+ 48.*abccd*d - 12.*accd*b*d - 8.*acd*bc*d - 4.*ad*bcc*d - 12.*a*bccd*d -
+ 8.*ac*bcd*d - 4.*acc*bd*d - 24.*abcd*c*d + 8.*acd*b*c*d + 4.*ad*bc*c*d +
+ 8.*a*bcd*c*d + 4.*ac*bd*c*d + 4.*abd*c*c*d - 2.*ad*b*c*c*d -
+ 2.*a*bd*c*c*d - 4.*abd*cc*d + 2.*ad*b*cc*d + 2.*a*bd*cc*d - 4.*ab*ccd*d +
+ 4.*a*b*ccd*d - 8.*abc*cd*d + 4.*ac*b*cd*d + 4.*a*bc*cd*d + 4.*ab*c*cd*d -
+ 4.*a*b*c*cd*d - 6.*abcc*d*d + 2.*acc*b*d*d + 2.*ac*bc*d*d +
+ 2.*a*bcc*d*d + 4.*abc*c*d*d - 2.*ac*b*c*d*d - 2.*a*bc*c*d*d -
+ ab*c*c*d*d + a*b*c*c*d*d + ab*cc*d*d - a*b*cc*d*d + 6.*abcc*dd -
+ 2.*acc*b*dd - 2.*ac*bc*dd - 2.*a*bcc*dd - 4.*abc*c*dd + 2.*ac*b*c*dd +
+ 2.*a*bc*c*dd + ab*c*c*dd - a*b*c*c*dd - ab*cc*dd + a*b*cc*dd).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABCDDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> cdd = abcdvec[0][0][1][2];
+  std::complex<double> ddd = abcdvec[0][0][0][3];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  std::complex<double> acdd = abcdvec[1][0][1][2];
+  std::complex<double> addd = abcdvec[1][0][0][3];
+  std::complex<double> bcdd = abcdvec[0][1][1][2];
+  std::complex<double> bddd = abcdvec[0][1][0][3];
+  std::complex<double> cddd = abcdvec[0][0][1][3];
+  std::complex<double> abcdd = abcdvec[1][1][1][2];
+  std::complex<double> abddd = abcdvec[1][1][0][3];
+  std::complex<double> acddd = abcdvec[1][0][1][3];
+  std::complex<double> bcddd = abcdvec[0][1][1][3];
+  std::complex<double> abcddd = abcdvec[1][1][1][3];
+  return (-120.*abcddd + 24.*acddd*b + 6.*addd*bc + 12.*add*bcd + 18.*ad*bcdd +
+ 24.*a*bcddd + 18.*acdd*bd + 12.*acd*bdd + 6.*ac*bddd + 24.*abddd*c -
+ 6.*addd*b*c - 6.*add*bd*c - 6.*ad*bdd*c - 6.*a*bddd*c + 18.*abdd*cd -
+ 6.*add*b*cd - 6.*ad*bd*cd - 6.*a*bdd*cd + 12.*abd*cdd - 6.*ad*b*cdd -
+ 6.*a*bd*cdd + 6.*ab*cddd - 6.*a*b*cddd + 72.*abcdd*d - 18.*acdd*b*d -
+ 6.*add*bc*d - 12.*ad*bcd*d - 18.*a*bcdd*d - 12.*acd*bd*d - 6.*ac*bdd*d -
+ 18.*abdd*c*d + 6.*add*b*c*d + 6.*ad*bd*c*d + 6.*a*bdd*c*d -
+ 12.*abd*cd*d + 6.*ad*b*cd*d + 6.*a*bd*cd*d - 6.*ab*cdd*d + 6.*a*b*cdd*d -
+ 18.*abcd*d*d + 6.*acd*b*d*d + 3.*ad*bc*d*d + 6.*a*bcd*d*d +
+ 3.*ac*bd*d*d + 6.*abd*c*d*d - 3.*ad*b*c*d*d - 3.*a*bd*c*d*d +
+ 3.*ab*cd*d*d - 3.*a*b*cd*d*d + 2.*abc*d*d*d - ac*b*d*d*d - a*bc*d*d*d -
+ ab*c*d*d*d + a*b*c*d*d*d + 18.*abcd*dd - 6.*acd*b*dd - 3.*ad*bc*dd -
+ 6.*a*bcd*dd - 3.*ac*bd*dd - 6.*abd*c*dd + 3.*ad*b*c*dd + 3.*a*bd*c*dd -
+ 3.*ab*cd*dd + 3.*a*b*cd*dd - 6.*abc*d*dd + 3.*ac*b*d*dd + 3.*a*bc*d*dd +
+ 3.*ab*c*d*dd - 3.*a*b*c*d*dd + 4.*abc*ddd - 2.*ac*b*ddd - 2.*a*bc*ddd -
+ 2.*ab*c*ddd + 2.*a*b*c*ddd).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABDDDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> ddd = abcdvec[0][0][0][3];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  std::complex<double> addd = abcdvec[1][0][0][3];
+  std::complex<double> bddd = abcdvec[0][1][0][3];
+  std::complex<double> dddd = abcdvec[0][0][0][4];
+  std::complex<double> abddd = abcdvec[1][1][0][3];
+  std::complex<double> adddd = abcdvec[1][0][0][4];
+  std::complex<double> bdddd = abcdvec[0][1][0][4];
+  std::complex<double> abdddd = abcdvec[1][1][0][4];
+  return (-120.*abdddd + 24.*adddd*b + 24.*addd*bd + 24.*add*bdd + 24.*ad*bddd +
+ 24.*a*bdddd + 96.*abddd*d - 24.*addd*b*d - 24.*add*bd*d - 24.*ad*bdd*d -
+ 24.*a*bddd*d - 36.*abdd*d*d + 12.*add*b*d*d + 12.*ad*bd*d*d +
+ 12.*a*bdd*d*d + 8.*abd*d*d*d - 4.*ad*b*d*d*d - 4.*a*bd*d*d*d - ab*d*d*d*d +
+ a*b*d*d*d*d + 36.*abdd*dd - 12.*add*b*dd - 12.*ad*bd*dd - 12.*a*bdd*dd -
+ 24.*abd*d*dd + 12.*ad*b*d*dd + 12.*a*bd*d*dd + 6.*ab*d*d*dd -
+ 6.*a*b*d*d*dd - 3.*ab*dd*d + 3.*a*b*dd*d + 16.*abd*ddd - 8.*ad*b*ddd -
+ 8.*a*bd*ddd - 8.*ab*d*ddd + 8.*a*b*d*ddd + 6.*ab*dddd - 6.*a*b*dddd).real();
+}
+//v22pt3
+double AliAnalysisTaskGammaSoft::getStdABCCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> ccc = abcdvec[0][0][3][0];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
+  std::complex<double> accc = abcdvec[1][0][3][0];
+  std::complex<double> bccc = abcdvec[0][1][3][0];
+  std::complex<double> abccc = abcdvec[1][1][3][0];
+  return (24.*abccc - 6.*accc*b - 6.*acc*bc - 6.*ac*bcc - 6.*a*bccc - 18.*abcc*c +
+  6.*acc*b*c + 6.*ac*bc*c + 6.*a*bcc*c + 6.*abc*c*c - 3.*ac*b*c*c -
+  3.*a*bc*c*c - ab*c*c*c + a*b*c*c*c - 6.*abc*cc + 3.*ac*b*cc + 3.*a*bc*cc +
+  3.*ab*c*cc - 3.*a*b*c*cc - 2.*ab*ccc + 2.*a*b*ccc).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABCCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> ccd = abcdvec[0][0][2][1];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
+  std::complex<double> accd = abcdvec[1][0][2][1];
+  std::complex<double> bccd = abcdvec[0][1][2][1];
+  std::complex<double> abccd = abcdvec[1][1][2][1];
+  return (24.*abccd - 6.*accd*b - 4.*acd*bc - 2.*ad*bcc - 6.*a*bccd - 4.*ac*bcd -
+  2.*acc*bd - 12.*abcd*c + 4.*acd*b*c + 2.*ad*bc*c + 4.*a*bcd*c +
+  2.*ac*bd*c + 2.*abd*c*c - ad*b*c*c - a*bd*c*c - 2.*abd*cc + ad*b*cc +
+  a*bd*cc - 2.*ab*ccd + 2.*a*b*ccd - 4.*abc*cd + 2.*ac*b*cd + 2.*a*bc*cd +
+  2.*ab*c*cd - 2.*a*b*c*cd - 6.*abcc*d + 2.*acc*b*d + 2.*ac*bc*d +
+  2.*a*bcc*d + 4.*abc*c*d - 2.*ac*b*c*d - 2.*a*bc*c*d - ab*c*c*d +
+  a*b*c*c*d + ab*cc*d - a*b*cc*d).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABCDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> cdd = abcdvec[0][0][1][2];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
+  std::complex<double> acdd = abcdvec[1][0][1][2];
+  std::complex<double> bcdd = abcdvec[0][1][1][2];
+  std::complex<double> abcdd = abcdvec[1][1][1][2];
+  return (24.*abcdd - 6.*acdd*b - 2.*add*bc - 4.*ad*bcd - 6.*a*bcdd - 4.*acd*bd -
+  2.*ac*bdd - 6.*abdd*c + 2.*add*b*c + 2.*ad*bd*c + 2.*a*bdd*c - 4.*abd*cd +
+  2.*ad*b*cd + 2.*a*bd*cd - 2.*ab*cdd + 2.*a*b*cdd - 12.*abcd*d +
+  4.*acd*b*d + 2.*ad*bc*d + 4.*a*bcd*d + 2.*ac*bd*d + 4.*abd*c*d -
+  2.*ad*b*c*d - 2.*a*bd*c*d + 2.*ab*cd*d - 2.*a*b*cd*d + 2.*abc*d*d -
+  ac*b*d*d - a*bc*d*d - ab*c*d*d + a*b*c*d*d - 2.*abc*dd + ac*b*dd +
+  a*bc*dd + ab*c*dd- a*b*c*dd).real();
+}
+double AliAnalysisTaskGammaSoft::getStdABDDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> ddd = abcdvec[0][0][0][3];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  std::complex<double> addd = abcdvec[1][0][0][3];
+  std::complex<double> bddd = abcdvec[0][1][0][3];
+  std::complex<double> abddd = abcdvec[1][1][0][3];
+  return (24.*abddd - 6.*addd*b - 6.*add*bd - 6.*ad*bdd - 6.*a*bddd - 18.*abdd*d +
+  6.*add*b*d + 6.*ad*bd*d + 6.*a*bdd*d + 6.*abd*d*d - 3.*ad*b*d*d -
+  3.*a*bd*d*d - ab*d*d*d + a*b*d*d*d - 6.*abd*dd + 3.*ad*b*dd + 3.*a*bd*dd +
+  3.*ab*d*dd - 3.*a*b*d*dd - 2.*ab*ddd + 2.*a*b*ddd).real();
+}
+//v22pt2
 double AliAnalysisTaskGammaSoft::getStdABCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
   std::complex<double> a = abcdvec[1][0][0][0];
   std::complex<double> b = abcdvec[0][1][0][0];
@@ -1149,9 +1873,9 @@ double AliAnalysisTaskGammaSoft::getStdABCD(vector<vector<vector<vector<std::com
   std::complex<double> bcd = abcdvec[0][1][1][1];
   std::complex<double> abcd = abcdvec[1][1][1][1];
   return (-6.*abcd + 2.*acd*b + ad*bc + 2.*a*bcd + ac*bd + 2.*abd*c - ad*b*c -
- a*bd*c + ab*cd - a*b*cd + 2.*abc*d - ac*b*d - a*bc*d - ab*c*d +
- a*b*c*d).real();
- }
+  a*bd*c + ab*cd - a*b*cd + 2.*abc*d - ac*b*d - a*bc*d - ab*c*d +
+  a*b*c*d).real();
+  }
 double AliAnalysisTaskGammaSoft::getStdABDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
   std::complex<double> a = abcdvec[1][0][0][0];
   std::complex<double> b = abcdvec[0][1][0][0];
@@ -1167,6 +1891,7 @@ double AliAnalysisTaskGammaSoft::getStdABDD(vector<vector<vector<vector<std::com
   return (a*b*d*d - a*b*dd - 2.*a*bd*d - 2.*ad*b*d - ab*d*d
   + 2.*add*b + 2.*a*bdd + 4.*abd*d + ab*dd + 2.*ad*bd
   - 6.*abdd).real(); }
+//v22pt
 double AliAnalysisTaskGammaSoft::getStdABC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
 std::complex<double> a = abcdvec[1][0][0][0];
 std::complex<double> b = abcdvec[0][1][0][0];
@@ -1254,6 +1979,15 @@ void AliAnalysisTaskGammaSoft::SetupAxes() {
   if(!fEtaAxis) { printf("Setting default eta bins\n"); SetEtaBins(Neta_Default,l_eta_Default);}
   fEtaBins=GetBinsFromAxis(fEtaAxis);
   fNEtaBins=fEtaAxis->GetNbins();
+  if(fOnTheFly){
+    const int nipbins_default = 1000;
+    Double_t* ipbins_default = new Double_t[nipbins_default+1];
+    for(int i = 0; i<=nipbins_default; ++i) ipbins_default[i] = 30./1000*i;
+    if(!fIPAxis) { printf("Setting default IP bins\n"); SetIPBins(nipbins_default,ipbins_default);}
+    fIPBins = GetBinsFromAxis(fIPAxis);
+    fNIPBins = fIPAxis->GetNbins();
+  }
+
   return;
 }
 void AliAnalysisTaskGammaSoft::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
@@ -1271,6 +2005,10 @@ void AliAnalysisTaskGammaSoft::SetMultiBins(Int_t nMultiBins, Double_t *multibin
 void AliAnalysisTaskGammaSoft::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;
   fV0MMultiAxis = new TAxis(nMultiBins, multibins);
+}
+void AliAnalysisTaskGammaSoft::SetIPBins(Int_t nIPBins, Double_t *ipbins) {
+  if(fIPAxis) delete fIPAxis;
+  fIPAxis = new TAxis(nIPBins, ipbins);
 }
 Double_t *AliAnalysisTaskGammaSoft::GetBinsFromAxis(TAxis *inax) {
   Int_t lBins = inax->GetNbins();

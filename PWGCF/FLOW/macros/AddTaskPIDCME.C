@@ -14,13 +14,13 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   bool bCalculateDiffResult     = true,
   bool bCalculateDeltaPhiSumPhi = false,
   bool bOpenPIDSingletrk        = false,
-  bool bOpenSsandOsSelfCheck    = true,
+  bool bOpenSsandOsSelfCheck    = false,
   bool bCalculatePionKaon       = true,
   bool bCalculatePionProton     = true,
   bool bCalculateKaonProton     = true,
   bool bCalculatePionPion       = true,
-  bool bCalculateKaonKaon       = false,
-  bool bCalculateProtonProton   = false,
+  bool bCalculateKaonKaon       = true,
+  bool bCalculateProtonProton   = true,
   bool bCalculateHadronHadron   = true,
   bool bDoNUA                   = true,
   bool bDoNUE                   = true,
@@ -56,7 +56,16 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   bool bNarrowDcaCuts768       = (filterBit == 768);
   bool bProtonCustomizedDCACut = (filterBit == 768);
   bool bUsePionRejection       = false;
-  bool bUseOneSideTPCPlane     = false;
+  bool bUseOneSideTPCPlane     = true;
+  double VzCut                 = 10;
+  bool bTightPileUp            = false;
+  float dcaCutz                = 3.2;
+  float nclsCut                = 50;
+  float chi2Min                = 0.1;
+  float chi2Max                = 4.0;
+  double NSigmaTPCCutPion      = 3.0;
+  double NSigmaTPCCutKaon      = 3.0;
+  double NSigmaTPCCutProton    = 3.0;
   // --- instantiate analysis task
   TString combinedName;
   combinedName.Form("TaskPIDCME%s", suffix);
@@ -93,6 +102,17 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   task->IfCalculateHadronHadron(bCalculateHadronHadron);
   
   task->IfUseOneSideTPCPlane(bUseOneSideTPCPlane);
+  //for systematic process
+  task->SetVzCut(VzCut);
+  task->IfTightPileUp(bTightPileUp);
+  task->SetDCAcutZ(dcaCutz);
+  task->SetNclsCut(nclsCut);
+  task->SetChi2Min(chi2Min);
+  task->SetChi2Max(chi2Max);
+  task->SetNSigmaTPCCutPion(NSigmaTPCCutPion);
+  task->SetNSigmaTPCCutKaon(NSigmaTPCCutKaon);
+  task->SetNSigmaTPCCutProton(NSigmaTPCCutProton);
+
 
 
   //=========================================================================

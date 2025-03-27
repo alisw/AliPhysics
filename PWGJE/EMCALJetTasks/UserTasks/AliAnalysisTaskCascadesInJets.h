@@ -104,6 +104,10 @@ public:
   void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
   void SetLeadingV0(Bool_t b = 0) {bdLeadingV0 = b;}
+  void SetMaxDeltaR(Double_t r = 0.12) {fdMaxDeltaR = r;}
+  
+  void SetCheckHybridDaughter(Bool_t b = 0) { fbCheckHybridDaughters = b;}
+
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
   Bool_t GetMCAnalysis() const     { return fbMCAnalysis; }
@@ -164,6 +168,11 @@ public:
   static const Int_t iOmegaMinusId;
   static const Int_t iOmegaPlusId;
 
+  static const Int_t iXMGenId;
+  static const Int_t iXPGenId;
+  static const Int_t iOMGenId;
+  static const Int_t iOPGenId;
+
   void FillCandidates(Double_t mXi, Double_t mOmega, Bool_t isXiMinus, Bool_t isXiPlus, Bool_t isOmegaMinus, Bool_t isOmegaPlus, Int_t iCut, Int_t iCent); //Fills histograms according to the Cascade type 
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
   Bool_t OverlapWithJets(const TClonesArray* array, const AliVParticle* cone, Double_t dDistance) const; // decides whether a cone overlaps with other jets
@@ -173,7 +182,7 @@ public:
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
-  static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+  void AddDaughters(AliAODRecoDecay* cand, std::vector<int>& daughterIDs);
   Bool_t AssociateRecCascadeWithMC( AliAODcascade* cascpart, AliEmcalJet *xjet, Bool_t bIsXiMinus, Bool_t bIsXiPlus, Bool_t bIsOmegaMinus, Bool_t bIsOmegaPlus, Int_t iCent);
   Bool_t GeneratedMCParticles( TClonesArray* track, Int_t iCent );
   Double_t MassPeakSigma(Double_t pt, Int_t particle);
@@ -186,6 +195,7 @@ protected:
   void AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart);  
   void AddEventTracksMC(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
+  Int_t GetuidMC(AliVTrack* trk, std::vector<Int_t>& ivecLb);
 
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListStdJets; //! Output list for jet analysis results
@@ -278,6 +288,9 @@ private:
   Double_t fdJetTrackEtaMax;          ///< max jet constituent track eta
   Double_t fdMaxEtaJetBG;            ///< Maximum jet eta cut for the bacground estimation
   Double_t fdBgRadius;               ///< Background jet radius
+  Double_t fdMaxDeltaR;              ///< Maximum value of Delta R for the jet matching
+  
+  Bool_t fbCheckHybridDaughters;     ///< Switch for adding only V0 with hybrod daughter to the jet finder
 
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
   Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
@@ -376,6 +389,8 @@ private:
 
   // MC histograms
   TH1D* fh1MCStats; //! Cascades in jets statistics
+  TH2D* fh2JetMatchDeltaRDistrib[fgkiNBinsCent]; //! pt distribution of all DeltaR od particle-detector jet pairs
+  TH1D* fh1JetPtSmearing[fgkiNBinsCent]; //! distribution of particle level jet pt - detector level jet pt
   // XiMinus inclusive
   TH1D* fh1CascadeXiMinusPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated XiMinus in event
   TH2D* fh2CascadeXiMinusPtMassMCRec[fgkiNBinsCent]; //! pt-mass spectrum of successfully reconstructed XiMinus in event
@@ -389,6 +404,10 @@ private:
   THnSparse* fh3CascadeXiMinusInJetEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of generated XiMinus in jet
   THnSparse* fh4CascadeXiMinusInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed XiMinus in jet
   THnSparse* fhnCascadeXiMinusInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! Cascade in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_Cascade; pt_Cascade; pt_jet
+
+  TH2D* fh2CascadeXiMinusInJetPtMCGenSepJet[fgkiNBinsCent]; //! pt spectrum of generated XiMinus in jet
+  THnSparse* fh3CascadeXiMinusInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //! eta-pt spectrum of generated XiMinus in jet
+  
   // resolution
   TH2D* fh2CascadeXiMinusMCResolMPt[fgkiNBinsCent]; //! XiMinus mass resolution vs pt
   TH2D* fh2CascadeXiMinusMCPtGenPtRec[fgkiNBinsCent]; //! K0s generated pt vs reconstructed pt
@@ -406,6 +425,10 @@ private:
   THnSparse* fh3CascadeXiPlusInJetEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of generated XiPlus in jet
   THnSparse* fh4CascadeXiPlusInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed XiPlus in jet
   THnSparse* fhnCascadeXiPlusInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! Cascade in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_Cascade; pt_Cascade; pt_jet
+
+  TH2D* fh2CascadeXiPlusInJetPtMCGenSepJet[fgkiNBinsCent]; //! pt spectrum of generated XiPlus in jet
+  THnSparse* fh3CascadeXiPlusInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //! eta-pt spectrum of generated XiPlus in jet
+  
   // resolution
   TH2D* fh2CascadeXiPlusMCResolMPt[fgkiNBinsCent]; //! XiPlus mass resolution vs pt
   TH2D* fh2CascadeXiPlusMCPtGenPtRec[fgkiNBinsCent]; //! K0s generated pt vs reconstructed pt
@@ -423,6 +446,9 @@ private:
   THnSparse* fh3CascadeOmegaMinusInJetEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of generated OmegaMinus in jet
   THnSparse* fh4CascadeOmegaMinusInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed OmegaMinus in jet
   THnSparse* fhnCascadeOmegaMinusInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! Cascade in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_Cascade; pt_Cascade; pt_jet
+
+  TH2D* fh2CascadeOmegaMinusInJetPtMCGenSepJet[fgkiNBinsCent]; //! pt spectrum of generated OmegaMinus in jet
+  THnSparse* fh3CascadeOmegaMinusInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //! eta-pt spectrum of generated OmegaMinus in jet
   // resolution
   TH2D* fh2CascadeOmegaMinusMCResolMPt[fgkiNBinsCent]; //! OmegaMinus mass resolution vs pt
   TH2D* fh2CascadeOmegaMinusMCPtGenPtRec[fgkiNBinsCent]; //! K0s generated pt vs reconstructed pt
@@ -440,6 +466,9 @@ private:
   THnSparse* fh3CascadeOmegaPlusInJetEtaPtMCGen[fgkiNBinsCent]; //! eta-pt spectrum of generated OmegaPlus in jet
   THnSparse* fh4CascadeOmegaPlusInJetEtaPtMassMCRec[fgkiNBinsCent]; //! mass-eta-pt spectrum of successfully reconstructed OmegaPlus in jet
   THnSparse* fhnCascadeOmegaPlusInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! Cascade in jets, reconstructed: charge_daughter; eta_daughter; pt_daughter; eta_Cascade; pt_Cascade; pt_jet
+  
+  TH2D* fh2CascadeOmegaPlusInJetPtMCGenSepJet[fgkiNBinsCent]; //! pt spectrum of generated OmegaPlus in jet
+  THnSparse* fh3CascadeOmegaPlusInJetEtaPtMCGenSepJet[fgkiNBinsCent]; //! eta-pt spectrum of generated OmegaPlus in jet
   // resolution
   TH2D* fh2CascadeOmegaPlusMCResolMPt[fgkiNBinsCent]; //! OmegaPlus mass resolution vs pt
   TH2D* fh2CascadeOmegaPlusMCPtGenPtRec[fgkiNBinsCent]; //! K0s generated pt vs reconstructed pt
@@ -447,7 +476,7 @@ private:
   AliAnalysisTaskCascadesInJets(const AliAnalysisTaskCascadesInJets&); // not implemented
   AliAnalysisTaskCascadesInJets& operator=(const AliAnalysisTaskCascadesInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskCascadesInJets, 7) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
+  ClassDef(AliAnalysisTaskCascadesInJets, 8) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
 };
 
 #endif

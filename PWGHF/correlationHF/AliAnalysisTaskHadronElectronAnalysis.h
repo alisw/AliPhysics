@@ -71,8 +71,10 @@ class AliAnalysisTaskHadronElectronAnalysis : public AliAnalysisTaskSE {
   void SetAssocTrkBitH(double assocTrkBitH);
   void SetPartnerTrkBit(double partnerTrkBit);
   void SetTrigTrkBit(double trigTrkBit);
+  void SetUseSPDKAny(bool SetUseSPDKAny);
   void SetUseSPDKBoth(bool useSPDKBoth);
   void SetRunOnMC(bool runOnMC);
+  void SetUseTOFCut(bool useTOFCut);
 
   struct AliMotherContainer {
     TLorentzVector particle;
@@ -94,8 +96,11 @@ class AliAnalysisTaskHadronElectronAnalysis : public AliAnalysisTaskSE {
   float fAssocTrkBitH;
   float fPartnerTrkBit;
   float fTrigTrkBit;
+  bool fUseSPDKAny;
   bool fUseSPDKBoth;
   bool fRunOnMC;
+  bool fUseTOFCut;
+
   
 // Old parameters (do what you will with them)
   float MULT_LOW;
@@ -115,96 +120,113 @@ class AliAnalysisTaskHadronElectronAnalysis : public AliAnalysisTaskSE {
 
   AliEventPoolManager *fCorPoolMgr; //!>! correlation pool manager
   
- Bool_t fIsFrmEmbPi0;
- Bool_t fIsFrmEmbEta;
-    Bool_t verbose;
-    Bool_t fIsNew;
-    Bool_t MC;
+    Bool_t fIsFrmEmbPi0; //!>!
+    Bool_t fIsFrmEmbEta; //!>!
+    Bool_t verbose; //!>!
+    Bool_t fIsNew; //!>!
+    Bool_t MC; //!>!
     Int_t ftype;//!
-    Int_t fWeightPi0;
-    Int_t fWeightEta;
-    Int_t fWeight;
-    TH1F *fRealInclsElecPt;
-    TH1F *fNonHFeTrkPt;
-    TH1F *fNonHFeEmbTrkPt;
-    TH1F *fPi0eEmbWeightTrkPt;
-    TH1F *fNonHFeEmbWeightTrkPt;
-    TH1F *fRecoNonHFeTrkPt;
-    TH1F *fEtaeEmbWeightTrkPt;
-    TH1F *fRecoNonHFeEmbTrkPt;
-    TH1F *fRecoPi0eEmbWeightTrkPt;
-    TH1F *fRecoNonHFeEmbWeightTrkPt;
-    TH1F *fRecoEtaeEmbWeightTrkPt;
+    Int_t fWeightPi0; //!>!
+    Int_t fWeightEta; //!>!
+    Int_t fWeight; //!>!
+    TH1F *fRealInclsElecPt; //!>!
+    TH1F *fNonHFeTrkPt; //!>!
+    TH1F *fNonHFeEmbTrkPt; //!>!
+    TH1F *fPi0eEmbWeightTrkPt; //!>!
+    TH1F *fNonHFeEmbWeightTrkPt; //!>!
+    TH1F *fRecoNonHFeTrkPt; //!>!
+    TH1F *fEtaeEmbWeightTrkPt; //!>!
+    TH1F *fRecoNonHFeEmbTrkPt; //!>!
+    TH1F *fRecoPi0eEmbWeightTrkPt; //!>!
+    TH1F *fRecoNonHFeEmbWeightTrkPt; //!>!
+    TH1F *fRecoEtaeEmbWeightTrkPt; //!>!
     TF1  *fPi0Weight;//!
     TF1  *fEtaWeight;//!
     
-  TH1D* fTriggerEff; ///> trigger efficiency
-  TH1D* fAssociatedEff; ///> associated efficiency
+    TH1D* fTriggerEff; ///> trigger efficiency
+    TH1D* fAssociatedEff; ///> associated efficiency
     TH2D* fTriggerEffElec;
     TH2D* fAssociatedEffElec;
     TH2D* fTriggerEffH;
     TH2D* fAssociatedEffH;
     TH2D* fTriggEffVsPt;
     TH2D* fAssoEffVsPt;
-    TH1D* fTrigPhiDist;
-    TH1D* fAssHPhiDist;
-    TH1D* fAssElecPhiDist;
+    TH1D* fTrigPhiDist; //!>!
+    TH1D* fAssHPhiDist; //!>!
+    TH1D* fAssElecPhiDist; //!>!
    
-    TH1D* fmultPercentile;
-    TH1D* fmultPercentileCuts;
+    TH1D* fmultPercentile; //!>!
+    TH1D* fmultPercentileCuts; //!>!
 
-  TH2D* fDedx; //!>! dedx plot
-  TH2D* fDedxCuts; //!>! dedx plot
-  TH2D* fDedxTOF; //!>! dedx plot
-  TH2D* fDedxTOFCuts; //!>! dedx plot
-  TH2D* fBetaDedx;//!>! dedx plot
-  TH2D* fBeta; //!>! dedx plot
-  TH2D* fNSigma; //!>! dedx plot
-  TH2D* fNSigmaCuts; //!>! dedx plot
-    TH2D*  f2DPPtHist;
+    TH2D* fDedx; //!>! dedx plot
+    TH2D* fDedxCuts; //!>! dedx plot
+    TH2D* fDedxTOF; //!>! dedx plot
+    TH2D* fDedxTOFCuts; //!>! dedx plot
+    TH2D* fBetaDedx;//!>! dedx plot
+    TH2D* fBeta; //!>! dedx plot
+    TH2D* fNSigma; //!>! dedx plot
+    TH2D* fNSigmaCuts; //!>! dedx plot
+    TH2D* f2DPPtHist; //!>!
+    TH2D* fNSigmaAssoNoCuts;  //!>!
+    TH2D* fNSigmaAssoNoCuts_woTOFwSPDKAny; //!>!
+    TH2D* fNSigmaAssoNoCuts_woTOFwSPDKBoth; //!>!
+    TH2D* fNSigmaAssoNoCuts_wTOFwSPDKAny; //!>!
+    TH2D* fNSigmaAssoNoCuts_wTOFwSPDKBoth; //!>!
     TH2D* fNSigmaAssoCuts; //!>! dedx plot
+    TH2D* fNSigmaAssoCuts_woTOFwSPDKAny; //!>!
+    TH2D* fNSigmaAssoCuts_woTOFwSPDKBoth; //!>!
+    TH2D* fNSigmaAssoCuts_wTOFwSPDKAny; //!>!
+    TH2D* fNSigmaAssoCuts_wTOFwSPDKBoth; //!>!
     TH2D* fNSigmaAssoCutsPt; //!>! dedx plot
+    TH2D* fNSigmaAssoCutsPt_woTOFwSPDKAny; //!>! dedx plot 
+    TH2D* fNSigmaAssoCutsPt_woTOFwSPDKBoth; //!>!
+    TH2D* fNSigmaAssoCutsPt_wTOFwSPDKAny; //!>!
+    TH2D* fNSigmaAssoCutsPt_wTOFwSPDKBoth; //!>!
     TH2D* f2DHEpTDist;//!>! dedx plot
     TH2D* f2DHHpTDist;//!>! dedx plot
-    TH2D* fHEDeltaEtaDeltaPhi;
+    TH2D* fHEDeltaEtaDeltaPhi; //!>!
 
     
-    TH1D* fAllHadronsPt;
-    TH1D* fAssHadronsPt;
-    TH1D* fTriggerPt;
-    TH1D* fElecPtBeforeCuts;
-    TH1D* fElecPtAfterCuts;
-    TH1D* fNumberTriggersPerEvent;
-    TH1D*  fNumberElecsPerEvent;
-    TH1D* fTOFHits;
-    TH1D* fTPCCrossedRows;
-    TH1D* fHEassNoTrig;
-    TH1D* fHEnoAssTrig;
-    TH1D* fHHassNoTrig;
-    TH1D* fHHnoAssTrig;
-    TH1D* fUnlikesignMassDist;
-    TH1D* fLikesignMassDist;
-  THnSparseF* fLooseDist;  //!>! single particle all hadron dist (no cuts at all)
-  THnSparseF* fTriggerDist;  //!>! single particle trigger dist
-  THnSparseF* fAssociatedHDist;  //!>! single particle associated hadron dist
-  THnSparseF* fElectronDist;  //!>! single particle electron dist
+    TH1D* fAllHadronsPt; //!>!
+    TH1D* fAssHadronsPt; //!>!
+    TH1D* fTriggerPt; //!>!
+    TH1D* fElecPtBeforeCuts; //!>!
+    TH1D* fElecPtAfterCuts; //!>!
+    TH1D* fNumberTriggersPerEvent; //!>!
+    TH1D*  fNumberElecsPerEvent; //!>!
+    TH1D* fTOFHits; //!>!
+    TH1D* fTPCCrossedRows; //!>!
+    TH1D* fHEassNoTrig; //!>!
+    TH1D* fHEnoAssTrig; //!>!
+    TH1D* fHHassNoTrig; //!>!
+    TH1D* fHHnoAssTrig; //!>!
+    TH1D* fUnlikesignMassDist; //!>!
+    TH1D* fLikesignMassDist; //!>!
+    THnSparseF* fLooseDist;  //!>! single particle all hadron dist (no cuts at all)
+    THnSparseF* fTriggerDist;  //!>! single particle trigger dist
+    THnSparseF* fAssociatedHDist;  //!>! single particle associated hadron dist
+    THnSparseF* fElectronDist;  //!>! single particle electron dist
 
-  THnSparseF* fDphiHElec;  //!>! hadron-electron correlation hist
-  THnSparseF* fDphiHUSElec;  //!>! hadron-electron correlation hist
-  THnSparseF* fDphiHLSElec;  //!>! hadron-electron correlation hist
-    THnSparseF* fDphiHUSElecEff;
-    THnSparseF* fDphiHLSElecEff;
+    THnSparseF* fDphiHHCont;  //!>! hadron-hadron contamination correlation hist
+   THnSparseF* fDphiHHContEff;  //!>! efficiency corrected hadron-hadron contamination correlation hist
+    THnSparseF* fDphiHElec;  //!>! hadron-electron correlation hist
+    THnSparseF* fDphiHElecTriggered;  //!>! hadron-electron correlation hist
+    THnSparseF* fDphiHUSElec;  //!>! hadron-electron correlation hist
+    THnSparseF* fDphiHLSElec;  //!>! hadron-electron correlation hist
+    THnSparseF* fDphiHUSElecEff; //!>!
+    THnSparseF* fDphiHLSElecEff; //!>!
     THnSparseF* fDphiHElecEff;  //!>! hadron-electron correlation hist (efficiency corrected)bvg
+    THnSparseF* fDphiHElecTriggeredEff;  //!>! hadron-electron correlation hist (efficiency corrected)bvg
   THnSparseF* fDphiHH;   //!>! hadron-hadron correlation hist
   THnSparseF* fDphiHHEff;   //!>! hadron-hadron correlation hist (efficiency corrected)
   THnSparseF* fDphiTriggerTrigger;   //!>! trigger-trigger correlation hist
   THnSparseF* fDphiHElecMixed; //!>! hadron-electron mixed correlation hist
-  THnSparseF* fDphiHULSElecMixed;
-  THnSparseF* fDphiHLSElecMixed;
+  THnSparseF* fDphiHULSElecMixed; //!>!
+  THnSparseF* fDphiHLSElecMixed; //!>!
   THnSparseF* fDphiHHMixed; //!>! hadron-hadron mixed correlation hist
   THnSparseF* fDphiTriggerTriggerMixed;   //!>! mixed trigger-trigger correlation hist
 
-    THnSparseD* fSprsPi0EtaWeightCal;
+    THnSparseD* fSprsPi0EtaWeightCal; //!>!
   AliPIDResponse *fpidResponse; //!>!pid response
   AliMultSelection *fMultSelection; //!>!mult selection
     //!
@@ -218,9 +240,13 @@ class AliAnalysisTaskHadronElectronAnalysis : public AliAnalysisTaskSE {
   void MakeSameTriggerTriggerCorrelations(std::vector<AliAODTrack*> trigger_list, THnSparse* fDphi, double zVtx, double multPercentile, bool eff=true);
   void MakeMixedHElecCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> corrElec_list, THnSparse* fDphi, double zVtx,double multPercentile, bool eff=true);
   void MakeMixedHHCorrelations(AliEventPool *fPool, std::vector<AliAODTrack*> associated_h_list , THnSparse* fDphi, double zVtx, double multPercentile,bool eff=true);
+ void PassAssociatedCutsElectronsWoTOFWSPDKBoth(AliAODTrack *track, std::string analysisType);
+ void PassAssociatedCutsElectronsWoTOFWSPDKAny(AliAODTrack *track, std::string analysisType); 
+  void PassAssociatedCutsElectronsWTOFWSPDKBoth(AliAODTrack *track, std::string analysisType);
+  void PassAssociatedCutsElectronsWTOFWSPDKAny(AliAODTrack *track, std::string analysisType);
   bool PassTriggerCuts(AliAODTrack *track);
   bool PassAssociatedCutsHadrons(AliAODTrack *track);
-    bool PassAssociatedCutsElectrons(AliAODTrack *track);
+    bool PassAssociatedCutsElectrons(AliAODTrack *track, std::string analysisType);
     bool PassPartnerCutsElectrons(AliAODTrack *track);
   bool PassTPCCuts(AliAODTrack *track);
     void Make2DPtDistributionHistogram(std::vector<AliAODTrack*> trigger_list,std::vector<AliAODTrack*> corrElec_list, std::vector<AliAODTrack*> associated_h_list);
