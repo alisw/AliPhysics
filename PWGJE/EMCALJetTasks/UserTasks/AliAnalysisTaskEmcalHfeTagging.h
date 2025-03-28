@@ -105,6 +105,7 @@ public:
     void SetMaxPtTPC(Double_t d)                              { fMaxPtTPC = d;}
     void SetMinPtEMCal(Double_t d)                            { fMinPtEMCal = d;}
     void SetMaxPtEMCal(Double_t d)                            { fMaxPtEMCal = d;}
+    void SetMinPtSemiInclusive(Double_t d)                    { fMinPtSemiInclusive = d;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -193,6 +194,7 @@ protected:
     Double_t                            fMaxPtTPC;               // maximum pt for the TPC analysis
     Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
     Double_t                            fMaxPtEMCal;             // maximum pt for the EMCal analysis
+    Double_t                            fMinPtSemiInclusive;     // minimum pt for constituent for semi-inclusive distributions
     
     TH1F                                *fNeventV0;
     TH1F                                *fNeventT0;

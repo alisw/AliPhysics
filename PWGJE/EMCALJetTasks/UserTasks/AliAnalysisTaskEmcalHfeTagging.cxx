@@ -1,7 +1,7 @@
 //
 // HFE tagged jet shape analysis task.
 //
-// Authors: D. Caffarri, L. Cunqueiro (jet); D. Godoy (HFE)
+// Authors: D. Caffarri, L. Cunqueiro (jet); D. Godoy (HFE), L. Barreto
 //
 #include <TClonesArray.h>
 #include <TH1F.h>
@@ -114,6 +114,7 @@ fMinPtTPC(0.5),
 fMaxPtTPC(4.),
 fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
+fMinPtSemiInclusive(5.),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -333,6 +334,7 @@ fMinPtTPC(0.5),
 fMaxPtTPC(4.),
 fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
+fMinPtSemiInclusive(5.),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -931,7 +933,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
 	// Inclusive and semi-inclusive histograms
     for(Int_t i = 0; i < 5; i++){
-        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 12, 0., 60.);
+        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 24, 0., 120.);
 		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
 		fRMUWPtSemiInclJet[i] = new THnSparseF(Form("fRMUWPtSemiInclJet%d", i), Form("fRMUWPtSemiInclJet%d", i), 2, 
@@ -1090,6 +1092,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
     isPileupFromMV = utils.IsPileUpMV(fAOD);
     if (isPileupFromMV) return kFALSE;
     fNeventV0->Fill(2);
+
+	// Fix user-defined minimum pT cut for semi-inclusive if needed as calculations need
+	// its array to be ordered in MaxPtBinForSemiInclusiveJet
+	if (fMinPtSemiInclusive <= 2.5) {
+		cout << "User-defined MinPtSemiInclusive <= 2.5 GeV, setting new value to 5 GeV" << endl;
+		fMinPtSemiInclusive = 5.;
+	}
     
     // Selection of pi0 and eta in MC to compute the weight
     
@@ -2498,11 +2507,12 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetNumberOfConstituents(AliEmcalJet *
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb=0){
     // Give the bin with max value for minimum pT bin for semi-inclusive observables due to the 
-	// transverse mass rescaling of charged pions, i.e. min(pT pion)^2 = min(pT e)^2 + m_e^2 - m_pion^2
-	// Using m_e = 0.0005 GeV, m_pion = 0.13957 GeV and min(pT e) = [0.5, 1.0, 2.0, 3.0] GeV
+	// min(pT) = [0.5, 1.0, 2.5, user defined] GeV
+	// No need for transverse mass rescaling since lowest pT cut >> mass of electron
 	
-	double minpTpion[5] = {0, 0.4802, 0.9902, 1.9951, 2.9968};	
-    
+	// This array must be ordered
+	double minpT[5] = {0, 0.5, 1.0, 2.5, fMinPtSemiInclusive};
+
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (!jet->GetNumberOfTracks()) return -1;
 
@@ -2523,7 +2533,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *j
 	// If there is a particle with pt > min pt[j], the jet should populate all the bins previous
 	// to j (inclusive) 
 	for (int j = 4; j > 0; j--) {
-    	if (largestpt > minpTpion[j]) {
+    	if (largestpt > minpT[j]) {
         	return j;
         }
 	}
