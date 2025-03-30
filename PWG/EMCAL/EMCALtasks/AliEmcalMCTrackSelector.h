@@ -138,6 +138,27 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
 
   void SetIsContainerSpecified(bool isContSpecified)    {fIsContainerSpecified = isContSpecified ; }
 
+  /**
+   * @brief Setter to only use measurable particles in jet definition
+   *
+   * This can be used if the jet definition should not be full or charged jet,
+   * but an alternative definition based on a set of defined particles
+   *
+   * @param useOnlyMeas if true, use only measurable particles
+   */
+  void SetUseOnlyMeasurablePart(bool useOnlyMeas)       {fUseOnlyMeasurable = useOnlyMeas; }
+
+  /**
+   * @brief Give a list of particles considered measurable.
+   *
+   * This can be used if the jet definition should not be full or charged jet,
+   * but an alternative definition based on a set of defined particles.
+   * By default the list contains photons, charged pions, kaons, protons and electrons
+   *
+   * @param vec vector of measruable particles
+   */
+  void SetMeasurableParticles(std::vector<int> vec)     {fVecMeasurablePart = vec; }
+
 
   /**
    * @brief Create new AliEmcalMCTrackSelector task and add it to the analysis manager
@@ -210,6 +231,14 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
    */
   bool                      IsFromPi0Mother(const AliVParticle &part) const;
 
+  /**
+   * @brief Check if a particle is measurable, hence if its a photon, charged pion, kaon or proton
+   *
+   * @param pdg PDG code of particle to be checked
+   * @return true if measurable, false if non measurable
+   */
+  bool                      IsPartMeasurable(const int pdg) const;
+
 
   TString                   fParticlesOutName;     ///< name of output particle array
   TString                   fTrackContainerName;   ///< name of input track container
@@ -230,11 +259,13 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   AliMCEvent               *fMC;                   //!<! MC event (ESD)
   Bool_t                    fIsESD;                //!<! ESD or AOD analysis
   Bool_t                    fDisabled;             //!<! Disable task if a problem occurs at initialization
+  bool                      fUseOnlyMeasurable;    ///< flag to switch on using only measurable particles
+  std::vector<int>          fVecMeasurablePart;    ///< list of pdg codes of measurable particles
 
  private:
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented
   AliEmcalMCTrackSelector &operator=(const AliEmcalMCTrackSelector&); // not implemented
 
-  ClassDef(AliEmcalMCTrackSelector, 6);
+  ClassDef(AliEmcalMCTrackSelector, 7);
 };
 #endif

@@ -64,7 +64,9 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector() :
   fEvent(0),
   fMC(0),
   fIsESD(kFALSE),
-  fDisabled(kFALSE)
+  fDisabled(kFALSE),
+  fUseOnlyMeasurable(false),
+  fVecMeasurablePart({22, 211, 321, 2212, 11, 13})
 {
 }
 
@@ -88,7 +90,9 @@ AliEmcalMCTrackSelector::AliEmcalMCTrackSelector(const char *name) :
   fEvent(0),
   fMC(0),
   fIsESD(kFALSE),
-  fDisabled(kFALSE)
+  fDisabled(kFALSE),
+  fUseOnlyMeasurable(false),
+  fVecMeasurablePart({22, 211, 321, 2212, 11, 13})
 {
 }
 
@@ -335,6 +339,8 @@ Bool_t AliEmcalMCTrackSelector::AcceptParticle(AliAODMCParticle* part) const
   if (fChargedMC && part->Charge() == 0) return kFALSE;
 
   if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) return kFALSE;
+  
+  if (fUseOnlyMeasurable && !IsPartMeasurable(partPdgCode)) return kFALSE;
 
   return kTRUE;
 }
@@ -346,6 +352,13 @@ bool AliEmcalMCTrackSelector::IsFromPi0Mother(const AliVParticle &part) const {
   if(!motherparticle) return false;
   if(TMath::Abs(motherparticle->PdgCode()) == kPi0) return true;
   return IsFromPi0Mother(*motherparticle);
+}
+
+bool AliEmcalMCTrackSelector::IsPartMeasurable(const int pdg) const {
+  if(std::find(fVecMeasurablePart.begin(), fVecMeasurablePart.end(), pdg) != fVecMeasurablePart.end()) { 
+    return true;
+  }
+  return false;
 }
 
 AliEmcalMCTrackSelector* AliEmcalMCTrackSelector::AddTaskMCTrackSelector(TString outname, TString nTrackCont, Bool_t nk, Bool_t ch, Double_t etamax, Bool_t physPrim)
