@@ -105,6 +105,22 @@ AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::AliAnalysisTaskDiffPtFluc_PiKaProt
   fPtsum_hadrons_greaterEtaMin(0),
   fNsum_hadrons_less0(0),
   fNsum_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to2p0_hadrons_less0(0),
+  fPtsum_range0p2to2p0_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to3p0_hadrons_less0(0),
+  fPtsum_range0p2to3p0_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to5p0_hadrons_less0(0),
+  fPtsum_range0p2to5p0_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to6p0_hadrons_less0(0),
+  fPtsum_range0p2to6p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to2p0_hadrons_less0(0),
+  fNsum_range0p2to2p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to3p0_hadrons_less0(0),
+  fNsum_range0p2to3p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to5p0_hadrons_less0(0),
+  fNsum_range0p2to5p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to6p0_hadrons_less0(0),
+  fNsum_range0p2to6p0_hadrons_greaterEtaMin(0),
   fNsum_pions_less0(0),
   fNsum_kaons_less0(0),
   fNsum_protons_less0(0),
@@ -230,6 +246,22 @@ AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::AliAnalysisTaskDiffPtFluc_PiKaProt
   fPtsum_hadrons_greaterEtaMin(0),
   fNsum_hadrons_less0(0),
   fNsum_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to2p0_hadrons_less0(0),
+  fPtsum_range0p2to2p0_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to3p0_hadrons_less0(0),
+  fPtsum_range0p2to3p0_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to5p0_hadrons_less0(0),
+  fPtsum_range0p2to5p0_hadrons_greaterEtaMin(0),
+  fPtsum_range0p2to6p0_hadrons_less0(0),
+  fPtsum_range0p2to6p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to2p0_hadrons_less0(0),
+  fNsum_range0p2to2p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to3p0_hadrons_less0(0),
+  fNsum_range0p2to3p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to5p0_hadrons_less0(0),
+  fNsum_range0p2to5p0_hadrons_greaterEtaMin(0),
+  fNsum_range0p2to6p0_hadrons_less0(0),
+  fNsum_range0p2to6p0_hadrons_greaterEtaMin(0),
   fNsum_pions_less0(0),
   fNsum_kaons_less0(0),
   fNsum_protons_less0(0),
@@ -511,6 +543,25 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     fTreeEvent->Branch("fPtsum_hadrons_less0",&fPtsum_hadrons_less0,"fPtsum_hadrons_less0/F");
     fTreeEvent->Branch("fPtsum_hadrons_greaterEtaMin",&fPtsum_hadrons_greaterEtaMin,"fPtsum_hadrons_greaterEtaMin/F");
+
+    fTreeEvent->Branch("fPtsum_range0p2to2p0_hadrons_less0",&fPtsum_range0p2to2p0_hadrons_less0,"fPtsum_range0p2to2p0_hadrons_less0/F");
+    fTreeEvent->Branch("fPtsum_range0p2to2p0_hadrons_greaterEtaMin",&fPtsum_range0p2to2p0_hadrons_greaterEtaMin,"fPtsum_range0p2to2p0_hadrons_greaterEtaMin/F");
+    fTreeEvent->Branch("fPtsum_range0p2to3p0_hadrons_less0",&fPtsum_range0p2to3p0_hadrons_less0,"fPtsum_range0p2to3p0_hadrons_less0/F");
+    fTreeEvent->Branch("fPtsum_range0p2to3p0_hadrons_greaterEtaMin",&fPtsum_range0p2to3p0_hadrons_greaterEtaMin,"fPtsum_range0p2to3p0_hadrons_greaterEtaMin/F");
+    fTreeEvent->Branch("fPtsum_range0p2to5p0_hadrons_less0",&fPtsum_range0p2to5p0_hadrons_less0,"fPtsum_range0p2to5p0_hadrons_less0/F");
+    fTreeEvent->Branch("fPtsum_range0p2to5p0_hadrons_greaterEtaMin",&fPtsum_range0p2to5p0_hadrons_greaterEtaMin,"fPtsum_range0p2to5p0_hadrons_greaterEtaMin/F");
+    fTreeEvent->Branch("fPtsum_range0p2to6p0_hadrons_less0",&fPtsum_range0p2to6p0_hadrons_less0,"fPtsum_range0p2to6p0_hadrons_less0/F");
+    fTreeEvent->Branch("fPtsum_range0p2to6p0_hadrons_greaterEtaMin",&fPtsum_range0p2to6p0_hadrons_greaterEtaMin,"fPtsum_range0p2to6p0_hadrons_greaterEtaMin/F");
+
+    fTreeEvent->Branch("fNsum_range0p2to2p0_hadrons_less0",&fNsum_range0p2to2p0_hadrons_less0,"fNsum_range0p2to2p0_hadrons_less0/F");
+    fTreeEvent->Branch("fNsum_range0p2to2p0_hadrons_greaterEtaMin",&fNsum_range0p2to2p0_hadrons_greaterEtaMin,"fNsum_range0p2to2p0_hadrons_greaterEtaMin/F");
+    fTreeEvent->Branch("fNsum_range0p2to3p0_hadrons_less0",&fNsum_range0p2to3p0_hadrons_less0,"fNsum_range0p2to3p0_hadrons_less0/F");
+    fTreeEvent->Branch("fNsum_range0p2to3p0_hadrons_greaterEtaMin",&fNsum_range0p2to3p0_hadrons_greaterEtaMin,"fNsum_range0p2to3p0_hadrons_greaterEtaMin/F");
+    fTreeEvent->Branch("fNsum_range0p2to5p0_hadrons_less0",&fNsum_range0p2to5p0_hadrons_less0,"fNsum_range0p2to5p0_hadrons_less0/F");
+    fTreeEvent->Branch("fNsum_range0p2to5p0_hadrons_greaterEtaMin",&fNsum_range0p2to5p0_hadrons_greaterEtaMin,"fNsum_range0p2to5p0_hadrons_greaterEtaMin/F");
+    fTreeEvent->Branch("fNsum_range0p2to6p0_hadrons_less0",&fNsum_range0p2to6p0_hadrons_less0,"fNsum_range0p2to6p0_hadrons_less0/F");
+    fTreeEvent->Branch("fNsum_range0p2to6p0_hadrons_greaterEtaMin",&fNsum_range0p2to6p0_hadrons_greaterEtaMin,"fNsum_range0p2to6p0_hadrons_greaterEtaMin/F");
+    
     fTreeEvent->Branch("fNsum_hadrons_less0",&fNsum_hadrons_less0,"fNsum_hadrons_less0/F");
     fTreeEvent->Branch("fNsum_hadrons_greaterEtaMin",&fNsum_hadrons_greaterEtaMin,"fNsum_hadrons_greaterEtaMin/F");
     fTreeEvent->Branch("fNsum_pions_less0",&fNsum_pions_less0,"fNsum_pions_less0/F");
@@ -586,6 +637,24 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
     Double_t N_sum_etaLess0 = 0.0;
     Double_t pT_sum_etaGreaterEtamin = 0.0;
     Double_t N_sum_etaGreaterEtamin = 0.0;
+
+    Double_t pT_sum_range0p2to2p0_etaLess0 = 0.0;
+    Double_t pT_sum_range0p2to3p0_etaLess0 = 0.0;
+    Double_t pT_sum_range0p2to5p0_etaLess0 = 0.0;
+    Double_t pT_sum_range0p2to6p0_etaLess0 = 0.0;
+    Double_t pT_sum_range0p2to2p0_etaGreaterEtamin = 0.0;
+    Double_t pT_sum_range0p2to3p0_etaGreaterEtamin = 0.0;
+    Double_t pT_sum_range0p2to5p0_etaGreaterEtamin = 0.0;
+    Double_t pT_sum_range0p2to6p0_etaGreaterEtamin = 0.0;
+    Double_t N_sum_range0p2to2p0_etaLess0 = 0.0;
+    Double_t N_sum_range0p2to3p0_etaLess0 = 0.0;
+    Double_t N_sum_range0p2to5p0_etaLess0 = 0.0;
+    Double_t N_sum_range0p2to6p0_etaLess0 = 0.0;
+    Double_t N_sum_range0p2to2p0_etaGreaterEtamin = 0.0;
+    Double_t N_sum_range0p2to3p0_etaGreaterEtamin = 0.0;
+    Double_t N_sum_range0p2to5p0_etaGreaterEtamin = 0.0;
+    Double_t N_sum_range0p2to6p0_etaGreaterEtamin = 0.0;
+    
 
 
     TH1D *fPt_profile_pion = new TH1D("fPt_profile_pion","fPt_profile_pion", 20, binsarray);
@@ -757,11 +826,47 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
 		    fPt_profile->Fill(trkPt);
 		    pT_sum_etaLess0 += trkPt;
 		    N_sum_etaLess0 += 1.0;
+
+		    if ((trkPt > 0.2) && (trkPt < 2.0)) {
+		      pT_sum_range0p2to2p0_etaLess0 += trkPt;
+		      N_sum_range0p2to2p0_etaLess0 += 1.0;
+		    }
+		    if ((trkPt > 0.2) && (trkPt < 3.0)) {
+		      pT_sum_range0p2to3p0_etaLess0 += trkPt;
+		      N_sum_range0p2to3p0_etaLess0 += 1.0;
+		    }
+		    if ((trkPt > 0.2) && (trkPt < 5.0)) {
+		      pT_sum_range0p2to5p0_etaLess0 += trkPt;
+		      N_sum_range0p2to5p0_etaLess0 += 1.0;
+		    }
+		    if ((trkPt > 0.2) && (trkPt < 6.0)) {
+		      pT_sum_range0p2to6p0_etaLess0 += trkPt;
+		      N_sum_range0p2to6p0_etaLess0 += 1.0;
+		    }
+		    
 		  }
 		if(trkEta > fEtaMin) //fEtaMin is right boundary of EtaGap
 		  {
 		    pT_sum_etaGreaterEtamin += trkPt;
 		    N_sum_etaGreaterEtamin += 1.0;
+
+		    if ((trkPt > 0.2) && (trkPt < 2.0)) {
+		      pT_sum_range0p2to2p0_etaGreaterEtamin += trkPt;
+		      N_sum_range0p2to2p0_etaGreaterEtamin += 1.0;
+		    }
+		    if ((trkPt > 0.2) && (trkPt < 3.0)) {
+		      pT_sum_range0p2to3p0_etaGreaterEtamin += trkPt;
+		      N_sum_range0p2to3p0_etaGreaterEtamin += 1.0;
+		    }
+		    if ((trkPt > 0.2) && (trkPt < 5.0)) {
+		      pT_sum_range0p2to5p0_etaGreaterEtamin += trkPt;
+		      N_sum_range0p2to5p0_etaGreaterEtamin += 1.0;
+		    }
+		    if ((trkPt > 0.2) && (trkPt < 6.0)) {
+		      pT_sum_range0p2to6p0_etaGreaterEtamin += trkPt;
+		      N_sum_range0p2to6p0_etaGreaterEtamin += 1.0;
+		    }
+		      
 		  }
 	      }
 	  }
@@ -1004,6 +1109,28 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
     fNsum_pions_less0=N_sumPion_etaLess0;
     fNsum_kaons_less0=N_sumKaon_etaLess0;
     fNsum_protons_less0=N_sumProton_etaLess0;
+
+    //0.2<pT<2.0
+    fPtsum_range0p2to2p0_hadrons_less0 = pT_sum_range0p2to2p0_etaLess0;
+    fPtsum_range0p2to2p0_hadrons_greaterEtaMin = pT_sum_range0p2to2p0_etaGreaterEtamin;
+    fNsum_range0p2to2p0_hadrons_less0 = N_sum_range0p2to2p0_etaLess0;
+    fNsum_range0p2to2p0_hadrons_greaterEtaMin = N_sum_range0p2to2p0_etaGreaterEtamin;
+    //0.2<pT<3.0
+    fPtsum_range0p2to3p0_hadrons_less0 = pT_sum_range0p2to3p0_etaLess0;
+    fPtsum_range0p2to3p0_hadrons_greaterEtaMin = pT_sum_range0p2to3p0_etaGreaterEtamin;
+    fNsum_range0p2to3p0_hadrons_less0 = N_sum_range0p2to3p0_etaLess0;
+    fNsum_range0p2to3p0_hadrons_greaterEtaMin = N_sum_range0p2to3p0_etaGreaterEtamin;
+    //0.2<pT<5.0
+    fPtsum_range0p2to5p0_hadrons_less0 = pT_sum_range0p2to5p0_etaLess0;
+    fPtsum_range0p2to5p0_hadrons_greaterEtaMin = pT_sum_range0p2to5p0_etaGreaterEtamin;
+    fNsum_range0p2to5p0_hadrons_less0 = N_sum_range0p2to5p0_etaLess0;
+    fNsum_range0p2to5p0_hadrons_greaterEtaMin = N_sum_range0p2to5p0_etaGreaterEtamin;
+    //0.2<pT<6.0
+    fPtsum_range0p2to6p0_hadrons_less0 = pT_sum_range0p2to6p0_etaLess0;
+    fPtsum_range0p2to6p0_hadrons_greaterEtaMin = pT_sum_range0p2to6p0_etaGreaterEtamin;
+    fNsum_range0p2to6p0_hadrons_less0 = N_sum_range0p2to6p0_etaLess0;
+    fNsum_range0p2to6p0_hadrons_greaterEtaMin = N_sum_range0p2to6p0_etaGreaterEtamin;
+    
     
     for(int i=0; i<20; i++)
       {
