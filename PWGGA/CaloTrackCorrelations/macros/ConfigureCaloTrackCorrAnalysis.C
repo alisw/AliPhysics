@@ -2729,16 +2729,16 @@ void ConfigureCaloTrackCorrAnalysis
     }
     
     // Background shower shape low limit, max limit next in array
-    Int_t nShArr = 7;
-    Float_t shshArr[] = {0.1, 0.3, 0.4, 0.5, 0.6, 1.0, 1.5, 2.0};
-    
+    Int_t nShArr = 8; // 9, 10
+    Float_t shshArrMin[] = {0.1, 0.35, 0.4, 0.5, 0.6, 0.8, 1.0, 1.5, 2.0, 3.0};
+    Float_t shshArrMax[] = {0.3, 0.40, 0.5, 0.6, 0.8, 1.0, 1.5, 2.0, 3.0, 10.0};
+
     for(Int_t icen = 0; icen < nCen; icen++)
     {
       if( analysisString.Contains("Correlation") )
       {
         if ( !analysisString.Contains("MultiIso") && !analysisString.Contains("CorrelationIsoNarrowM02") )
         {
-          
           if ( analysisString.Contains("MultiBkgBoth")  )
           {
             printf("*** MULTI BKG NO ISOLATION ON\n");
@@ -2782,16 +2782,16 @@ void ConfigureCaloTrackCorrAnalysis
   //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
   //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
           }
-          else if( analysisString.Contains("MultiArrBkg") )
+          else if( analysisString.Contains("MultiArrBkgBoth") )
           {
             for(Int_t ilimit = 0; ilimit < nShArr; ilimit++)
             {
               anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                             ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshArr[ilimit], shshArr[ilimit+1], isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                             ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshArrMin[ilimit], shshArrMax[ilimit], isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                               col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             }
           }
-          else if( !analysisString.Contains("MultiBkg"))
+          else if( !analysisString.Contains("MultiBkg") && !analysisString.Contains("MultiArrBkg"))
           {
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
@@ -2805,6 +2805,7 @@ void ConfigureCaloTrackCorrAnalysis
                               col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             }
           }
+          else printf("Careful!: No correlation analysis selected");
         }
         
         if ( analysisString.Contains("Isolation")  )
@@ -2857,11 +2858,11 @@ void ConfigureCaloTrackCorrAnalysis
             for(Int_t ilimit = 0; ilimit < nShArr; ilimit++)
             {
               anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                             ("Photon", leading, cen[icen],cen[icen+1], kTRUE, shshArr[ilimit], shshArr[ilimit+1], isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                             ("Photon", leading, cen[icen],cen[icen+1], kTRUE, shshArrMin[ilimit], shshArrMax[ilimit], isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                               col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             }
           }
-          else
+          else if( !analysisString.Contains("MultiBkg") && !analysisString.Contains("MultiArrBkg"))
           {
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
@@ -2874,6 +2875,7 @@ void ConfigureCaloTrackCorrAnalysis
                               isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                               col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++);
             }
+            else printf("Careful!: No isolated correlation analysis selected");
           }
         }
       } // correlation

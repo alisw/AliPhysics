@@ -269,15 +269,18 @@ public:
   void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
   
-  void         SwitchOnFillHistogramsUePart()    { fFillUePartHistograms = kTRUE  ; }
-  void         SwitchOffFillHistogramsUePart()   { fFillUePartHistograms = kFALSE ; }  
+  void         SwitchOnFillHistogramsUe()        { fFillUeHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsUe()       { fFillUeHistograms = kFALSE ; }
   
   void         SwitchOnFillXEHistograms()        { fFillXEHistograms = kTRUE  ; }
   void         SwitchOffFillXEHistograms()       { fFillXEHistograms = kFALSE ; }  
 
   void         SwitchOnFillPoutHistograms()      { fFillPoutHistograms = kTRUE  ; }
   void         SwitchOffFillPoutHistograms()     { fFillPoutHistograms = kFALSE ; }
-  
+
+  void         SwitchOnFillPtChargedHistograms() { fFillPtChargedHistograms = kTRUE  ; }
+  void         SwitchOffFillPtChargedHistograms(){ fFillPtChargedHistograms = kFALSE ; }
+
   void         SwitchOnFillZTHistograms()        { fFillZTHistograms = kTRUE  ; }
   void         SwitchOffFillZTHistograms()       { fFillZTHistograms = kFALSE ; }  
   
@@ -395,8 +398,9 @@ private:
      
   Float_t      fDecayTagsM02Cut;                         ///<  Lambda0 cut for decay particles.
   
-  Bool_t       fFillUePartHistograms;                    ///< Fill UePart histograms
+  Bool_t       fFillUeHistograms;                        ///< Fill Ue histograms
   Bool_t       fFillPoutHistograms;                      ///< Fill Pout histograms
+  Bool_t       fFillPtChargedHistograms;                 ///< Fill Trig Pt vs Charged track pT histograms
   Bool_t       fFillXEHistograms;                        ///< Fill xE histograms
   Bool_t       fFillZTHistograms;                        ///< Fill zT histograms
   Bool_t       fFillHBPHistograms;                       ///< Fill hump back plateau histograms
@@ -457,7 +461,7 @@ private:
   TH2F *       fhDeltaEtaCharged  ;                      //!<! Difference of charged particle eta and trigger particle  eta as function of  trigger. particle pT
   TH2F *       fhDeltaPhiChargedPt  ;                    //!<! Difference of charged particle phi and trigger particle  phi as function of charged. particle pT
   TH2F *       fhDeltaPhiUeChargedPt ;                   //!<! Difference of charged particle from underlying events phi and trigger particle  phi as function of charged particle pT.
-  TH1F *       fhUePart;                                 //!<! UE particles distribution vs pt trigger.
+
   TH2F *       fhXECharged  ;                            //!<! Trigger particle -charged hadron momentum imbalance histogram.
   TH2F *       fhXECharged_Cone2  ;                      //!<! Trigger particle -charged hadron momentum imbalance histogram in cone2 (5pi/6-7pi/6).
   TH2F *       fhXEUeCharged  ;                          //!<! Trigger particle -underlying charged hadron momentum imbalance histogram.
@@ -661,7 +665,7 @@ private:
   TH2F *       fhMCPtHbpXECharged[fgkNmcTypes];          //!<! MC pure particles charged trigger primary pt vs ln(1/xE)
   TH2F *       fhMCPtHbpXEUeCharged[fgkNmcTypes];        //!<! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event)
   TH2F *       fhMCPtHbpXEUeLeftCharged[fgkNmcTypes];    //!<! MC pure particles charged trigger primary pt vs ln(1/xE) (underlying event, left cone)
-  TH1F *       fhMCUePart[fgkNmcTypes];                  //!<! MC pure UE particles distribution vs pt trig
+
   TH2F *       fhMCPtZTCharged[fgkNmcTypes];             //!<! MC pure particles charged trigger primary pt vs zT
   TH2F *       fhMCPtZTUeCharged[fgkNmcTypes];           //!<! MC pure particles charged trigger primary pt vs zT (underlying event)
   TH2F *       fhMCPtZTUeLeftCharged[fgkNmcTypes];       //!<! MC pure particles charged trigger primary pt vs zT (underlying event, left cone)
@@ -755,6 +759,7 @@ private:
   
   TH2F *       fhFractionSinglePhotonDecayOverPi0;       //!<! Control fraction of pi0 momentum carried by the decay photon generating the cluster tagged as pi0 decay
   TH2F *       fhFractionSinglePhotonDecayOverEta;       //!<! Control fraction of eta momentum carried by the decay photon generating the cluster tagged as eta decay
+
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
   
@@ -762,7 +767,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,46) ;
+  ClassDef(AliAnaParticleHadronCorrelation,47) ;
   /// \endcond
   
 } ;

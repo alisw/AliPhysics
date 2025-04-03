@@ -7999,173 +7999,173 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t   index     = 0;
     Float_t weightPt  = 1 ; 
     
-    if ( mcLabel >= 0  &&
-        ( IsDataMC() || GetReader()->AreMCPromptPhotonsSelected() || GetReader()->AreMCFragmentationPhotonsRejected()) )
-    {
-      if ( !GetMC() ) AliWarning("No MC pointer!");
-      
+    if ( mcLabel >= 0  )
+    {      
       // Generated mother kine, ID and pT dependent Weight
       index    = GetReader()->GetCocktailGeneratorAndIndex(mcLabel, genName);
       
       // Particle Origin
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),
                                               calo->GetClusterMCEdepFraction(),
-                                              nlabels, 
-                                              GetMC(), 
+                                              nlabels,
+                                              GetMC(),
                                               GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
-                                              fMomentum.E(), 
+                                              fMomentum.E(),
                                               pl); // check lost decays
       
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
-
-      // If requested, accept only prompt photon clusters or
-      // reject fragmentation photon clusters
-      //
-      if ( GetReader()->AreMCPromptPhotonsSelected() &&
-          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt) ) continue ;
-
-      if ( GetReader()->AreMCFragmentationPhotonsRejected() &&
-          (GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation) ||
-           GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCISR)) )
+      
+      // Check only if MC analysis enabled
+      if ( IsDataMC() )
       {
-        AliInfo(Form("Cluster with En %2.2f tagged as FSR or ISR rejected\n",calo->E()));
-        continue ;
-      }
-
-      if ( GetReader()->AreMCPromptPhotonsSelected() || GetReader()->AreMCFragmentationPhotonsRejected() )
-      {
-        if ( !IsHighMultiplicityAnalysisOn () )
+        // If requested, accept only prompt photon clusters or
+        // reject fragmentation photon clusters
+        //
+        if ( GetReader()->AreMCPromptPhotonsSelected() &&
+            !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt) ) continue ;
+        
+        if ( GetReader()->AreMCFragmentationPhotonsRejected() &&
+            (GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation) ||
+             GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCISR)) )
         {
-          fhClusterCutsPt[12]->Fill(fMomentum.Pt(), GetEventWeight());
-
-          if ( !fFillOnlyPtHisto )
-            fhClusterCutsE[12]->Fill(fMomentum.E(), GetEventWeight());
+          AliInfo(Form("Cluster with En %2.2f tagged as FSR or ISR rejected\n",calo->E()));
+          continue ;
+        }
+        
+        if ( GetReader()->AreMCPromptPhotonsSelected() || GetReader()->AreMCFragmentationPhotonsRejected() )
+        {
+          if ( !IsHighMultiplicityAnalysisOn () )
+          {
+            fhClusterCutsPt[12]->Fill(fMomentum.Pt(), GetEventWeight());
+            
+            if ( !fFillOnlyPtHisto )
+              fhClusterCutsE[12]->Fill(fMomentum.E(), GetEventWeight());
+          }
+          else
+          {
+            fhClusterCutsPtCen[12]->Fill(fMomentum.Pt(), cen, GetEventWeight());
+            
+            if ( !fFillOnlyPtHisto )
+              fhClusterCutsECen[12]->Fill(fMomentum.E(), cen, GetEventWeight());
+          }
+        }
+        
+        conversion = GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion);
+        
+        //        GetMCAnalysisUtils()->PrintMCTag(tag);
+        //        GetMCAnalysisUtils()->PrintAncestry(GetMC(),calo->GetLabel());
+        
+        fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel, GetMC(), pdg, status, ok, momLabel);
+        egen  = fPrimaryMom.E();
+        ptgen = fPrimaryMom.Pt();
+        
+        // In some histograms, each particle is a different bin
+        if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ) {
+          mcbin = 7.5; pdg = 111;
+          fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);
+          egen  = fPrimaryMom.E();
+          ptgen = fPrimaryMom.Pt();
+        }
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) {
+          mcbin = 8.5; pdg = 221;
+          fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);
+          egen  = fPrimaryMom.E();
+          ptgen = fPrimaryMom.Pt();
+        }
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     )
+        {
+          // Recover the original photon and not the converted electron
+          if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
+          {
+            Int_t gparentLabel = -1;
+            fPrimaryMom = GetMCAnalysisUtils()->GetFirstMotherWithPDGAndPrimary(mcLabel, 22, GetMC(), ok, momLabel, gparentLabel);
+            //printf("MC label %d, mom %d, parent %d; egen org %f, egen new %f\n",
+            //       mcLabel,momLabel,gparentLabel,egen,fPrimaryMom.E());
+            egen  = fPrimaryMom.E();
+            ptgen = fPrimaryMom.Pt();
+            bConverted = kTRUE;
+          }
+          
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ) mcbin = 0.5;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ) mcbin = 1.5;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)           ) mcbin = 2.5;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)      ) mcbin = 3.5;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay)      ) mcbin = 4.5;
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)    ) mcbin = 5.5;
+          else                                                                                     mcbin = 6.5;
+        }
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)   ) mcbin =  9.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCMuon)       ) mcbin = 10.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion)       ) mcbin = 11.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCKaon)       ) mcbin = 12.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton)     ) mcbin = 13.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) ) mcbin = 14.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCNeutron)    ) mcbin = 15.5;
+        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron)) mcbin = 16.5;
+        else                                                                                  mcbin = 17.5 ;
+        
+        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  ||
+            GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
+        {
+          fPrimaryMom2 = fPrimaryMom;
+          if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
+            fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);
+          
+          weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index, cen) ;
+        }
+        else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  ||
+                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
+        {
+          fPrimaryMom2 = fPrimaryMom;
+          if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
+            fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);
+          
+          weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index, cen) ;
         }
         else
         {
-          fhClusterCutsPtCen[12]->Fill(fMomentum.Pt(), cen, GetEventWeight());
-
-          if ( !fFillOnlyPtHisto )
-            fhClusterCutsECen[12]->Fill(fMomentum.E(), cen, GetEventWeight());
-        }
-      }
-
-      conversion = GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion);
-
-//        GetMCAnalysisUtils()->PrintMCTag(tag);
-//        GetMCAnalysisUtils()->PrintAncestry(GetMC(),calo->GetLabel());
-
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel, GetMC(), pdg, status, ok, momLabel);   
-      egen  = fPrimaryMom.E();
-      ptgen = fPrimaryMom.Pt();
-
-      // In some histograms, each particle is a different bin
-      if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ) {
-        mcbin = 7.5; pdg = 111;
-        fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);
-        egen  = fPrimaryMom.E();
-        ptgen = fPrimaryMom.Pt();
-      }
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) {
-        mcbin = 8.5; pdg = 221;
-        fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);
-        egen  = fPrimaryMom.E();
-        ptgen = fPrimaryMom.Pt();
-      }
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     ) 
-      {
-        // Recover the original photon and not the converted electron
-        if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
-        {
-          Int_t gparentLabel = -1;
-          fPrimaryMom = GetMCAnalysisUtils()->GetFirstMotherWithPDGAndPrimary(mcLabel, 22, GetMC(), ok, momLabel, gparentLabel);
-          //printf("MC label %d, mom %d, parent %d; egen org %f, egen new %f\n",
-          //       mcLabel,momLabel,gparentLabel,egen,fPrimaryMom.E());
-          egen  = fPrimaryMom.E();
-          ptgen = fPrimaryMom.Pt();
-          bConverted = kTRUE;
+          weightPt = GetParticlePtWeight(fPrimaryMom.Pt(), pdg, genName, index, cen) ;
         }
         
-        if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ) mcbin = 0.5;
-        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ) mcbin = 1.5;
-        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)           ) mcbin = 2.5;
-        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)      ) mcbin = 3.5;
-        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay)      ) mcbin = 4.5;
-        else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)    ) mcbin = 5.5;
-        else                                                                                     mcbin = 6.5;
-      }
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)   ) mcbin =  9.5;  
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCMuon)       ) mcbin = 10.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion)       ) mcbin = 11.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCKaon)       ) mcbin = 12.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton)     ) mcbin = 13.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) ) mcbin = 14.5;    
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCNeutron)    ) mcbin = 15.5;
-      else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron)) mcbin = 16.5;
-      else                                                                                  mcbin = 17.5 ;
+        if ( egen > 0.1 ) eRecoRes = (ener-egen) / egen;
+        if (ptgen > 0.1 ) ptRecoRes = (fMomentum.Pt()-ptgen) / ptgen;
+        // Check if several particles contributed to cluster and discard overlapped mesons
+        // Compare the primary depositing more energy with the rest,
+        // if no photon/electron as comon ancestor (conversions), count as other particle
+        Int_t overpdg[nlabels];
+        Int_t overlab[nlabels];
+        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,-1,GetMC(),overpdg,overlab);
       
-      if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  ||
-           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
-      {
-        fPrimaryMom2 = fPrimaryMom;
-        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
-          fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);        
-        
-        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index, cen) ;
-      }
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  ||
-                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
-      {
-        fPrimaryMom2 = fPrimaryMom;
-        if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
-          fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);        
-        
-        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index, cen) ;
-      }
-      else
-      {
-        weightPt = GetParticlePtWeight(fPrimaryMom.Pt(), pdg, genName, index, cen) ;
-      }
       
-      if ( egen > 0.1 ) eRecoRes = (ener-egen) / egen;
-      if (ptgen > 0.1 ) ptRecoRes = (fMomentum.Pt()-ptgen) / ptgen;
-      // Check if several particles contributed to cluster and discard overlapped mesons
-      // Compare the primary depositing more energy with the rest,
-      // if no photon/electron as comon ancestor (conversions), count as other particle
-      Int_t overpdg[nlabels];
-      Int_t overlab[nlabels];
-      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,-1,GetMC(),overpdg,overlab);
-    }
-
-    if ( mcLabel >= 0  && IsDataMC() )
-    {
-      // Fill first raw histograms
-      if ( !IsHighMultiplicityAnalysisOn() )
-      {
-        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+      
+        // Fill first raw histograms
+        if ( !IsHighMultiplicityAnalysisOn() )
         {
-          fhMCParticle[0]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
-        
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          {
+            fhMCParticle[0]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+            
+            if  ( conversion && fSeparateConvertedDistributions )
+              fhMCParticleConverted[0]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+          }
+          
+          if ( egen > 0.1 )
+            fhMCParticleVsErecEgenDiffOverEgen[0]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
+          fhMCParticleVsErecEgen[0]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
+          
+          if ( fCheckOverlaps )
+            fhMCParticleVsNOverlaps[0]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
+        }
+        else if ( !GetReader()->AreMCPromptPhotonsSelected() )
+        {
+          fhMCParticleCen[0]->Fill(fMomentum.Pt(), mcbin, cen, GetEventWeight()*weightPt);
+          
           if  ( conversion && fSeparateConvertedDistributions )
-            fhMCParticleConverted[0]->Fill(fMomentum.Pt(), mcbin, GetEventWeight()*weightPt);
+            fhMCParticleConvertedCen[0]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
         }
-        
-        if ( egen > 0.1 )
-          fhMCParticleVsErecEgenDiffOverEgen[0]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
-        fhMCParticleVsErecEgen[0]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
-        
-        if ( fCheckOverlaps )
-          fhMCParticleVsNOverlaps[0]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
       }
-      else if ( !GetReader()->AreMCPromptPhotonsSelected() )
-      {
-        fhMCParticleCen[0]->Fill(fMomentum.Pt(), mcbin, cen, GetEventWeight()*weightPt);
-        
-        if  ( conversion && fSeparateConvertedDistributions )
-          fhMCParticleConvertedCen[0]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
-      }      
-    }
-    
+    } // mcLabel >=0
+
     // Fill cluster acceptance histograms before cuts
     //
     Float_t en  = fMomentum.E ();
