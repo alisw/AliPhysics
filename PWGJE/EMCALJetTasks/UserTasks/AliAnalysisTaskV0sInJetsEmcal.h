@@ -150,6 +150,8 @@ public:
   void SetCutEtaCascadeDaughtersMax(Double_t val = 0.8) {fdCutCascadeEtaDaughterMax = val;}
   void SetCutCascadeRadiusDecayMin(Double_t val = 0.6) {fdCutCascadeRadiusDecayMin = val;}
   void SetCutCascadeV0RadiusDecayMin(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMin = val;}
+  void SetCutCascadeV0RadiusDecayMax(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMax = val;}
+  void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
   
   
   // axis: Xi invariant mass
@@ -528,6 +530,7 @@ private:
   Double_t fdCutCascadeEtaDaughterMax; //(0.8) max |pseudorapidity| of Cascade daughter tracks
   Double_t fdCutCascadeRadiusDecayMin; //(0.6) min cascade decay radius
   Double_t fdCutCascadeV0RadiusDecayMin; //(1.2) min V0 from cascade decay radius
+  Double_t fdCutCascadeV0RadiusDecayMax; //(100.) max V0 from cascade decay radius
 
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
 
