@@ -117,6 +117,16 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     TH1D*                 fHistRecUnMatched_Std_DetNN; //!
     TH1D*                 fHistMultiMatched_Std_DetNN; //!
 
+    TH2F*                 fHistResponse_Std_StdNN;  //!
+    TH1D*                 fHistUnMatched_Std_StdNN; //!
+    TH1D*                 fHistRecUnMatched_Std_StdNN; //!
+    TH1D*                 fHistMultiMatched_Std_StdNN; //!
+
+    TH2F*                 fHistResponse_Det_DetNN;  //!
+    TH1D*                 fHistUnMatched_Det_DetNN; //!
+    TH1D*                 fHistRecUnMatched_Det_DetNN; //!
+    TH1D*                 fHistMultiMatched_Det_DetNN; //!
+
     TH3F*                 fHistJetPtPartPtVsPart; //!
     TH3F*                 fHistJetPtPartFragVsPart; //!
 
@@ -156,7 +166,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaJetsPureMC(const AliAnalysisTaskGammaJetsPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaJetsPureMC &operator=(const AliAnalysisTaskGammaJetsPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaJetsPureMC, 3);
+    ClassDef(AliAnalysisTaskGammaJetsPureMC, 4);
 };
 
 #endif
