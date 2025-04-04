@@ -202,6 +202,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCascadeEtaDaughterMax(0.8),
   fdCutCascadeRadiusDecayMin(0.6),
   fdCutCascadeV0RadiusDecayMin(1.2),
+  fdCutCascadeV0RadiusDecayMax(100.),
   
   fh1CascadeCandPerEvent(0)
 //------------------------------------------
@@ -726,6 +727,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCascadeEtaDaughterMax(0.8),
   fdCutCascadeRadiusDecayMin(0.6),
   fdCutCascadeV0RadiusDecayMin(1.2),
+  fdCutCascadeV0RadiusDecayMax(100.),
+  
   
   fh1CascadeCandPerEvent(0)
 //------------------------------------------  
@@ -2478,6 +2481,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutCascadeEtaDaughterMax > 0.) printf( "max |pseudorapidity| of Cascade daughter tracks: %g\n", fdCutCascadeEtaDaughterMax);
   if(fdCutCascadeRadiusDecayMin > 0.) printf("min cascade decay radius: %g\n", fdCutCascadeRadiusDecayMin);
   if(fdCutCascadeV0RadiusDecayMin > 0.) printf( "min V0 from cascade decay radius: %g\n", fdCutCascadeV0RadiusDecayMin);
+  if(fdCutCascadeV0RadiusDecayMax > 0.) printf( "min V0 from cascade decay radius: %g\n", fdCutCascadeV0RadiusDecayMax);
 
 
   printf("-------------------------------------------------------\nJet analysis:\n");
@@ -2702,6 +2706,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dDCACascadeBachToV0Max = fdCutDCACascadeBachToV0Max; // 1.3; // [cm] max DCA between bachelor track to V0     
   Double_t dCascadeEtaDaughterMax = fdCutCascadeEtaDaughterMax; // max |pseudorapidity| of daughter tracks in cascade 
   Double_t dCascadeV0RadiusDecayMin = fdCutCascadeV0RadiusDecayMin; // 1.2 [cm] min radial distance of the decay vertex of the V0 (from the cascade)  
+  Double_t dCascadeV0RadiusDecayMax = fdCutCascadeV0RadiusDecayMax; // 100. [cm] min radial distance of the decay vertex of the V0 (from the cascade)  
   // Cascade candidate
   Double_t dCPACascadeMin = fdCutCPACascadeMin;// 0.97; // min cosine of the pointing angle of the cascade
   Double_t dCPACascadeV0Min = fdCutCPACascadeV0Min;// 0.97; // min cosine of the pointing angle of the V0 in the cascade   
@@ -4316,7 +4321,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // 12'
     // V0: Fiducial volume
     if(bPrintCuts) printf("Rec: Applying cut: V0 Decay radius: > %f\n", dCascadeV0RadiusDecayMin);
-    if(dRadiusDecayV0 < dCascadeV0RadiusDecayMin )
+    if((dRadiusDecayV0 < dCascadeV0RadiusDecayMin) || (dRadiusDecayV0 > dCascadeV0RadiusDecayMax))
       continue;
     FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     iCutIndex++;
