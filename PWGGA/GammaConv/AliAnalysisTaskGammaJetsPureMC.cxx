@@ -83,6 +83,14 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(): AliAnalysisTas
   fHistUnMatched_Std_DetNN(nullptr),
   fHistRecUnMatched_Std_DetNN(nullptr),
   fHistMultiMatched_Std_DetNN(nullptr),
+  fHistResponse_Det_DetNN(nullptr),
+  fHistUnMatched_Det_DetNN(nullptr),
+  fHistRecUnMatched_Det_DetNN(nullptr),
+  fHistMultiMatched_Det_DetNN(nullptr),
+  fHistResponse_Std_StdNN(nullptr),
+  fHistUnMatched_Std_StdNN(nullptr),
+  fHistRecUnMatched_Std_StdNN(nullptr),
+  fHistMultiMatched_Std_StdNN(nullptr),
   fHistJetPtPartPtVsPart(nullptr),
   fHistJetPtPartFragVsPart(nullptr),
   fHistJetPtPartPtVsPartLead(nullptr),
@@ -140,6 +148,14 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(const char *name)
   fHistUnMatched_Std_DetNN(nullptr),
   fHistRecUnMatched_Std_DetNN(nullptr),
   fHistMultiMatched_Std_DetNN(nullptr),
+  fHistResponse_Det_DetNN(nullptr),
+  fHistUnMatched_Det_DetNN(nullptr),
+  fHistRecUnMatched_Det_DetNN(nullptr),
+  fHistMultiMatched_Det_DetNN(nullptr),
+  fHistResponse_Std_StdNN(nullptr),
+  fHistUnMatched_Std_StdNN(nullptr),
+  fHistRecUnMatched_Std_StdNN(nullptr),
+  fHistMultiMatched_Std_StdNN(nullptr),
   fHistJetPtPartPtVsPart(nullptr),
   fHistJetPtPartFragVsPart(nullptr),
   fHistJetPtPartPtVsPartLead(nullptr),
@@ -310,6 +326,41 @@ void AliAnalysisTaskGammaJetsPureMC::UserCreateOutputObjects(){
   fHistMultiMatched_Std_DetNN = new TH1D("JetPt_Multimatched_Std_DetNN", "JetPt_Multimatched_Std_DetNN", vecJetPt.size()-1, vecJetPt.data());
   fHistMultiMatched_Std_DetNN->Sumw2();
   fOutputContainer->Add(fHistMultiMatched_Std_DetNN);
+
+
+  fHistResponse_Det_DetNN = new TH2F("Response_Det_DetNN", "Response_Det_DetNN", vecJetPt.size()-1, vecJetPt.data(), vecJetPt.size()-1, vecJetPt.data());
+  fHistResponse_Det_DetNN->Sumw2();
+  fOutputContainer->Add(fHistResponse_Det_DetNN);
+
+  fHistUnMatched_Det_DetNN = new TH1D("JetPt_Unmatched_Det_DetNN", "JetPt_Unmatched_Det_DetNN", vecJetPt.size()-1, vecJetPt.data());
+  fHistUnMatched_Det_DetNN->Sumw2();
+  fOutputContainer->Add(fHistUnMatched_Det_DetNN);
+
+  fHistRecUnMatched_Det_DetNN = new TH1D("JetPt_RecUnmatched_Det_DetNN", "JetPt_RecUnmatched_Det_DetNN", vecJetPt.size()-1, vecJetPt.data());
+  fHistRecUnMatched_Det_DetNN->Sumw2();
+  fOutputContainer->Add(fHistRecUnMatched_Det_DetNN);
+
+  fHistMultiMatched_Det_DetNN = new TH1D("JetPt_Multimatched_Det_DetNN", "JetPt_Multimatched_Det_DetNN", vecJetPt.size()-1, vecJetPt.data());
+  fHistMultiMatched_Det_DetNN->Sumw2();
+  fOutputContainer->Add(fHistMultiMatched_Det_DetNN);
+
+
+  fHistResponse_Std_StdNN = new TH2F("Response_Std_StdNN", "Response_Std_StdNN", vecJetPt.size()-1, vecJetPt.data(), vecJetPt.size()-1, vecJetPt.data());
+  fHistResponse_Std_StdNN->Sumw2();
+  fOutputContainer->Add(fHistResponse_Std_StdNN);
+
+  fHistUnMatched_Std_StdNN = new TH1D("JetPt_Unmatched_Std_StdNN", "JetPt_Unmatched_Std_StdNN", vecJetPt.size()-1, vecJetPt.data());
+  fHistUnMatched_Std_StdNN->Sumw2();
+  fOutputContainer->Add(fHistUnMatched_Std_StdNN);
+
+  fHistRecUnMatched_Std_StdNN = new TH1D("JetPt_RecUnmatched_Std_StdNN", "JetPt_RecUnmatched_Std_StdNN", vecJetPt.size()-1, vecJetPt.data());
+  fHistRecUnMatched_Std_StdNN->Sumw2();
+  fOutputContainer->Add(fHistRecUnMatched_Std_StdNN);
+
+  fHistMultiMatched_Std_StdNN = new TH1D("JetPt_Multimatched_Std_StdNN", "JetPt_Multimatched_Std_StdNN", vecJetPt.size()-1, vecJetPt.data());
+  fHistMultiMatched_Std_StdNN->Sumw2();
+  fOutputContainer->Add(fHistMultiMatched_Std_StdNN);
+
 
   fHistPrimaryParticles = new TH1D("PrimPart_Pt", "PrimPart_Pt", 1000, 0, 100);
   fHistPrimaryParticles->Sumw2();
@@ -604,7 +655,8 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
   // Response Matrices
   FillResponseMatrixAndEffi(fVecJets_Std, fVecJets_Det, fHistResponse_Std_Det, fHistUnMatched_Std_Det, fHistMultiMatched_Std_Det, fHistRecUnMatched_Std_Det);
   FillResponseMatrixAndEffi(fVecJets_Std, fVecJets_DetNN, fHistResponse_Std_DetNN, fHistUnMatched_Std_DetNN, fHistMultiMatched_Std_DetNN, fHistRecUnMatched_Std_DetNN, fJetEnergyShift);
-
+  FillResponseMatrixAndEffi(fVecJets_Det, fVecJets_DetNN, fHistResponse_Det_DetNN, fHistUnMatched_Det_DetNN, fHistMultiMatched_Det_DetNN, fHistRecUnMatched_Det_DetNN, fJetEnergyShift);
+  FillResponseMatrixAndEffi(fVecJets_Std, fVecJets_StdNN, fHistResponse_Std_StdNN, fHistUnMatched_Std_StdNN, fHistMultiMatched_Std_StdNN, fHistRecUnMatched_Std_StdNN);
 
 
   // check for particles inside of jets
