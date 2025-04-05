@@ -4158,15 +4158,22 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     const AliAODTrack* trackBach = (AliAODTrack*)Cascade->GetDecayVertexXi()->GetDaughter(0); // bachelor daughter track    
     const AliAODTrack* trackPos  = (AliAODTrack*)Cascade->GetDaughter(0); // positive daughter track
     const AliAODTrack* trackNeg  = (AliAODTrack*)Cascade->GetDaughter(1); // negative daughter track  
-    //Double_t dPtBach = trackBach->Pt(); 
+
     Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track
     Double_t dPtDaughterNeg = trackNeg->Pt();
+    Double_t dPtDaughterBach = trackBach->Pt();     
     Double_t dEtaDaughterNeg = trackNeg->Eta(); // = Cascade->EtaProng(1), pseudorapidity of a daughter track
-    Double_t dEtaDaughterPos = trackPos->Eta(); // = Cascade->EtaProng(0)     
+    Double_t dEtaDaughterPos = trackPos->Eta(); // = Cascade->EtaProng(0)  
+    Double_t dEtaDaughterBach = trackBach->Eta();   
   
     Double_t dNRowsPos = trackPos->GetTPCClusterInfo(2, 1); // crossed TPC pad rows of a daughter track
     Double_t dNRowsNeg = trackNeg->GetTPCClusterInfo(2, 1);
+    Double_t dNRowsBach = trackBach->GetTPCClusterInfo(2, 1);
+    Double_t dFindablePos = Double_t(trackPos->GetTPCNclsF()); // Findable clusters
+    Double_t dFindableNeg = Double_t(trackNeg->GetTPCNclsF());
+    Double_t dFindableBach = Double_t(trackBach->GetTPCNclsF());
  
+
 	  //DCA and CPA variables 
     Double_t dDCAToPrimVtxPos  = TMath::Abs(Cascade->DcaPosToPrimVertex()); // dca of a positive daughter to the primary vertex
     Double_t dDCAToPrimVtxNeg  = TMath::Abs(Cascade->DcaNegToPrimVertex()); // dca of a negative daughter to the primary vertex
@@ -4204,6 +4211,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Char_t cTypeVtxProdPos = prodVtxDaughterPos->GetType(); // type of the production vertex
     AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(trackNeg->GetProdVertex()); // production vertex of the negative daughter track
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
+    AliAODVertex* prodVtxDaughterBach = (AliAODVertex*)(trackBach->GetProdVertex()); // production vertex of the negative daughter track
+    Char_t cTypeVtxProdBach = prodVtxDaughterBach->GetType(); // type of the production vertex
  
     // QA histograms before cuts
     FillQAHistogramXi(primVtx, Cascade, 0, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, bIsInPeakXi, bIsInPeakOmega);
@@ -4239,6 +4248,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
       if(!trackPos->IsOn(AliAODTrack::kTPCrefit))
         continue;
+      if(!trackBach->IsOn(AliAODTrack::kTPCrefit))
+        continue;
     }
 
     if(fbRejectKinks) {
@@ -4247,6 +4258,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
       if(cTypeVtxProdPos == AliAODVertex::kKink)
         continue;
+      if(cTypeVtxProdBach == AliAODVertex::kKink)
+        continue;
+    }
+
+    if(fbFindableClusters) {
+      if(bPrintCuts) printf("Rec: Applying cut: Positive number of findable clusters\n");
+      if(dFindableNeg <= 0.)
+        continue;
+      if(dFindablePos <= 0.)
+        continue;
+      if(dFindableBach <= 0.)
+        continue;     
     }
 
     if(fdCutNCrossedRowsTPCMin > 0.) {
@@ -4254,6 +4277,28 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(dNRowsNeg < fdCutNCrossedRowsTPCMin) // Crossed TPC padrows
         continue;
       if(dNRowsPos < fdCutNCrossedRowsTPCMin)
+        continue;
+      if(dNRowsBach < fdCutNCrossedRowsTPCMin)
+        continue;
+    }
+
+    if(fdCutCrossedRowsOverFindMin > 0.) {
+      if(bPrintCuts) printf("Rec: Applying cut: rows/findable >= %g\n", fdCutCrossedRowsOverFindMin);
+      if(dNRowsNeg / dFindableNeg < fdCutCrossedRowsOverFindMin)
+        continue;
+      if(dNRowsPos / dFindablePos < fdCutCrossedRowsOverFindMin)
+        continue;
+      if(dNRowsBach / dFindableBach < fdCutCrossedRowsOverFindMin)
+        continue;
+    }
+
+    if(fdCutCrossedRowsOverFindMax > 0.) {
+      if(bPrintCuts) printf("Rec: Applying cut: rows/findable <= %g\n", fdCutCrossedRowsOverFindMax);
+      if(dNRowsNeg / dFindableNeg > fdCutCrossedRowsOverFindMax)
+        continue;
+      if(dNRowsPos / dFindablePos > fdCutCrossedRowsOverFindMax)
+        continue;
+      if(dNRowsBach / dFindableBach > fdCutCrossedRowsOverFindMax)
         continue;
     }
 
@@ -4263,7 +4308,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Daughters: transverse momentum cut
     if(fdCutPtDaughterMin > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter pt >= %g\n", fdCutPtDaughterMin);
-      if((dPtDaughterNeg < fdCutPtDaughterMin) || (dPtDaughterPos < fdCutPtDaughterMin))
+      if((dPtDaughterNeg < fdCutPtDaughterMin) || (dPtDaughterPos < fdCutPtDaughterMin) || (dPtDaughterBach < fdCutPtDaughterMin))
         continue;
       FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     }
@@ -4336,7 +4381,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Daughters: pseudorapidity cut
     if(dCascadeEtaDaughterMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter |eta|: < %f\n", dCascadeEtaDaughterMax);
-      if((TMath::Abs(dEtaDaughterNeg) > dCascadeEtaDaughterMax) || (TMath::Abs(dEtaDaughterPos) > dCascadeEtaDaughterMax))
+      if((TMath::Abs(dEtaDaughterNeg) > dCascadeEtaDaughterMax) || (TMath::Abs(dEtaDaughterPos) > dCascadeEtaDaughterMax) || (TMath::Abs(dEtaDaughterBach) > dCascadeEtaDaughterMax))
         continue;
        FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     }
