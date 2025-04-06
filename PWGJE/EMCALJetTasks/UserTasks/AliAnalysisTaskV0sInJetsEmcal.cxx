@@ -3591,7 +3591,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           fhnV0CorrelSELambda[iCentIndex]->Fill(valueLCorrel);
         }
         if(bIsCandidateALambda) {
-          Double_t valueLCorrel[4] = {dMassV0Lambda, dPtV0, jetCorrel->Pt(), dDR};
+          Double_t valueLCorrel[4] = {dMassV0ALambda, dPtV0, jetCorrel->Pt(), dDR};
           fhnV0CorrelSEALambda[iCentIndex]->Fill(valueLCorrel); 
         }
       }
@@ -3619,7 +3619,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
               fhnV0CorrelMELambda[iCentIndex]->Fill(valueLCorrel);
             }
             if(bIsCandidateALambda) {
-              Double_t valueLCorrel[4] = {dMassV0Lambda, dPtV0, jetMixed->Pt(), dDR};
+              Double_t valueLCorrel[4] = {dMassV0ALambda, dPtV0, jetMixed->Pt(), dDR};
               fhnV0CorrelMEALambda[iCentIndex]->Fill(valueLCorrel); 
             }
           }
