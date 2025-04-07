@@ -61,6 +61,8 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 
+#include "../PWGGAUtils/utils_TH1.h"
+
 
 
 class iostream;
@@ -178,6 +180,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fFitDataPi0_inv(NULL),
   fFitDataEta_inv(NULL),
   fFitDataK0s_inv(NULL),
+  fReweightMCHist_interpolate_Pi0(NULL),
+  fReweightMCHist_interpolate_Eta(NULL),
   hReweightMCHistGamma(NULL),
   hReweightDataHistGamma(NULL),
   fAddedSignalPDGCode(0),
@@ -333,6 +337,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fFitDataPi0_inv(ref.fFitDataPi0_inv),
   fFitDataEta_inv(ref.fFitDataEta_inv),
   fFitDataK0s_inv(ref.fFitDataK0s_inv),
+  fReweightMCHist_interpolate_Pi0(ref.fReweightMCHist_interpolate_Pi0),
+  fReweightMCHist_interpolate_Eta(ref.fReweightMCHist_interpolate_Eta),
   hReweightMCHistGamma(ref.hReweightMCHistGamma),
   hReweightDataHistGamma(ref.hReweightDataHistGamma),
   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
@@ -1134,9 +1140,13 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                         : (theWhich == kInvariant)
                             ? theMCTH1_inv
                             : &multiplyTH1ByBinCenters(*theMCTH1_inv);
+    
+    TF1 *lMCTF1_exp_inter = lMCTH1 
+      ? &utils_TH1::GlobalPieceWiseExponentialInterpolation(Form("%s_exp_inter", lMCTH1->GetName()), *lMCTH1)
+      : nullptr;
 
     // preparation done, insert into the map
-    PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1});
+    PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1, lMCTF1_exp_inter});
     const auto [it, success] =  fMapPtWeightsAccessObjects.insert(std::pair{thePDGCode, lBundle});
     if (!success)
     {
@@ -1150,16 +1160,22 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     } 
     else
     {
+      auto const &lBundle = it->second;
+      std::string lNameF(lBundle.fMC 
+        ? lBundle.fMC->GetName() 
+        : "No TF1 initialized for this MC");  
       std::string lMessage(
         Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): inserted:\n"
              "\tthePDGCode: %d\n"
              "\teWhich: %d\n"
              "\tfData: %s\n"
-             "\thMC: %s\n",
+             "\thMC: %s\n"
+             "\tfMC: %s\n",
              it->first, 
-             static_cast<int>(it->second.eWhich), 
-             it->second.fData->GetName(), 
-             it->second.hMC->GetName()));
+             static_cast<int>(lBundle.eWhich), 
+             lBundle.fData->GetName(), 
+             lBundle.hMC->GetName(),
+             lNameF.data()));
       AliInfo(lMessage.data());
     }
     return true;
@@ -8089,6 +8105,27 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     return lResult;
   };
 
+  auto checkSanitizeAndReturnWeight = [&](Double_t theWeight, Int_t thePdgCode)
+  {
+    if ((theWeight < 0) || !isfinite(theWeight))
+    {
+      std::string lWarningMessage(
+        Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
+             "It will be set to 0 - effectively rejecting the particle.\n"
+             "This points to a severe problem - investigate!\n",
+             thePdgCode, 
+             theWeight));
+      AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
+                      "It will be set to 0 - effectively rejecting the particle.\n"
+                      "This points to a severe problem - investigate!\n",
+                      thePdgCode, 
+                      theWeight));
+      theWeight = 0.;
+    }
+    return theWeight;
+  };
+
+  // execution starts here
   if(index < 0) 
   { 
     return 0; // No Particle
@@ -8099,61 +8136,21 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     return 1.;
   }
 
-  Double_t mesonPt = 0;
-  Int_t PDGCode = 0;
-  // todo: check why I need to capture everything in order for it work
-  auto getPDGCodeAndMesonPt = [&]()
-  {
-    if (!event || event->IsA() == AliESDEvent::Class())
-    {
-      mesonPt = ((AliMCParticle *)mcEvent->GetTrack(index))->Pt();
-      PDGCode = ((AliMCParticle *)mcEvent->GetTrack(index))->PdgCode();
-    }
-    else if (event->IsA() == AliAODEvent::Class())
-    {
-      if (!fAODMCTrackArray)
-        fAODMCTrackArray = dynamic_cast<TClonesArray *>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (fAODMCTrackArray)
-      {
-        AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(index));
-        mesonPt = aodMCParticle->Pt();
-        PDGCode = aodMCParticle->GetPdgCode();
-      }
-      else
-      {
-        return 0;
-      }
-    }
-    return 1;
-  };
+  bool isESD = !event || (event->IsA() == AliESDEvent::Class());
+  bool isAOD = !isESD && (event->IsA() == AliAODEvent::Class());
 
-  if (!getPDGCodeAndMesonPt())
-  {
-    AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: 2 for meson %d. returning 0.\n",
-                      PDGCode));
-
-    return 0.;
+  if (isAOD && !fAODMCTrackArray){
+    fAODMCTrackArray = dynamic_cast<TClonesArray *>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!fAODMCTrackArray)
+    {
+      AliWarning("GetWeightForMesonNew(): fAODMCTrackArray could not be obtained.");
+      return 0.;
+    }
   }
+  AliAODMCParticle &aodMCParticle = *static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(index));
+  Double_t mesonPt = isAOD ? aodMCParticle.Pt() : ((AliMCParticle *)mcEvent->GetTrack(index))->Pt();
+  Int_t PDGCode    = isAOD ? aodMCParticle.GetPdgCode() : ((AliMCParticle *)mcEvent->GetTrack(index))->PdgCode();
 
-  auto checkSanitizeAndReturnWeight = [&](Double_t theWeight)
-  {
-    if ((theWeight < 0) || !isfinite(theWeight))
-    {
-      std::string lWarningMessage(
-        Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
-             "It will be set to 0 - effectively rejecting the particle.\n"
-             "This points to a severe problem - investigate!\n",
-             PDGCode, 
-             theWeight));
-      AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
-                      "It will be set to 0 - effectively rejecting the particle.\n"
-                      "This points to a severe problem - investigate!\n",
-                      PDGCode, 
-                      theWeight));
-      theWeight = 0.;
-    }
-    return theWeight;
-  };
 
   // catch cases with invalid PDGCode
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
@@ -8164,9 +8161,14 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     return 1.;
   }
 
-  Double_t lNomData = lConstIt->second.fData->Eval(mesonPt);
-  Double_t lDenomMC = lConstIt->second.hMC->Interpolate(mesonPt);
-  auto calcWeight = [&checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
+  auto const &lBundle = lConstIt->second;
+  Double_t lNomData = lBundle.fData->Eval(mesonPt);
+  Double_t lDenomMC = lBundle.fMC 
+    ? lBundle.fMC->Eval(mesonPt)
+    : lBundle.hMC->Interpolate(mesonPt);
+  //   Double_t lDenomMC = lBundle.hMC->Interpolate(mesonPt);
+
+  auto calcWeight = [&PDGCode, &checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
     Double_t lWeight = lDenomMC
                            ? (lNomData > 0.)                //     lDenomMC != 0   # normal
@@ -8176,7 +8178,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
                                                             // => n1) can be negative, e2) always is negative
   
     // will reset to 1 and throw a warning if weight is not >=0 and finite
-    Double_t lWeightSanitized = checkSanitizeAndReturnWeight(lWeight);
+    Double_t lWeightSanitized = checkSanitizeAndReturnWeight(lWeight, PDGCode);
     return lWeightSanitized;
   };
   double lResult = calcWeight();

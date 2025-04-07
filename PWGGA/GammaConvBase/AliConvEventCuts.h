@@ -449,6 +449,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         EnumPtWeights eWhich;
         TF1 const *fData;
         TH1 const *hMC;
+        TF1 const *fMC;
       };
       std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<  map of meson pdg code to PtWeightsBundle
       bool fMapPtWeightsIsFilledAndSane;                         //!<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
@@ -855,6 +856,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fFitDataPi0_inv;                        ///< fit to pi0 spectrum in Data
       TF1*                        fFitDataEta_inv;                        ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s_inv;                        ///< fit to K0s spectrum in Data
+      TF1*                        fReweightMCHist_interpolate_Pi0;        ///< a tf1 that interpolates the MC Pi0 spectrum
+      TF1*                        fReweightMCHist_interpolate_Eta;        ///< a tf1 that interpolates the MC Eta spectrum
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
       TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       Int_t                       fAddedSignalPDGCode;
@@ -906,7 +909,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,95)
+      ClassDef(AliConvEventCuts,96)
       /// \endcond
 };
 
