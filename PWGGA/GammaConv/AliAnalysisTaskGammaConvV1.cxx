@@ -3939,9 +3939,6 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles(int isCurrentEventSelected)
           Float_t weighted= 1;
 	      if (particle->Pt()>0.005){
 	        weighted= fiEventCut->GetWeightForMeson(i, fMCEvent, fInputEvent);
-	      //                   if(particle->GetPdgCode() == 221){
-	      //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
-	      //                   }
 	      }
           Double_t mesonY = 1.e30;
           Double_t ratio  = 0;

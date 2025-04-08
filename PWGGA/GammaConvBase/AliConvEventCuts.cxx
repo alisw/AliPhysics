@@ -1141,6 +1141,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                             ? theMCTH1_inv
                             : &multiplyTH1ByBinCenters(*theMCTH1_inv);
     
+    // if lMCTF1_exp_inter is in inv or var form is determined by lMCTH1, that means by theWhich
     TF1 *lMCTF1_exp_inter = lMCTH1 
       ? &utils_TH1::GlobalPieceWiseExponentialInterpolation(Form("%s_exp_inter", lMCTH1->GetName()), *lMCTH1)
       : nullptr;
@@ -1184,6 +1185,13 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
   // execution starts here
   AliInfo(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects() cutNumber %s: start\n", 
                GetCutNumber().Data()));
+  
+  // If Etas get reweighted so should their daughter Pi0s.             
+  if (fDoReweightHistoMCEta && !fDoReweightHistoMCEta)
+  {
+    AliError("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): fDoReweightHistoMCEta is true and fDoReweightHistoMCEta is false.");
+    return 0;
+  }
   
   bool lSuccess = true;
   lSuccess &= calculateVariantSpectraAndInsert(111, fDoReweightHistoMCPi0, fFitDataPi0_inv, hReweightMCHistPi0_inv);
@@ -8154,16 +8162,21 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     }
   }
   AliAODMCParticle &aodMCParticle = *static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(index));
-  Double_t mesonPt = isAOD ? aodMCParticle.Pt() : ((AliMCParticle *)mcEvent->GetTrack(index))->Pt();
-  Int_t PDGCode    = isAOD ? aodMCParticle.GetPdgCode() : ((AliMCParticle *)mcEvent->GetTrack(index))->PdgCode();
-
+  Double_t mesonPt = isAOD 
+    ? aodMCParticle.Pt() 
+    : ((AliMCParticle *)mcEvent->GetTrack(index))->Pt();
+  Int_t PDGCode = isAOD 
+    ? aodMCParticle.GetPdgCode() 
+    : ((AliMCParticle *)mcEvent->GetTrack(index))->PdgCode();
 
   // catch cases with invalid PDGCode
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
   if (lConstIt == fMapPtWeightsAccessObjects.cend())
   {
+    // Question: How can Etas be selected only? If I process Etas from added Signals only, their daughter Pi0s still should get weighted
+    // uncommenting now again to see what will happen.
     // commenting since this will be true when selecting etas only (this function will be called for their daughter pi0s)
-    // AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
+    AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
     return 1.;
   }
 

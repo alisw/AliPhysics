@@ -541,19 +541,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                 TString fitNamePi0 = "",
                                 TString fitNameEta = "",
                                 TString fitNameK0s ="" )
-                                                                                    {
-                                                                                      AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
-                                                                                      fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
-                                                                                      fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
-                                                                                      fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
-                                                                                      fPathTrFReweighting=path                                  ;
-                                                                                      fNameHistoReweightingPi0 =histoNamePi0                    ;
-                                                                                      fNameHistoReweightingEta =histoNameEta                    ;
-                                                                                      fNameHistoReweightingK0s =histoNameK0s                    ;
-                                                                                      fNameFitDataPi0 =fitNamePi0                               ;
-                                                                                      fNameFitDataEta =fitNameEta                               ;
-                                                                                      fNameFitDataK0s =fitNameK0s                               ;
-                                                                                    }
+            {
+                AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
+                fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
+                fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
+                fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
+                fPathTrFReweighting=path                                  ;
+                fNameHistoReweightingPi0 =histoNamePi0                    ;
+                fNameHistoReweightingEta =histoNameEta                    ;
+                fNameHistoReweightingK0s =histoNameK0s                    ;
+                fNameFitDataPi0 =fitNamePi0                               ;
+                fNameFitDataEta =fitNameEta                               ;
+                fNameFitDataK0s =fitNameK0s                               ;
+            }
       void    SetUseGetWeightForMesonNew(Bool_t useNewMethod)                       { fUseGetWeightForMesonNew = useNewMethod                    ; }                                                                                       
       void    SetUseWeightMultiplicityFromFile( Int_t doWeighting = 0,
                                                 TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/MultiplicityInput.root",
