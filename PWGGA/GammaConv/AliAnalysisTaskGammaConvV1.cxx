@@ -3558,12 +3558,15 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
 
         Int_t isMCFromMBHeader = -1;
         if(fiEventCut->GetSignalRejection() != 0){
+          // 0 for material, from not selected header etc. 1 for selected header, 2 for MB header or no headers given  
           isMCFromMBHeader = fiEventCut->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
           if(isMCFromMBHeader == 0 && fiEventCut->GetSignalRejection() != 3) continue;
         }
 
         if(!fiPhotonCut->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
-        if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kFALSE)){
+        
+        // returns 0 for non-photons or rejected photons, photon daughters don't play a role
+        if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kFALSE /*checkForConvertedGamma*/ )){
           fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
           if(isCurrentEventSelected == 1){
             fHistoMCAllGammaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
@@ -3596,7 +3599,9 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
             }
           }
         }
-        if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kTRUE)){
+
+        // same as above but not also reject if photon does not convert OR if conversion daughters are outside acceptance
+        if(fiPhotonCut->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kTRUE /*checkForConvertedGamma*/)){
           Double_t rConv = 0;
           for(Int_t daughterIndex=particle->GetDaughterLabel(0);daughterIndex<=particle->GetDaughterLabel(1);daughterIndex++){
             AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(daughterIndex));
@@ -3647,15 +3652,18 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
             }
           }
 
+          // Returns true for all Pi0s, Etas and Eta primes within acceptance cuts for decay into 2 photons
           if(fiMesonCut->MesonIsSelectedAODMC(particle,fAODMCTrackArray,fiEventCut->GetEtaShift())){
             AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(0)));
             AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(1)));
+            
+        /*  SFS: all conversion primary mesons get the pt weight. 
+            Pi0s from Etas will only then get the pi0 weight, if pt weights are switched on for pi0s. 
+            Otherwise they won't get weighted at all. 
+            Etas gets weighted if for them it is switched on. */
             Float_t weighted= 1;
 	        if (particle->Pt()>0.005){
 	          weighted= fiEventCut->GetWeightForMeson(i, 0x0, fInputEvent);
-   	          //                   if(particle->GetPdgCode() == 221){
-	          //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
-	          //                   }
 	        }
 
             Double_t mesonY = 1.e30;

@@ -1163,7 +1163,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
       auto const &lBundle = it->second;
       std::string lNameF(lBundle.fMC 
         ? lBundle.fMC->GetName() 
-        : "No TF1 initialized for this MC");  
+        : "nullptr");  
       std::string lMessage(
         Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): inserted:\n"
              "\tthePDGCode: %d\n"
@@ -7578,6 +7578,12 @@ Bool_t AliConvEventCuts::PhotonPassesAddedParticlesCriterion(AliMCEvent         
   return kTRUE;
 }
 
+/*
+returns:
+    0: for particles that shall not be used; from material interactions, not from selected header, etc
+    1: for particles from selected headers
+    2: for particles from the MB header or if no headers have been given at all 
+*/
 //_________________________________________________________________________
 Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, AliVEvent *InputEvent, Int_t debug ){
 
@@ -8213,6 +8219,7 @@ Float_t AliConvEventCuts::GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent,
 
 
   if (kCaseGen == 0) return 1.;
+  // !IsParticleFromBGEvent() means the particle shall not be used. Here, 1. is returned but somewhere else it will get rejected.
   if(kCaseGen==1 && !IsParticleFromBGEvent(index, mcEvent, event)) return 1.;
 
   // get pT and pdg code
@@ -8236,6 +8243,7 @@ Float_t AliConvEventCuts::GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent,
   }
 
   // get MC value
+  // Question: Why would a daughter pion of an Eta only get weighted, if pi0s get weighted? or is this only called for real primaries?
   Float_t functionResultMC = 1.;
   if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0_inv!= 0x0){
     functionResultMC = hReweightMCHistPi0_inv->Interpolate(mesonPt);
