@@ -138,7 +138,7 @@ protected:
     bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
     void DoJetMatching();
     void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
-    void GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance, Float_t& JetEmbPtSub);
+    void GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance, Float_t& JetEmbPtSub, AliVEvent* inputEvent);
     void FillDelPtCones(AliEmcalJet *fJet, AliVEvent* inputEvent, float rho);
     Long64_t GetUniqueEventID(AliVEvent* inputEvent);
     Bool_t CheckHighPtTrackInEvent(AliVEvent* inputEvent);
@@ -149,7 +149,7 @@ protected:
     return TMath::Sqrt((eta1-eta2)*(eta1-eta2) + deltaPhi*deltaPhi);
     }
 
-    void FillMatchedTrackTree(AliEmcalJet* fJet_Hyb, AliEmcalJet* fJet_Tru, float_t& JetEmbPtSub);
+    void FillMatchedTrackTree(AliEmcalJet* fJet_Hyb, AliEmcalJet* fJet_Tru, float_t& JetEmbPtSub, AliVEvent* inputEvent);
     void FillEmbHistograms(Long64_t EvCounter);
 
     double Calculate_pX(double pT, double eta, double phi);
@@ -222,20 +222,40 @@ protected:
     Bool_t fCout; ///<print cout statements 
     Bool_t fisGoodIncEvent; ///<check if event is good 
 
-    Float_t fJet_pt_det; ///< jet pt det 
-    Float_t fJet_pt_tru; ///< jet pt tru
-    Float_t fTrack_pt_det; ///< track pt det 
-    Float_t fTrack_pt_tru; ///< track pt tru
-    Float_t fTrack_eta_det; ///< track eta det 
-    Float_t fTrack_eta_tru; ///< track eta tru 
-    Float_t fTrack_phi_det; ///< track phi det 
-    Float_t fTrack_phi_tru; ///< track phi tru
-    Float_t fTrack_pt_miss; ///< miss track pt 
-    Float_t fTrack_pt_fake; ///< fake track pt 
-    Float_t fTrack_eta_miss; ///< miss track eta 
-    Float_t fTrack_eta_fake; ///< fake track eta  
-    Float_t fTrack_phi_miss; ///< miss track phi  
-    Float_t fTrack_phi_fake; ///< fake track phi
+    // Float_t fJet_pt_det; ///< jet pt det 
+    // Float_t fJet_pt_tru; ///< jet pt tru
+    // Float_t fTrack_pt_det; ///< track pt det 
+    // Float_t fTrack_pt_tru; ///< track pt tru
+    // Float_t fTrack_eta_det; ///< track eta det 
+    // Float_t fTrack_eta_tru; ///< track eta tru 
+    // Float_t fTrack_phi_det; ///< track phi det 
+    // Float_t fTrack_phi_tru; ///< track phi tru
+    // Float_t fTrack_pt_miss; ///< miss track pt 
+    // Float_t fTrack_pt_fake; ///< fake track pt 
+    // Float_t fTrack_eta_miss; ///< miss track eta 
+    // Float_t fTrack_eta_fake; ///< fake track eta  
+    // Float_t fTrack_phi_miss; ///< miss track phi  
+    // Float_t fTrack_phi_fake; ///< fake track phi
+
+    std::vector<float> fJet_ptPhiEta_det; ///< jet pt det 
+    std::vector<float> fJet_ptPhiEta_tru; ///< jet pt tru
+    std::vector<float> fTrack_pt_det; ///< track pt det 
+    std::vector<float> fTrack_pt_tru; ///< track pt tru
+    std::vector<float> fTrack_eta_det; ///< track eta det 
+    std::vector<float> fTrack_eta_tru; ///< track eta tru 
+    std::vector<float> fTrack_phi_det; ///< track phi det 
+    std::vector<float> fTrack_phi_tru; ///< track phi tru
+    std::vector<float> fTrack_pt_miss; ///< miss track pt 
+    std::vector<float> fTrack_pt_fake; ///< fake track pt 
+    std::vector<float> fTrack_eta_miss; ///< miss track eta 
+    std::vector<float> fTrack_eta_fake; ///< fake track eta  
+    std::vector<float> fTrack_phi_miss; ///< miss track phi  
+    std::vector<float> fTrack_phi_fake; ///< fake track phi
+    std::vector<float> fEventTrack_pt; ///< event track pT
+    std::vector<float> fEventTrack_eta; ///< event track eta
+    std::vector<float> fEventTrack_phi; ///< event track phi
+    std::vector<float> fEventTrack_id; ///< event track id
+    Long64_t fEventId;
 
     Float_t fJet_pt_dat; ///< jet pt dat
     Float_t fTrack_pt_dat; ///< track pt dat
