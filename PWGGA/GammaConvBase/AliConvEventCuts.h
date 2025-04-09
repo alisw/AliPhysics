@@ -435,9 +435,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
        */
       enum EnumPtWeights
       {
-        kOff,
-        kInvariant,
-        kVariant
+        kOff,                // 0
+        kInvariant,          // 1
+        kVariant,            // 2
+        kInvariant_expInter, // 3
+        kVariant_expInter    // 4
       };
 
       /**
@@ -446,7 +448,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
        */
       struct PtWeightsBundle
       {
-        EnumPtWeights eWhich;
+        EnumPtWeights eWhich; 
         TF1 const *fData;
         TH1 const *hMC;
         TF1 const *fMC;
@@ -455,8 +457,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       bool fMapPtWeightsIsFilledAndSane;                         //!<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
       // this flag will removed as soon the functionality has been checked against the old method
       bool fUseGetWeightForMesonNew;                             //!<  flag to indicate if new method for getting pt weights is used
-      TH1 *fHistoRelDiffNewOldMesonWeights;                   //!<  histo to store differences between new and old method for pt weights
-      TH1 *fHistoRelDiffNewOldMesonWeights_fine;              //!<  histo to store differences between new and old method for pt weights
+      TH2 *fHistoRelDiffNewOldMesonWeights_Pi0;                  //!<  histo to store differences between new and old method for pt weights for Pi0
+      TH2 *fHistoRelDiffNewOldMesonWeights_Eta;                  //!<  histo to store differences between new and old method for pt weights for Eta
       // ============ END section for pt weights in variant calculation form =====
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
@@ -464,9 +466,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       AliConvEventCuts& operator=(const AliConvEventCuts&);
 
       virtual ~AliConvEventCuts();                            //virtual destructor
-
-  //    static AliConvEventCuts * GetStandardCuts2010PbPb();
-  //    static AliConvEventCuts * GetStandardCuts2010pp();
 
       Int_t     fCuts[kNCuts];
       Bool_t    UpdateCutString();

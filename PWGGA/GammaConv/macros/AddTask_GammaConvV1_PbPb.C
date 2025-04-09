@@ -43,7 +43,11 @@ void AddTask_GammaConvV1_PbPb(
  
   TString   fileNameExternalInputs        = "",
   Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
-  Int_t     intPtWeightsCalculationMethod = 0,        // enable pT weighting. 0 = off, 1 = on with inv weights (historic), 2 = on with var weights (new)
+  Int_t     intPtWeightsCalculationMethod = 0,        // enable pT weighting. 0 = kOff, 
+                                                      //                      1 = kInvariant (historic), 
+                                                      //                      2 = kVariant   (multiply invariant data TF1 and mc TH1 with pt and binCenter (pt))
+                                                      //                      3 = kInvariant_expInter (use piecewise exponential interpolation for MC histo in inv form) 
+                                                      //                      4 = kVariant_expInter   (use piecewise exponential interpolation for MC histo in variant form)
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   TString   periodNameAnchor              = "",       //

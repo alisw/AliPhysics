@@ -229,8 +229,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fDebugLevel(0),
   fMapPtWeightsAccessObjects(),
   fUseGetWeightForMesonNew(kFALSE),
-  fHistoRelDiffNewOldMesonWeights(nullptr),
-  fHistoRelDiffNewOldMesonWeights_fine(nullptr),
+  fHistoRelDiffNewOldMesonWeights_Pi0(nullptr),
+  fHistoRelDiffNewOldMesonWeights_Eta(nullptr),
   fMapPtWeightsIsFilledAndSane(kFALSE)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -386,8 +386,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fDebugLevel(ref.fDebugLevel),
   fMapPtWeightsAccessObjects(ref.fMapPtWeightsAccessObjects),
   fUseGetWeightForMesonNew(ref.fUseGetWeightForMesonNew),
-  fHistoRelDiffNewOldMesonWeights(ref.fHistoRelDiffNewOldMesonWeights),
-  fHistoRelDiffNewOldMesonWeights_fine(ref.fHistoRelDiffNewOldMesonWeights_fine),
+  fHistoRelDiffNewOldMesonWeights_Pi0(ref.fHistoRelDiffNewOldMesonWeights_Pi0),
+  fHistoRelDiffNewOldMesonWeights_Eta(ref.fHistoRelDiffNewOldMesonWeights_Eta),
   fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane)
 {
   // Copy Constructor
@@ -464,16 +464,26 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   }
 
   if (fUseGetWeightForMesonNew){
-    fHistoRelDiffNewOldMesonWeights = new TH1D("fHistoRelDiffNewOldMesonWeights", 
-                                               "fHistoRelDiffNewOldMesonWeights;ptG (GeV/c);(new-old)/old", 
-                                               200, -1., 1.);
-    fHistograms->Add(fHistoRelDiffNewOldMesonWeights);
+    fHistoRelDiffNewOldMesonWeights_Pi0 = new TH2D("fHistoRelDiffNewOldMesonWeights_Pi0", 
+                                               "fHistoRelDiffNewOldMesonWeights_Pi0;ptG (GeV/c);(new-old)/old;counts", 
+                                               250, 0., 25., 200, -.5, .5);
+    fHistoRelDiffNewOldMesonWeights_Eta = new TH2D("fHistoRelDiffNewOldMesonWeights_Eta", 
+                                               "fHistoRelDiffNewOldMesonWeights_Eta;ptG (GeV/c);(new-old)/old;counts", 
+                                               250, 0., 25., 200, -.5, .5);
 
-    // same for _fine
-    fHistoRelDiffNewOldMesonWeights_fine = new TH1D("fHistoRelDiffNewOldMesonWeights_fine", 
-                                                    "fHistoRelDiffNewOldMesonWeights_fine;ptG (GeV/c);(new-old)/old", 
-                                                    200, -.02, .02);
-    fHistograms->Add(fHistoRelDiffNewOldMesonWeights_fine);
+    // // same for _fine
+    // fHistoRelDiffNewOldMesonWeights_Pi0_fine = new TH2D("fHistoRelDiffNewOldMesonWeights_Pi0_fine", 
+    //                                                 "fHistoRelDiffNewOldMesonWeights_Pi0_fine;ptG (GeV/c);(new-old)/old;counts", 
+    //                                                 250, 0., 25., 200, -.5, .5);
+    // fHistoRelDiffNewOldMesonWeights_Eta_fine = new TH2D("fHistoRelDiffNewOldMesonWeights_Eta_fine", 
+    //                                                 "fHistoRelDiffNewOldMesonWeights_Eta_fine;ptG (GeV/c);(new-old)/old;counts", 
+    //                                                 250, 0., 25., 200, -.5, .5);
+    
+    // add all fHistoRelDiffNewOldMesonWeights_X_ and _fine
+    fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Pi0);
+    fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Eta);
+    // fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Pi0_fine);
+    // fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Eta_fine);
   }
 
 
@@ -1129,15 +1139,19 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     }
     
     // done with checks on arguments. Prepare data for insertion into the map
-    TF1 const *lDataTF1 = (theWhich == kOff)
-                              ? nullptr
-                          : (theWhich == kInvariant)
+    // bool lIsOff = !theWhich;
+    bool lIsInv = (theWhich == kInvariant) || (theWhich == kInvariant_expInter);
+    bool lIsVar = theWhich && !lIsInv;
+    // todo combine logic of next two definitions with a TObject*
+    TF1 const *lDataTF1 = !theWhich
+                            ? nullptr
+                          : lIsInv
                               ? theDataTF1_inv
                               : multiplyTF1ByX(*theDataTF1_inv);
 
-    TH1 const *lMCTH1 = (theWhich == kOff)
-                            ? nullptr
-                        : (theWhich == kInvariant)
+    TH1 const *lMCTH1 = !theWhich
+                          ? nullptr
+                        : lIsInv
                             ? theMCTH1_inv
                             : &multiplyTH1ByBinCenters(*theMCTH1_inv);
     
@@ -8054,25 +8068,68 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
 {
-  double lWeightOld = GetWeightForMesonOld(index, mcEvent, event);
-  double lWeightNew = fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane 
-    ? GetWeightForMesonNew(index, mcEvent, event)
-    : -1.;
+  //begin remove todo
+  bool isESD = !event || (event->IsA() == AliESDEvent::Class());
+  bool isAOD = !isESD && (event->IsA() == AliAODEvent::Class());
+
+  if (isAOD && !fAODMCTrackArray){
+    fAODMCTrackArray = dynamic_cast<TClonesArray *>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!fAODMCTrackArray)
+    {
+      AliWarning("GetWeightForMeson(): fAODMCTrackArray could not be obtained.");
+      return 0.;
+    }
+  }
+  AliAODMCParticle &aodMCParticle = *static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(index));
+  Double_t mesonPt = isAOD 
+    ? aodMCParticle.Pt() 
+    : ((AliMCParticle *)mcEvent->GetTrack(index))->Pt();
+
+  int const lPDG = isAOD
+    ? aodMCParticle.GetPdgCode()
+    : ((AliMCParticle *)mcEvent->GetTrack(index))->PdgCode();  
+
+  // checks done
+  bool isPi0 = lPDG == 111; 
+  bool isEta = !isPi0 && lPDG == 221; 
+
+  if (!(isPi0 || isEta)){
+    AliInfo(Form("AliConvEventCuts::GetWeightForMeson(): Called for meson with PDG code = %d\n",
+                    lPDG));
+    return 1.;    
+  }
+  // SFS end to be removed
+  ////////////////////////////////////
   
-  double diff = lWeightNew > -1. 
-    ? lWeightOld - lWeightNew
-    : lWeightNew;
+  double lWeightOld = GetWeightForMesonOld(index, mcEvent, event);
+  double lWeightNew = (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane) 
+    ? GetWeightForMesonNew(index, mcEvent, event)
+    : -1.; // -1 signals newWeights could not be used for whatever reasons
+
+  double lSign = (lWeightNew>0) ? 1. : -1.;  
+  double diff = lWeightNew - lWeightOld;
 
   double lRelDiff = lWeightOld 
     ? diff / lWeightOld  
-    : diff;
-  if (fUseGetWeightForMesonNew){
-    fHistoRelDiffNewOldMesonWeights->Fill(lRelDiff);
-    fHistoRelDiffNewOldMesonWeights_fine->Fill(lRelDiff);
-  }
-  return (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane) 
-     ? lWeightNew
-     : lWeightOld;
+    : (lSign*0.99);
+  
+  auto fillMesonHisto = [&](){
+    TH2 *lTH2 = isPi0 
+      ? fHistoRelDiffNewOldMesonWeights_Pi0
+      : isEta 
+        ? fHistoRelDiffNewOldMesonWeights_Eta
+        : static_cast<TH2*>(nullptr);
+    if (!lTH2){
+        AliFatal(Form("AliConvEventCuts::GetWeightForMeson()::fillMesonHisto(): lTH2 is nullptr even though lWeightNew is sane.\n"
+                      "PDG code: %d, mesonPt = %f\n",
+                      lPDG, mesonPt));
+        return false;              
+    }
+    lTH2->Fill(mesonPt, lRelDiff);
+    return true;
+  };  
+  bool lFillingWorked = fillMesonHisto();
+  return (lWeightNew != -1.) ? lWeightNew : lWeightOld;
 }
 
 // todo: thinkg of using the return value of this function for more signaling purposes.
@@ -8182,10 +8239,9 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 
   auto const &lBundle = lConstIt->second;
   Double_t lNomData = lBundle.fData->Eval(mesonPt);
-  Double_t lDenomMC = lBundle.fMC 
+  Double_t lDenomMC = (lBundle.eWhich == kInvariant_expInter) 
     ? lBundle.fMC->Eval(mesonPt)
     : lBundle.hMC->Interpolate(mesonPt);
-  //   Double_t lDenomMC = lBundle.hMC->Interpolate(mesonPt);
 
   auto calcWeight = [&PDGCode, &checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
