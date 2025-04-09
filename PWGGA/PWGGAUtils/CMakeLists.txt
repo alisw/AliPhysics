@@ -26,7 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliEPFlattener.cxx
+    AliEPFlattener.cxx utils_TH1.cxx
    )
 
 # Headers from sources

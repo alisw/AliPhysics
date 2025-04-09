@@ -435,9 +435,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
        */
       enum EnumPtWeights
       {
-        kOff,
-        kInvariant,
-        kVariant
+        kOff,                // 0
+        kInvariant,          // 1
+        kVariant,            // 2
+        kInvariant_expInter, // 3
+        kVariant_expInter    // 4
       };
 
       /**
@@ -446,16 +448,17 @@ class AliConvEventCuts : public AliAnalysisCuts {
        */
       struct PtWeightsBundle
       {
-        EnumPtWeights eWhich;
+        EnumPtWeights eWhich; 
         TF1 const *fData;
         TH1 const *hMC;
+        TF1 const *fMC;
       };
       std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<  map of meson pdg code to PtWeightsBundle
       bool fMapPtWeightsIsFilledAndSane;                         //!<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
       // this flag will removed as soon the functionality has been checked against the old method
       bool fUseGetWeightForMesonNew;                             //!<  flag to indicate if new method for getting pt weights is used
-      TH1 *fHistoRelDiffNewOldMesonWeights;                   //!<  histo to store differences between new and old method for pt weights
-      TH1 *fHistoRelDiffNewOldMesonWeights_fine;              //!<  histo to store differences between new and old method for pt weights
+      TH2 *fHistoRelDiffNewOldMesonWeights_Pi0;                  //!<  histo to store differences between new and old method for pt weights for Pi0
+      TH2 *fHistoRelDiffNewOldMesonWeights_Eta;                  //!<  histo to store differences between new and old method for pt weights for Eta
       // ============ END section for pt weights in variant calculation form =====
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
@@ -463,9 +466,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       AliConvEventCuts& operator=(const AliConvEventCuts&);
 
       virtual ~AliConvEventCuts();                            //virtual destructor
-
-  //    static AliConvEventCuts * GetStandardCuts2010PbPb();
-  //    static AliConvEventCuts * GetStandardCuts2010pp();
 
       Int_t     fCuts[kNCuts];
       Bool_t    UpdateCutString();
@@ -540,19 +540,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                 TString fitNamePi0 = "",
                                 TString fitNameEta = "",
                                 TString fitNameK0s ="" )
-                                                                                    {
-                                                                                      AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
-                                                                                      fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
-                                                                                      fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
-                                                                                      fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
-                                                                                      fPathTrFReweighting=path                                  ;
-                                                                                      fNameHistoReweightingPi0 =histoNamePi0                    ;
-                                                                                      fNameHistoReweightingEta =histoNameEta                    ;
-                                                                                      fNameHistoReweightingK0s =histoNameK0s                    ;
-                                                                                      fNameFitDataPi0 =fitNamePi0                               ;
-                                                                                      fNameFitDataEta =fitNameEta                               ;
-                                                                                      fNameFitDataK0s =fitNameK0s                               ;
-                                                                                    }
+            {
+                AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
+                fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
+                fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
+                fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
+                fPathTrFReweighting=path                                  ;
+                fNameHistoReweightingPi0 =histoNamePi0                    ;
+                fNameHistoReweightingEta =histoNameEta                    ;
+                fNameHistoReweightingK0s =histoNameK0s                    ;
+                fNameFitDataPi0 =fitNamePi0                               ;
+                fNameFitDataEta =fitNameEta                               ;
+                fNameFitDataK0s =fitNameK0s                               ;
+            }
       void    SetUseGetWeightForMesonNew(Bool_t useNewMethod)                       { fUseGetWeightForMesonNew = useNewMethod                    ; }                                                                                       
       void    SetUseWeightMultiplicityFromFile( Int_t doWeighting = 0,
                                                 TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/MultiplicityInput.root",
@@ -855,6 +855,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fFitDataPi0_inv;                        ///< fit to pi0 spectrum in Data
       TF1*                        fFitDataEta_inv;                        ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s_inv;                        ///< fit to K0s spectrum in Data
+      TF1*                        fReweightMCHist_interpolate_Pi0;        ///< a tf1 that interpolates the MC Pi0 spectrum
+      TF1*                        fReweightMCHist_interpolate_Eta;        ///< a tf1 that interpolates the MC Eta spectrum
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
       TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       Int_t                       fAddedSignalPDGCode;
@@ -906,7 +908,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,95)
+      ClassDef(AliConvEventCuts,96)
       /// \endcond
 };
 
