@@ -4374,7 +4374,49 @@ void AddTask_GammaConvV1_PbPb(
         cuts.AddCutPCM("11310023", "0d200008100000001100400000", "0152101500000000"); // 10-30%
         cuts.AddCutPCM("13530023", "0d200008100000001100400000", "0152101500000000"); // 30-50%
         cuts.AddCutPCM("15910023", "0d200008100000001100400000", "0152101500000000"); // 50-90%
-    
+
+/*  LHC18qr_pass3 std. gamma cut: copy paste from 993(data) + MBMC, AS1, AS2, AS3: 
+    Two full copies for more testing of pt-weights
+/* 
+    // first complete block
+    } else if (trainConfig == 4093){ //____________________-___
+        cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+    } else if (trainConfig == 4094){ //____________________-___
+        cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530053", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+        // 993 for AddSigMC copy a)
+    } else if (trainConfig == 4095){ //____________________-___
+        cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+        // 993 for AddSigMC copy b)
+    } else if (trainConfig == 4096){ //____________________-___
+        cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+        // 993 for AddSigMC copy c)
+    } else if (trainConfig == 4097){ //____________________-___
+        cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // second complete block
+    } else if (trainConfig == 4193){ //____________________-___
+        cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+    } else if (trainConfig == 4194){ //____________________-___
+        cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530053", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+        // 993 for AddSigMC copy a)
+    } else if (trainConfig == 4195){ //____________________-___
+        cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+        // 993 for AddSigMC copy b)
+    } else if (trainConfig == 4196){ //____________________-___
+        cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+        // 993 for AddSigMC copy c)
+    } else if (trainConfig == 4197){ //____________________-___
+        cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+        cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
 
 // *****************************************************************************************
     // systematics for LHC18qr_pass3 993 (which is 936 in 2018 cent classes and event cuts)
