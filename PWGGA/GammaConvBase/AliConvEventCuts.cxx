@@ -64,7 +64,6 @@
 #include "../PWGGAUtils/utils_TH1.h"
 
 
-
 class iostream;
 
 using namespace std;
@@ -470,20 +469,10 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoRelDiffNewOldMesonWeights_Eta = new TH2D("fHistoRelDiffNewOldMesonWeights_Eta", 
                                                "fHistoRelDiffNewOldMesonWeights_Eta;ptG (GeV/c);(new-old)/old;counts", 
                                                250, 0., 25., 200, -.5, .5);
-
-    // // same for _fine
-    // fHistoRelDiffNewOldMesonWeights_Pi0_fine = new TH2D("fHistoRelDiffNewOldMesonWeights_Pi0_fine", 
-    //                                                 "fHistoRelDiffNewOldMesonWeights_Pi0_fine;ptG (GeV/c);(new-old)/old;counts", 
-    //                                                 250, 0., 25., 200, -.5, .5);
-    // fHistoRelDiffNewOldMesonWeights_Eta_fine = new TH2D("fHistoRelDiffNewOldMesonWeights_Eta_fine", 
-    //                                                 "fHistoRelDiffNewOldMesonWeights_Eta_fine;ptG (GeV/c);(new-old)/old;counts", 
-    //                                                 250, 0., 25., 200, -.5, .5);
     
-    // add all fHistoRelDiffNewOldMesonWeights_X_ and _fine
+    // add all fHistoRelDiffNewOldMesonWeights_ Pi0 and Eta
     fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Pi0);
     fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Eta);
-    // fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Pi0_fine);
-    // fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Eta_fine);
   }
 
 
@@ -1139,23 +1128,15 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     }
     
     // done with checks on arguments. Prepare data for insertion into the map
-    // bool lIsOff = !theWhich;
-    bool lIsInv = (theWhich == kInvariant) || (theWhich == kInvariant_expInter);
-    bool lIsVar = theWhich && !lIsInv;
-    // todo combine logic of next two definitions with a TObject*
-    TF1 const *lDataTF1 = !theWhich
-                            ? nullptr
-                          : lIsInv
-                              ? theDataTF1_inv
-                              : multiplyTF1ByX(*theDataTF1_inv);
+    TF1 const *lDataTF1 = nullptr;
+    TH1 const *lMCTH1 = nullptr;
 
-    TH1 const *lMCTH1 = !theWhich
-                          ? nullptr
-                        : lIsInv
-                            ? theMCTH1_inv
-                            : &multiplyTH1ByBinCenters(*theMCTH1_inv);
-    
-    // if lMCTF1_exp_inter is in inv or var form is determined by lMCTH1, that means by theWhich
+    bool lIsInv = (theWhich % 2); // kInvariant = 1, kInvariant_expInter = 3
+    if (theWhich){
+      lDataTF1 = lIsInv ? theDataTF1_inv : multiplyTF1ByX(*theDataTF1_inv);
+      lMCTH1   = lIsInv ? theMCTH1_inv   : &multiplyTH1ByBinCenters(*theMCTH1_inv);
+    }
+
     TF1 *lMCTF1_exp_inter = lMCTH1 
       ? &utils_TH1::GlobalPieceWiseExponentialInterpolation(Form("%s_exp_inter", lMCTH1->GetName()), *lMCTH1)
       : nullptr;
@@ -8230,27 +8211,24 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
   if (lConstIt == fMapPtWeightsAccessObjects.cend())
   {
-    // Question: How can Etas be selected only? If I process Etas from added Signals only, their daughter Pi0s still should get weighted
-    // uncommenting now again to see what will happen.
-    // commenting since this will be true when selecting etas only (this function will be called for their daughter pi0s)
     AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
     return 1.;
   }
 
   auto const &lBundle = lConstIt->second;
   Double_t lNomData = lBundle.fData->Eval(mesonPt);
-  Double_t lDenomMC = (lBundle.eWhich == kInvariant_expInter) 
+  Double_t lDenomMC = (lBundle.eWhich > kVariant) // leaves kInvariant_expInter, kVariant_expInter 
     ? lBundle.fMC->Eval(mesonPt)
     : lBundle.hMC->Interpolate(mesonPt);
 
   auto calcWeight = [&PDGCode, &checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
     Double_t lWeight = lDenomMC
-                           ? (lNomData > 0.)                //     lDenomMC != 0   # normal
-                                 ? lNomData / lDenomMC      // n1) lNomData > 0 && lDenomMC !=0    # normal
-                                 : 0 // to signal problem   // e1) lNomData <= 0   # error. no reason why lNomData should be <=0. (it is a positive TF1 function)
-                           : -1.;    // to signal problem   // e2) lDenomMC = 0    # also strange since TH1 eval is called, that means both adjacent bins would have to be 0   
-                                                            // => n1) can be negative, e2) always is negative
+      ? (lNomData > 0.)                  //     lDenomMC != 0   # normal
+        ? lNomData / lDenomMC            // n1) lNomData > 0 && lDenomMC !=0    # normal
+        : 0       // to signal problem   // e1) lNomData <= 0   # error. no reason why lNomData should be <=0. (it is a positive TF1 function)
+      : -1.;      // to signal problem   // e2) lDenomMC = 0    # at least strange since TH1::Interpolate() or my exponential interpolation is called. That means the TH1 would have to have two adjacent 0 content bins   
+                                         // => n1) can be negative, e2) always is negative
   
     // will reset to 1 and throw a warning if weight is not >=0 and finite
     Double_t lWeightSanitized = checkSanitizeAndReturnWeight(lWeight, PDGCode);
