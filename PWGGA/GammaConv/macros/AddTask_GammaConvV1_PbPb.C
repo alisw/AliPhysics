@@ -4264,7 +4264,7 @@ void AddTask_GammaConvV1_PbPb(
         cuts.AddCutPCM("15910e03", "0d200008100000001100400000", "0152101500000000"); // 50-90%
 
         
-                // MB //
+    // MB //
 
     } else if (trainConfig == 3300){ //____________________-___
         cuts.AddCutPCM("10130053", "0d200008100000001100400000", "0152101500000000"); // 0-10%
@@ -4300,10 +4300,7 @@ void AddTask_GammaConvV1_PbPb(
         cuts.AddCutPCM("13530053", "0d200008100000001100400000", "0152101500000000"); // 30-50%
         cuts.AddCutPCM("15910053", "0d200008100000001100400000", "0152101500000000"); // 50-90%
 
-
-
-                // Pi0 //
-
+    // Pi0 
     } else if (trainConfig == 3400){ //____________________-___
         cuts.AddCutPCM("10130023", "0d200008100000001100400000", "0152101500000000"); // 0-10%
         cuts.AddCutPCM("11310023", "0d200008100000001100400000", "0152101500000000"); // 10-30%
@@ -4338,9 +4335,7 @@ void AddTask_GammaConvV1_PbPb(
         cuts.AddCutPCM("13530023", "0d200008100000001100400000", "0152101500000000"); // 30-50%
         cuts.AddCutPCM("15910023", "0d200008100000001100400000", "0152101500000000"); // 50-90%
   
-        
-                // Eta //
-
+    // Eta 
     } else if (trainConfig == 3500){ //____________________-___
         cuts.AddCutPCM("10130023", "0d200008100000001100400000", "0152101500000000"); // 0-10%
         cuts.AddCutPCM("11310023", "0d200008100000001100400000", "0152101500000000"); // 10-30%
@@ -4375,9 +4370,9 @@ void AddTask_GammaConvV1_PbPb(
         cuts.AddCutPCM("13530023", "0d200008100000001100400000", "0152101500000000"); // 30-50%
         cuts.AddCutPCM("15910023", "0d200008100000001100400000", "0152101500000000"); // 50-90%
 
-/*  LHC18qr_pass3 std. gamma cut: copy paste from 993(data) + MBMC, AS1, AS2, AS3: 
-    Two full copies for more testing of pt-weights
-/* 
+
+    //  LHC18qr_pass3 std. gamma cut: copy paste from 993(data) + MBMC, AS1, AS2, AS3: 
+    //    Two full copies for more testing of pt-weights
     // first complete block
     } else if (trainConfig == 4093){ //____________________-___
         cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
