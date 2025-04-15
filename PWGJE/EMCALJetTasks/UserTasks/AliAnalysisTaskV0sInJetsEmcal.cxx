@@ -146,6 +146,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutEtaDaughterMax(0),
   fdCutNSigmadEdxMax(0),
   fdPtProtonPIDMax(0),
+  fdCutChi2PerTPCCluster(0), 
+  fdCutITSTOFtracks(0),
+  fdTPCsignalNCut(0),
   fbOnFly(0),
   fdCutCPAKMin(0),
   fdCutCPALMin(0),
@@ -156,6 +159,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutNTauKMax(0),
   fdCutNTauLMax(0),
   fbCutArmPod(0),
+  fdCutArmPodpT(0),
   fbCutCross(0),
 
   fbJetSelection(0),
@@ -671,6 +675,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutEtaDaughterMax(0),
   fdCutNSigmadEdxMax(0),
   fdPtProtonPIDMax(0),
+  fdCutChi2PerTPCCluster(0), 
+  fdCutITSTOFtracks(0),
+  fdTPCsignalNCut(0),
   fbOnFly(0),
   fdCutCPAKMin(0),
   fdCutCPALMin(0),
@@ -681,6 +688,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutNTauKMax(0),
   fdCutNTauLMax(0),
   fbCutArmPod(0),
+  fdCutArmPodpT(0),
   fbCutCross(0),
 
   fbJetSelection(0),
@@ -2450,12 +2458,15 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutNCrossedRowsTPCMin > 0.) printf("min number of crossed TPC rows: %g\n", fdCutNCrossedRowsTPCMin);
   if(fdCutCrossedRowsOverFindMin > 0.) printf("min ratio crossed rows / findable clusters: %g\n", fdCutCrossedRowsOverFindMin);
   if(fdCutCrossedRowsOverFindMax > 0.) printf("max ratio crossed rows / findable clusters: %g\n", fdCutCrossedRowsOverFindMax);
+  if(fdCutChi2PerTPCCluster > 0.) printf("maximum daughters Chi2 per TPC Cluster: %g\n", fdCutChi2PerTPCCluster);
+  if(fdCutITSTOFtracks > 0.) printf("minimum number of tracks with ITS refit or hit in TOF: %d\n", fdCutITSTOFtracks);
+  if(fdTPCsignalNCut > 0.) printf("minimum number of points in TPC (track length): %d\n", fdTPCsignalNCut);
   if(fdCutPtDaughterMin > 0.) printf("min pt of daughter tracks [GeV/c]: %g\n", fdCutPtDaughterMin);
   if(fdCutDCAToPrimVtxMin > 0.) printf("min DCA of daughters to the prim vtx [cm]: %g\n", fdCutDCAToPrimVtxMin);
   if(fdCutDCADaughtersMax > 0.) printf("max DCA between daughters [sigma of TPC tracking]: %g\n", fdCutDCADaughtersMax);
   if(fdCutEtaDaughterMax > 0.) printf("max |eta| of daughter tracks: %g\n", fdCutEtaDaughterMax);
-  if(fdCutNSigmadEdxMax > 0. && (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.))) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax);
-  if(fdCutNSigmadEdxMax > 0. && fbIsPbPb && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
+  if(fdCutNSigmadEdxMax > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax); //&& (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.)))
+  //if(fdCutNSigmadEdxMax > 0. && fbIsPbPb && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
   printf("V0 reconstruction method: %s\n", fbOnFly ? "on-the-fly" : "offline");
   if(fdCutCPAKMin > 0.) printf("min CPA, K0S: %g\n", fdCutCPAKMin);
   if(fdCutCPALMin > 0.) printf("min CPA, (A)Lambda: %g\n", fdCutCPALMin);
@@ -2468,6 +2479,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutNTauXMax > 0.) printf("max proper lifetime, Xi [tau]: %g\n", fdCutNTauXMax);
   
   if(fbCutArmPod) printf("Armenteros-Podolanski cut for K0S\n");
+  if(fdCutArmPodpT) printf("Armenteros-Podolanski cut for K0S, pT > %g\n", fdCutArmPodpT);
   if(fbCutCross) printf("cross-contamination cut\n");
   printf("-------------------------------------------------------\nCascade cuts:\n");
   if(fdCutDCACascadeBachToPrimVtxMin > 0.) printf("min DCA of bach track to the prim vtx [cm]: %g\n", fdCutDCACascadeBachToPrimVtxMin);
@@ -2573,7 +2585,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   // PID Response Task object
   AliPIDResponse* fPIDResponse = 0;
-  if(fdCutNSigmadEdxMax > 0. && (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.))) {
+  if(fdCutNSigmadEdxMax > 0.) {//} && (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.))) {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
     fPIDResponse = inputHandler->GetPIDResponse();
@@ -2612,8 +2624,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   else
     iNTracksRef = header->GetRefMultiplicityComb08(); // get reference multiplicity
 
-  //Double_t dMagField = fAODIn->GetMagneticField();
-  //if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Magnetic field: %g", dMagField));
+  Double_t dMagField = fAODIn->GetMagneticField();
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Magnetic field: %g", dMagField));
 
   Int_t iNV0s = fAODIn->GetNumberOfV0s(); // get the number of V0 candidates
   if(!iNV0s) {
@@ -3026,6 +3038,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dNSigmaPosProton = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackPos, AliPID::kProton)) : 0.);
     Double_t dNSigmaNegPion   = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackNeg, AliPID::kPion)) : 0.);
     Double_t dNSigmaNegProton = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackNeg, AliPID::kProton)) : 0.);
+    
     Double_t dAlpha = v0->AlphaV0(); // Armenteros-Podolanski alpha
     Double_t dPtArm = v0->PtArmV0(); // Armenteros-Podolanski pT
     AliAODVertex* prodVtxDaughterPos = (AliAODVertex*)(trackPos->GetProdVertex()); // production vertex of the positive daughter track
@@ -3033,6 +3046,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(trackNeg->GetProdVertex()); // production vertex of the negative daughter track
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
     fh2Tau3DVs2D[0]->Fill(dPtV0, dLOverP / dROverPt);
+
+    //chi^2 per TPC cluster
+    Double_t dChi2perTPCclsPos = trackPos->GetTPCchi2perCluster();
+    Double_t dChi2perTPCclsNeg = trackNeg->GetTPCchi2perCluster();
+    Double_t dV0MaxChi2perCls = TMath::Max(dChi2perTPCclsPos, dChi2perTPCclsNeg);
+
+
+    // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
+    Int_t iV0ITSTOFtracks = ( trackNeg->IsOn(AliAODTrack::kITSrefit) || (trackNeg->GetTOFBunchCrossing(dMagField) > -95.)) ? 1 : 0;
+    if((trackPos->IsOn(AliAODTrack::kITSrefit )) || (trackPos->GetTOFBunchCrossing(dMagField) > -95.)) iV0ITSTOFtracks++;
 
     // Cut vs mass histograms before cuts
     if(bIsCandidateK0s) {
@@ -3141,6 +3164,21 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
     }
 
+    if(fdCutChi2PerTPCCluster > 0. ) {
+      if(dV0MaxChi2perCls > fdCutChi2PerTPCCluster)
+        continue;
+    }
+    if(fdCutITSTOFtracks > 0. ){
+      if(iV0ITSTOFtracks < fdCutITSTOFtracks - 0.1)
+        continue;
+    }
+    if(fdTPCsignalNCut > 0. ) {
+      if((trackPos->GetTPCsignalN()<fdTPCsignalNCut && trackNeg->GetTPCsignalN()<fdTPCsignalNCut))
+        continue;
+    }
+    
+
+        
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
@@ -3259,22 +3297,22 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // 12
     // Daughter PID
     if(fdCutNSigmadEdxMax > 0.) {
-      if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
+      /*if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
         if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
         if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
           bIsCandidateLambda = kFALSE;
         if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
           bIsCandidateALambda = kFALSE;
-      }
-      else {// p-p
-        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
-        if(dNSigmaPosPion > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // pi+, pi-
-          bIsCandidateK0s = kFALSE;
-        if(dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
-          bIsCandidateLambda = kFALSE;
-        if(dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) // p-, pi+
-          bIsCandidateALambda = kFALSE;
-      }
+      }*/
+      //else {// p-p
+      if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
+      if(dNSigmaPosPion > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // pi+, pi-
+        bIsCandidateK0s = kFALSE;
+      if(dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
+        bIsCandidateLambda = kFALSE;
+      if(dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) // p-, pi+
+        bIsCandidateALambda = kFALSE;
+      //}
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     }
     iCutIndex++;
@@ -3292,6 +3330,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     if(fbCutArmPod) {
       if(bPrintCuts) printf("Rec: Applying cut: Armenteros-Podolanski (K0S) pT > %g * |alpha|\n", 0.2);
       if(dPtArm < TMath::Abs(0.2 * dAlpha))
+        bIsCandidateK0s = kFALSE;
+      FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
+    }
+    if(fdCutArmPodpT) { //Cut only in pT for comparison with LF spectra 
+      if(bPrintCuts) printf("Rec: Applying cut: Armenteros-Podolanski (K0S) pT > %g GeV/c \n", fdCutArmPodpT);
+      if(dPtArm < fdCutArmPodpT)
         bIsCandidateK0s = kFALSE;
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     }
@@ -4206,6 +4250,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dNSigmaNegProton = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackNeg, AliPID::kProton)) : 0.);
     Double_t dNSigmaBachPion  = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackBach, AliPID::kProton)) : 0.);
     Double_t dNSigmaBachKaon  = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackBach, AliPID::kKaon)) : 0.);
+    
 
     AliAODVertex* prodVtxDaughterPos = (AliAODVertex*)(trackPos->GetProdVertex()); // production vertex of the positive daughter track
     Char_t cTypeVtxProdPos = prodVtxDaughterPos->GetType(); // type of the production vertex
@@ -4213,6 +4258,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
     AliAODVertex* prodVtxDaughterBach = (AliAODVertex*)(trackBach->GetProdVertex()); // production vertex of the negative daughter track
     Char_t cTypeVtxProdBach = prodVtxDaughterBach->GetType(); // type of the production vertex
+
+    //chi^2 per TPC cluster
+    Double_t dChi2perTPCclsPos = trackPos->GetTPCchi2perCluster();
+    Double_t dChi2perTPCclsNeg = trackNeg->GetTPCchi2perCluster();
+    Double_t dChi2perTPCclsBac = trackBach->GetTPCchi2perCluster();
+    Double_t dCascMaxChi2perCls = (dChi2perTPCclsPos>dChi2perTPCclsNeg ? TMath::Max(dChi2perTPCclsPos, dChi2perTPCclsBac) : TMath::Max(dChi2perTPCclsNeg, dChi2perTPCclsBac));
+
+    Int_t iCascITSTOFtracks = ( trackNeg->IsOn(AliAODTrack::kITSrefit) || (trackNeg->GetTOFBunchCrossing(dMagField) > -95.)) ? 1 : 0;
+    if((trackPos->IsOn(AliAODTrack::kITSrefit )) || (trackPos->GetTOFBunchCrossing(dMagField) > -95.)) iCascITSTOFtracks++;
+    if((trackBach->IsOn(AliAODTrack::kITSrefit )) || (trackBach->GetTOFBunchCrossing(dMagField) > -95.)) iCascITSTOFtracks++;
  
     // QA histograms before cuts
     FillQAHistogramXi(primVtx, Cascade, 0, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, bIsInPeakXi, bIsInPeakOmega);
@@ -4299,6 +4354,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(dNRowsPos / dFindablePos > fdCutCrossedRowsOverFindMax)
         continue;
       if(dNRowsBach / dFindableBach > fdCutCrossedRowsOverFindMax)
+        continue;
+    }
+    if(fdCutChi2PerTPCCluster > 0. ) {
+      if(dCascMaxChi2perCls > fdCutChi2PerTPCCluster)
+        continue;
+    }
+    if(fdCutITSTOFtracks > 0. ){
+      if(iCascITSTOFtracks < fdCutITSTOFtracks - 0.1)
+        continue;
+    }
+    if(fdTPCsignalNCut > 0. ) {
+      if((trackPos->GetTPCsignalN()<fdTPCsignalNCut && trackNeg->GetTPCsignalN()<fdTPCsignalNCut && trackBach->GetTPCsignalN()<fdTPCsignalNCut))
         continue;
     }
 
@@ -4434,21 +4501,22 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // 17'
     // Daughter PID
     if(fdCutNSigmadEdxMax > 0.) {
-      if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
+     /* if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
         if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
         if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
           bIsCandidateXiMinus = kFALSE;
         if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
           bIsCandidateXiPlus = kFALSE;
       }
-      else {// p-p
-        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
-        if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
-          bIsCandidateXiMinus = kFALSE;
-        if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) //p-, pi+
-          bIsCandidateXiPlus= kFALSE;
-        //add for omega
-      }   
+      else {// p-p*/
+      
+      if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
+      if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
+        bIsCandidateXiMinus = kFALSE;
+      if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) //p-, pi+
+        bIsCandidateXiPlus= kFALSE;
+        //add for omega?
+      //}   
       FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     }
     iCutIndex++;          
