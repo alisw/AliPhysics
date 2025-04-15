@@ -201,10 +201,14 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
 
     // jet studies
     TH2F*                 fHistPi0PtJetPt;        //! histo for Pi0 pt vs jet Pt
-    TH2F*                 fHistEtaPtJetPt;        //! histo for Pi0 pt vs jet Pt
+    TH2F*                 fHistEtaPtJetPt;        //! histo for Eta pt vs jet Pt
+    TH2F*                 fHistOmegaPtJetPt;      //! histo for Omega pt vs jet Pt
+    TH2F*                 fHistGammaPtJetPt;      //! histo for Gamma pt vs jet Pt
 
     TH2F*                 fHistPi0ZJetPt;        //! histo for Pi0 pt vs jet Pt
     TH2F*                 fHistEtaZJetPt;        //! histo for Pi0 pt vs jet Pt
+    TH2F*                 fHistOmegaZJetPt;      //! histo for Pi0 pt vs jet Pt
+    TH2F*                 fHistGammaZJetPt;      //! histo for Pi0 pt vs jet Pt
 
     TH2F*                 fHistJetPtY;  //! histo for jet pt
     TH1D*                 fHistJetEta;  //! histo for jet eta
@@ -247,7 +251,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 12);
+    ClassDef(AliAnalysisTaskGammaPureMC, 13);
 };
 
 #endif
