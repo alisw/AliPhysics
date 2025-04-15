@@ -1761,7 +1761,7 @@ Bool_t Config_Lambdakx(
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
     Float_t v0d_dcaxy=0.06;
-    if(V0Cuts==1)   v0d_dcaxy=0.7;
+    if(V0Cuts==1)   v0d_dcaxy=0.07;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
