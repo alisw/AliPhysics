@@ -95,7 +95,12 @@ public:
   void SetCutNTauKMax(Double_t val = 5.0) {fdCutNTauKMax = val;}
   void SetCutNTauLMax(Double_t val = 5.0) {fdCutNTauLMax = val;}
   void SetCutArmPod(Bool_t val = kTRUE) {fbCutArmPod = val;}
+  void SetCutArmPodpT(Double_t val = 0.13) {fdCutArmPodpT = val;}
   void SetCutCross(Bool_t val = kTRUE) {fbCutCross = val;}
+
+  void SetCutChi2PerTPCCluster(Double_t val = 2.5) {fdCutChi2PerTPCCluster = val;}
+  void SetCutITSTOFtracks(Int_t val = 1) {fdCutITSTOFtracks = val;}
+  void SetCutTPCsignalNCut(Int_t val = 50) {fdTPCsignalNCut = val;}
 
   Bool_t IsSelectedForAnalysis();
   Int_t GetCentralityBinIndex(Double_t centrality);
@@ -227,6 +232,9 @@ private:
   Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
   Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut in Pb-Pb
+  Double_t fdCutChi2PerTPCCluster; //(2.5) maximum daughters Chi2 per TPC Cluster 
+  Int_t fdCutITSTOFtracks; //(1)  minimum number of tracks with ITS refit or hit in TOF
+  Int_t fdTPCsignalNCut; //(50) minimum number of points in TPC (track length)
   // V0 candidate
   Bool_t fbOnFly; // (0) on-the-fly (yes) or offline (no) reconstructed
   Double_t fdCutCPAKMin; // (0.998) min cosine of the pointing angle, K0S
@@ -238,6 +246,7 @@ private:
   Double_t fdCutNTauKMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, K0S
   Double_t fdCutNTauLMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Lambda
   Bool_t fbCutArmPod; // (yes) Armenteros-Podolanski for K0S
+  Double_t fdCutArmPodpT; //(0.13) GeV/c Armenteros-Podolanski for K0S only in pT (for spectra comparison with LF)
   Bool_t fbCutCross; // (no) cross-contamination
 
   // Jet selection
