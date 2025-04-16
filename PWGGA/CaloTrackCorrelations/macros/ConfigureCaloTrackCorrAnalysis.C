@@ -2367,6 +2367,8 @@ void ConfigureCaloTrackCorrAnalysis
   if(analysisString.Contains("ShMinCorrBkg04"))  shshBkgMin = 0.4;
   if(analysisString.Contains("ShMinCorrBkg10"))  shshBkgMin = 1.0;
   if(analysisString.Contains("ShMinCorrBkg06"))  shshBkgMin = 0.6;
+  if(analysisString.Contains("ShMaxCorrBkg08"))  shshBkgMax = 0.8;
+  if(analysisString.Contains("ShMaxCorrBkg09"))  shshBkgMax = 0.9;
   if(analysisString.Contains("ShMaxCorrBkg10"))  shshBkgMax = 1.0;
   if(analysisString.Contains("ShMaxCorrBkg15"))  shshBkgMax = 1.5;
 
@@ -2747,10 +2749,10 @@ void ConfigureCaloTrackCorrAnalysis
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
-            anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2,
-                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 1,
@@ -2758,24 +2760,34 @@ void ConfigureCaloTrackCorrAnalysis
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
     
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 1.5,
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 0.8,
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.5, 2.0,
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.5, 1,
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 1.5,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+//
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.5, 2.0,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
 //            anaList->AddAt(ConfigureHadronCorrelationAnalysis
 //                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.5, 1.5,
 //                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
 //                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
-            anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.6, 2,
-                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.6, 2,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
   //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
   //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 1.0, 2,
@@ -2818,35 +2830,45 @@ void ConfigureCaloTrackCorrAnalysis
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
-            anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 2,
-                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 2,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 1,
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
-    
+            
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 1.5,
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 0.8,
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.5, 2.0,
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.5, 1,
                             isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                             col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+    
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 1.5,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+//
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.5, 2.0,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
 //            anaList->AddAt(ConfigureHadronCorrelationAnalysis
 //                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.5, 1.5,
 //                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
 //                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-            anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.6, 2,
-                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+//            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+//                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.6, 2,
+//                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+//                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
   //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
   //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 1.0, 2,
