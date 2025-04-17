@@ -157,11 +157,15 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPi0PtJetPt(nullptr),
   fHistEtaPtJetPt(nullptr),
   fHistOmegaPtJetPt(nullptr),
+  fHistEtaPrimPtJetPt(nullptr),
   fHistGammaPtJetPt(nullptr),
+  fHistGammaDirPtJetPt(nullptr),
   fHistPi0ZJetPt(nullptr),
   fHistEtaZJetPt(nullptr),
   fHistOmegaZJetPt(nullptr),
+  fHistEtaPrimZJetPt(nullptr),
   fHistGammaZJetPt(nullptr),
+  fHistGammaDirZJetPt(nullptr),
   fHistJetPtY(nullptr),
   fHistJetEta(nullptr),
   fHistJetPhi(nullptr),
@@ -298,11 +302,15 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPi0PtJetPt(nullptr),
   fHistEtaPtJetPt(nullptr),
   fHistOmegaPtJetPt(nullptr),
+  fHistEtaPrimPtJetPt(nullptr),
   fHistGammaPtJetPt(nullptr),
+  fHistGammaDirPtJetPt(nullptr),
   fHistPi0ZJetPt(nullptr),
   fHistEtaZJetPt(nullptr),
   fHistOmegaZJetPt(nullptr),
+  fHistEtaPrimZJetPt(nullptr),
   fHistGammaZJetPt(nullptr),
+  fHistGammaDirZJetPt(nullptr),
   fHistJetPtY(nullptr),
   fHistJetEta(nullptr),
   fHistJetPhi(nullptr),
@@ -795,9 +803,17 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fHistOmegaPtJetPt->Sumw2();
     fOutputContainer->Add(fHistOmegaPtJetPt);
 
+    fHistEtaPrimPtJetPt = new TH2F("EtaPrimPtVsJetPt_Eta08", "EtaPrimPtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
+    fHistEtaPrimPtJetPt->Sumw2();
+    fOutputContainer->Add(fHistEtaPrimPtJetPt);
+
     fHistGammaPtJetPt = new TH2F("GammaPtVsJetPt_Eta08", "GammaPtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
     fHistGammaPtJetPt->Sumw2();
     fOutputContainer->Add(fHistGammaPtJetPt);
+
+    fHistGammaDirPtJetPt = new TH2F("GammaDirPtVsJetPt_Eta08", "GammaDirPtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
+    fHistGammaDirPtJetPt->Sumw2();
+    fOutputContainer->Add(fHistGammaDirPtJetPt);
 
     fHistPi0ZJetPt = new TH2F("Pi0ZVsJetPt_Eta08", "Pi0ZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
     fHistPi0ZJetPt->Sumw2();
@@ -811,9 +827,17 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fHistOmegaZJetPt->Sumw2();
     fOutputContainer->Add(fHistOmegaZJetPt);
 
+    fHistEtaPrimZJetPt = new TH2F("EtaPrimZVsJetPt_Eta08", "EtaPrimZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
+    fHistEtaPrimZJetPt->Sumw2();
+    fOutputContainer->Add(fHistEtaPrimZJetPt);
+
     fHistGammaZJetPt = new TH2F("GammaZVsJetPt_Eta08", "GammaZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
     fHistGammaZJetPt->Sumw2();
     fOutputContainer->Add(fHistGammaZJetPt);
+
+    fHistGammaDirZJetPt = new TH2F("GammaDirZVsJetPt_Eta08", "GammaDirZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
+    fHistGammaDirZJetPt->Sumw2();
+    fOutputContainer->Add(fHistGammaDirZJetPt);
 
   }
 
@@ -1179,6 +1203,20 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           }
         }
       }
+      if(fDoJetStudies){
+        if(!IsSecondary(motherParticle)){
+          int index = -1;
+          double R = 0;
+          if(IsParticleInJet(fVecJets, particle->Eta(), particle->Phi(), index, R)){
+            if(std::abs(particle->Y()) <= fJetParticleAcc){
+              fHistEtaPrimPtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
+            }
+            if(std::abs(particle->Y()) <= fJetParticleAccFF){
+              fHistEtaPrimZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
+            }
+          }
+        }
+      }
       break;
     case kPdgOmega:
       fHistPtYOmega->Fill(particle->Pt(), particle->Y());
@@ -1327,11 +1365,14 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           int index = -1;
           double R = 0;
           if(IsParticleInJet(fVecJets, particle->Eta(), particle->Phi(), index, R)){
+            bool isDecayPhoton = isPhotonFromDecay(absmotherpdg);
             if(std::abs(particle->Y()) <= fJetParticleAcc){
               fHistGammaPtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
+              if(!isDecayPhoton) fHistGammaDirPtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
             }
             if(std::abs(particle->Y()) <= fJetParticleAccFF){
               fHistGammaZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
+              if(!isDecayPhoton) fHistGammaDirZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
             }
           }
         }
