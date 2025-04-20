@@ -1445,16 +1445,16 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
     if(fApplyPhotonML){
    
-      fHistoXGBoutput_PtBDT_Signal_MC[iCut] = new TH2F("SignalPt_BDT_MC", "Signal Pt vs BDT", 2400, -1, 24, 200, -1, 1);
+      fHistoXGBoutput_PtBDT_Signal_MC[iCut] = new TH2F("SignalPt_BDT_MC", "Signal Pt vs BDT", 210, -1, 20, 200, -1, 1);
       fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Signal_MC[iCut]);
 
-      fHistoXGBoutput_PtBDT_Background_MC[iCut] = new TH2F("BackgroundPt_BDT_MC", "Background Pt vs BDT", 2400, -1, 24, 200, -1, 1);
+      fHistoXGBoutput_PtBDT_Background_MC[iCut] = new TH2F("BackgroundPt_BDT_MC", "Background Pt vs BDT", 210, -1, 20, 200, -1, 1);
       fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Background_MC[iCut]);
 
       fHistoXGBoutput_MC[iCut] = new TH1F("XGB_ConvGamma_BDT_MC", "XGB_ConvGamma vs BDT", 100, 0, 1);
       fESDList[iCut]->Add(fHistoXGBoutput_MC[iCut]);
 
-      fHistoPtBDTvsKind_MC[iCut] = new TH3F("PT_BDT_PhotonKind_MC", "PT BDT Photonkind", 2000, 0, 20, 100, 0, 1, 20, 0, 20);
+      fHistoPtBDTvsKind_MC[iCut] = new TH3F("PT_BDT_PhotonKind_MC", "PT BDT Photonkind", 200, 0, 20, 100, 0, 1, 20, 0, 20);
       fESDList[iCut]->Add(fHistoPtBDTvsKind_MC[iCut]);
 
     }
