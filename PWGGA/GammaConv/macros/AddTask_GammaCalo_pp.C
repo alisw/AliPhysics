@@ -2363,6 +2363,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fe309v0000","0s631051000000d0"); // INT7 alpha cut 0-0.75
     cuts.AddCutCalo("00010113","411790109fe309v0000","0s631081000000d0"); // INT7 alpha cut 0-0.6
   } else if (trainConfig == 1907){  // pp 13 TeV variations: opening angle
+    cuts.AddCutCalo("00010113","411790109fe309v0000","0s63103100000000"); // INT7 Op. Ang. var 0
     cuts.AddCutCalo("00010113","411790109fe309v0000","0s631031000000b0"); // INT7 Op. Ang. var 1 cell dist + 0.0152
     cuts.AddCutCalo("00010113","411790109fe309v0000","0s631031000000g0"); // INT7 Op. Ang. var 1 cell dist + 0.0202
     cuts.AddCutCalo("00010113","411790109fe309v0000","0s631031000000a0"); // INT7 Op. Ang. var 1 cell dist + 0
@@ -2462,6 +2463,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790109fe309v0000","0s631051000000d0"); // EG2 alpha cut 0-0.75
     cuts.AddCutCalo("0008e113","411790109fe309v0000","0s631081000000d0"); // EG2 alpha cut 0-0.6
   } else if (trainConfig == 1937){  // pp 13 TeV variations: opening angle
+    cuts.AddCutCalo("0008e113","411790109fe309v0000","0s63103100000000"); // EG2 Op. Ang. var 0
     cuts.AddCutCalo("0008e113","411790109fe309v0000","0s631031000000b0"); // EG2 Op. Ang. var 1 cell dist + 0.0152
     cuts.AddCutCalo("0008e113","411790109fe309v0000","0s631031000000g0"); // EG2 Op. Ang. var 1 cell dist + 0.0202
     cuts.AddCutCalo("0008e113","411790109fe309v0000","0s631031000000a0"); // EG2 Op. Ang. var 1 cell dist + 0
@@ -2533,6 +2535,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790109fe309v0000","0s631051000000d0"); // EG1 alpha cut 0-0.75
     cuts.AddCutCalo("0008d113","411790109fe309v0000","0s631081000000d0"); // EG1 alpha cut 0-0.6
   } else if (trainConfig == 1967){  // pp 13 TeV variations: opening angle
+    cuts.AddCutCalo("0008d113","411790109fe309v0000","0s63103100000000"); // EG1 Op. Ang. var 0
     cuts.AddCutCalo("0008d113","411790109fe309v0000","0s631031000000b0"); // EG1 Op. Ang. var 1 cell dist + 0.0152
     cuts.AddCutCalo("0008d113","411790109fe309v0000","0s631031000000g0"); // EG1 Op. Ang. var 1 cell dist + 0.0202
     cuts.AddCutCalo("0008d113","411790109fe309v0000","0s631031000000a0"); // EG1 Op. Ang. var 1 cell dist + 0
