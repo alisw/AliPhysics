@@ -6057,7 +6057,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   if(fMimicTrigger == 2){
     auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
     if(!triggercont){
-      AliFatal("Trigger decision container not found in event - not possible to select EMCAL triggers");
+      AliError("Trigger decision container not found in event - not possible to select EMCAL triggers");
+      return false;
     } else {
       if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ){
         if( (triggercont->IsEventSelected("EG2")) || (triggercont->IsEventSelected("DG2")) ) return kTRUE;
