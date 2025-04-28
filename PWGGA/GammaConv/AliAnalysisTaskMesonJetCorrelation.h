@@ -143,6 +143,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
       fDoAnalysisPt = false;
     }
   }
+  void SetJetEnergyAsymm(double tmp) { fAllowedJetEnergyAsymm = tmp; }
 
   void SetEventCutList(int nCuts,
                        TList* CutArray)
@@ -261,6 +262,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDoRadiusDep;                                    // flag to enable radius dependent histograms
   bool fDoAnalysisPt;                                   // flag to enable filling of pt dependent histograms
   bool fDoAnalysisZ;                                    // flag to enable filling of z dependent histograms
+  double fAllowedJetEnergyAsymm;                        // jet energy asymmetry (rec./true) allowed to be counted as matched jet
   //-------------------------------
   // conversions
   //-------------------------------
