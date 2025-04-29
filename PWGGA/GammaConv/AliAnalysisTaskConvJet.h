@@ -103,6 +103,21 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void setWeightEnergyJets(const char * formula, const int mode = 1);
   void SetNonMeasurablePart(TString str);
 
+  void SetJetEnergyScaleAndResol(TString sJES, TString sJER, TString sJERCut){
+    funcJES = new TF1("func_JES", sJES, 0, 1000);
+    funcJER = new TF1("func_JER", sJER, 0, 1000);
+    funcJERCut = new TF1("func_JERCut", sJERCut, 0, 1000);
+  }
+  double GetJES(double pt) const {
+    return funcJES->Eval(pt);
+  }
+  double GetJER(double pt) const {
+    return funcJER->Eval(pt);
+  }
+  double GetJERCut(double pt) const {
+    return funcJERCut->Eval(pt);
+  }
+
  protected:
   void ExecOnce();
   Bool_t FillHistograms();
@@ -161,13 +176,17 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TF1* funcEnergyWeights;
   std::vector<int> fVecNonMeasurable;
 
+  TF1* funcJES;                 // function to parameterize jet energy scale
+  TF1* funcJER;                 // function to parameterize jet energy resolution
+  TF1* funcJERCut;              // function to parameterize jet energy resolution cut (used for jet matching for response)
+
  private:
   bool IsJetAccepted(const AliEmcalJet *jet);
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&);
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 21);
+  ClassDef(AliAnalysisTaskConvJet, 22);
   /// \endcond
 };
 #endif
