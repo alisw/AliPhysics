@@ -79,7 +79,10 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fDistEMCSMEdge(0),
                                                    fApplyEnergyWeight(false),
                                                    funcEnergyWeights(nullptr),
-                                                   fVecNonMeasurable({-1})
+                                                   fVecNonMeasurable({-1}),
+                                                   funcJES(nullptr),
+                                                   funcJER(nullptr),
+                                                   funcJERCut(nullptr)
 {
 }
 
@@ -118,7 +121,10 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fDistEMCSMEdge(0),
                                                                    fApplyEnergyWeight(false),
                                                                    funcEnergyWeights(nullptr),
-                                                                   fVecNonMeasurable({-1})
+                                                                   fVecNonMeasurable({-1}),
+                                                                   funcJES(nullptr),
+                                                                   funcJER(nullptr),
+                                                                   funcJERCut(nullptr)
 {
   SetMakeGeneralHistograms(kTRUE);
 }

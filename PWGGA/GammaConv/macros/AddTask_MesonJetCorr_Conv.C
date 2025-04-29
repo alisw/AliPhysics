@@ -57,7 +57,7 @@ void AddTask_MesonJetCorr_Conv(
   bool enableRadiusDep = false,
   int runOnlyZPt = 0,           // if 0, bot pt and z histograms will be filled, if 1, pt histograms will be filled, if 2, only z histograms will be filled
   bool doTrackingStudies = false,
-  double jetEnergyAsymm = 0.5,
+  bool cutOnJetEnergyAsymm = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -432,7 +432,7 @@ void AddTask_MesonJetCorr_Conv(
   task->SetUseMixedBackAdd(enableAddBackground);
   task->SetDoRadiusDependence(enableRadiusDep);
   task->SetDoTrackingEff(doTrackingStudies);
-  task->SetJetEnergyAsymm(jetEnergyAsymm);
+  task->SetCutJetEnergyAsymm(cutOnJetEnergyAsymm);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

@@ -90,7 +90,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoRadiusDep(false),
                                                                              fDoAnalysisPt(true),
                                                                              fDoAnalysisZ(true),
-                                                                             fAllowedJetEnergyAsymm(100.),
+                                                                             fDoCutOnEnergyAsymm(false),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
                                                                              fMCEventNeg(nullptr),
@@ -390,7 +390,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoRadiusDep(false),
                                                                                            fDoAnalysisPt(true),
                                                                                            fDoAnalysisZ(true),
-                                                                                           fAllowedJetEnergyAsymm(100.),
+                                                                                           fDoCutOnEnergyAsymm(false),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
                                                                                            fMCEventNeg(nullptr),
@@ -2368,9 +2368,15 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
             DeltaPhi = 2 * M_PI - DeltaPhi;
           }
           R_jetjet = TMath::Sqrt(pow((DeltaEta), 2) + pow((DeltaPhi), 2));
-          if ((R_jetjet < min) && (std::abs( fVectorJetPt.at(i)/fTrueVectorJetPt.at(j) - 1) < fAllowedJetEnergyAsymm ) ) {
-            min = R_jetjet;
-            match = j;
+          if ( R_jetjet < min ) {
+            double jetEnergyAsymm = 0.;
+            if(fDoCutOnEnergyAsymm) {
+              jetEnergyAsymm = std::abs((fVectorJetPt.at(i) - fConvJetReader->GetJES(fVectorJetPt.at(i)))/fTrueVectorJetPt.at(j) - 1);
+            }
+            if(jetEnergyAsymm < fConvJetReader->GetJERCut(fVectorJetPt.at(i))){
+              min = R_jetjet;
+              match = j;
+            }
           }
         }
 
