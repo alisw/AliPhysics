@@ -2400,11 +2400,6 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           if (!fDoLightOutput) {
             fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(fVectorJetPt.at(i), 0.5, fWeightJetJetMC);
           }
-          if(fDoJetQA){
-            if(IsJetAtEMCSupermoduleBorder(fTrueVectorJetPhi.at(match))){
-              fHistoTruevsRecJetPtAtBorder[fiCut]->Fill(fVectorJetPt.at(i), 0.5, fWeightJetJetMC);
-            }
-          }
         }
       }
       if (fVectorJetPt.at(i) > fMaxPtJet) {
