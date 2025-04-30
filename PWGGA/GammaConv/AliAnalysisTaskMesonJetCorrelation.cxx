@@ -227,6 +227,10 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoPtJetSMBorder({}),
                                                                              fHistoTruePtJetSMBorder({}),
                                                                              fHistoTruevsRecJetPtAtBorder({}),
+                                                                             fHistoEnergyFracNonMeas({}),
+                                                                             fHistoEnergyFracNonMeasTrack({}),
+                                                                             fHistoEnergyFracNonMeasClus({}),
+                                                                             fHistoClusterAbundanceMC({}),
                                                                              // true meson histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -527,6 +531,10 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoPtJetSMBorder({}),
                                                                                            fHistoTruePtJetSMBorder({}),
                                                                                            fHistoTruevsRecJetPtAtBorder({}),
+                                                                                           fHistoEnergyFracNonMeas({}),
+                                                                                           fHistoEnergyFracNonMeasTrack({}),
+                                                                                           fHistoEnergyFracNonMeasClus({}),
+                                                                                           fHistoClusterAbundanceMC({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -834,6 +842,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     if (fIsMC) {
       fHistoTruePtJetSMBorder.resize(fnCuts);
       fHistoTruevsRecJetPtAtBorder.resize(fnCuts);
+
+      fHistoEnergyFracNonMeas.resize(fnCuts);
+      fHistoEnergyFracNonMeasTrack.resize(fnCuts);
+      fHistoEnergyFracNonMeasClus.resize(fnCuts);
+      fHistoClusterAbundanceMC.resize(fnCuts);
     }
   }
   if (fIsMC) {
@@ -1513,6 +1526,38 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fTrueJetList[iCut]->Add(fHistoTruePtJetSMBorder[iCut]);
         fHistoTruevsRecJetPtAtBorder[iCut] = new TH2F("TrueJetVsRecJetPt_SMBorder", "TrueJetVsRecJetPt_SMBorder", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtAtBorder[iCut]);
+
+        fHistoEnergyFracNonMeas[iCut] = new TH2F("MC_EnergyFracNonMeasVsJetPt", "MC_EnergyFracNonMeasVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoEnergyFracNonMeas[iCut]->SetXTitle("z (non meas.)");
+        fHistoEnergyFracNonMeas[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+        fJetList[iCut]->Add(fHistoEnergyFracNonMeas[iCut]);
+
+        fHistoEnergyFracNonMeasTrack[iCut] = new TH2F("MC_EnergyFracNonMeasTracksVsJetPt", "MC_EnergyFracNonMeasTracksVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoEnergyFracNonMeasTrack[iCut]->SetXTitle("z (non meas. track)");
+        fHistoEnergyFracNonMeasTrack[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+        fJetList[iCut]->Add(fHistoEnergyFracNonMeasTrack[iCut]);
+
+        fHistoEnergyFracNonMeasClus[iCut] = new TH2F("MC_EnergyFracNonMeasClusVsJetPt", "MC_EnergyFracNonMeasClusVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoEnergyFracNonMeasClus[iCut]->SetXTitle("z (non meas. clus)");
+        fHistoEnergyFracNonMeasClus[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+        fJetList[iCut]->Add(fHistoEnergyFracNonMeasClus[iCut]);
+
+        fHistoClusterAbundanceMC[iCut] = new TH3F("MC_ClusterAbundanceInJetsVsJetPt", "MC_ClusterAbundanceInJetsVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 11, vecEquidistFromMinus05.data());
+        fHistoClusterAbundanceMC[iCut]->SetXTitle("z (non meas. clus)");
+        fHistoClusterAbundanceMC[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(0, "#gamma");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(1, "e^{#pm}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(2, "#pi^{#pm}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(3, "#K^{#pm}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(4, "#K^{0}_{s}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(5, "#K^{0}_{l}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(6, "p");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(7, "n");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(8, "#Lambda");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(9, "#mu");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(10, "rest");
+        fJetList[iCut]->Add(fHistoClusterAbundanceMC[iCut]);
+
       }
       
     }
@@ -2325,6 +2370,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         float jetPhi = fVectorJetPhi.at(i);
 
         auto vecTracks = fConvJetReader->GetJetTracks(i);
+        double fracMomNonMeasPartClus = 0.;
+        double fracMomNonMeasPartTrack = 0.;
         for(size_t ipart = 0; ipart < vecTracks.size(); ++ipart){
           
           AliVParticle* tmpPart = static_cast<AliVParticle*>(vecTracks[ipart]);
@@ -2333,7 +2380,26 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           float dist = sqrt(dEta*dEta + dPhi*dPhi);
           float fracMom = tmpPart->Pt()/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
           fHistoJetTrackPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
+
+          if(fIsMC){
+            // Get MC label
+            int MCLabel = tmpPart->GetLabel();
+            if(MCLabel > 0){
+              if (!fAODMCTrackArray)
+                fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+              AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(MCLabel));
+              int motherLabel = particle->GetMother();
+              if(motherLabel > 0){
+                AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherLabel));
+                int pdg = std::abs(particleMother->GetPdgCode());
+                if(pdg == 130 || pdg == 310 || pdg == 3122){ // mother is K0s, K0l or Lambda
+                  fracMomNonMeasPartTrack += fracMom;
+                }
+              }              
+            }
+          }
         }
+        
 
         auto vecClus = fConvJetReader->GetJetClusters(i);
         for(size_t ipart = 0; ipart < vecClus.size(); ++ipart){
@@ -2350,7 +2416,51 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           float ptclus =  sqrt(px*px + py*py);
           float fracMom = ptclus/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
           fHistoJetClusterPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
+
+          if(fIsMC){
+            int MCLabel = clus->GetLabel();
+            if(MCLabel > 0){
+              if (!fAODMCTrackArray)
+                fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+              AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(MCLabel));
+              int pdg = std::abs(particle->GetPdgCode());
+              if(pdg == 130 || pdg == 310 || pdg == 3122 || pdg == 2112){ // mother is K0s, K0l, Lambda or neutron
+                fracMomNonMeasPartClus += fracMom;
+              }
+
+              double iClass = -1;
+              if(pdg == 22){
+                iClass = 0;
+              } else if (pdg == 11){
+                iClass = 1;
+              } else if (pdg == 211){
+                iClass = 2;
+              } else if (pdg == 321){
+                iClass = 3;
+              } else if (pdg == 310){
+                iClass = 4;
+              } else if (pdg == 130){
+                iClass = 5;
+              } else if (pdg == 2212){
+                iClass = 6;
+              } else if (pdg == 2112){
+                iClass = 7;
+              } else if (pdg == 3122){
+                iClass = 8;
+              } else if (pdg == 13){
+                iClass = 9;
+              } else {
+                iClass = 10;
+              }
+              fHistoClusterAbundanceMC[fiCut]->Fill(fracMom, fVectorJetPt.at(i), iClass, fWeightJetJetMC);
+
+            }
+          }
         }
+        
+        fHistoEnergyFracNonMeas[fiCut]->Fill(fracMomNonMeasPartTrack+fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
+        fHistoEnergyFracNonMeasClus[fiCut]->Fill(fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
+        fHistoEnergyFracNonMeasTrack[fiCut]->Fill(fracMomNonMeasPartTrack, fVectorJetPt[i], fWeightJetJetMC );
 
         if(IsJetAtEMCSupermoduleBorder(jetPhi)){
           fHistoPtJetSMBorder[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);

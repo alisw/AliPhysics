@@ -450,6 +450,13 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoTruePtJetSMBorder;         //! vector of histos with true jet pt for jets with true jet-axis close to SM borders
   std::vector<TH2F*> fHistoTruevsRecJetPtAtBorder;    //! Jet response matrix for jets close to SM border
 
+  // Non measurable particle study
+  std::vector<TH2F*> fHistoEnergyFracNonMeas;         //! vector of histos with energy fraction of non-measurable particles
+  std::vector<TH2F*> fHistoEnergyFracNonMeasTrack;    //! vector of histos with energy fraction of non-measurable particles for tracks
+  std::vector<TH2F*> fHistoEnergyFracNonMeasClus;     //! vector of histos with energy fraction of non-measurable particles for clusters
+  std::vector<TH3F*> fHistoClusterAbundanceMC;        //! vector of histos with number of clusters for different leading particles
+
+
   //-------------------------------
   // True meson histograms
   //-------------------------------
