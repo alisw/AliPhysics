@@ -74,7 +74,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
 
     // setters
     void SetEfficiency(TString strNeutral = "0.7", TString strCharged = "0.8");
-    void SetParticlesNonMeas(TString strPart);
+    void SetParticlesMeas(TString strPart);
     bool IsNonMeasureable(int pdgCode, int charge) const;
     void SetJetEnergyShift(double shift) { fDoJetEnergyShift = true; fJetEnergyShift = shift; }
     
@@ -154,7 +154,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     fastjet::AreaType 		  fAreaType;                      // jet area type
     TF1* fEffiNeutral;                                      // efficiency function for neutral particles
     TF1* fEffiCharged;                                      // efficiency function for charged particles
-    std::vector<int> fVecNonMeasureable;                    // vector holding the non-measureable particles
+    std::vector<int> fVecMeasurable;                       // vector holding the measureable particles
 
     bool fDoJetEnergyShift;                                 // Boolean for shift jet energy for response studies
     double fJetEnergyShift;                                 // Shift jet energy for response studies
@@ -166,7 +166,7 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaJetsPureMC(const AliAnalysisTaskGammaJetsPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaJetsPureMC &operator=(const AliAnalysisTaskGammaJetsPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaJetsPureMC, 4);
+    ClassDef(AliAnalysisTaskGammaJetsPureMC, 5);
 };
 
 #endif

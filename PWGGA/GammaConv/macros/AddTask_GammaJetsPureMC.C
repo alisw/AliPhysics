@@ -20,7 +20,7 @@ void AddTask_GammaJetsPureMC(TString strEffiNeutral = "0.7", TString strEffiChar
   task= new AliAnalysisTaskGammaJetsPureMC(nameTask);
 
   task->SetEfficiency(strEffiNeutral, strEffiCharged);
-  if(!strPDGNonMeas.EqualTo("")) task->SetParticlesNonMeas(strPDGNonMeas);
+  if(!strPDGNonMeas.EqualTo("")) task->SetParticlesMeas(strPDGNonMeas);
   if(energyshift != 1.) task->SetJetEnergyShift(energyshift);
 
   //connect containers

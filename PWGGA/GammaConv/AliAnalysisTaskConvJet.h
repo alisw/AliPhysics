@@ -101,7 +101,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   double GetDistToEMCSMEdge() const {return fDistEMCSMEdge;}
 
   void setWeightEnergyJets(const char * formula, const int mode = 1);
-  void SetNonMeasurablePart(TString str);
+  void SetMeasurablePart(TString str);
 
   void SetJetEnergyScaleAndResol(TString sJES, TString sJER, TString sJERCut){
     funcJES = new TF1("func_JES", sJES, 0, 1000);
@@ -174,7 +174,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   int fApplyEnergyWeight;       // 1: Apply constant energy shift for all jets, 2: Apply energy shift depending on the fraction of non-measurable particles
   TF1* funcEnergyWeights;
-  std::vector<int> fVecNonMeasurable;
+  std::vector<int> fVecMeasurable;
 
   TF1* funcJES;                 // function to parameterize jet energy scale
   TF1* funcJER;                 // function to parameterize jet energy resolution
