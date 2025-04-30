@@ -1545,17 +1545,17 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fHistoClusterAbundanceMC[iCut] = new TH3F("MC_ClusterAbundanceInJetsVsJetPt", "MC_ClusterAbundanceInJetsVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 11, vecEquidistFromMinus05.data());
         fHistoClusterAbundanceMC[iCut]->SetXTitle("z (non meas. clus)");
         fHistoClusterAbundanceMC[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(0, "#gamma");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(1, "e^{#pm}");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(2, "#pi^{#pm}");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(3, "#K^{#pm}");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(4, "#K^{0}_{s}");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(5, "#K^{0}_{l}");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(6, "p");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(7, "n");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(8, "#Lambda");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(9, "#mu");
-        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(10, "rest");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(1, "#gamma");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(2, "e^{#pm}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(3, "#pi^{#pm}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(4, "#K^{#pm}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(5, "#K^{0}_{s}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(6, "#K^{0}_{l}");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(7, "p");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(8, "n");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(9, "#Lambda");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(10, "#mu");
+        fHistoClusterAbundanceMC[iCut]->GetZaxis()->SetBinLabel(11, "rest");
         fJetList[iCut]->Add(fHistoClusterAbundanceMC[iCut]);
 
       }
