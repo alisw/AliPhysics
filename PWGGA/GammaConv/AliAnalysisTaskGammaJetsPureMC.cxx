@@ -113,7 +113,7 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(): AliAnalysisTas
   fAreaType(fastjet::active_area),
   fEffiNeutral(nullptr),
   fEffiCharged(nullptr),
-  fVecNonMeasureable({-1}),
+  fVecMeasurable({22, 211, 321, 2212, 11, 13}),
   fDoJetEnergyShift(false),
   fJetEnergyShift(1.),
   fRand(0)
@@ -178,7 +178,7 @@ AliAnalysisTaskGammaJetsPureMC::AliAnalysisTaskGammaJetsPureMC(const char *name)
   fAreaType(fastjet::active_area),
   fEffiNeutral(nullptr),
   fEffiCharged(nullptr),
-  fVecNonMeasureable({-1}),
+  fVecMeasurable({22, 211, 321, 2212, 11, 13}),
   fDoJetEnergyShift(false),
   fJetEnergyShift(1.),
   fRand(0)
@@ -550,13 +550,10 @@ bool AliAnalysisTaskGammaJetsPureMC::AcceptParticle(AliVParticle* particle){
 
 //_________________________________________________________________________________
 bool AliAnalysisTaskGammaJetsPureMC::IsNonMeasureable(int pdgCode, int charge) const {
-  if(fVecNonMeasureable.size() > 0 && fVecNonMeasureable[0] == -1){ // If vector contains -1 in first element, set all neutral particles that are not photons to non measureable
-    if(charge == 0 && pdgCode != 22) return true;
+  if(std::find(fVecMeasurable.begin(), fVecMeasurable.end(), pdgCode) != fVecMeasurable.end()) {
+    return false;
   }
-  if(std::find(fVecNonMeasureable.begin(), fVecNonMeasureable.end(), pdgCode) != fVecNonMeasureable.end()) {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 //_________________________________________________________________________________
@@ -579,6 +576,15 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
     bool isAccepted = AcceptParticle(particle);
     int pdg = std::abs(particle->PdgCode());
     bool isNonMeas = IsNonMeasureable(pdg, particle->Charge());
+    // { // for local debugging
+    //   int iMother = particle->GetMother();
+    //   auto particleMother                    = (AliVParticle *)fMCEvent->GetTrack(iMother);
+    //   int pdgMother = -1;
+    //   if(particleMother){
+    //     pdgMother = particleMother->PdgCode();
+    //   }
+    //   printf("isNonMeas %i for pdg = %i, pdgMother %i\n", isNonMeas, pdg, pdgMother);
+    // }
 
     fastjet::PseudoJet jetPart(particle->Px(), particle->Py(), particle->Pz(), particle->P());
     jetPart.set_user_index(i);
@@ -844,21 +850,21 @@ void AliAnalysisTaskGammaJetsPureMC::SetEfficiency(TString strNeutral, TString s
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaJetsPureMC::SetParticlesNonMeas(TString strPart){
+void AliAnalysisTaskGammaJetsPureMC::SetParticlesMeas(TString strPart){
   TObjArray* tokens = strPart.Tokenize(",");
   if (!tokens) return; // Return if no tokens
-  fVecNonMeasureable.clear();
+  fVecMeasurable.clear();
 
   for (int i = 0; i < tokens->GetEntries(); ++i) {
       TObjString* objStr = dynamic_cast<TObjString*>(tokens->At(i));
       if (objStr) {
           TString token = objStr->GetString();
           token = token.Strip(TString::kBoth); // Trim whitespace
-          fVecNonMeasureable.push_back(atoi(token.Data())); // Convert to int
+          fVecMeasurable.push_back(atoi(token.Data())); // Convert to int
       }
   }
-  std::cout << "Printing vector of non measurable particles: " << std::endl;
-  for(const auto & i : fVecNonMeasureable){
+  std::cout << "Printing vector of measurable particles: " << std::endl;
+  for(const auto & i : fVecMeasurable){
     std::cout << i << ", ";
   }
   std::cout << std::endl;

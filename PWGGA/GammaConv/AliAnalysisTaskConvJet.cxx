@@ -79,7 +79,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fDistEMCSMEdge(0),
                                                    fApplyEnergyWeight(false),
                                                    funcEnergyWeights(nullptr),
-                                                   fVecNonMeasurable({-1}),
+                                                   fVecMeasurable({22, 211, 321, 2212, 11, 13}),
                                                    funcJES(nullptr),
                                                    funcJER(nullptr),
                                                    funcJERCut(nullptr)
@@ -121,7 +121,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fDistEMCSMEdge(0),
                                                                    fApplyEnergyWeight(false),
                                                                    funcEnergyWeights(nullptr),
-                                                                   fVecNonMeasurable({-1}),
+                                                                   fVecMeasurable({22, 211, 321, 2212, 11, 13}),
                                                                    funcJES(nullptr),
                                                                    funcJER(nullptr),
                                                                    funcJERCut(nullptr)
@@ -608,8 +608,8 @@ void AliAnalysisTaskConvJet::setWeightEnergyJets(const char * formula, const int
   funcEnergyWeights = new TF1("funcEnergyWeightsJets", formula, 0, 10000);
 }
 
-void AliAnalysisTaskConvJet::SetNonMeasurablePart(TString str){
-  fVecNonMeasurable.clear();  // Ensure the vector is empty
+void AliAnalysisTaskConvJet::SetMeasurablePart(TString str){
+  fVecMeasurable.clear();  // Ensure the vector is empty
 
   // Split the input by semicolons
   TObjArray* tokens = str.Tokenize(";");
@@ -620,7 +620,7 @@ void AliAnalysisTaskConvJet::SetNonMeasurablePart(TString str){
           if (objStr) {
               TString token = objStr->GetString();
               if (!token.IsWhitespace()) {  // Skip empty tokens
-                  fVecNonMeasurable.push_back(token.Atoi());  // Convert to int and add to vector
+                  fVecMeasurable.push_back(token.Atoi());  // Convert to int and add to vector
               }
           }
       }
@@ -629,13 +629,8 @@ void AliAnalysisTaskConvJet::SetNonMeasurablePart(TString str){
 }
 
 bool AliAnalysisTaskConvJet::IsNonMeasurable(const int pdg, const int charge){
-  if(fVecNonMeasurable[0] == -1){
-    if(charge == 0 && pdg != 22){ // neutral particle that is not photon
-      return true;
-    }
+  if(std::find(fVecMeasurable.begin(), fVecMeasurable.end(), pdg) != fVecMeasurable.end()) {
+    return false;
   }
-  if(std::find(fVecNonMeasurable.begin(), fVecNonMeasurable.end(), pdg) != fVecNonMeasurable.end()) {
-    return true;
-  }
-  return false;
+  return true;
 }
