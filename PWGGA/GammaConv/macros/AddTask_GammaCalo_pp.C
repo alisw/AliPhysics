@@ -4828,9 +4828,13 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3253){  // no E/P matching
     cuts.AddCutCalo("00010113","4117999097e1C9v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
   } else if (trainConfig == 3254){  // conversion rejection
-    cuts.AddCutCalo("00010113","411799909fe1C9v0b00","0s631031000000d0"); // , conv. rej 0.02
-    cuts.AddCutCalo("00010113","411799909fe1C9v0c00","0s631031000000d0"); // , conv. rej 0.02
-    cuts.AddCutCalo("00010113","411799909fe1C9v0d00","0s631031000000d0"); // , conv. rej 0.02
+    cuts.AddCutCalo("00010113","4117999097e1C9v0b00","0s631031000000d0"); // conv. rej 0.02, no E/P matching
+    cuts.AddCutCalo("00010113","4117999097e1C9v0c00","0s631031000000d0"); // conv. rej 0.05, no E/P matching
+    cuts.AddCutCalo("00010113","4117999097e1C9v0d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching
+  } else if (trainConfig == 3255){  // conversion rejection
+    cuts.AddCutCalo("00010113","4117999097e1C9v0d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching, M02 = 0.7
+    cuts.AddCutCalo("00010113","4117999097e1C220d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching, M02 = 0.5
+    cuts.AddCutCalo("00010113","4117999097e1C230d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching, M02 = 0.4
 
     // mult dep.
   } else if (trainConfig == 3260){  // EMCAL+DCAL NLM = 1-100, INEL>0, NL , std TM, swapping back.
