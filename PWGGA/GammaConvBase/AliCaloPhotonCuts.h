@@ -683,6 +683,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistEnergyOfModvsMod;                    // Deposited Energy vs Module Number
     TH2F*     fHistClusterEnergyvsNCellsBeforeQA;       // Cluster Energy vs NCells before QA
     TH2F*     fHistClusterEnergyvsNCellsAfterQA;        // Cluster Energy vs NCells after QA
+    TH2F*     fHistClusterEnergyvsExoticityBeforeQA;    // Cluster Energy vs Exoticity before QA
+    TH2F*     fHistClusterEnergyvsExoticityAfterQA;     // Cluster Energy vs Exoticity before QA
     TH2F*     fHistCellEnergyvsCellID;                  // Cell Energy vs CellID
     TH2F*     fHistClusterEnergyvsCellID;               // Cluster Energy vs CellID
     TH1F*     fHistCellEnergyLG;                        // Cell Energy of low gain cells
@@ -805,7 +807,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,144)
+    ClassDef(AliCaloPhotonCuts,145)
 };
 
 #endif

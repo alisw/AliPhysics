@@ -4835,6 +4835,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","4117999097e1C9v0d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching, M02 = 0.7
     cuts.AddCutCalo("00010113","4117999097e1C220d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching, M02 = 0.5
     cuts.AddCutCalo("00010113","4117999097e1C230d00","0s631031000000d0"); // conv. rej 0.1, no E/P matching, M02 = 0.4
+  } else if (trainConfig == 3256){  // Exotics QA
+    cuts.AddCutCalo("00010113","411799909701C9v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
+    cuts.AddCutCalo("00010113","41179990970109v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
 
     // mult dep.
   } else if (trainConfig == 3260){  // EMCAL+DCAL NLM = 1-100, INEL>0, NL , std TM, swapping back.
