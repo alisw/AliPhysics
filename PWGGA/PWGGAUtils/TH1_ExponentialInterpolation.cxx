@@ -349,7 +349,7 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
             ++lNinsertions;                        
         }
     }
-    fTF1_global = theGlobalTF1;
+    fTF1_global = &theGlobalTF1;
 
     bool wasAlreadyFullyInitialized = !lNinsertions;
     if (lNinsertions){
