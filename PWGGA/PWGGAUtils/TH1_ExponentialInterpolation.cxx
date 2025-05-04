@@ -13,7 +13,7 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
                                                                          TH1 const &_th1,
                                                                          bool _integrate,
                                                                          bool _useXtimesExp)
-    : id{Form("TH1_ExponentialInterpolation_static_%s_%s", _id.data(), _th1.GetName())},
+    : id(Form("TH1_ExponentialInterpolation_static_%s_%s", _id.data(), _th1.GetName())),
       fMap_TH1_ExponentialInterpolation()
 {
     printf("INFO: TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(): instance %s:\n"

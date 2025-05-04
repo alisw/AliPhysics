@@ -41,8 +41,9 @@ class TH1_ExponentialInterpolation_static {
 
         TF1 const
             *GetInterpolationTF1_const(TH1 const &theTH1) const;
-            
-        bool IsInitialized() const   { return fMap_TH1_ExponentialInterpolation.size(); }
+        
+        std::string const GetId() const  { return id; } 
+        bool IsInitialized() const       { return fMap_TH1_ExponentialInterpolation.size(); }
 
     private:
 
