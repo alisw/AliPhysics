@@ -71,7 +71,7 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
         ?   lIt->second->GetTF1_global() 
         :   nullptr;  
 
-    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s%s.\n", 
+    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s.\n", 
             lResult 
                 ? lResult->GetName() 
                 : "no TF1",
