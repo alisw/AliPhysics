@@ -8093,7 +8093,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 
   if (!(isPi0 || isEta)){
     AliInfo(Form("AliConvEventCuts::GetWeightForMeson(): Called for meson with PDG code = %d\n",
-                    lPDG));
+                 lPDG));
     return 1.;    
   }
   // SFS end to be removed
@@ -8104,8 +8104,6 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
     ?   GetWeightForMesonNew(index, mcEvent, event)
     :   -1.; // -1 signals newWeights could not be used for whatever reasons
   
-//   if (!()  
-
   double lSign = (lWeightNew>0) ? 1. : -1.;  
   double diff = lWeightNew - lWeightOld;
 
@@ -8119,7 +8117,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       : isEta 
         ? fHistoRelDiffNewOldMesonWeights_Eta
         : static_cast<TH2*>(nullptr);
-    if (!lTH2){
+
+    if ( (isPi0 || isEta) && !lTH2){
         AliFatal(Form("AliConvEventCuts::GetWeightForMeson()::fillMesonHisto(): lTH2 is nullptr even though lWeightNew is sane.\n"
                       "PDG code: %d, mesonPt = %f\n",
                       lPDG, mesonPt));
