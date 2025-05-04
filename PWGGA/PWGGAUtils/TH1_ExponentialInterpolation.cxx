@@ -6,9 +6,9 @@
 Static base class to maintain a map over all existing TH1_ExponentialInterpolations
 */
 TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::string const &_id,
-                                                                         TH1 const &_th1,
-                                                                         bool _integrate,
-                                                                         bool _useXtimesExp)
+                                                                         TH1         const &_th1,
+                                                                         bool               _integrate,
+                                                                         bool               _useXtimesExp)
     : id(Form("TH1_ExponentialInterpolation_static_%s_%s", _id.data(), _th1.GetName())),
       fMap_TH1_ExponentialInterpolation()
 {
@@ -30,6 +30,7 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
            "\t\t parent: %p, th1: %s, integrate = %d, useXtimesExp = %d.\n",
            id.data(),
            this,
+           _th1.GetName(),
            _integrate,
            _useXtimesExp);
 
@@ -43,10 +44,10 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
         { &_th1, lInstance }
     );
 
-    fIsInitialized = lPair.second;
+    bool isInitialized = lPair.second;
     printf("%s instance for histo %s%s.\n",
-           fIsInitialized ? "Inserted" : "Did not insert",
-           fIsInitialized ? ""         : " because it was nullptr",
+           isInitialized ? "Inserted" : "Did not insert",
+           isInitialized ? ""         : " because it was nullptr",
            _th1.GetName());
 }
  
@@ -71,11 +72,13 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
         :   nullptr;  
 
     printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s%s.\n", 
-            lResult ? lResult->GetName() : "no TF1",
-           !lResult 
+            lResult 
+                ? lResult->GetName() 
+                : "no TF1",
+            !lResult 
                 ? theCreateNewIfNecessary 
                     ?   "Will create new one for histo "
-                    :   "Returning nullptr. Set theCreateNewIfNecessary to true if you want creation of a new one.\n\n\n",
+                    :   "Returning nullptr. Set theCreateNewIfNecessary to true if you want creation of a new one.\n\n\n"
                 : "");
     
     if (!lResult && theCreateNewIfNecessary){
@@ -89,7 +92,6 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
     }
     return lResult;
 }
-
 
 //_________________________________________________________________________________________________
 TF1 const
@@ -179,13 +181,11 @@ TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(std::string const    
                                                            bool                                 _verbose /* = false */)
 :   id(_id.size() ? _id.data() : Form("TH1_ExponentialInterpolation_%s", _th1.GetName())),
     fStaticParent{theParentRef},
-    fTH1{ * dynamic_cast<TH1 *>(_th1.Clone()) },
+    fStaticParentId{theParentRef.GetId()},
+    fTH1{ *dynamic_cast<TH1 *>(_th1.Clone()) },
     fIntegrate{_integrate},
     fUseXtimesExp{_useXtimesExp},
     fVector_tf1_local{ std::vector<TF1*>( (1 + fTH1.GetNbinsX()), nullptr) }, // fill up 0th element so vectors indices will be same as histo bin numbers
-    
-    // std::vector<TF1*> v(n, nullptr);
-
     fTF1_global{nullptr}
 {
     fTF1_global = ProduceNewNativeTF1("");
@@ -311,9 +311,9 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
             ?   fVector_tf1_local[iBin]
             :   TH1_ExponentialInterpolation::GetLocalExponentialTF1(theTH1, x, fIntegrate, fUseXtimesExp);
         
-            TF1 *lTF1_local_good = (lTF1_candidate && utils_TF1::IsInRange(*lTF1_candidate, x))
-                ?   lTF1_candidate
-                :   static_cast<TF1*>(nullptr);
+        TF1 *lTF1_local_good = (lTF1_candidate && TF1GoodForX(*lTF1_candidate, x))
+            ?   lTF1_candidate
+            :   static_cast<TF1*>(nullptr);
 
         if (lTF1_local_good){
             // all good
@@ -361,21 +361,6 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
 //_________________________________________________________________________________________________
 double TH1_ExponentialInterpolation::Evaluate(double *x, double *)
 {
-    auto hasTF1GoodRangeForTheX = [](TF1 const  &theTF1, 
-                                      double     theX, 
-                                      bool       thePrintInfoIfNot = false){
-        bool lResult = (theX >= theTF1.GetXmin()) && (theX < theTF1.GetXmax());
-        if (lResult){
-            return true;
-        }
-        if (thePrintInfoIfNot){
-            printf("INFO: TH1_ExponentialInterpolation::Evaluate(double *x, double *)::hasTF1GoodRangeForTheX():\n"
-                   "\t\ttheTF1 = %s's range is %f - %f. That %scludes theX = %f\n",
-            theTF1.GetName(), theTF1.GetXmin(), theTF1.GetXmax(), lResult ? "in" : "ex", theX);
-        }
-        return false;
-    };
-    
     // check if there is already a local interpol for this x
     size_t const lBin = static_cast<size_t>(fTH1.FindBin(*x));
 
@@ -406,19 +391,20 @@ double TH1_ExponentialInterpolation::Evaluate(double *x, double *)
     return lTF1_local_good ? lTF1_local_good->Eval(*x) : 0.;
 }
 
+//_________________________________________________________________________________________________
 TF1 *TH1_ExponentialInterpolation::GetTF1_global()
 {
     return fTF1_global;
 }
         
 
+//_________________________________________________________________________________________________
 TF1 const
     *TH1_ExponentialInterpolation::GetTF1_global_const() const
 {
     return static_cast<TF1 const *>(fTF1_global);
 }
 
-//_________________________________________________________________________________________________
 TF1 *TH1_ExponentialInterpolation::ProduceNewNativeTF1(std::string const &theNewName)
 {
     std::string lNewName(theNewName.size() 
@@ -438,6 +424,25 @@ TF1 *TH1_ExponentialInterpolation::ProduceNewNativeTF1(std::string const &theNew
                    "TH1_ExponentialInterpolation",
                    "Evaluate");
 }
+
+//_________________________________________________________________________________________________
+bool TH1_ExponentialInterpolation::TF1GoodForX(TF1 const  &theTF1, 
+                                               double      theX, 
+                                               bool        thePrintInfoIfNot /* = false */) const
+{
+    bool lResult = (theX >= theTF1.GetXmin()) && (theX <= theTF1.GetXmax());
+    if (lResult){
+        return true;
+    }
+    
+    if (thePrintInfoIfNot){
+        printf("INFO: TH1_ExponentialInterpolation::Evaluate(double *x, double *)::hasTF1GoodRangeForTheX():\n"
+                "\t\ttheTF1 = %s's range is %f - %f. That %scludes theX = %f\n",
+        theTF1.GetName(), theTF1.GetXmin(), theTF1.GetXmax(), lResult ? "in" : "ex", theX);
+    }
+    return false;
+}
+
 
 
 ///////////////////// end TH1_ExponentialInterpolation ////////////////////////////////////////////

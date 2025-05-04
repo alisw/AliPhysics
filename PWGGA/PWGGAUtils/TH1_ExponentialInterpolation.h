@@ -4,6 +4,7 @@
 #include "TH1.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 
@@ -84,9 +85,13 @@ class TH1_ExponentialInterpolation
                                      bool                                 _verbose = true);
         
         double 
-            Evaluate(double *x, double *);   
+            Evaluate(double *x, double *);
             
-         // get a TF1 exponential defined by:
+        bool TF1GoodForX(TF1 const  &theTF1, 
+                         double      theX, 
+                         bool        thePrintInfoIfNot = false) const;
+
+    // get a TF1 exponential defined by:
     /* 
     case theIntegrate = false: 
         - the next two neares bin centers to theX
@@ -105,9 +110,11 @@ double LocalExponentialInterpolate(TH1   &theTH1,
                                    bool   theIntegrate = false,
                                    bool   theUseXtimesExp = false);
 
-
         // getters 
-        std::string const 
+        std::string const
+            &GetParentId() const        { return fStaticParentId; }
+
+        std::string const
             &GetId() const { return id; } 
 
         TH1 const 
@@ -123,18 +130,17 @@ double LocalExponentialInterpolate(TH1   &theTH1,
             
         ~TH1_ExponentialInterpolation();
     
-    
     private:
         bool initGlobalFunctionObject(TF1 &theGlobalTF1, TH1  &theTH1);
-        std::string id;
+        std::string                          id;
         TH1_ExponentialInterpolation_static &fStaticParent;
-        TH1&        fTH1;
+        std::string const                    fStaticParentId;
+        TH1                                 &fTH1;
         
-        bool fIntegrate;    /* whether the fit minimizes: fIntegrate = false:  f(x)    -   h.ExpInter(h.GetBinCenter(h.FindBin(x))) true:   int(LeftEdge(i), RightEdge(i+1), f(x))  -   h.GetBinContent(i)) */
-        bool fUseXtimesExp; /* whether      false: th1.BinContent(i) -> th1.BinContents(i) * th1.BinCenter(i)      true: f(x) = exp([0] + [1]*x) -> x * f(x) */
+        bool                                 fIntegrate;    /* whether the fit minimizes: fIntegrate = false:  f(x)    -   h.ExpInter(h.GetBinCenter(h.FindBin(x))) true:   int(LeftEdge(i), RightEdge(i+1), f(x))  -   h.GetBinContent(i)) */
+        bool                                 fUseXtimesExp; /* whether      false: th1.BinContent(i) -> th1.BinContents(i) * th1.BinCenter(i)      true: f(x) = exp([0] + [1]*x) -> x * f(x) */
 
-        std::vector<TF1*>  fVector_tf1_local;
-        TF1               *fTF1_global;
-
+        std::vector<TF1*>                    fVector_tf1_local;
+        TF1                                 *fTF1_global;
 }; // end class TH1_ExponentialInterpolation
 
