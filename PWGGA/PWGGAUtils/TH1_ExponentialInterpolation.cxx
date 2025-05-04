@@ -14,24 +14,27 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
                                                                          bool _integrate,
                                                                          bool _useXtimesExp)
     : id{Form("TH1_ExponentialInterpolation_static_%s_%s", _id.data(), _th1.GetName())},
-      fMap_TH1_ExponentialInterpolation(),
-      isInitialized{false}
+      fMap_TH1_ExponentialInterpolation()
 {
     printf("INFO: TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(): instance %s:\n"
            "line 20\n",
            id.data());
 
-    TH1_ExponentialInterpolation *lInstance =
-        new TH1_ExponentialInterpolation(id,
-                                         *this,
-                                         _th1,
-                                         _integrate,
-                                         _useXtimesExp,
-                                         true /* _verbose */);
+    TH1_ExponentialInterpolation *lInstance = new TH1_ExponentialInterpolation(
+        id,
+        *this,
+        _th1,
+        _integrate,
+        _useXtimesExp,
+        true /* _verbose */);
 
     printf("INFO: TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static():\n"
-           "Created instance %s\n",
-           id.data());
+           "\tCreated instance %s with options:\n"
+           "\t\t parent: %p, th1: %s, integrate = %d, useXtimesExp = %d.\n",
+           id.data(),
+           this,
+           _integrate,
+           _useXtimesExp);
 
     if (!lInstance){
         printf("FATAL: TH1_ExponentialInterpolation_static():\n"

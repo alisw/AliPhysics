@@ -41,6 +41,8 @@ class TH1_ExponentialInterpolation_static {
 
         TF1 const
             *GetInterpolationTF1_const(TH1 const &theTH1) const;
+            
+        bool IsInitialized() const   { return fMap_TH1_ExponentialInterpolation.size(); }
 
     private:
 
@@ -48,7 +50,7 @@ class TH1_ExponentialInterpolation_static {
         std::string id;
         std::map<TH1 const*, TH1_ExponentialInterpolation*> fMap_TH1_ExponentialInterpolation;
 
-        bool isInitialized; // signals if there is at least one element in the map.
+        // bool isInitialized; // signals if there is at least one element in the map.
 }; // end class class TH1_ExponentialInterpolation_static {
 
 // ===================== class TH1_ExponentialInterpolation ===================================
