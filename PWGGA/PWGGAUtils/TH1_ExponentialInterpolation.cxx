@@ -362,8 +362,6 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
     bool wasFreshlyFullyInitialized = lNinsertions == nBinsX;
     bool isFullyInitializedNow = wasAlreadyFullyInitialized || wasFreshlyFullyInitialized;
     
-    fTF1_global = theGlobalTF1;
-
     return isFullyInitializedNow;
 }
 
