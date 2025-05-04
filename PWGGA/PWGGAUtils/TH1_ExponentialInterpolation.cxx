@@ -189,7 +189,13 @@ TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(std::string const    
     fTF1_global{nullptr}
 {
     fTF1_global = ProduceNewNativeTF1("");
-    bool isFullyInitialized = initGlobalFunctionObject(*fTF1_global, fTH1);
+    printf("TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(): instance %s:\n"
+           "fTF1_global = %s.\n",
+           fTF1_global 
+             ?   fTF1_global->GetName()
+             :   "nullptr");
+
+    bool isFullyInitialized = fTF1_global && initGlobalFunctionObject(*fTF1_global, fTH1);
     
     if (_verbose){
         printf("TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(): created instance with properties:\n\t"
@@ -343,6 +349,7 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
             ++lNinsertions;                        
         }
     }
+    fTF1_global = theGlobalTF1;
 
     bool wasAlreadyFullyInitialized = !lNinsertions;
     if (lNinsertions){
@@ -354,6 +361,8 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
     }
     bool wasFreshlyFullyInitialized = lNinsertions == nBinsX;
     bool isFullyInitializedNow = wasAlreadyFullyInitialized || wasFreshlyFullyInitialized;
+    
+    fTF1_global = theGlobalTF1;
 
     return isFullyInitializedNow;
 }
@@ -405,6 +414,7 @@ TF1 const
     return static_cast<TF1 const *>(fTF1_global);
 }
 
+//_________________________________________________________________________________________________
 TF1 *TH1_ExponentialInterpolation::ProduceNewNativeTF1(std::string const &theNewName)
 {
     std::string lNewName(theNewName.size() 

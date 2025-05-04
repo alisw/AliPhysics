@@ -100,15 +100,15 @@ class TH1_ExponentialInterpolation
         - the lower and upper edges of the two nearest bins to theX 
         - the two coefficients are determined from a fit using the two bins  
     */
-    TF1 *GetLocalExponentialTF1(TH1   &theTH1, 
-                                double theX, 
-                                bool   theIntegrate, 
-                                bool   theUseXtimesExp);
+    TF1 *GetLocalExponentialTF1(TH1    &theTH1, 
+                                double  theX, 
+                                bool    theIntegrate, 
+                                bool    theUseXtimesExp);
     
-double LocalExponentialInterpolate(TH1   &theTH1, 
-                                   double theX, 
-                                   bool   theIntegrate = false,
-                                   bool   theUseXtimesExp = false);
+double LocalExponentialInterpolate(TH1    &theTH1, 
+                                   double  theX, 
+                                   bool    theIntegrate = false,
+                                   bool    theUseXtimesExp = false);
 
         // getters 
         std::string const
@@ -132,6 +132,7 @@ double LocalExponentialInterpolate(TH1   &theTH1,
     
     private:
         bool initGlobalFunctionObject(TF1 &theGlobalTF1, TH1  &theTH1);
+        
         std::string                          id;
         TH1_ExponentialInterpolation_static &fStaticParent;
         std::string const                    fStaticParentId;
