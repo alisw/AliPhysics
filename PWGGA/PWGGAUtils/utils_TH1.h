@@ -16,6 +16,7 @@ class utils_TH1
             else:                        f(x) =     exp([0] + [1]*x) 
         */
         // _________________________________________________________________________________________________
+        static 
         TF1 *GlobalPieceWiseExponentialInterpolationTF1(std::string const &theNewName, 
                                                         TH1         const &theTH1, 
                                                         bool               theIntegrate = false,

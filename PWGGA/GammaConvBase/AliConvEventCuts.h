@@ -905,7 +905,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       bool                           fMapPtWeightsIsFilledAndSane;        ///<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
       TH2D                          *fHistoRelDiffNewOldMesonWeights_Pi0;
       TH2D                          *fHistoRelDiffNewOldMesonWeights_Eta;
-      utils_TH1                      fUtils_TH1;
+    //   utils_TH1                      fUtils_TH1;
       Int_t                       fDebugLevel;                            ///< debug level for interactive debugging
   private:
 
