@@ -64,8 +64,8 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
             theUseXtimesExp,
             theCreateNewIfNecessary);
 
-    auto const   &lIt  = fMap_TH1_ExponentialInterpolation.find(&theTH1);
-    bool found =  lIt != fMap_TH1_ExponentialInterpolation.end();
+    auto  &lIt  = fMap_TH1_ExponentialInterpolation.find(&theTH1);
+    bool  found = lIt != fMap_TH1_ExponentialInterpolation.end();
 
     TF1 *lResult = found 
         ?   lIt->second->GetTF1_global() 
