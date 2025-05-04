@@ -16,7 +16,8 @@ TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &th
                                                   theTH1, 
                                                   theIntegrate, 
                                                   theUseXtimesExp);
-    printf("line19\n");
+    printf("line19: return nullptr;\n");
+    return nullptr;
     if (!lInstance.IsInitialized()){
         printf("FATAL: utils_TH1::GlobalPieceWiseExponentialInterpolationTF1():\n"
                "Could not initialize TH1_ExponentialInterpolation object %s with provided"
