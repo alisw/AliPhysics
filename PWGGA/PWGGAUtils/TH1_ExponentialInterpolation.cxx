@@ -71,7 +71,7 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
         ?   lIt->second->GetTF1_global() 
         :   nullptr;  
 
-    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s.\n", 
+    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s%s.\n", 
             lResult 
                 ? lResult->GetName() 
                 : "no TF1",
@@ -79,7 +79,10 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
                 ? theCreateNewIfNecessary 
                     ?   "Will create new one for histo "
                     :   "Returning nullptr. Set theCreateNewIfNecessary to true if you want creation of a new one.\n\n\n"
-                : "");
+                : "",
+            !lResult 
+                ?   theTH1.GetName()
+                :   "");
     
     if (!lResult && theCreateNewIfNecessary){
         lResult = CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);  

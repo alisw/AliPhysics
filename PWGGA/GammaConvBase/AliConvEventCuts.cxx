@@ -1112,7 +1112,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 
     if (!(theDataTF1_inv && theMCTH1_inv))
     {
-      AliFatal(Form("calculateVariantSpectraAndInsert() called with at least one nullptr:\n"
+      AliWarning(Form("calculateVariantSpectraAndInsert() called with at least one nullptr:\n"
                     "\tthePDGCode: %d\n"
                     "\ttheWhich: %d\n"
                     "\ttheDataTF1_inv: %s\n"
