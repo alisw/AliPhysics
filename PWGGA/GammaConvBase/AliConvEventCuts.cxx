@@ -1144,7 +1144,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
       : nullptr;
     
     if (!lMCTF1_exp_inter){
-        AliFatal(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects():\n"
+        AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects():\n"
                       "\tRetrieved nullptr for lMCTF1_exp_inter which was tried to create for histo %s:\n"
                       "\tParameters: theIntegrate = %d, theUseXtimesExp = %d\n\n",
                       lMCTH1->GetName(), lIsVar, lIsVar));

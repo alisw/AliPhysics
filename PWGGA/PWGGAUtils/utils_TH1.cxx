@@ -12,6 +12,9 @@ TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &th
            theNewName.data(), theTH1.GetName(), theIntegrate, theUseXtimesExp);
     
     printf("line15\n");
+    printf("line15: returning nullptr.\n");
+    return nullptr;
+    
     TH1_ExponentialInterpolation_static lInstance(theNewName, 
                                                   theTH1, 
                                                   theIntegrate, 
