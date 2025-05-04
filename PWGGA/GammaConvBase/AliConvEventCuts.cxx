@@ -1232,11 +1232,11 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
                                     (fDoReweightHistoMCEta > kInvariant); 
     if (requiered_newPtWeighting){
       fMapPtWeightsIsFilledAndSane = InitializeMapPtWeightsAccessObjects();
-    }
-    if (!fMapPtWeightsIsFilledAndSane){
+      if (!fMapPtWeightsIsFilledAndSane){
         AliFatal(Form("AliConvEventCuts::InitializeCutsFromCutString():\n"
                       "Initialization of fMapPtWeightsAccessObjects failed despite requiered by [<EnumPtWeights>] Pi0: %d, Eta: %d.\n",
                       fDoReweightHistoMCPi0, fDoReweightHistoMCEta));
+      }
     }
   }
 
