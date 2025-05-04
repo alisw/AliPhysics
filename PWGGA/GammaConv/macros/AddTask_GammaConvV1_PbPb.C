@@ -5057,7 +5057,8 @@ void AddTask_GammaConvV1_PbPb(
     Bool_t weightK0s = kFALSE;
     if (intPtWeightsCalculationMethod)
     {
-      printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n", intPtWeightsCalculationMethod);
+      printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n",
+             intPtWeightsCalculationMethod);
       if (periodNameAnchor.BeginsWith("LHC15o") || 
           periodNameAnchor.BeginsWith("LHC18q"))
       {

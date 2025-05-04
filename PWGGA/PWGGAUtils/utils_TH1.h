@@ -9,7 +9,7 @@ class utils_TH1
 {
     public:
 
-        // utils_TH1();
+        utils_TH1();
         /* 
             get globally defined TF1 which is either fitted to the bin centers 
             OR such that the integrals in each in bin agree with their content. 
