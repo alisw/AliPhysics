@@ -38,7 +38,7 @@ class TH1_ExponentialInterpolation_static {
         TF1 *GetInterpolationTF1(TH1 const  &theTH1,
                                  bool        theIntegrate,
                                  bool        theUseXtimesExp,
-                                 bool        theCreateNewIfNecessary = false);
+                                 bool        theCreateNewIfNecessary = true);
 
         TF1 const
             *GetInterpolationTF1_const(TH1 const &theTH1) const;

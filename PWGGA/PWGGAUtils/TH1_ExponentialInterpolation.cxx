@@ -55,7 +55,7 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
 TF1 *TH1_ExponentialInterpolation_static::GetInterpolationTF1(TH1 const &theTH1,
                                                               bool       theIntegrate,
                                                               bool       theUseXtimesExp,
-                                                              bool       theCreateNewIfNecessary /* = false*/ )
+                                                              bool       theCreateNewIfNecessary /* = true*/ )
 {
 printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.\n"
            "\tparams: _th1: %s, _integrate = %d, _useXtimesExp = %d, theCreateNewIfNecessary = %d.\n",
