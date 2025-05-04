@@ -12,16 +12,11 @@ TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &th
     printf("utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(): called with theNewName: %s, theTH1: %s, theIntegrate = %d, theUseXtimesExp = %d\n",
            theNewName.data(), theTH1.GetName(), theIntegrate, theUseXtimesExp);
     
-    printf("line15\n");
-    // printf("line15: returning nullptr.\n");
-    // return nullptr;
-    
     TH1_ExponentialInterpolation_static lInstance(theNewName, 
                                                   theTH1, 
                                                   theIntegrate, 
                                                   theUseXtimesExp);
-    printf("line19: return nullptr;\n");
-    return nullptr;
+    
     if (!lInstance.IsInitialized()){
         printf("FATAL: utils_TH1::GlobalPieceWiseExponentialInterpolationTF1():\n"
                "Could not initialize TH1_ExponentialInterpolation object %s with provided"
