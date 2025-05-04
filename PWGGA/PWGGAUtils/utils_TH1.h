@@ -1,10 +1,9 @@
 #pragma once
-#include "TH1_ExponentialInterpolation.h"
 
+#include "TH1_ExponentialInterpolation.h"
 class TF1;
 class TH1;
 
-class string;
 class utils_TH1
 {
     public:
