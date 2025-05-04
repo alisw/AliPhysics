@@ -1134,11 +1134,11 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     lMCTH1   = lIsVar ? &multiplyTH1ByBinCenters(*theMCTH1_inv) : theMCTH1_inv;
     
     TF1 *lMCTF1_exp_inter = lMCTH1 
-      ?  fUtils_TH1.GlobalPieceWiseExponentialInterpolationTF1(
-           Form("%s_exp_inter", lMCTH1->GetName()), 
-                *lMCTH1,
-                lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
-                lIsVar /*theUseXtimesExp*/) // since the shape is exponential only in invariant form, we need x*exp(x) for the variant form
+      ?  utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(
+            Form("%s_exp_inter", lMCTH1->GetName()), 
+            *lMCTH1,
+            lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
+            lIsVar /*theUseXtimesExp*/) // since the shape is exponential only in invariant form, we need x*exp(x) for the variant form
       : nullptr;
     
     if (!lMCTF1_exp_inter){
