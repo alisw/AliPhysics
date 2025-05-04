@@ -11,15 +11,19 @@ TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &th
     printf("utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(): called with theNewName: %s, theTH1: %s, theIntegrate = %d, theUseXtimesExp = %d\n",
            theNewName.data(), theTH1.GetName(), theIntegrate, theUseXtimesExp);
     
-    printf("line14\n");
-    TH1_ExponentialInterpolation_static *lInstance_ptr = 
-        new TH1_ExponentialInterpolation_static(theNewName, 
-                                                 theTH1, 
-                                                 theIntegrate, 
-                                                 theUseXtimesExp);
+    printf("line15\n");
+    TH1_ExponentialInterpolation_static lInstance(theNewName, 
+                                                  theTH1, 
+                                                  theIntegrate, 
+                                                  theUseXtimesExp);
     printf("line19\n");
 
-    return lInstance_ptr 
-        ?   lInstance_ptr->GetInterpolationTF1(theTH1, theIntegrate, theUseXtimesExp)
-        :   static_cast<TF1*>(nullptr);
+    TF1 *lResult = lInstance.GetInterpolationTF1(theTH1, theIntegrate, theUseXtimesExp);
+
+    printf("utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(): %sturning %s%s %s.",
+           lResult ? "Re" : "Not re",
+           lResult ? lResult->GetName() : "TF1* for histo",
+           lResult ? "." : theTH1.GetName(),
+           lResult ? "" : ". Returning nullptr.\n");
+    return lResult;
 }

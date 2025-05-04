@@ -27,14 +27,17 @@ class TH1_ExponentialInterpolation_static {
                                             TH1 const         &_th1,
                                             bool               _integrate,
                                             bool               _useXtimesExp);
+        
         // the only way to create new TF1_globals with write access
         TF1 *CreateNewInterpolation(TH1 const  &_th1,
                                     bool        _integrate,
                                     bool        _useXtimesExp);
         
-        TF1 *GetInterpolationTF1(TH1 const &theTH1,
-                                 bool       theIntegrate,
-                                 bool       theUseXtimesExp);
+        // returns a valid TF1 interpolation from stack or create new one if necessary
+        TF1 *GetInterpolationTF1(TH1 const  &theTH1,
+                                 bool        theIntegrate,
+                                 bool        theUseXtimesExp,
+                                 bool        theCreateNewIfNecessary = false);
 
         TF1 const
             *GetInterpolationTF1_const(TH1 const &theTH1) const;

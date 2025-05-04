@@ -49,54 +49,44 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
            fIsInitialized ? ""         : " because it was nullptr",
            _th1.GetName());
 }
-
-// TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::string const &_id,
-//                                                                          TH1 const         &_th1,
-//                                                                          bool                _integrate,
-//                                                                          bool                _useXtimesExp)
-// :   id{Form("TH1_ExponentialInterpolation_static_%s_%s_%d_%d", 
-//             _id.data(), _th1.GetName(), _integrate, _useXtimesExp)},
-//     fMap_TH1_ExponentialInterpolation
-// {
-//     printf("line19 TH1_ExponentialInterpolation_static:\n");
-//     TH1_ExponentialInterpolation *lInstance = 
-//         new TH1_ExponentialInterpolation(id, *this, _th1, _integrate, _useXtimesExp);
-    
-//     printf("INFO: TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static():\n"
-//            "Created instance %s\n",
-//            id.data());
-    
-//     auto const &lPair = fMap_TH1_ExponentialInterpolation.insert({ &_th1, lInstance });
-//     bool inserted = lPair.second;
-
-//     printf("%s instance for histo %s\n", 
-//            inserted 
-//               ?   "Inserted" 
-//               :   "Did not insert", 
-//             _th1.GetName());
-
-// }
  
 //_________________________________________________________________________________________________
 TF1 *TH1_ExponentialInterpolation_static::GetInterpolationTF1(TH1 const &theTH1,
                                                               bool       theIntegrate,
-                                                              bool       theUseXtimesExp)
+                                                              bool       theUseXtimesExp,
+                                                              bool       theCreateNewIfNecessary /* = false*/ )
 {
 printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.\n"
-           "\tparams: _th1: %s, _integrate = %d, _useXtimesExp = %d\n",
+           "\tparams: _th1: %s, _integrate = %d, _useXtimesExp = %d, theCreateNewIfNecessary = %d.\n",
             theTH1.GetName(), 
             theIntegrate, 
-            theUseXtimesExp);
+            theUseXtimesExp,
+            theCreateNewIfNecessary);
 
     auto const   &lIt  = fMap_TH1_ExponentialInterpolation.find(&theTH1);
     bool found =  lIt != fMap_TH1_ExponentialInterpolation.end();
 
-    printf("GetInterpolationTF1(): %s %s found.\n", theTH1.GetName(), found ? "" : "not");
-
     TF1 *lResult = found 
         ?   lIt->second->GetTF1_global() 
-        :   CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);  
+        :   nullptr;  
 
+    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s%s.\n", 
+            lResult ? lResult->GetName() : "no TF1",
+           !lResult 
+                ? theCreateNewIfNecessary 
+                    ?   "Will create new one for histo "
+                    :   "Returning nullptr. Set theCreateNewIfNecessary to true if you want creation of a new one.\n\n\n",
+                : "");
+    
+    if (!lResult && theCreateNewIfNecessary){
+        lResult = CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);  
+    }
+    
+    if (!lResult){
+        printf("\n\n\nFATAL: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): instance: %s\n"
+               "\tCould not (re)create a TF1 for histo %s for you. Apologies.\nReturning nullptr.\n\n\n",
+               theTH1.GetName());
+    }
     return lResult;
 }
 
