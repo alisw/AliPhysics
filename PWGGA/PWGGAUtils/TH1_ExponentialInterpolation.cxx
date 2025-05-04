@@ -1,10 +1,8 @@
 #include "TH1_ExponentialInterpolation.h"
 
-
 #include "TF1.h"
 #include "TH1.h"
 #include <iostream>
-
 
 /*
 Static base class to maintain a map over all existing TH1_ExponentialInterpolations

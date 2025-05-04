@@ -1,6 +1,9 @@
 #include "utils_TH1.h"
-#include "TH1_ExponentialInterpolation.h"
 
+#include "TF1.h"
+#include "TH1.h"
+
+#include <string>
 
 //_________________________________________________________________________________________________
 TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &theNewName, 

@@ -230,6 +230,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMapPtWeightsIsFilledAndSane(kFALSE),
   fHistoRelDiffNewOldMesonWeights_Pi0(nullptr),
   fHistoRelDiffNewOldMesonWeights_Eta(nullptr),
+  fUtils_TH1(),
   fDebugLevel(0)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -238,8 +239,6 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fUtils = new AliAnalysisUtils();
   //if you do not want to apply the cut on the distance between the SPD and TRK vertex:
   //fUtils->SetCutOnZVertexSPD(kFALSE);
-
-
 }
 
 //________________________________________________________________________
@@ -387,6 +386,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane),
   fHistoRelDiffNewOldMesonWeights_Pi0(ref.fHistoRelDiffNewOldMesonWeights_Pi0),
   fHistoRelDiffNewOldMesonWeights_Eta(ref.fHistoRelDiffNewOldMesonWeights_Eta),
+  fUtils_TH1(ref.fUtils_TH1),
   fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor
@@ -394,8 +394,6 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fCutString=new TObjString((GetCutNumber()).Data());
   fUtils = new AliAnalysisUtils();
   // dont copy histograms (if you like histograms, call InitCutHistograms())
-
-
 }
 
 
@@ -1136,7 +1134,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     lMCTH1   = lIsVar ? &multiplyTH1ByBinCenters(*theMCTH1_inv) : theMCTH1_inv;
     
     TF1 *lMCTF1_exp_inter = lMCTH1 
-      ?  utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(
+      ?  fUtils_TH1.GlobalPieceWiseExponentialInterpolationTF1(
            Form("%s_exp_inter", lMCTH1->GetName()), 
                 *lMCTH1,
                 lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
