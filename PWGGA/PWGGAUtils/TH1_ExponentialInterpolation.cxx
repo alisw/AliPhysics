@@ -303,7 +303,11 @@ double TH1_ExponentialInterpolation::LocalExponentialInterpolate(TH1   &theTH1,
     printf("TH1_ExponentialInterpolation::initGlobalFunctionObject() instance id: %s\n\t"
            "Start initialization of a global function object based on TF1 %s and TH1 %s\n\t\t"
            "fIntegrate: %i, fUseXtimesExp: %i\n",
-           id.data(), theGlobalTF1.GetName(), theTH1.GetName(), fIntegrate, fUseXtimesExp);
+           id.data(), 
+           theGlobalTF1.GetName(), 
+           theTH1.GetName(), 
+           fIntegrate, 
+           fUseXtimesExp);
 
     size_t nBinsX = theTH1.GetNbinsX();
     size_t lNinsertions = 0;
@@ -423,7 +427,7 @@ TF1 *TH1_ExponentialInterpolation::ProduceNewNativeTF1(std::string const &theNew
            id.data(), lNewName.data());
 
     TAxis const &lXaxis = *fTH1.GetXaxis();
-    return new TF1(theNewName.data(),
+    return new TF1(lNewName.data(),
                    this,
                    &TH1_ExponentialInterpolation::Evaluate,
                    lXaxis.GetXmin(), 
