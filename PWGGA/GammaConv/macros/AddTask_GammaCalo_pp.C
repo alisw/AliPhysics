@@ -4838,6 +4838,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3256){  // Exotics QA
     cuts.AddCutCalo("00010113","411799909701C9v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
     cuts.AddCutCalo("00010113","41179990970109v0000","0s631031000000d0"); // INT7, with NCell cut (+effi)
+    cuts.AddCutCalo("00010113","4117999097010000000","0s631031000000d0"); // INT7, with NCell cut (+effi), no M02 cut
+    cuts.AddCutCalo("00010113","4117999097012000000","0s631031000000d0"); // INT7, with NCell cut (+effi), no M02 cut, NCell >= 2
 
     // mult dep.
   } else if (trainConfig == 3260){  // EMCAL+DCAL NLM = 1-100, INEL>0, NL , std TM, swapping back.
