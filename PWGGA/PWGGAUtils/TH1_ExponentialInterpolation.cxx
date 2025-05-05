@@ -386,14 +386,14 @@ double TH1_ExponentialInterpolation::Evaluate(double *x, double *)
              
         fVector_tf1_local[lBin] = lTF1_local_good;
         
-        printf("%s: TH1_ExponentialInterpolation::Evaluate():"
-               "\n\t\t%s local TF1 with name = %s"
-               "\n\t\tfor bin %zu at x = %f into fVector_tf1_local.\n",
-               lTF1_local_good ? "INFO" : "WARNING",
-               lTF1_local_good ? "Inserted new" : "Could not store", 
-               lTF1_local_good->GetName(), 
-               lBin, 
-               *x);
+        // printf("%s: TH1_ExponentialInterpolation::Evaluate():"
+        //        "\n\t\t%s local TF1 with name = %s"
+        //        "\n\t\tfor bin %zu at x = %f into fVector_tf1_local.\n",
+        //        lTF1_local_good ? "INFO" : "WARNING",
+        //        lTF1_local_good ? "Inserted new" : "Could not store", 
+        //        lTF1_local_good->GetName(), 
+        //        lBin, 
+        //        *x);
     } // done checking all conditions and pointers
 
     return lTF1_local_good ? lTF1_local_good->Eval(*x) : 0.;
