@@ -5066,8 +5066,8 @@ void AddTask_GammaConvV1_PbPb(
         histoNameMCEtaPT = Form("Eta_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data());
         fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
-      TString lCutNo(analysisEventCuts[i]->GetCutNumber());
-      if (lCutNo.BeginsWith("101" || lCutNo.BeginsWith("135"))){
+
+      if (eventCutString.BeginsWith("101") || (eventCutString.BeginsWith("135"))){
         analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
             intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
             fileNamePtWeights, 
