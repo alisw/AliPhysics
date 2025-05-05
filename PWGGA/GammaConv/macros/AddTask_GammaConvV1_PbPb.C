@@ -5052,9 +5052,6 @@ void AddTask_GammaConvV1_PbPb(
     TString fitNamePi0PT = "";
     TString fitNameEtaPT = "";
     TString fitNameK0sPT = ""; // fit to correct shape of pT spectra
-    Bool_t weightPi0 = kFALSE;
-    Bool_t weightEta = kFALSE;
-    Bool_t weightK0s = kFALSE;
     if (intPtWeightsCalculationMethod)
     {
       printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n",

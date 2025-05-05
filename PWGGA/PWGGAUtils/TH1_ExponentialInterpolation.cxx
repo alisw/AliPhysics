@@ -70,18 +70,19 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
     TF1 *lResult = found 
         ?   lIt->second->GetTF1_global() 
         :   theCreateNewIfNecessary
-            ?   CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);
+            ?   CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp)
             :   nullptr;
 
-            printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map.\n"
-                   "\t%s%s.", 
+    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map.\n"
+            "\t%s%s.\n\n",
             found 
                 ? lResult->GetName() 
                 : "no TF1",
             !found
                 ?  lResult
-                   ?  "Created new one with name "
-                   :  "Creation failed",
+                    ?  "Created new one with name "
+                    :  "Creation failed"
+                : "",
             lResult
                 ?  lResult->GetName()
                 :  "");
