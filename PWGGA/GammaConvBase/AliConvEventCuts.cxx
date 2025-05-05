@@ -225,12 +225,12 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
   fPHOSTrigger(kPHOSAny),
-  fDebugLevel(0),
+  fUseGetWeightForMesonNew(kTRUE),
   fMapPtWeightsAccessObjects(),
-  fUseGetWeightForMesonNew(kFALSE),
+  fMapPtWeightsIsFilledAndSane(kFALSE),
   fHistoRelDiffNewOldMesonWeights_Pi0(nullptr),
   fHistoRelDiffNewOldMesonWeights_Eta(nullptr),
-  fMapPtWeightsIsFilledAndSane(kFALSE)
+  fDebugLevel(0)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -238,8 +238,6 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fUtils = new AliAnalysisUtils();
   //if you do not want to apply the cut on the distance between the SPD and TRK vertex:
   //fUtils->SetCutOnZVertexSPD(kFALSE);
-
-
 }
 
 //________________________________________________________________________
@@ -382,20 +380,18 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hReweightMultData(ref.hReweightMultData),
   hReweightMultMC(ref.hReweightMultMC),
   fPHOSTrigger(kPHOSAny),
-  fDebugLevel(ref.fDebugLevel),
-  fMapPtWeightsAccessObjects(ref.fMapPtWeightsAccessObjects),
   fUseGetWeightForMesonNew(ref.fUseGetWeightForMesonNew),
+  fMapPtWeightsAccessObjects(ref.fMapPtWeightsAccessObjects),
+  fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane),
   fHistoRelDiffNewOldMesonWeights_Pi0(ref.fHistoRelDiffNewOldMesonWeights_Pi0),
   fHistoRelDiffNewOldMesonWeights_Eta(ref.fHistoRelDiffNewOldMesonWeights_Eta),
-  fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane)
+  fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
   fCutString=new TObjString((GetCutNumber()).Data());
   fUtils = new AliAnalysisUtils();
   // dont copy histograms (if you like histograms, call InitCutHistograms())
-
-
 }
 
 
@@ -464,11 +460,11 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
   if (fUseGetWeightForMesonNew){
     fHistoRelDiffNewOldMesonWeights_Pi0 = new TH2D("fHistoRelDiffNewOldMesonWeights_Pi0", 
-                                               "fHistoRelDiffNewOldMesonWeights_Pi0;ptG (GeV/c);(new-old)/old;counts", 
+                                                   "fHistoRelDiffNewOldMesonWeights_Pi0;ptG (GeV/c);(new-old)/old;counts", 
                                                250, 0., 25., 200, -.5, .5);
     fHistoRelDiffNewOldMesonWeights_Eta = new TH2D("fHistoRelDiffNewOldMesonWeights_Eta", 
-                                               "fHistoRelDiffNewOldMesonWeights_Eta;ptG (GeV/c);(new-old)/old;counts", 
-                                               250, 0., 25., 200, -.5, .5);
+                                                   "fHistoRelDiffNewOldMesonWeights_Eta;ptG (GeV/c);(new-old)/old;counts", 
+                                                   250, 0., 25., 200, -.5, .5);
     
     // add all fHistoRelDiffNewOldMesonWeights_ Pi0 and Eta
     fHistograms->Add(fHistoRelDiffNewOldMesonWeights_Pi0);
@@ -1114,7 +1110,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 
     if (!(theDataTF1_inv && theMCTH1_inv))
     {
-      AliError(Form("calculateVariantSpectraAndInsert() called with at least one nullptr:\n"
+      AliWarning(Form("calculateVariantSpectraAndInsert() called with at least one nullptr:\n"
                     "\tthePDGCode: %d\n"
                     "\ttheWhich: %d\n"
                     "\ttheDataTF1_inv: %s\n"
@@ -1136,12 +1132,20 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     lMCTH1   = lIsVar ? &multiplyTH1ByBinCenters(*theMCTH1_inv) : theMCTH1_inv;
     
     TF1 *lMCTF1_exp_inter = lMCTH1 
-      ? &utils_TH1::GlobalPieceWiseExponentialInterpolation(
+      ?  utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(
             Form("%s_exp_inter", lMCTH1->GetName()), 
             *lMCTH1,
             lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
             lIsVar /*theUseXtimesExp*/) // since the shape is exponential only in invariant form, we need x*exp(x) for the variant form
       : nullptr;
+    
+    if (!lMCTF1_exp_inter){
+        AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects():\n"
+                      "\tRetrieved nullptr for lMCTF1_exp_inter which was tried to create for histo %s:\n"
+                      "\tParameters: theIntegrate = %d, theUseXtimesExp = %d\n\n",
+                      lMCTH1->GetName(), lIsVar, lIsVar));
+        return false;
+    }
 
     // preparation done, insert into the map
     PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1, lMCTF1_exp_inter});
@@ -1184,9 +1188,9 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                GetCutNumber().Data()));
   
   // If Etas get reweighted so should their daughter Pi0s.             
-  if (fDoReweightHistoMCEta && !fDoReweightHistoMCEta)
+  if (fDoReweightHistoMCEta && !fDoReweightHistoMCPi0)
   {
-    AliError("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): fDoReweightHistoMCEta is true and fDoReweightHistoMCEta is false.");
+    AliFatal("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): fDoReweightHistoMCEta is true and fDoReweightHistoMCPi0 is false.");
     return 0;
   }
   
@@ -1222,14 +1226,22 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
   if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
     AliInfo("Particle Weighting was enabled");
     LoadReweightingHistosMCFromFile();
-    fMapPtWeightsIsFilledAndSane = InitializeMapPtWeightsAccessObjects();
+    bool requiered_newPtWeighting = (fDoReweightHistoMCPi0 > kInvariant) || 
+                                    (fDoReweightHistoMCEta > kInvariant); 
+    if (requiered_newPtWeighting){
+      fMapPtWeightsIsFilledAndSane = InitializeMapPtWeightsAccessObjects();
+      if (!fMapPtWeightsIsFilledAndSane){
+        AliFatal(Form("AliConvEventCuts::InitializeCutsFromCutString():\n"
+                      "Initialization of fMapPtWeightsAccessObjects failed despite requiered by [<EnumPtWeights>] Pi0: %d, Eta: %d.\n",
+                      fDoReweightHistoMCPi0, fDoReweightHistoMCEta));
+      }
+    }
   }
 
   if(fDoReweightHistoMCGamma) {
     AliInfo("Gamma pT Weighting was enabled");
     LoadGammaPtReweightingHistosMCFromFile();
   }
-
 
   AliInfo(Form("Set Event Cut Number: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
@@ -8079,17 +8091,17 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 
   if (!(isPi0 || isEta)){
     AliInfo(Form("AliConvEventCuts::GetWeightForMeson(): Called for meson with PDG code = %d\n",
-                    lPDG));
+                 lPDG));
     return 1.;    
   }
   // SFS end to be removed
   ////////////////////////////////////
   
-  double lWeightOld = GetWeightForMesonOld(index, mcEvent, event);
-  double lWeightNew = (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane) 
-    ? GetWeightForMesonNew(index, mcEvent, event)
-    : -1.; // -1 signals newWeights could not be used for whatever reasons
-
+  double const lWeightOld = GetWeightForMesonOld(index, mcEvent, event);
+  double const lWeightNew = (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane) 
+    ?   GetWeightForMesonNew(index, mcEvent, event)
+    :   -1.; // -1 signals newWeights could not be used for whatever reasons
+  
   double lSign = (lWeightNew>0) ? 1. : -1.;  
   double diff = lWeightNew - lWeightOld;
 
@@ -8103,10 +8115,12 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       : isEta 
         ? fHistoRelDiffNewOldMesonWeights_Eta
         : static_cast<TH2*>(nullptr);
+
     if (!lTH2){
-        AliFatal(Form("AliConvEventCuts::GetWeightForMeson()::fillMesonHisto(): lTH2 is nullptr even though lWeightNew is sane.\n"
-                      "PDG code: %d, mesonPt = %f\n",
-                      lPDG, mesonPt));
+        AliWarning(Form("AliConvEventCuts::GetWeightForMeson()::fillMesonHisto():\n"
+                        "lTH2 is nullptr even though lWeightNew is sane.\n"
+                        "PDG code: %d, mesonPt = %f\n",
+                        lPDG, mesonPt));
         return false;              
     }
     lTH2->Fill(mesonPt, lRelDiff);

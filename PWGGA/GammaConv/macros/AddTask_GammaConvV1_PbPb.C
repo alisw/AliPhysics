@@ -5052,12 +5052,11 @@ void AddTask_GammaConvV1_PbPb(
     TString fitNamePi0PT = "";
     TString fitNameEtaPT = "";
     TString fitNameK0sPT = ""; // fit to correct shape of pT spectra
-    Bool_t weightPi0 = kFALSE;
-    Bool_t weightEta = kFALSE;
-    Bool_t weightK0s = kFALSE;
     if (intPtWeightsCalculationMethod)
     {
-      printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n", intPtWeightsCalculationMethod);
+      printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n",
+             intPtWeightsCalculationMethod);
+        
       if (periodNameAnchor.BeginsWith("LHC15o") || 
           periodNameAnchor.BeginsWith("LHC18q"))
       {
@@ -5067,13 +5066,15 @@ void AddTask_GammaConvV1_PbPb(
         fitNamePi0PT = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                               // fit to data
         histoNameMCEtaPT = Form("Eta_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data());
         fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
+        if (eventCutString.BeginsWith("101") || (eventCutString.BeginsWith("135"))){
+            analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
+                intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
+                fileNamePtWeights, 
+                histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
+                fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+            analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);
+        }    
       }
-      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
-        intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
-        fileNamePtWeights, 
-        histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
-        fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
-      analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);    
     }
 
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
