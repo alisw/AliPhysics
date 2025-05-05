@@ -22,6 +22,7 @@
 #include "AliVCaloTrigger.h"
 #include "AliTimeRangeCut.h"
 #include "AliEventCuts.h"
+#include "../PWGGAUtils/utils_TH1.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -453,12 +454,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
         TH1 const *hMC;
         TF1 const *fMC;
       };
-      std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<  map of meson pdg code to PtWeightsBundle
-      bool fMapPtWeightsIsFilledAndSane;                         //!<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
-      // this flag will removed as soon the functionality has been checked against the old method
-      bool fUseGetWeightForMesonNew;                             //!<  flag to indicate if new method for getting pt weights is used
-      TH2 *fHistoRelDiffNewOldMesonWeights_Pi0;                  //!<  histo to store differences between new and old method for pt weights for Pi0
-      TH2 *fHistoRelDiffNewOldMesonWeights_Eta;                  //!<  histo to store differences between new and old method for pt weights for Eta
       // ============ END section for pt weights in variant calculation form =====
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
@@ -540,7 +535,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                      TString fitNameEta = "",
                                                      TString fitNameK0s ="" )
         {
-            AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
+            AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",
+                         pi0reweight, etareweight, k0sreweight));
             fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
             fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
             fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
@@ -895,7 +891,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fINELgtZEROTrigger;                     // enable INEL > 0 selection
       TString                     fPathTriggerMimicSpecialInput;          ///< set special trigger mimiking OADB file
       Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
-      //
       Bool_t                      fDoMultiplicityWeighting;               ///< Flag for multiplicity weighting
       TString                     fPathReweightingMult;                   ///< Path for file used in multiplicity reweighting
       TString                     fNameHistoReweightingMultData;          ///< Histogram name for reweighting Pi0
@@ -903,11 +898,19 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1D*                       hReweightMultData;                      ///< histogram input for reweighting Eta
       TH1D*                       hReweightMultMC;                        ///< histogram input for reweighting Pi0
       phosTriggerType             fPHOSTrigger;                           // Kind of PHOS trigger: L0,L1
+
+      // new pt weights data members
+      bool                           fUseGetWeightForMesonNew; 
+      std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects;          ///<  map of meson pdg code to PtWeightsBundle
+      bool                           fMapPtWeightsIsFilledAndSane;        ///<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
+      TH2D                          *fHistoRelDiffNewOldMesonWeights_Pi0;
+      TH2D                          *fHistoRelDiffNewOldMesonWeights_Eta;
+    //   utils_TH1                      fUtils_TH1;
       Int_t                       fDebugLevel;                            ///< debug level for interactive debugging
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,96)
+      ClassDef(AliConvEventCuts,97)
       /// \endcond
 };
 
