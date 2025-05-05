@@ -225,7 +225,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
   fPHOSTrigger(kPHOSAny),
-  fUseGetWeightForMesonNew(kFALSE),
+  fUseGetWeightForMesonNew(kTRUE),
   fMapPtWeightsAccessObjects(),
   fMapPtWeightsIsFilledAndSane(kFALSE),
   fHistoRelDiffNewOldMesonWeights_Pi0(nullptr),

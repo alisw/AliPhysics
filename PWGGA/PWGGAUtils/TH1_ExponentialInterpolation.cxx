@@ -12,9 +12,7 @@ TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::st
     : id(Form("TH1_ExponentialInterpolation_static_%s_%s", _id.data(), _th1.GetName())),
       fMap_TH1_ExponentialInterpolation()
 {
-    printf("TH1_ExponentialInterpolation_static():: line 15\n;");
-    printf("INFO: TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(): instance %s:\n"
-           "line 21\n",
+    printf("INFO: TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(): instance %s:\n",
            id.data());
 
     TH1_ExponentialInterpolation *lInstance = new TH1_ExponentialInterpolation(
@@ -70,18 +68,19 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
     TF1 *lResult = found 
         ?   lIt->second->GetTF1_global() 
         :   theCreateNewIfNecessary
-            ?   CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);
+            ?   CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp)
             :   nullptr;
 
-            printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map.\n"
-                   "\t%s%s.", 
+    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map.\n"
+            "\t%s%s.\n\n",
             found 
                 ? lResult->GetName() 
                 : "no TF1",
             !found
                 ?  lResult
-                   ?  "Created new one with name "
-                   :  "Creation failed",
+                    ?  "Created new one with name "
+                    :  "Creation failed"
+                : "",
             lResult
                 ?  lResult->GetName()
                 :  "");
