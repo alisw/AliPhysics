@@ -1131,14 +1131,16 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     TF1 const *lDataTF1 = nullptr;
     TH1 const *lMCTH1 = nullptr;
 
-    bool lIsInv = (theWhich % 2); // kInvariant = 1, kInvariant_expInter = 3
-    if (theWhich){
-      lDataTF1 = lIsInv ? theDataTF1_inv : multiplyTF1ByX(*theDataTF1_inv);
-      lMCTH1   = lIsInv ? theMCTH1_inv   : &multiplyTH1ByBinCenters(*theMCTH1_inv);
-    }
-
+    bool lIsVar = !(theWhich % 2); // kInvariant = 1, kInvariant_expInter = 3;
+    lDataTF1 = lIsVar ?  multiplyTF1ByX(*theDataTF1_inv) : theDataTF1_inv;
+    lMCTH1   = lIsVar ? &multiplyTH1ByBinCenters(*theMCTH1_inv) : theMCTH1_inv;
+    
     TF1 *lMCTF1_exp_inter = lMCTH1 
-      ? &utils_TH1::GlobalPieceWiseExponentialInterpolation(Form("%s_exp_inter", lMCTH1->GetName()), *lMCTH1)
+      ? &utils_TH1::GlobalPieceWiseExponentialInterpolation(
+            Form("%s_exp_inter", lMCTH1->GetName()), 
+            *lMCTH1,
+            lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
+            lIsVar /*theUseXtimesExp*/) // since the shape is exponential only in invariant form, we need x*exp(x) for the variant form
       : nullptr;
 
     // preparation done, insert into the map
@@ -1175,7 +1177,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
       AliInfo(lMessage.data());
     }
     return true;
-  };
+  }; // end calculateVariantSpectraAndInsert
 
   // execution starts here
   AliInfo(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects() cutNumber %s: start\n", 

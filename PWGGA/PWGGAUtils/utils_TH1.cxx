@@ -4,111 +4,160 @@
 #include "TH1.h"
 #include <iostream>
 
-// ============== class TH1_ExponentialInterpolation ===
+
+// ============== (helper) class for exponential extrapolation of TH1 histograms===================
+//_________________________________________________________________________________________________
 TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(std::string const &_id,
-                                                           TH1 const         &theTH1)
+                                                           TH1 const         &theTH1,
+                                                           bool               theIntegrate,
+                                                           bool               theUseXtimesExp)
     : id(_id), 
-      th1(dynamic_cast<TH1*>(theTH1.Clone(Form("%s_clone", theTH1.GetName()))))
+      th1(dynamic_cast<TH1*>(theTH1.Clone(Form("%s_clone", theTH1.GetName())))),
+      integrate(theIntegrate),
+      useXtimesExp(theUseXtimesExp),
+      fCache(nullptr)
 {
     printf("TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(): created instance with properties:\n\t"
-        "id: %s, th1: %s\n",
-        id.data(), th1->GetName());
+           "id: %s, th1: %s, integrate: %d, useXtimesExp: %d\n",
+           id.data(), th1->GetName(), integrate, useXtimesExp);
 }
 
+//_________________________________________________________________________________________________
 TH1_ExponentialInterpolation::~TH1_ExponentialInterpolation()
 {
     printf("TH1_ExponentialInterpolation::~TH1_ExponentialInterpolation(): deleting instance %s\n", 
            id.data());
     delete th1;
 }
-    
-TF1 &TH1_ExponentialInterpolation::GetNewTF1(std::string const &theName)
+
+//_________________________________________________________________________________________________
+TF1 &TH1_ExponentialInterpolation::GetNewTF1_global(std::string const &theName)
 {
-    printf("TH1_ExponentialInterpolation::GetNewTF1(): id: %s returning new TF1 with name '%s'.\n",
+    printf("TH1_ExponentialInterpolation::GetNewTF1_global(): id: %s returning new TF1 with name '%s'.\n",
            id.data(), theName.data());
     TAxis &lXaxis = *th1->GetXaxis();
     return *new TF1(theName.data(),
                     this,
                     &TH1_ExponentialInterpolation::Evaluate,
                     lXaxis.GetXmin(), lXaxis.GetXmax(),
-                    0,
+                    0, // nPar
                     "TH1_ExponentialInterpolation",
                     "Evaluate");
 }
 
-
+//_________________________________________________________________________________________________
 double TH1_ExponentialInterpolation::Evaluate(double *x, double *)
 {
-    TF1 *localFunction = utils_TH1::GetLocalExponentialTF1(*th1, *x);
+    // check if there is already a local interpol for this x
+    bool canUseExisting = fCache && (*x>=fCache->GetXmin() && *x<=fCache->GetXmax());
+    if (!canUseExisting){
+        // printf("INFO: TH1_ExponentialInterpolation::Evaluate(): Called with x = %f.\n%s Will create a new one.\n",
+        //        *x,
+        //        fCache 
+        //           ? "Cached function available but with wrong range."
+        //           : "No cached function available.");
+    }
+    TF1 *localFunction = canUseExisting 
+      ?  fCache
+      :  utils_TH1::GetLocalExponentialTF1(*th1, *x, integrate, useXtimesExp);
     double result = localFunction ? localFunction->Eval(*x) : 0.;
-    delete localFunction;
+    fCache = localFunction;
+
+    // delete localFunction;
     return result;
 }
-///////////////////// end TH1_ExponentialInterpolation /////////////
-////////////////////////////////////////////////////////////////////
+///////////////////// end TH1_ExponentialInterpolation ////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-TF1 *utils_TH1::GetLocalExponentialTF1(TH1 &theTH1, double theX){
-        
-    // find two non-zero bins to use for interpolation
-    int bin = theTH1.FindBin(theX);
-    float y1 = theTH1.GetBinContent(bin);
-    if (!y1) { 
-        printf("INFO: GetExponentialFunction(): %s at x=%f, bin=%d, has bin content 0. returning nullptr\n",
-            theTH1.GetName(), theX, bin);
-        return nullptr;
-    }
+//======================= class utils_TH1==========================================================
+//_________________________________________________________________________________________________
+TF1 *utils_TH1::GetLocalExponentialTF1(TH1   &theTH1, 
+                                       double theX, 
+                                       bool   theIntegrate, 
+                                       bool   theUseXtimesExp){
+
+    TAxis const &lAxis = *theTH1.GetXaxis();    
+    auto findFunctionI = [&](){
+        int histoBinI = lAxis.FindBin(theX);
+        return (theX >= lAxis.GetBinCenter(histoBinI)) 
+            ? histoBinI 
+            : std::max(histoBinI-1, 0);
+    };
+    int const iLeftBin = findFunctionI();
+    int const iRightBin = iLeftBin+1;
+
+    std::pair<double, double> lRange_edgeToEdge( 
+        { lAxis.GetBinLowEdge(iLeftBin), lAxis.GetBinUpEdge(iRightBin) });    
     
-    float x1 = theTH1.GetBinCenter(bin);
-    int nBins = theTH1.GetNbinsX();
-    int adjBin = (bin==1) ? 2 
-                        : bin==nBins ? nBins-1 
-                                        : theX<=x1 ? bin-1 
-                                                : bin+1;
+    std::pair<double, double> lRange_centerToCenter( 
+        { lAxis.GetBinCenter(iLeftBin), lAxis.GetBinCenter(iRightBin) });
     
-    float x2 = theTH1.GetBinCenter(adjBin);
-    float y2 = theTH1.GetBinContent(adjBin);
-    if (!y2){
-        adjBin = adjBin<bin ? bin+1 : bin-1;
-        if (!adjBin || adjBin > nBins) {
-            std::cout << "ERROR: GetExponentialFunction(): adjBin out of binrange\n";
+    std::pair<double, double> const &lFunctionDefineRange = theIntegrate 
+        ? lRange_edgeToEdge
+        : lRange_centerToCenter;
+    
+    std::string lFunctionName(Form("%s_localExponential%s%s", 
+                                   theTH1.GetName(), 
+                                   theUseXtimesExp 
+                                     ? "_*x" 
+                                     : "",
+                                   theIntegrate 
+                                     ? "fitted_w/_int_cond" 
+                                     : "calc_analyt_through_bin_centers"));
+ 
+    TF1 *lResult = new TF1(lFunctionName.data(),
+                           Form("%sexpo(0)", 
+                                theUseXtimesExp ? "x*" : ""),  // = [x*] exp([0] + [1]*x) 
+                           lFunctionDefineRange.first,
+                           lFunctionDefineRange.second);
+    
+    std::string lFitOptions("QFMN0"); // Q = minimum printing
+    if (theIntegrate){
+        theTH1.Fit(lResult, 
+                   lFitOptions.append(theIntegrate ? "I" : "").data(), 
+                    "" /* global fit options I believe */, 
+                    lFunctionDefineRange.first, 
+                    lFunctionDefineRange.second);
+        lResult->SetRange(lRange_centerToCenter.first, lRange_centerToCenter.second);
+    } 
+    else {
+        double x1 = lRange_centerToCenter.first;
+        double x2 = lRange_centerToCenter.second;
+        double y1 = theTH1.GetBinContent(iLeftBin);
+        double y2 = theTH1.GetBinContent(iRightBin);
+
+        if (!(y1&&y2)) { 
             return nullptr;
         }
-        x2 = theTH1.GetBinCenter(adjBin);
-        y2 = theTH1.GetBinContent(adjBin);
-        if (!y2) {
-            std::cout << "y2 0.\n";
-            return nullptr;
-        }
+        // printf("using bin %d %f %f and bin %d %f %f\n", bin, x1, y1, adjBin, x2, y2);
+        double b = TMath::Log(y2/y1) / (x2-x1);
+        double a = TMath::Log(y1) - b*x1;
+        lResult->SetParameters(a,b);
     }
-    // printf("using bin %d %f %f and bin %d %f %f\n", bin, x1, y1, adjBin, x2, y2);
-    
-    float b = TMath::Log(y2/y1) / (x2-x1);
-    float a = TMath::Log(y1) - b*x1;
-    
-    // find out where function needs to live
-    double xmin = std::min(x1, x2);
-    xmin = std::min(xmin, theX);
-    double xmax = std::max(x1, x2);
-    xmax = std::max(xmax, theX);
-    
-    TF1* ret = new TF1("tf1", "expo(0)", xmin, xmax); 
-    ret->SetParameters(a,b);
-    return ret;
+    return lResult;
 }
 
-double utils_TH1::LocalExponentialInterpolate(TH1 &theTH1, double theX){
-    TF1* f = GetLocalExponentialTF1(theTH1, theX);
+//_________________________________________________________________________________________________
+double utils_TH1::LocalExponentialInterpolate(TH1   &theTH1, 
+                                              double theX, 
+                                              bool   theIntegrate /*= false*/,
+                                              bool   theUseXtimesExp /*= false*/){
+    TF1* f = GetLocalExponentialTF1(theTH1, theX, theIntegrate, theUseXtimesExp);
     return f ? f->Eval(theX) : 0.;
 }
 
-// =================================================================================================
-TF1 &utils_TH1::GlobalPieceWiseExponentialInterpolation(std::string const &theName, TH1 const &theTH1)
+//_________________________________________________________________________________________________
+TF1 &utils_TH1::GlobalPieceWiseExponentialInterpolation(std::string const &theName, 
+                                                        TH1 const &theTH1, 
+                                                        bool theIntegrate /* = false*/,
+                                                        bool theUseXtimesExp /* = false*/) // fits a function of the f(x) = x * exp([0] + [1]*x)
 {
-    printf("utils_TF1::GlobalPieceWiseExponentialInterpolation(): called with theName: %s, theTH1: %s\n",
-           theName.data(), theTH1.GetName());
+    printf("utils_TF1::GlobalPieceWiseExponentialInterpolation(): called with theName: %s, theTH1: %s, theIntegrate = %d, theUseXtimesExp = %d\n",
+           theName.data(), theTH1.GetName(), theIntegrate, theUseXtimesExp);
 
-    class TH1_ExponentialInterpolation &lGlobalInterpolation = *new class TH1_ExponentialInterpolation(theName, theTH1);
-    return lGlobalInterpolation.GetNewTF1(theName);
+    class TH1_ExponentialInterpolation &lGlobalInterpolation = 
+        *new class TH1_ExponentialInterpolation(theName, theTH1, theIntegrate, theUseXtimesExp);
+    return lGlobalInterpolation.GetNewTF1_global(theName);
 }
 // end utils_TH1
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
