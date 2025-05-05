@@ -27,7 +27,7 @@ TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &th
 
     TF1 *lResult = lInstance.GetInterpolationTF1(theTH1, theIntegrate, theUseXtimesExp);
 
-    printf("utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(): %sturning %s%s %s.",
+    printf("utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(): %sturning %s%s %s.\n",
            lResult ? "Re" : "Not re",
            lResult ? lResult->GetName() : "TF1* for histo",
            lResult ? "." : theTH1.GetName(),
