@@ -5074,6 +5074,7 @@ void AddTask_GammaConvV1_PbPb(
                 fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
             analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);
         }    
+      }
     }
 
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
