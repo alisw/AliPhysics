@@ -29,11 +29,6 @@ class TH1_ExponentialInterpolation_static {
                                             bool               _integrate,
                                             bool               _useXtimesExp);
         
-        // one of the two ways to create new TF1_globals with write access
-        TF1 *CreateNewInterpolation(TH1 const  &_th1,
-                                    bool        _integrate,
-                                    bool        _useXtimesExp);
-        
         // returns a valid TF1 interpolation from stack or create new one if necessary
         TF1 *GetInterpolationTF1(TH1 const  &theTH1,
                                  bool        theIntegrate,
@@ -47,6 +42,11 @@ class TH1_ExponentialInterpolation_static {
         bool IsInitialized() const       { return fMap_TH1_ExponentialInterpolation.size(); }
 
     private:
+        // 
+        TF1 *createNewInterpolation(TH1 const  &_th1,
+                                    bool        _integrate,
+                                    bool        _useXtimesExp);
+        
 
         // TH1_ExponentialInterpolation_static data members
         std::string id;
