@@ -230,7 +230,6 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMapPtWeightsIsFilledAndSane(kFALSE),
   fHistoRelDiffNewOldMesonWeights_Pi0(nullptr),
   fHistoRelDiffNewOldMesonWeights_Eta(nullptr),
-//   fUtils_TH1{},
   fDebugLevel(0)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -386,7 +385,6 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane),
   fHistoRelDiffNewOldMesonWeights_Pi0(ref.fHistoRelDiffNewOldMesonWeights_Pi0),
   fHistoRelDiffNewOldMesonWeights_Eta(ref.fHistoRelDiffNewOldMesonWeights_Eta),
-//   fUtils_TH1(ref.fUtils_TH1),
   fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor

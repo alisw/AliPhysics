@@ -69,24 +69,22 @@ printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1() called.
 
     TF1 *lResult = found 
         ?   lIt->second->GetTF1_global() 
-        :   nullptr;  
+        :   theCreateNewIfNecessary
+            ?   CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);
+            :   nullptr;
 
-    printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map. %s%s.\n", 
-            lResult 
+            printf("INFO: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): Found %s in map.\n"
+                   "\t%s%s.", 
+            found 
                 ? lResult->GetName() 
                 : "no TF1",
-            !lResult 
-                ? theCreateNewIfNecessary 
-                    ?   "Will create new one for histo "
-                    :   "Returning nullptr. Set theCreateNewIfNecessary to true if you want creation of a new one.\n\n\n"
-                : "",
-            !lResult 
-                ?   theTH1.GetName()
-                :   "");
-    
-    if (!lResult && theCreateNewIfNecessary){
-        lResult = CreateNewInterpolation(theTH1, theIntegrate, theUseXtimesExp);  
-    }
+            !found
+                ?  lResult
+                   ?  "Created new one with name "
+                   :  "Creation failed",
+            lResult
+                ?  lResult->GetName()
+                :  "");
     
     if (!lResult){
         printf("\n\n\nFATAL: TH1_ExponentialInterpolation_static::GetInterpolationTF1(): instance: %s\n"
@@ -139,14 +137,10 @@ TF1 *TH1_ExponentialInterpolation_static::CreateNewInterpolation(TH1 const  &_th
          _th1,
          _integrate,
          _useXtimesExp);
-
-    printf("INFO: line 84.\n");
         
     // create new instance and take its global TF1
     auto &lPair_key_value = *new std::pair<TH1 const*, TH1_ExponentialInterpolation*>({ &_th1, lExpInter }); 
 
-    printf("INFO: line 91\n");
- 
     TF1 *lResult = lPair_key_value.second->GetTF1_global();
     if (!lResult){
         printf("WARNING: TH1_ExponentialInterpolation_static::CreateNewInterpolation(): id: %s\n"
@@ -154,10 +148,9 @@ TF1 *TH1_ExponentialInterpolation_static::CreateNewInterpolation(TH1 const  &_th
                id.data());
         return nullptr;
     }
-printf("INFO: line 100\n");
+
     // todo check that this does not trigger copy constructor
     auto const &lPair_it_success = fMap_TH1_ExponentialInterpolation.insert(lPair_key_value);
-printf("INFO: line 103\n");
     bool isNew = lPair_it_success.second;
     printf("%s: TH1_ExponentialInterpolation_static::CreateNewInterpolation(): id: %s\n"
           "\tReturning %s TF1: %s for histo: %s\n"
@@ -215,6 +208,7 @@ TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(std::string const    
     
 }
 
+//_________________________________________________________________________________________________
 TH1_ExponentialInterpolation::~TH1_ExponentialInterpolation()
 {
 
