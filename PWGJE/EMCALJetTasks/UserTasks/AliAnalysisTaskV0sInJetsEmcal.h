@@ -180,6 +180,8 @@ private:
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
   AliMCEvent* fEventMC; //! MC event
+  AliAODMCHeader* headerMC; //!MC header
+  TClonesArray* arrayMC; //!MC particle array
   TRandom* fRandom; //! random-number generator
   AliEventPoolManager* fPoolMgr; //! event pool manager
   AliEventCuts fEventCutsStrictAntipileup; //! Event cuts class
@@ -789,7 +791,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 28) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 29) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

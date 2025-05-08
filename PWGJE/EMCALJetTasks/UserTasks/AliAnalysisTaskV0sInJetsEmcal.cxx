@@ -40,6 +40,7 @@
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -2556,8 +2557,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   }
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
 
-  TClonesArray* arrayMC = 0; // array particles in the MC event
-  AliAODMCHeader* headerMC = 0; // MC header
   Int_t iNTracksMC = 0; // number of MC tracks
   Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
 
@@ -3933,6 +3932,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       AliAODMCParticle* particleMC = (AliAODMCParticle*)arrayMC->At(iPartMC);
       if(!particleMC)
         continue;
+      
+      //Particles from out ot bunch pile up rejection: 
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
+        continue; 
 
       // Get identity of MC particle
       Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
@@ -5525,6 +5528,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForAnalysis()
     if(!fEventCutsStrictAntipileup.AcceptEvent(fAODIn)) {
       if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
       return kFALSE;
+    }
+    if(fbMCAnalysis) {
+      if(AliAnalysisUtils::IsPileupInGeneratedEvent(headerMC, "ijing")) {
+        return kFALSE;
+      }
     }
     fh1EventCounterCut->Fill(4); // Ionut's cut
   }
