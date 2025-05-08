@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TH1_ExponentialInterpolation.h"
+#include "GammaConvTH1ExponentialInterpolation.h"
 class TF1;
 class TH1;
 

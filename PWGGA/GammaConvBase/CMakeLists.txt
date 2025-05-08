@@ -76,6 +76,8 @@ set(SRCS
     AliGAKFVertex.cxx
     AliResponseMatrixHelper.cxx
     AliGammaConvEventMixing.cxx
+    GammaConvUtilsTH1.cxx
+    GammaConvTH1ExponentialInterpolation.cxx
    )
 
 # Headers from sources

@@ -60,8 +60,7 @@
 #include "AliCaloTriggerMimicHelper.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
-
-#include "../PWGGAUtils/utils_TH1.h"
+#include "GammaConvUtilsTH1.h"
 
 
 class iostream;

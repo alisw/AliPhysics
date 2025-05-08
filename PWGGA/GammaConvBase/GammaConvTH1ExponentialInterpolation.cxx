@@ -1,4 +1,4 @@
-#include "TH1_ExponentialInterpolation.h"
+#include "GammaConvTH1ExponentialInterpolation.h"
 
 #include <iostream>
 
