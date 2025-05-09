@@ -1,4 +1,4 @@
-#include "utils_TH1.h"
+#include "GammaConvUtilsTH1.h"
 #include "TF1.h"
 #include "TH1.h"
 
@@ -12,10 +12,10 @@ TF1 *utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(std::string const &th
     printf("utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(): called with theNewName: %s, theTH1: %s, theIntegrate = %d, theUseXtimesExp = %d\n",
            theNewName.data(), theTH1.GetName(), theIntegrate, theUseXtimesExp);
     
-    TH1_ExponentialInterpolation_static lInstance(theNewName, 
-                                                  theTH1, 
-                                                  theIntegrate, 
-                                                  theUseXtimesExp);
+    utils_TH1::TH1_ExponentialInterpolation_static lInstance(theNewName, 
+                                                             theTH1, 
+                                                             theIntegrate, 
+                                                             theUseXtimesExp);
     
     if (!lInstance.IsInitialized()){
         printf("FATAL: utils_TH1::GlobalPieceWiseExponentialInterpolationTF1():\n"

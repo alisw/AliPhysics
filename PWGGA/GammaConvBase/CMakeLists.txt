@@ -76,11 +76,17 @@ set(SRCS
     AliGAKFVertex.cxx
     AliResponseMatrixHelper.cxx
     AliGammaConvEventMixing.cxx
+    GammaConvTH1ExponentialInterpolation.cxx
+    GammaConvUtilsTH1.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS})
+
+# remove previous to last element in HDRS because the header for GammaConvTH1ExponentialInterpolation.cxx is in GammaConvUtilsTH1.cxx
+list(REMOVE_AT HDRS -2)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
