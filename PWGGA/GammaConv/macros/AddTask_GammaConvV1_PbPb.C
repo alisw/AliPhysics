@@ -5057,26 +5057,43 @@ void AddTask_GammaConvV1_PbPb(
       printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n",
              intPtWeightsCalculationMethod);
         
-      if (periodNameAnchor.BeginsWith("LHC15o") || 
-          periodNameAnchor.BeginsWith("LHC18q"))
-      {
-        TString eventCutString = cuts.GetEventCut(i);
-        TString eventCutShort = eventCutString(0, 6);                                                // first six digits
-        histoNameMCPi0PT = Form("Pi0_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data()); // MC
-        fitNamePi0PT = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                               // fit to data
-        histoNameMCEtaPT = Form("Eta_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data());
-        fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
-        if (eventCutString.BeginsWith("101") || (eventCutString.BeginsWith("135"))){
-            analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
-                intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
-                fileNamePtWeights, 
-                histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
-                fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
-            analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);
-        }    
-      }
-    }
+        if (periodNameAnchor.BeginsWith("LHC15o") || 
+            periodNameAnchor.BeginsWith("LHC18q"))
+        {
+            TString eventCutString = cuts.GetEventCut(i);
+            TString eventCutShort = eventCutString(0, 6);                                                // first six digits
+            histoNameMCPi0PT = Form("Pi0_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data()); // MC
+            fitNamePi0PT = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                               // fit to data
+            histoNameMCEtaPT = Form("Eta_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data());
+            fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
 
+            bool is101 = eventCutString.BeginsWith("101");
+            bool is135 = !is101 && eventCutString.BeginsWith("135");
+            bool is101or135 = is101 || is135;
+
+            bool isLHC20e3 = periodNameV0Reader.BeginsWith("LHC20e3");
+            bool isLHC20e3a = isLHC20e3 && periodNameV0Reader.BeginsWith("LHC20e3a");
+            bool isLHC20e3b = isLHC20e3 && !isLHC20e3a && periodNameV0Reader.BeginsWith("LHC20e3b");
+            bool isLHC20e3c = isLHC20e3 && !(isLHC20e3a||isLHC20e3b) && periodNameV0Reader.BeginsWith("LHC20e3c");
+
+            bool isDoSetPtWeights =  ((!isLHC20e3 || isLHC20e3a) && is101or135)  
+                || (isLHC20e3b && is101) || (isLHC20e3c && is135);
+            printf("INFO: pt-weights related variables:"
+                   "\nintPtWeightsCalculationMethod = %i, is101or135 = %i, is101 = %i, is135 = %i, isLHC20e3 = %i, isLHC20e3a = %i, isLHC20e3b = %i, isLHC20e3c = %i, isDoSetPtWeights = %i\n"
+                   "Switching %s pt-weights for MC = %s and centrality = %s\n", 
+                   intPtWeightsCalculationMethod, is101or135, is101, is135, isLHC20e3, isLHC20e3a, isLHC20e3b, isLHC20e3c, isDoSetPtWeights,
+                   isDoSetPtWeights ? "on" : "off", periodNameV0Reader.Data(), eventCutString.Data());
+            if (isDoSetPtWeights)
+            {    
+                analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
+                    intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
+                    fileNamePtWeights, 
+                    histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
+                    fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+                analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);
+            }
+        }
+    }
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
         trainConfig == 21   || trainConfig == 25   || trainConfig == 29   || trainConfig == 33   || trainConfig == 37  ||
         trainConfig == 300 || trainConfig == 302 || trainConfig == 304){
