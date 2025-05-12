@@ -5066,15 +5066,27 @@ void AddTask_GammaConvV1_PbPb(
         fitNamePi0PT = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                               // fit to data
         histoNameMCEtaPT = Form("Eta_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data());
         fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
-        if (eventCutString.BeginsWith("101") || (eventCutString.BeginsWith("135"))){
+
+        bool is101 = eventCutString.BeginsWith("101");
+        bool is135 = !101 && eventCutString.BeginsWith("135");
+        bool is101or135 = is101 || is135;
+
+        bool isLHC20e3 = periodNameV0Reader.BeginsWith("LHC20e3");
+        bool isLHC20e3a = isLHC20e3 && periodNameV0Reader.BeginsWith("LHC20e3a");
+        bool isLHC20e3b = isLHC20e3 && !isLHC20e3a && LHCperiodNameV0Reader.BeginsWith("LHC20e3b");
+        bool isLHC20e3c = isLHC20e3 && !(isLHC20e3a||isLHC20e3b) && LHCperiodNameV0Reader.BeginsWith("LHC20e3c");
+
+        bool isDoSetPtWeights =  ((!isLHC20e3 || isLHC20e3a) && is101or135)  
+            || (isLHC20e3b && is101) || (isLHC20e3c && is135);
+        if (isDoSetPtWeights)
+        {    
             analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
                 intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
                 fileNamePtWeights, 
                 histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
                 fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
             analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);
-        }    
-      }
+        }
     }
 
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
