@@ -13,7 +13,13 @@ class utils_TH1
         The public interface of class utils_sstiefel/utils_TH1
     */
     public:
-        utils_TH1();
+        utils_TH1(std::string const &theId = "utils_TH1_defConstructor");
+
+        ~utils_TH1();
+        
+        utils_TH1(utils_TH1 const &theRef) = delete;
+        
+        
         /* 
             get globally defined TF1 which is either fitted to the bin centers 
             OR such that the integrals in each in bin agree with their content. 
@@ -21,13 +27,16 @@ class utils_TH1
             if theUseXtimesExp=true: use f(x) = x * exp([0] + [1]*x). 
             else:                        f(x) =     exp([0] + [1]*x) 
         */
-        // _________________________________________________________________________________________________
-        static 
-        TF1 *GlobalPieceWiseExponentialInterpolationTF1(std::string const &theNewName, 
-                                                        TH1         const &theTH1, 
-                                                        bool               theIntegrate = false,
-                                                        bool               theUseXtimesExp = false); // x*f(x) instead f(x)
-
+        // _________________________________________________________________________________________________ 
+        TF1 *InitGlobalPieceWiseExponentialInterpolationTF1(std::string const &theNewName, 
+                                                            TH1         const &theTH1, 
+                                                            bool               theIntegrate = false,
+                                                            bool               theUseXtimesExp = false); // x*f(x) instead f(x)
+        
+        bool IsGlobalPieceWiseExponentialInterpolationInitialized() const  
+        {   
+            return static_cast<bool>(fTH1_ExponentialInterpolation_static_instance_ptr);
+        }
 
     /*
         In utils_TH1 there live 
@@ -37,6 +46,12 @@ class utils_TH1
     
     class TH1_ExponentialInterpolation_static;    
     private:       
+        
+        std::string                          id;
+
+        // this can hold all exponential interpolations for this instance of utils_TH1
+        TH1_ExponentialInterpolation_static  *fTH1_ExponentialInterpolation_static_instance_ptr; 
+
         // ===================== class utils_TH1::TH1_ExponentialInterpolation ===================================
         /*
         Main class for exponential interpolations of TH1 histograms
@@ -58,12 +73,14 @@ class utils_TH1
                 TH1_ExponentialInterpolation() = delete;    
                 TH1_ExponentialInterpolation(utils_TH1::TH1_ExponentialInterpolation const &) = delete;    
 
-                TH1_ExponentialInterpolation(std::string const                   &_id,
-                                             utils_TH1::TH1_ExponentialInterpolation_static &theParentRef,
-                                             TH1 const                           &_th1,
-                                             bool                                 _integrate,
-                                             bool                                 _useXtimesExp,
-                                             bool                                 _verbose = true);
+                TH1_ExponentialInterpolation(std::string const                               &_id,
+                                             utils_TH1::TH1_ExponentialInterpolation_static  &_parentRef,
+                                             TH1 const                                       &_th1,
+                                             bool                                             _integrate,
+                                             bool                                             _useXtimesExp,
+                                             bool                                             _verbose = true);
+                
+                ~TH1_ExponentialInterpolation();
 
                 double 
                     Evaluate(double *x, double *);
@@ -87,10 +104,10 @@ class utils_TH1
                                             bool    theUseXtimesExp);
                 
                 double 
-                    LocalExponentialInterpolate(TH1    &theTH1, 
-                                                double  theX, 
-                                                bool    theIntegrate = false,
-                                                bool    theUseXtimesExp = false);
+                    EvaluateLocalExponentialInterpolate(TH1    &theTH1, 
+                                                        double  theX, 
+                                                        bool    theIntegrate = false,
+                                                        bool    theUseXtimesExp = false);
 
                 // getters 
                 std::string const
@@ -107,24 +124,30 @@ class utils_TH1
                 
                 TF1 const
                     *GetTF1_global_const() const;
-
-                TF1 *ProduceNewNativeTF1(std::string const &theNewName);
+                
+                bool IsInitialized() const { return fTF1_global; }
                     
-                ~TH1_ExponentialInterpolation();
-        
+                utils_TH1::TH1_ExponentialInterpolation 
+                    &operator=(utils_TH1::TH1_ExponentialInterpolation &theRef) = delete;
+
+                utils_TH1::TH1_ExponentialInterpolation 
+                    &operator=(utils_TH1::TH1_ExponentialInterpolation const &theConstRef) = delete;
+            
             private:
                 bool initGlobalFunctionObject(TF1 &theGlobalTF1, TH1  &theTH1);
-                
+                TF1 *produceNewNativeGlobalTF1(std::string const &theNewName);
+                                
                 std::string                          id;
-                TH1_ExponentialInterpolation_static &fStaticParent;
+                TH1_ExponentialInterpolation_static *fStaticParent;
                 std::string const                    fStaticParentId;
                 TH1                                 &fTH1;
                 
                 bool                                 fIntegrate;    /* whether the fit minimizes: fIntegrate = false:  f(x)    -   h.ExpInter(h.GetBinCenter(h.FindBin(x))) true:   int(LeftEdge(i), RightEdge(i+1), f(x))  -   h.GetBinContent(i)) */
                 bool                                 fUseXtimesExp; /* whether      false: th1.BinContent(i) -> th1.BinContents(i) * th1.BinCenter(i)      true: f(x) = exp([0] + [1]*x) -> x * f(x) */
         
-                std::vector<TF1*>                    fVector_tf1_local;
-                TF1                                 *fTF1_global;
+                // holds for every bin in fTH1 a TF1 pointer to the local interpolations
+                std::vector<TF1*>                    fVector_tf1_local; 
+                TF1                                 *fTF1_global; // can only live as long as this instance of
 
     }; // end class utils_TH1::TH1_ExponentialInterpolation
 
@@ -147,11 +170,8 @@ class utils_TH1
                                                 bool               _integrate,
                                                 bool               _useXtimesExp);
             
-            // one of the two ways to create new TF1_globals with write access
-            TF1 *CreateNewInterpolation(TH1 const  &_th1,
-                                        bool        _integrate,
-                                        bool        _useXtimesExp);
-            
+            ~TH1_ExponentialInterpolation_static();
+
             // returns a valid TF1 interpolation from stack or create new one if necessary
             TF1 *GetInterpolationTF1(TH1 const  &theTH1,
                                      bool        theIntegrate,
@@ -164,15 +184,25 @@ class utils_TH1
             std::string const 
                 GetId() const                { return id; } 
             
-            bool IsInitialized() const       { printf("in bool IsInitialized() const (): line 62\n"); 
-                                               return fMap_TH1_ExponentialInterpolation.size(); }
+            bool IsInitialized() const;
 
-        private:        
+        private:
+            
+            // one of the two ways to create new TF1_globals with write access
+            // creates new TF1 on heap if non existing and theCreateNewIfNecessary == true
+            TF1 *createNew_TH1_ExponentialInterpolation(TH1 const  &_th1,
+                                                        bool        _integrate,
+                                                        bool        _useXtimesExp);
+            
+
             // utils_TH1::TH1_ExponentialInterpolation_static data members
-            std::string                                         id;
-            std::map<TH1 const*, utils_TH1::TH1_ExponentialInterpolation*> fMap_TH1_ExponentialInterpolation;
+            std::string                                                         id;
+            
+            // todo: check if I really want it like that
+            // todo: check if it works
+            // static 
+            std::map<TH1 const*, utils_TH1::TH1_ExponentialInterpolation*>  fMap_TH1_ExponentialInterpolation;
 
     }; // end class utils_TH1::TH1_ExponentialInterpolation_static {
-}; //  end class utils_TH1       
-   //  
+}; //  end class utils_TH1
  

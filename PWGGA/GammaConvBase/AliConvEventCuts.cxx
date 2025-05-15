@@ -60,7 +60,6 @@
 #include "AliCaloTriggerMimicHelper.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
-#include "GammaConvUtilsTH1.h"
 
 
 class iostream;
@@ -229,6 +228,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMapPtWeightsIsFilledAndSane(kFALSE),
   fHistoRelDiffNewOldMesonWeights_Pi0(nullptr),
   fHistoRelDiffNewOldMesonWeights_Eta(nullptr),
+  fUtils_TH1{new utils_TH1("AliConvEventCuts_fUtils_TH1")},  // create on heap so maybe the longer lifetime helps todo: <- check
   fDebugLevel(0)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -384,6 +384,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane),
   fHistoRelDiffNewOldMesonWeights_Pi0(ref.fHistoRelDiffNewOldMesonWeights_Pi0),
   fHistoRelDiffNewOldMesonWeights_Eta(ref.fHistoRelDiffNewOldMesonWeights_Eta),
+  fUtils_TH1(ref.fUtils_TH1),
   fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor
@@ -413,6 +414,10 @@ AliConvEventCuts::~AliConvEventCuts() {
   if(fAODMCTrackArray){
     delete[] fAODMCTrackArray;
     fAODMCTrackArray = 0x0;
+  }
+  if (fUtils_TH1){
+    delete fUtils_TH1;
+    fUtils_TH1 = nullptr;
   }
 
 }
@@ -1130,8 +1135,8 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     lDataTF1 = lIsVar ?  multiplyTF1ByX(*theDataTF1_inv) : theDataTF1_inv;
     lMCTH1   = lIsVar ? &multiplyTH1ByBinCenters(*theMCTH1_inv) : theMCTH1_inv;
     
-    TF1 *lMCTF1_exp_inter = lMCTH1 
-      ?  utils_TH1::GlobalPieceWiseExponentialInterpolationTF1(
+    TF1 *lMCTF1_exp_inter = (lMCTH1 && fUtils_TH1)
+      ?  fUtils_TH1->utils_TH1::InitGlobalPieceWiseExponentialInterpolationTF1(
             Form("%s_exp_inter", lMCTH1->GetName()), 
             *lMCTH1,
             lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
@@ -7168,6 +7173,16 @@ TString AliConvEventCuts::GetCutNumber(){
 //________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event){
 
+  // return false for nullptr
+  auto checkPointer = [&](TObject *thePointer, std::string const &theName){
+    if (!(thePointer)){
+      AliWarning(Form("Pointer %s is zero for AliVEvent = %p . Returning early.\n", 
+                      theName.data(), event));
+      return true;
+    }
+    return false;
+  };
+
   if(fHeaderMap.empty() && HeaderList->GetEntries() > 0){
     FillHeaderMap(HeaderList, event);
   }
@@ -7178,134 +7193,150 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     return;
   }
 
-  AliGenCocktailEventHeader *cHeader  = 0x0; // headers from ESDs
-  AliAODMCHeader *cHeaderAOD          = 0x0; // headers from AODs
-  Bool_t headerFound                  = kFALSE;
-  AliMCEvent *fMCEvent                = 0x0;
-  TClonesArray *fMCEventAOD           = 0x0;
-  if(event->IsA()==AliMCEvent::Class()){
-    if(dynamic_cast<AliMCEvent*>(event)){
-      cHeader               = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-      fMCEvent              = dynamic_cast<AliMCEvent*>(event);
-      if(cHeader) headerFound   = kTRUE;
-    }
+  // case AOD
+  bool isAOD = event->IsA()==AliAODEvent::Class();
+  TClonesArray *lAODMCParticleClonesArray = isAOD 
+  ?   dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()))
+  :   static_cast<TClonesArray*>(nullptr);
+
+  // case ESD
+  bool isESD = event->IsA()==AliMCEvent::Class();
+  AliMCEvent *lMCEvent  = isESD
+    ? dynamic_cast<AliMCEvent*>(event) 
+    : static_cast<AliMCEvent*>(nullptr); 
+  
+  bool isReturnEarly = 
+    checkPointer(lAODMCParticleClonesArray,"lAODMCParticleClonesArray") ||
+    checkPointer(lMCEvent, "lMCEvent");
+
+  AliAODMCHeader *lCocktailHeaderAOD = isAOD 
+      ?   dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()))
+      :   static_cast<AliAODMCHeader*>(nullptr);
+
+  AliGenCocktailEventHeader *lCocktailHeaderESD = isESD
+    ?  dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader())
+    :  static_cast<AliGenCocktailEventHeader*>(nullptr);
+  
+  isReturnEarly |= 
+    checkPointer(lCocktailHeaderAOD, "lCocktailHeaderAOD") ||  
+    checkPointer(lCocktailHeaderESD, "lCocktailHeaderESD");
+  
+  TList *lGenHeaders = isAOD 
+    ?   lCocktailHeaderAOD->GetCocktailHeaders()
+    :   lCocktailHeaderESD->GetHeaders();
+  
+  isReturnEarly |= checkPointer(lGenHeaders, "lGenHeaders");
+
+  if (isReturnEarly) {
+    return;
   }
-  if(event->IsA()==AliAODEvent::Class()){ // event is a AODEvent in case of AOD
-    cHeaderAOD              = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
-    fMCEventAOD             = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(cHeaderAOD) headerFound     = kTRUE;
-  }
+
 
   if (fDebugLevel > 0 ) cout << "event starts here" << endl;
-  if(headerFound){
-    TList *genHeaders         = 0x0;
-    if(cHeader) {
-      genHeaders = cHeader->GetHeaders();
-    }
-    else if(cHeaderAOD){
-      genHeaders              = cHeaderAOD->GetCocktailHeaders();
-    }
-    if(genHeaders && genHeaders->GetEntries()==1){
-      SetRejectExtraSignalsCut(0);
-      return;
-    }
-    AliGenEventHeader* gh     = 0;
-    fnHeaders                 = 0;
-    Int_t firstindexA         = 0;
-    Int_t lastindexA          = -1;
-    if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
 
-    // first loop over headers in event and accepted headers from HeaderList.
-    // purpose: find out number of headers that are both in the event and on the HeaderList (fnHeaders)
-    if(rejection == 2 || rejection == 4){ // TList of Headers Names
-      for(Int_t i = 0; i<genHeaders->GetEntries();i++){ // loop over header from event
-        gh                    = (AliGenEventHeader*)genHeaders->At(i);
-        TString GeneratorName = gh->GetName();
-        lastindexA            = lastindexA + gh->NProduced();
-        if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
-        for(Int_t j = 0; j<HeaderList->GetEntries();j++){ // loop over headers given in AddTask
-          TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
-          if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
-          if (fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1){
-            if (GeneratorName.Contains(GeneratorInList)){ ++fnHeaders; }
-          }
-          else{ // not fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1
-            if(GeneratorInList.Contains(GeneratorName) ||  GeneratorName.Contains(GeneratorInList)){
-              if (fDebugLevel > 0 ) cout << "accepted" << endl;
-              if (GeneratorInList.BeginsWith("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
-                if(fMCEvent){ // if Event exists and is ESD
-                  if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
-                    if (fDebugLevel > 2 )cout << "number of produced particle: " <<  gh->NProduced() << endl;
-                    if (fDebugLevel > 2 )cout << "pdg-code of first particle: " <<  fMCEvent->GetTrack(firstindexA)->PdgCode() << endl;
-                    if (fMCEvent->GetTrack(firstindexA)->PdgCode() == fAddedSignalPDGCode ) {
-                      if (gh->NProduced() > 10 && fMCEvent->GetTrack(firstindexA+10)->PdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
-                        if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
-                        fnHeaders++;
-                        continue;
-                      } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
-                        if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
-                        if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
-                        fnHeaders++;
-                        continue;
-                      } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
-                        if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
-                        if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
-                        fnHeaders++;
-                        continue;
+  if(lGenHeaders->GetEntries()==1){
+    SetRejectExtraSignalsCut(0);
+    return;
+  }
 
-                      }
+  fnHeaders                 = 0;
+  Int_t firstindexA         = 0;
+  Int_t lastindexA          = -1;
+  if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
+  
+  // first loop over headers in event and accepted headers from HeaderList.
+  // purpose: find out number of headers that are both in the event and on the HeaderList (fnHeaders)
+  if(rejection == 2 || rejection == 4){ // TList of Headers Names
+    
+    for(Int_t i = 0; i<lGenHeaders->GetEntries();i++){ // loop over header from event
+      AliGenEventHeader* gh = (AliGenEventHeader*)lGenHeaders->At(i);
+      TString GeneratorName = gh->GetName();
+      lastindexA            = lastindexA + gh->NProduced();
+      if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
+      for(Int_t j = 0; j<HeaderList->GetEntries();j++){ // loop over headers given in AddTask
+        TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
+        if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
+        if (fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1){
+          if (GeneratorName.Contains(GeneratorInList)){ ++fnHeaders; }
+        }
+        else{ // not fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1
+          if(GeneratorInList.Contains(GeneratorName) ||  GeneratorName.Contains(GeneratorInList)){
+            if (fDebugLevel > 0 ) cout << "accepted" << endl;
+            if (GeneratorInList.BeginsWith("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
+              if(lMCEvent){ // if Event exists and is ESD
+                if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
+                  if (fDebugLevel > 2 )cout << "number of produced particle: " <<  gh->NProduced() << endl;
+                  if (fDebugLevel > 2 )cout << "pdg-code of first particle: " <<  lMCEvent->GetTrack(firstindexA)->PdgCode() << endl;
+                  if (lMCEvent->GetTrack(firstindexA)->PdgCode() == fAddedSignalPDGCode ) {
+                    if (gh->NProduced() > 10 && lMCEvent->GetTrack(firstindexA+10)->PdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
                       continue;
+                    } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                      if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+                    } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                      if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+
                     }
-                  } else {
-                    if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
-                    fnHeaders++;
                     continue;
                   }
+                } else {
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
+                  fnHeaders++;
+                  continue;
                 }
-                if (fMCEventAOD){ // if event exists and is AOD
-                  AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA));
-                  if (aodMCParticle && (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c) ){
-                    if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
-                      if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0){
-                        AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindexA+10));
-                        if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
-                          if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
-                          fnHeaders++;
-                          continue;
-                        }
-                      } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
-                        if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
-                        if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+              }
+              if (lAODMCParticleClonesArray){ // if event exists and is AOD
+                AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(lAODMCParticleClonesArray->At(firstindexA));
+                if (aodMCParticle && (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c) ){
+                  if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
+                    if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0){
+                      AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(lAODMCParticleClonesArray->At(firstindexA+10));
+                      if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
+                        if (fDebugLevel > 0 ) cout << "cond 1: " << fnHeaders << endl;
                         fnHeaders++;
                         continue;
-                      } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
-                        if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
-                        if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
-                        fnHeaders++;
-                        continue;
-
                       }
+                    } else if (gh->NProduced() == 3 && GeneratorInList.Contains("PARAM_EMC") && (i == 3 || i == 5) ){
+                      if (fDebugLevel > 2 ) cout << "accepted EMC header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
                       continue;
+                    } else if (gh->NProduced() > 2 && GeneratorInList.Contains("PARAM_PHOS") && (i == 4 || i == 6) ){
+                      if (fDebugLevel > 2 ) cout << "accepted PHOS header "<< endl;
+                      if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
+                      fnHeaders++;
+                      continue;
+
                     }
-                  } else {
-                    if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
-                    fnHeaders++;
                     continue;
                   }
+                } else {
+                  if (fDebugLevel > 0 ) cout << "cond 2: " << fnHeaders << endl;
+                  fnHeaders++;
+                  continue;
                 }
-                continue;
               }
-              if(GeneratorName.CompareTo(GeneratorInList) == 0){
-                if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
-                fnHeaders++;
-                continue;
-              }
-            } // generator in header list matched with generator from event
-          } // noy fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1
-        } // end of loop over headers given in AddTask
-        firstindexA       = firstindexA + gh->NProduced();
-      } // end of loop over header from event
-    } // if(rejection == 2 || rejection == 4) 
+              continue;
+            }
+            if(GeneratorName.CompareTo(GeneratorInList) == 0){
+              if (fDebugLevel > 0 ) cout << "cond 3: "<< fnHeaders << endl;
+              fnHeaders++;
+              continue;
+            }
+          } // generator in header list matched with generator from event
+        } // noy fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1
+      } // end of loop over headers given in AddTask
+      firstindexA       = firstindexA + gh->NProduced();
+    } // end of loop over header from event
+
+
     if (fDebugLevel > 0 ) cout << "number of headers: " <<fnHeaders << endl;
 
     fNotRejectedStart.clear();
@@ -7321,23 +7352,23 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     if(rejection == 1 || rejection == 3){
       // note: if we're here, we know we have fPeriodEnum!=kLHC20g10
       fNotRejectedStart[0] = 0;
-      fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
-      fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      fNotRejectedEnd[0] = ((AliGenEventHeader*)lGenHeaders->At(0))->NProduced()-1;
+      fGeneratorNames[0] = ((AliGenEventHeader*)lGenHeaders->At(0))->GetName();
       // only go here if we know that the mb header is NOT the firstin the file. This we only know from self testing.
       // Should you find a MC that has this problem and fHasMBNotFirst is not yet set to true in SetPeriodEnum, please add it!
       if (fHasMBNotFirst){
-        for(int iHeader = 0; iHeader < genHeaders->GetEntries(); iHeader++){
-          lastindexA  = lastindexA + ((AliGenEventHeader*)genHeaders->At(iHeader))->NProduced();
-          TString CurrentHeaderName = TString(((AliGenEventHeader*)genHeaders->At(iHeader))->GetName());
+        for(int iHeader = 0; iHeader < lGenHeaders->GetEntries(); iHeader++){
+          lastindexA  = lastindexA + ((AliGenEventHeader*)lGenHeaders->At(iHeader))->NProduced();
+          TString CurrentHeaderName = TString(((AliGenEventHeader*)lGenHeaders->At(iHeader))->GetName());
           CurrentHeaderName.ToLower();
           if( (CurrentHeaderName.BeginsWith("hijing")) || (CurrentHeaderName.BeginsWith("pythia")) || (CurrentHeaderName.BeginsWith("mb")) || (CurrentHeaderName.BeginsWith("minimumbias")) ){
             fNotRejectedStart.at(0) = firstindexA;
             fNotRejectedEnd.at(0) = lastindexA;
-            fGeneratorNames.at(0) = TString(((AliGenEventHeader*)genHeaders->At(iHeader))->GetName());
+            fGeneratorNames.at(0) = TString(((AliGenEventHeader*)lGenHeaders->At(iHeader))->GetName());
             // When we find a matching header that can be considerd the minimum bias header, we skip the remaining headers
             break;
           }
-          firstindexA = firstindexA + ((AliGenEventHeader*)genHeaders->At(iHeader))->NProduced();
+          firstindexA = firstindexA + ((AliGenEventHeader*)lGenHeaders->At(iHeader))->NProduced();
         } // end of loop over headers in event
       }
 
@@ -7353,8 +7384,8 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     Int_t lastindex         =  -1;
     Int_t number            = 0;
 
-    for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-      gh = (AliGenEventHeader*)genHeaders->At(i);
+    for(Int_t i = 0; i<lGenHeaders->GetEntries();i++){
+      AliGenEventHeader *gh = (AliGenEventHeader*)lGenHeaders->At(i);
       TString GeneratorName = gh->GetName();
       lastindex             = lastindex + gh->NProduced();
       if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
@@ -7371,11 +7402,11 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
         else{
           if(GeneratorInList.Contains(GeneratorName) ||  GeneratorName.Contains(GeneratorInList)){
             if (GeneratorInList.Contains("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
-              if(fMCEvent){
+              if(lMCEvent){
                 if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
-                  if (fMCEvent->GetTrack(firstindex)->PdgCode() == fAddedSignalPDGCode ) {
+                  if (lMCEvent->GetTrack(firstindex)->PdgCode() == fAddedSignalPDGCode ) {
                     if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
-                    if (gh->NProduced() > 10 && fMCEvent->GetTrack(firstindex+10)->PdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                    if (gh->NProduced() > 10 && lMCEvent->GetTrack(firstindex+10)->PdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
                       if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
                       fNotRejectedStart[number] = firstindex;
                       fNotRejectedEnd[number] = lastindex;
@@ -7408,12 +7439,12 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                   continue;
                 }
               }
-              if ( fMCEventAOD){
-                AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex));
+              if ( lAODMCParticleClonesArray){
+                AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(lAODMCParticleClonesArray->At(firstindex));
                 if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                   if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
                     if (gh->NProduced() > 10 && GeneratorInList.CompareTo("BOX") == 0) {
-                      AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCEventAOD->At(firstindex+10));
+                      AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(lAODMCParticleClonesArray->At(firstindex+10));
                       if ( aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
                         fNotRejectedEnd[number] = lastindex;
                         fNotRejectedStart[number] = firstindex;
@@ -7490,28 +7521,18 @@ void AliConvEventCuts::FillHeaderMap(TList *HeaderList, AliVEvent *event){
   AliGenCocktailEventHeader *cHeader    = 0x0;
   AliAODMCHeader *cHeaderAOD            = 0x0;
   Bool_t headerFound                    = kFALSE;
-  AliMCEvent *fMCEvent                  = 0x0;
-  TClonesArray *fMCEventAOD             = 0x0;
 
   if(event->IsA()==AliMCEvent::Class()){
     if(dynamic_cast<AliMCEvent*>(event)){
       cHeader               = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
-      fMCEvent              = dynamic_cast<AliMCEvent*>(event);
       if(cHeader) headerFound   = kTRUE;
     }
   } else if(event->IsA()==AliAODEvent::Class()){ // event is a AODEvent in case of AOD
     cHeaderAOD              = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
-    fMCEventAOD             = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
     if(cHeaderAOD) headerFound     = kTRUE;
   }
   if(headerFound){
-    TList *genHeaders         = 0x0;
-    if(cHeader) genHeaders    = cHeader->GetHeaders();            // ESD
-    if(cHeaderAOD) genHeaders = cHeaderAOD->GetCocktailHeaders(); // AOD
-    AliGenEventHeader* gh     = 0;
     fnHeaders                 = 0;
-    int firstindexA         = 0;
-    int lastindexA          = -1;
      for(int j = 0; j<HeaderList->GetEntries();j++){
       TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
       if(GeneratorInList.Contains("Hijing")){
@@ -8125,7 +8146,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
     lTH2->Fill(mesonPt, lRelDiff);
     return true;
   };  
-  bool lFillingWorked = fillMesonHisto();
+  fillMesonHisto();
   return (lWeightNew != -1.) ? lWeightNew : lWeightOld;
 }
 
