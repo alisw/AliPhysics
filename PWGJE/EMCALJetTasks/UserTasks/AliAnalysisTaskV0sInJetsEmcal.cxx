@@ -2429,8 +2429,11 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   }
 
   // Event cuts with strong anti-pile-up cuts
-  if(fbUseIonutCut)
-  {
+  if(fbUseIonutCut == 1) {
+    fEventCutsStrictAntipileup.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  }
+  if(fbUseIonutCut == 2) {
+    fEventCutsStrictAntipileup.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
     fEventCutsStrictAntipileup.fUseStrongVarCorrelationCut = true;
     fEventCutsStrictAntipileup.fUseVariablesCorrelationCuts = true;
   }
@@ -2451,7 +2454,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
   if(fiNContribMin > 0) printf("min number of prim vtx contributors: %d\n", fiNContribMin);
   if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
-  if(fbUseIonutCut) printf("Ionut's cut\n");
+  if(fbUseIonutCut) printf("Ionut's cut %d\n", fbUseIonutCut);
   printf("-------------------------------------------------------\nV0 selection:\n");
   if(fbTPCRefit) printf("TPC refit for daughter tracks\n");
   if(fbRejectKinks) printf("reject kink-like production vertices of daughter tracks\n");

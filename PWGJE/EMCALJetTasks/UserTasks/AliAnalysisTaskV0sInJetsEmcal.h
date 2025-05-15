@@ -210,8 +210,7 @@ private:
   Int_t fiNContribMin; // minimum number of prim vtx contributors
   Double_t fdCentrality; //! [%] centrality
   Bool_t fbUseMultiplicity; // switch for getting centrality from AliMultSelection instead of from AliCentrality
-  Bool_t fbUseIonutCut; // Ionut's cut on the correlation between event variables
-
+  Int_t fbUseIonutCut; // Pile up (Ionut's if =2) cut on the correlation between event variables
   // Mixed events parameters
   Bool_t fbCorrelations; // switch for V0-jet correlations
   Int_t fiSizePool; // available number of events per pool, currently ignored in AliEventPoolManager
