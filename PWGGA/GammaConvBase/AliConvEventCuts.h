@@ -906,8 +906,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       bool                           fMapPtWeightsIsFilledAndSane;        ///<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
       TH2D                          *fHistoRelDiffNewOldMesonWeights_Pi0;
       TH2D                          *fHistoRelDiffNewOldMesonWeights_Eta;
+      TH1F                          *hCountMissingEventInformation;      
 
-      utils_TH1                     *fUtils_TH1;                          ///< needed for the GlobalPieceWiseExponentialInterpolation 
+      utils_TH1                     fUtils_TH1;                          ///< needed for the GlobalPieceWiseExponentialInterpolation 
       // keep this one last
       Int_t                          fDebugLevel;                            ///< debug level for interactive debugging
   private:
