@@ -29,8 +29,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskCMEv2A.cxx
-  AliAnalysisTaskCMEPIDCVE.cxx
   AliAnalysisTaskPIDCME.cxx
+  AliAnalysisTaskCVEPIDCMEDiff.cxx
   )
 
 # Headers from sources
@@ -61,7 +61,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

@@ -7,11 +7,9 @@
 #include "AliAnalysisTaskCVEPIDCMEDiff.h"
 
 AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
-  TString trigger               = "kINT7+kSemiCentral",
   TString period                = "LHC18r",
   TString plane                 = "TPC",
-  UInt_t filterBit              = 768,
-  bool bCalculateLambdaHadron   = false,
+  TString pairs                 = "Proton",
   TString uniqueID              = "")
 {
   // Creates a pid task and adds it to the analysis manager
@@ -33,26 +31,21 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
     return NULL;
   }
 
-  bool bDoNUE                  = true;
-  bool bDebug                  = false;
-  bool bV0DaughterUseTOF       = false;
-  bool bNarrowDcaCuts768       = true;
-  bool bProtonCustomizedDCACut = true;
-  bool bUsePionRejection       = false;
   // --- instantiate analysis task
   AliAnalysisTaskCVEPIDCMEDiff* task = new AliAnalysisTaskCVEPIDCMEDiff("TaskCVEPIDCMEDiff");
-  task->SetTrigger(trigger);
   task->SetPeriod(period);
-  task->SetFilterBit(filterBit);
-
-  task->IfCalculateLambdaHadron(bCalculateLambdaHadron);
-  task->IfDebug(bDebug);
-  task->IfDoNUE(bDoNUE);
-  task->IfV0DaughterUseTOF(bV0DaughterUseTOF);
-  task->IfNarrowDcaCuts768(bNarrowDcaCuts768);
-  task->IfProtonCustomizedDCACut(bProtonCustomizedDCACut);
-  task->IfUsePionRejection(bUsePionRejection);
   task->SetPlaneEstimator(plane);
+  if (pairs.EqualTo("Proton")) {
+      task->IfCalculateLambdaProton(true);
+  } else if (pairs.EqualTo("Hadron")) {
+      task->IfCalculateLambdaHadron(true);
+  } else if (pairs.EqualTo("Pion")) {
+      task->IfCalculateLambdaPion(true);
+  } else if (pairs.EqualTo("Lambda")) {
+     task->IfCalculateLambdaLambda(true);
+  } else {
+     Error("AddTaskCVEPIDCMEDiff.C", "Not support Lambda with this particle");
+  }
 
   //=========================================================================
   // Read in Files
@@ -89,7 +82,7 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
       else if (uniqueID.EqualTo("Nhits80"))   fileNameNUA = TString("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits80.root");
       else if (uniqueID.EqualTo("ChiMax2"))   fileNameNUA = TString("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2.root");
       else if (uniqueID.EqualTo("ChiMax2p5")) fileNameNUA = TString("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2d5.root");
-      else fileNameNUA = TString("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root"); 
+      else fileNameNUA = TString("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root");
     } else if (period.EqualTo("LHC18r")) {
       if (uniqueID.EqualTo("Nhits60"))        fileNameNUA = TString("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits60.root");
       else if (uniqueID.EqualTo("Nhits80"))   fileNameNUA = TString("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits80.root");
@@ -149,5 +142,3 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
   std::cout << "================  Return task =================" << std::endl;
   return task;
 }
-
-

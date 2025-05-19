@@ -50,35 +50,35 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliFlowEventSimpleMaker.cxx 
-  AliFlowEvent.cxx 
-  AliFlowEventCuts.cxx 
-  AliFlowTrack.cxx 
-  AliFlowCandidateTrack.cxx 
-  AliFlowTrackCuts.cxx 
-  AliAnalysisTaskScalarProduct.cxx 
+  AliFlowEventSimpleMaker.cxx
+  AliFlowEvent.cxx
+  AliFlowEventCuts.cxx
+  AliFlowTrack.cxx
+  AliFlowCandidateTrack.cxx
+  AliFlowTrackCuts.cxx
+  AliAnalysisTaskScalarProduct.cxx
   AliAnalysisTaskSimpleSP.cxx
-  AliAnalysisTaskMCEventPlane.cxx 
+  AliAnalysisTaskMCEventPlane.cxx
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
-  AliAnalysisTaskCRCZDC.cxx 
+  AliAnalysisTaskCRCZDC.cxx
   AliAnalysisTaskQvec.cxx
   AliAnalysisTaskCumulants.cxx
-  AliAnalysisTaskQCumulants.cxx 
-  AliAnalysisTaskLeeYangZeros.cxx 
-  AliAnalysisTaskFittingQDistribution.cxx 
-  AliAnalysisTaskFlowEvent.cxx 
-  AliAnalysisTaskFlowStrange.cxx 
+  AliAnalysisTaskQCumulants.cxx
+  AliAnalysisTaskLeeYangZeros.cxx
+  AliAnalysisTaskFittingQDistribution.cxx
+  AliAnalysisTaskFlowEvent.cxx
+  AliAnalysisTaskFlowStrange.cxx
   AliAnalysisTaskFlowStrangee.cxx
-  AliAnalysisTaskFlowEventforRP.cxx 
-  AliAnalysisTaskMixedHarmonics.cxx 
+  AliAnalysisTaskFlowEventforRP.cxx
+  AliAnalysisTaskMixedHarmonics.cxx
   AliAnalysisTaskFlowModes.cxx
   AliAnalysisTaskFlowModesMC.cxx
   AliAnalysisTaskFlowModes_pPb.cxx
-  AliAnalysisTaskNestedLoops.cxx 
-  AliAnalysisTaskQAflow.cxx 
-  AliAnalysisTaskPIDflowQA.cxx 
-  AliAnalysisTaskQAPmdflow.cxx 
+  AliAnalysisTaskNestedLoops.cxx
+  AliAnalysisTaskQAflow.cxx
+  AliAnalysisTaskPIDflowQA.cxx
+  AliAnalysisTaskQAPmdflow.cxx
   AliFlowBayesianPID.cxx
   AliAnalysisTaskPhiFlow.cxx
   AliAnalysisTaskFilterFE.cxx
@@ -112,8 +112,8 @@ set(SRCS
   AliAnalysisTaskCMWPU2018eqAchdca.cxx
   AliAnalysisTaskCMWPU2018eqAchmerge.cxx
   AliAnalysisTaskCMWPU2018eqAchCL.cxx
-  AliAnalysisTaskCMWPU2018eqAchCLdca.cxx	
-  AliAnalysisTaskCMWPU2018eqAchmergedca.cxx	
+  AliAnalysisTaskCMWPU2018eqAchCLdca.cxx
+  AliAnalysisTaskCMWPU2018eqAchmergedca.cxx
   AliAnalysisTaskCVEUNIpt.cxx
   AliAnalysisTaskCMWPUeqAch.cxx
   AliAnalysisTaskCMWPUuncAch.cxx
@@ -137,7 +137,6 @@ set(SRCS
   AliAnalysisTaskGammaNonIsotropicCorr.cxx
   AliAnalysisTaskGammaNonIsotropicCorrUsingWeights.cxx
   AliAnalysisTaskCVEPIDCME.cxx
-  AliAnalysisTaskCVEPIDCMEDiff.cxx
   AliAnalysisTaskCVEVZEROCalib.cxx
   AliAnalysisTaskChargeV1.cxx
   AliAnalysisTaskGammaCaloV2.cxx
@@ -176,7 +175,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
