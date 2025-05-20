@@ -52,3 +52,26 @@ TF1 *utils_TH1::InitGlobalPieceWiseExponentialInterpolationTF1(std::string const
            lTF1_result ? "" : ". Returning nullptr.\n");
     return lTF1_result;
 }
+
+//_________________________________________________________________________________________________
+// static 
+TF1* utils_TH1::ZeroFunctionTF1(std::string theNewName /* = "" */, 
+                                double      theXmin    /* = 0. */, 
+                                double      theXmax    /* = 1. */)
+{
+    printf("INFO: static utils_TH1::ZeroFunctionTF1():\n"
+             "\tCalled with theNewName = %s, theXmin = %f, theXmax = %f. \n",
+           theNewName.data(),
+           theXmin,
+           theXmax);
+    theNewName.append(theNewName.size()
+        ?   ""
+        :   Form("utils_TH1::ZeroFunction():xmin_xmax_[%f.3 %f.3",
+                 theXmin, 
+                 theXmax));
+
+    return new TF1(theNewName.data(),
+                   "0",
+                   theXmin,
+                   theXmax);
+}

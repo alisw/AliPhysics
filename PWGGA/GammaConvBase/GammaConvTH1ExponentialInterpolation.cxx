@@ -5,6 +5,72 @@
 #include <iostream>
 
 // ============================= class utils_TH1::TH1_ExponentialInterpolation ===============================
+// copy constructor
+//_________________________________________________________________________________________________
+utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(
+    utils_TH1::TH1_ExponentialInterpolation const &theRef
+)
+:   id{theRef.id + "_cp-ass"},
+    fStaticParent{theRef.fStaticParent},
+    fStaticParentId{theRef.GetParentId()},    
+    fTH1{theRef.fTH1},
+    fIntegrate{theRef.fIntegrate},
+    fUseXtimesExp{theRef.fUseXtimesExp},
+    fVector_tf1_local{theRef.fVector_tf1_local},
+    fTF1_global{theRef.fTF1_global}
+{
+    printf("INFO: utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(\n"
+             "\tutils_TH1::TH1_ExponentialInterpolation const &theRef): instance: %s\n"
+             "\tCopy created instance from theRef = %p\n",
+           id.data(),
+           &theRef);
+
+    // reinitialize fVector_tf1_local
+    fTF1_global = createNewInitializedGlobalTF1(
+        Form("%s_TF1_global_recreation_after_copy_assignment\n", id.data()));
+   
+    printf("%s: utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(\n"
+              "\tutils_TH1::TH1_ExponentialInterpolation const &theRef): instance %s\n."
+              "\tRecreation of global TF1 from copied theRef %s\n",
+           fTF1_global 
+               ?    "INFO"
+               :    "FATAL",
+           id.data(),
+           fTF1_global
+               ? "was successfull."
+               : "failed!");
+}
+
+// move constructor
+//_________________________________________________________________________________________________
+// utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(
+//     utils_TH1::TH1_ExponentialInterpolation const &&theOther
+// )
+// :   id{std::move(theOther.id)},
+//     fStaticParent{theOther.fStaticParent},
+//     fStaticParentId{std::move(theOther.fStaticParentId)},    
+//     fTH1{theOther.fTH1},
+//     fIntegrate{theOther.fIntegrate},
+//     fUseXtimesExp{theOther.fUseXtimesExp},
+//     fVector_tf1_local{std::move(theOther.fUseXtimesExp)},
+//     fTF1_global{theOther.fTF1_global}
+// {
+//     printf("INFO: utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(\n"
+//              "\tutils_TH1::TH1_ExponentialInterpolation const &&theRef): instance: %s\n"
+//              "\t\Moved instance from &&theOther reference. Properties:\n"
+//              "\tfStaticParent = %p, fStaticParentId = %s, fTH1.GetName(): %s, fTH1.GetNbinsX() = %d\n"
+//              "\tfIntegrate = %d, fUseXtimesExp = %d, fVector_tf1_local.size() = %zu, fTF1_global = %p\n",
+//            id.data(),
+//            fStaticParent,
+//            fStaticParentId.data(),
+//            fTH1.GetName(),
+//            fTH1.GetNbinsX(),
+//            fIntegrate,
+//            fUseXtimesExp, 
+//            fVector_tf1_local.size(),
+//            fTF1_global);
+// }
+
 // the normal constructor
 //_________________________________________________________________________________________________
 utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(
@@ -23,7 +89,6 @@ utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(
     fVector_tf1_local{},
     fTF1_global{nullptr}
 {
-    // fill up 0th element so vectors indices will be same as histo bin numbers
     fTF1_global = produceNewNativeUninitializedGlobalTF1("");
     printf("utils_TH1::TH1_ExponentialInterpolation::TH1_ExponentialInterpolation(): Created instance: %s\n"
             "\tfTF1_global = %s.\n",
@@ -83,7 +148,6 @@ TF1 *utils_TH1::TH1_ExponentialInterpolation::createNewInitializedGlobalTF1(
     return initGlobalFunctionObject(*lResult, fTH1);
 }
 
-
 //_________________________________________________________________________________________________
 TF1 *utils_TH1::TH1_ExponentialInterpolation::GetNewLocalExponentialTF1(TH1    &theTH1, 
                                                                         double  theX, 
@@ -97,28 +161,43 @@ TF1 *utils_TH1::TH1_ExponentialInterpolation::GetNewLocalExponentialTF1(TH1    &
            theIntegrate,
            theUseXtimesExp);
 
+    // return zero function for under/overflow bins
     TAxis const &lAxis = *theTH1.GetXaxis();   
+    int const iBinHisto = lAxis.FindBin(theX);
 
-    // we cant fit the histogram in the 0th bin
     int const iLeftBinMin = 1;
     int const iRightBinMax = lAxis.GetNbins();
 
-    int const iBinHisto = lAxis.FindBin(theX);
     bool isEdgeLeft  = (iBinHisto == iLeftBinMin);
-    bool isEdgeRight = (iBinHisto == iRightBinMax);
+    bool isEdgeRight = (iBinHisto >= iRightBinMax);
 
     int const iLeftBin = isEdgeRight
         ?    iRightBinMax - 1                  // upper edge case
         :    std::max(iBinHisto, iLeftBinMin); // normal case
-    
     int const iRightBin = iLeftBin + 1;
+
+    double xmin = lAxis.GetBinLowEdge(iLeftBin);
+    double xmax = lAxis.GetBinUpEdge(iRightBin);
+    
+    if (!iBinHisto || (iBinHisto == iRightBinMax + 1)){
+        double width_n = lAxis.GetBinWidth(iBinHisto 
+            ?    iRightBinMax 
+            :    1);
+        xmin = iBinHisto 
+            ?    lAxis.GetBinUpEdge(iRightBinMax)
+            :    lAxis.GetBinLowEdge(1) - width_n;
+        xmax = iBinHisto
+            ?    lAxis.GetBinUpEdge(iRightBinMax) + width_n
+            :    lAxis.GetBinLowEdge(1);
+
+        return ZeroFunctionTF1("", 
+                               xmin,
+                               xmax);
+    }
     
     printf("lFound_in_map bins: iBinHisto = %d, iLeftBin = %d, iRightBin = %d\n",
            iBinHisto, iLeftBin, iRightBin);
     
-    double xmin = lAxis.GetBinLowEdge(iLeftBin);
-    double xmax = lAxis.GetBinUpEdge(iRightBin);
- 
     std::string lFunctionName(Form("TF1_%s_localExponential%s%s_bins_%d-%d-%d%s", 
                                    theTH1.GetName(),
                                    theUseXtimesExp 
@@ -161,7 +240,8 @@ TF1 *utils_TH1::TH1_ExponentialInterpolation::GetNewLocalExponentialTF1(TH1    &
                     xmax);
         lResult->SetRange(xmin, xmax);
     } 
-     // dont integrate, use bin contents
+    
+    // dont integrate, use bin contents
     else { // dont integrate, use bin contents
         double centerLeft  = lAxis.GetBinCenter(iLeftBin);
         double centerRight = lAxis.GetBinCenter(iRightBin);
@@ -213,11 +293,12 @@ TF1 *utils_TH1::TH1_ExponentialInterpolation::GetNewLocalExponentialTF1(TH1    &
 }
 
 //_________________________________________________________________________________________________
-double utils_TH1::TH1_ExponentialInterpolation::EvaluateLocalExponentialInterpolate(
-    TH1    &theTH1, 
-    double  theX, 
-    bool    theIntegrate /*= false*/,
-    bool    theUseXtimesExp /*= false*/)
+double 
+    utils_TH1::TH1_ExponentialInterpolation::EvaluateLocalExponentialInterpolate(
+        TH1    &theTH1, 
+        double  theX, 
+        bool    theIntegrate /*= false*/,
+        bool    theUseXtimesExp /*= false*/)
 {
     TF1 *f = GetNewLocalExponentialTF1(theTH1, theX, theIntegrate, theUseXtimesExp);
     return f ? f->Eval(theX) : 0.;
@@ -276,7 +357,8 @@ TF1* utils_TH1::TH1_ExponentialInterpolation::initGlobalFunctionObject(TF1 &theG
 }
 
 //_________________________________________________________________________________________________
-double utils_TH1::TH1_ExponentialInterpolation::Evaluate(double *x, double *)
+double 
+    utils_TH1::TH1_ExponentialInterpolation::Evaluate(double *x, double *)
 {
     double lResultValue = 0.;
     TF1 *lTF1_local_good = nullptr;
@@ -451,8 +533,6 @@ bool utils_TH1::TH1_ExponentialInterpolation::TF1GoodForX(TF1 const  &theTF1,
     return false;
 }
 
-
-
 ///////////////////// end utils_TH1::TH1_ExponentialInterpolation ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -470,7 +550,9 @@ utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_sta
 }
 
 //_________________________________________________________________________________________________
-utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(std::string const &theIdSuffix)
+utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(
+    std::string const &theIdSuffix
+)
 :    id(Form("TH1_ExponentialInterpolation_static_%s", theIdSuffix.data())),
      fMap_TH1_ExponentialInterpolation()
 {
@@ -496,63 +578,70 @@ utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_sta
             &fMap_TH1_ExponentialInterpolation);
 }
 
+//_________________________________________________________________________________________________
+utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(
+    utils_TH1::TH1_ExponentialInterpolation_static const &&theOther
+)
+:   
+    id{std::move(theOther.id)},
+    fMap_TH1_ExponentialInterpolation{std::move(theOther.fMap_TH1_ExponentialInterpolation)}    
+{
+    printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static(TH1_ExponentialInterpolation_static const &&theOther): instance: %s\n"
+            "\tCalled move constructor. New Element has properties:\n"
+            "\tfMap_TH1_ExponentialInterpolation.size() = %zu\n",
+           id.data(),
+           fMap_TH1_ExponentialInterpolation.size());
+}
+
 /* 
     The only function that fills the the base member fMap_TH1_ExponentialInterpolation.
-    That means it creates new TH1_ExponentialInterpolation on heap and fills the pair <&TH1, TH1_ExponentialInterpolation*> 
+    That means it creates new TH1_ExponentialInterpolation on heap and fills the pair <&TH1, TH1_ExponentialInterpolation> 
     into the map
 */
 
 // checks first whether element is contained already
 //_________________________________________________________________________________________________
-utils_TH1::TH1_ExponentialInterpolation*
+utils_TH1::TH1_ExponentialInterpolation&
     utils_TH1::TH1_ExponentialInterpolation_static::insertNewExpInterInstance(TH1 const  &_th1,
                                                                               bool        _integrate,
                                                                               bool        _useXtimesExp)
 {
     printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(): instance %s:\n"
-            "\tWill insert a new <&_TH1, TH1_ExponentialInterpolation*> , into map fMap_TH1_ExponentialInterpolation if key"
+            "\tWill insert a new <&_TH1, TH1_ExponentialInterpolation> , into map fMap_TH1_ExponentialInterpolation if key"
             "\tnot already in map.\n",
            id.data());
     
     auto lIt_found = fMap_TH1_ExponentialInterpolation.find(&_th1);
-    if (lIt_found != fMap_TH1_ExponentialInterpolation.end()){
+    bool lFoundInMap = lIt_found != fMap_TH1_ExponentialInterpolation.end();
+    if (lFoundInMap){
         printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::insertNewExpInterInstance(): instance %s"
                 "Found element for TH1 %s in map. Will return an iterator to the element.\n",
                 id.data(),
                _th1.GetName());
         return lIt_found->second;
     }
-
-   utils_TH1::TH1_ExponentialInterpolation *lTH1_ExpInter_Instance_ptr = new utils_TH1::TH1_ExponentialInterpolation(
-        id,
-        *this,
-        _th1,
-        _integrate,
-        _useXtimesExp,
-        true /* _verbose */);
-
-    printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::insertNewExpInterInstance():\n"
-            "\tCreated instance %s with options:\n"
-            "\t\t parent: %p, th1: %s, integrate = %d, useXtimesExp = %d.\n",
+    
+    printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::insertNewExpInterInstance(): id: %s\n"
+            "\tAbout to emplace an instance in fMap_TH1_ExponentialInterpolation with target properties:\n"
+            "\tparent = %p, th1: %s, integrate = %d, useXtimesExp = %d.\n",
            id.data(),
            this,
            _th1.GetName(),
            _integrate,
            _useXtimesExp);
-    
-    if (!lTH1_ExpInter_Instance_ptr){
-        printf("FATAL: utils_TH1::TH1_ExponentialInterpolation_static():\n"
-               "\tTH1_ExponentialInterpolation instance could not be created. Returning nullptr.\n");
-        return nullptr;
-    }
 
-    auto const &lPair_ref_insert_success = fMap_TH1_ExponentialInterpolation.insert(
-        std::pair{ &_th1, lTH1_ExpInter_Instance_ptr }
+    auto const &lPair_ref_emplace_success = fMap_TH1_ExponentialInterpolation.emplace(
+            static_cast<TH1 const *>(&_th1), 
+            utils_TH1::TH1_ExponentialInterpolation(
+                id.data(),
+                *this,
+                _th1,
+                _integrate,
+                _useXtimesExp,
+                true /* _verbose */)
     );
 
-    // we know lTH1_ExpInter_Instance_ptr is defined by now
-    TH1_ExponentialInterpolation &lTH1_ExpInter_Instance = *lTH1_ExpInter_Instance_ptr;
-    if (!lPair_ref_insert_success.second){
+    if (!lPair_ref_emplace_success.second){
         printf("WARNING: utils_TH1::TH1_ExponentialInterpolation_static::TH1_ExponentialInterpolation_static(): id: %s\n"
                 "\tInsertion did not take place, that means the element is already in the map and stays as is.\n"
                 "Normally this should not happen here because it was just searched for before!\n"
@@ -561,21 +650,20 @@ utils_TH1::TH1_ExponentialInterpolation*
                _th1.GetName(),
                &_th1);
     }
+    auto &lIt_mapElement = lPair_ref_emplace_success.first;
 
     printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static(): instance: %s\n"
-           "\tInserted lTH1_ExpInter_Instance into fMap_TH1_ExponentialInterpolation.\n"
-           "\tInserted instance has properties:\n"
-           "\tIsInitialized = %d, _th1: %s, fTF1_global = %p, TF1 name: %s\n"
+             "\tInserted lTH1_ExpInter_Instance into fMap_TH1_ExponentialInterpolation.\n"
+             "\tInserted instance has properties:\n"
+             "\tIsInitialized = %d, _th1: %s, TF1 name: %s, fTF1_global = %p\n"
            "Constructor done.\n",
            id.data(),
-           lTH1_ExpInter_Instance.IsInitialized(),
+           lIt_mapElement->second.IsInitialized(),
            _th1.GetName(),
-           lTH1_ExpInter_Instance.GetTF1_global_const(),
-           lTH1_ExpInter_Instance.IsInitialized()
-               ?    lTH1_ExpInter_Instance.GetTF1_global_const()->GetName()
-               :    "nullptr");
+           lIt_mapElement->second.GetTF1_global()->GetName(),
+           lIt_mapElement->second.GetTF1_global());
 
-    return lPair_ref_insert_success.first->second;
+    return lIt_mapElement->second;
 }
 
 //_________________________________________________________________________________________________
@@ -584,13 +672,6 @@ utils_TH1::TH1_ExponentialInterpolation_static::~TH1_ExponentialInterpolation_st
     printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::~TH1_ExponentialInterpolation_static(): instance %s\n"
             "\tDestructor called.\n",
            id.data());
-    
-    for (auto &iPairRef : fMap_TH1_ExponentialInterpolation){
-        if (iPairRef.second){
-            delete iPairRef.second;
-            iPairRef.second = nullptr;
-        }
-    }
 }
 
 // private:
@@ -607,52 +688,19 @@ TF1 *utils_TH1::TH1_ExponentialInterpolation_static::createNew_TH1_ExponentialIn
             _integrate, 
             _useXtimesExp);
 
-    // create new instance and take its global TF1
-    utils_TH1::TH1_ExponentialInterpolation *lExpInter_ptr = new utils_TH1::TH1_ExponentialInterpolation(
-         "",
-        *this,
-         _th1,
-         _integrate,
-         _useXtimesExp);
-    
-    TF1 *lTF1_result_ptr = lExpInter_ptr
-        ?    lExpInter_ptr->IsInitialized()
-            ?    lExpInter_ptr->GetTF1_global()
-            :    static_cast<TF1*>(nullptr) 
-        :    static_cast<TF1*>(nullptr);
+    utils_TH1::TH1_ExponentialInterpolation &lExpInter_ref = 
+        insertNewExpInterInstance(_th1, _integrate, _useXtimesExp);
 
-    if (!lTF1_result_ptr){
-        printf("WARNING: utils_TH1::TH1_ExponentialInterpolation_static::createNew_TH1_ExponentialInterpolation(): id: %s\n"
-               "\tNullptr lFound_in_map in map. This should never happen. Returning nullptr from this function.\n",
-               id.data());
-        return static_cast<TF1*>(nullptr);
-    }
-
-    // todo check that this does not trigger copy constructor
-    auto const &lPair_it_success = fMap_TH1_ExponentialInterpolation.insert(std::pair{ &_th1,  lExpInter_ptr });
-    bool isNew = lPair_it_success.second;
-    printf("%s: utils_TH1::TH1_ExponentialInterpolation_static::createNew_TH1_ExponentialInterpolation(): id: %s\n"
-            "\tReturning %s TF1: %s for histo: %s\n"
-            "\t%s\n\n",
-          isNew 
-              ?    "INFO" 
-              :    "\n\n\nWARNING", 
+    TF1 *lTF1_ptr = lExpInter_ref.GetTF1_global();
+    printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::createNew_TH1_ExponentialInterpolation(): id: %s\n"
+            "\tReturning global TF1: %s for histo: %s\n", 
           id.data(), 
-          isNew 
-              ?    "newly inserted" 
-              :    "from map", 
-          lTF1_result_ptr->GetName(), 
-          _th1.GetName(),
-          isNew 
-                ? "" 
-                : "This is maybe alarming since it means the function was called in wrong believe,"
-                   "namely that an instance for the given fTH1 already existed in the map.\n"
-    );
+          lTF1_ptr->GetName(), 
+          _th1.GetName());
 
-    return lTF1_result_ptr;
+    return lTF1_ptr;
 } // last utils_TH1::TH1_ExponentialInterpolation_static methods
 
-// creates new TF1 on heap if non existing and theCreateNewIfNecessary == true
 //_________________________________________________________________________________________________
 TF1 *utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF1_opt_createNewIfNecessary(
     TH1 const  &theTH1,
@@ -672,8 +720,8 @@ printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF
     bool lFound_in_map = (lIt_map != fMap_TH1_ExponentialInterpolation.end());
 
     utils_TH1::TH1_ExponentialInterpolation *lExpInter = lFound_in_map 
-        ?    lIt_map->second
-        :    static_cast<TH1_ExponentialInterpolation*>(nullptr);
+        ?    &lIt_map->second
+        :     static_cast<TH1_ExponentialInterpolation*>(nullptr);
     
     if (!lExpInter){
         printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF1_opt_createNewIfNecessary(): id: %s\n"
@@ -704,24 +752,26 @@ printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF
 TF1 const
     *utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF1_const(TH1 const &theTH1) const
 {
-    auto const &lMap_constref 
-        = static_cast<std::map<TH1 const*, utils_TH1::TH1_ExponentialInterpolation*>>(
-            fMap_TH1_ExponentialInterpolation);
+    auto const &lMap_constref = 
+        static_cast<std::map<TH1 const*, 
+                    utils_TH1::TH1_ExponentialInterpolation> const>(fMap_TH1_ExponentialInterpolation);
     
     auto const lConstIt = lMap_constref.find(&theTH1);
     bool lFound_in_map = lConstIt != lMap_constref.cend();
     
     utils_TH1::TH1_ExponentialInterpolation const *lTH1_expInter = lFound_in_map 
-        ?   lConstIt->second 
-        :    static_cast<TH1_ExponentialInterpolation*>(nullptr); 
+        ?    static_cast<utils_TH1::TH1_ExponentialInterpolation const*>(&lConstIt->second) 
+        :    static_cast<utils_TH1::TH1_ExponentialInterpolation const*>( nullptr); 
 
-    TF1 const *lTF1_global_const = lTH1_expInter 
+    TF1 const *lTF1_global_const = lTH1_expInter && lTH1_expInter->IsInitialized() 
         ?   lTH1_expInter->GetTF1_global_const()
         :   static_cast<TF1 const *>(nullptr);
 
-    printf("%s\n", lTF1_global_const ? "" : Form("INFO: utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF1_const(): instance id: %s:\n"
-           "\treturning nullptr.\n", id.data()));
-
+    if (!lTF1_global_const){
+        printf("INFO: utils_TH1::TH1_ExponentialInterpolation_static::GetInterpolationTF1_const(): instance id: %s:\n"
+                "\tReturning nullptr.\n", 
+             id.data());
+    }
     return lTF1_global_const;
 } // last utils_TH1::TH1_ExponentialInterpolation_static methods
 
@@ -733,15 +783,18 @@ TF1 *utils_TH1::TH1_ExponentialInterpolation_static::InitializeWithHistoAndInser
 {
     return insertNewExpInterInstance(theTH1, 
                                      theIntegrate, 
-                                     theUseXtimesExp)->GetTF1_global();
+                                     theUseXtimesExp).GetTF1_global();
 }
 
 //_________________________________________________________________________________________________
 bool utils_TH1::TH1_ExponentialInterpolation_static::IsInitialized() const
 { 
-    size_t lSize = fMap_TH1_ExponentialInterpolation.size();
+    size_t const lSize = fMap_TH1_ExponentialInterpolation.size();
+    bool lResult = static_cast<bool>(lSize);
     printf("utils_TH1::IsInitialized(): IsInitialized ? %s . size = %zu\n", 
-           lSize ? "yes" : "no", 
+           lResult 
+               ?    "yes" 
+               :    "no", 
            lSize); 
-    return static_cast<bool>(lSize); 
+    return lResult; 
 }
