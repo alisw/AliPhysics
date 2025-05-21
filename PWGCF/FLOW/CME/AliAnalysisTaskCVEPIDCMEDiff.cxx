@@ -405,22 +405,22 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   ////////////////////////
   // Rihan 18q/r Pile-up function
   if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
-    fSPDCutPU = std::make_unique<TF1>("fSPDCutPU", "400. + 4.*x", 0, 10000);
+    double parV0[8]    = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+    double parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
+    double parFB32[8]  = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
 
-    double parV0[8] = {43.8011,     0.822574,    8.49794e-02,  1.34217e+02,
-                       7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
-    fV0CutPU =
-        std::make_unique<TF1>("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fSPDCutPU = std::unique_ptr<TF1>(new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000));
+
+    fV0CutPU = std::unique_ptr<TF1>(new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000));
     fV0CutPU->SetParameters(parV0);
 
-    double parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
-    fCenCutLowPU = std::make_unique<TF1>("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU = std::unique_ptr<TF1>(new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100));
     fCenCutLowPU->SetParameters(parV0CL0);
-    fCenCutHighPU = std::make_unique<TF1>("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+
+    fCenCutHighPU = std::unique_ptr<TF1>(new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100));
     fCenCutHighPU->SetParameters(parV0CL0);
 
-    double parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
-    fMultCutPU = std::make_unique<TF1>("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
+    fMultCutPU = std::unique_ptr<TF1>(new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90));
     fMultCutPU->SetParameters(parFB32);
   }
 
