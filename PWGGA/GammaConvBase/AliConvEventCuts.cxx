@@ -1068,8 +1068,7 @@ void AliConvEventCuts::LoadGammaPtReweightingHistosMCFromFile() {
   delete f;
 }
 
-// todo: check if I need to delete objects from heap
-///________________________________________________________________________
+//________________________________________________________________________
 int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 {
   auto multiplyTF1ByX = [](TF1 const &theF){
