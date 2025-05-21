@@ -8,4 +8,5 @@
 #pragma link C++ class AliAnalysisTaskCMEPIDCVE + ;
 #pragma link C++ class AliAnalysisTaskPIDCME + ;
 #pragma link C++ class AliAnalysisTaskCVEPIDCMEDiff + ;
+#pragma link C++ class AliAnalysisTaskProtonPtDCA + ;
 #endif
