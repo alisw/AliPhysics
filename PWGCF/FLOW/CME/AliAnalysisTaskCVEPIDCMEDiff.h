@@ -48,6 +48,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
+  void SetListForVZEROCalib(TList* flist) { this->fListVZEROCalib = (TList*)flist->Clone(); }
 
   // Global
   void SetPeriod(TString period) { this->fPeriod = period; }
