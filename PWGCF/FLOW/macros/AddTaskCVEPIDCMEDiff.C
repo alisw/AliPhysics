@@ -1,6 +1,7 @@
 #include "TString.h"
 #include "TObjArray.h"
 #include "TGrid.h"
+#include "TFile.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -49,6 +50,7 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
 
   //=========================================================================
   // Read in Files
+  bool isDoNUE = true;
   TFile* fNUEFile = nullptr;
   TFile* fNUAFile = nullptr;
   TFile* fVZEROCalibFile = nullptr;
@@ -58,7 +60,7 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
   TList* fVZEROCalibList = nullptr;
 
   if (!gGrid) TGrid::Connect("alien://");
-  if (bDoNUE) {
+  if (isDoNUE) {
     if (period.EqualTo("LHC18q")) {
       fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q_FB768PL_dcazcut.root", "READ");
       fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
