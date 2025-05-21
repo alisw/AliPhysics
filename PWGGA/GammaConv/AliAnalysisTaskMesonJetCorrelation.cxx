@@ -221,6 +221,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoGenParticleInJet({}),
                                                                              fHistoGenParticleInJetWeighted({}),
                                                                              fHistoGenParticleInJetMomFrac({}),
+                                                                             fHistoGenParticleAllVsJetPt({}),
                                                                              fHistoGenLeadParticleInJetMomFrac({}),
                                                                              fHistoJetTrackPtRadialProfile({}),
                                                                              fHistoJetClusterPtRadialProfile({}),
@@ -525,6 +526,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoGenParticleInJet({}),
                                                                                            fHistoGenParticleInJetWeighted({}),
                                                                                            fHistoGenParticleInJetMomFrac({}),
+                                                                                           fHistoGenParticleAllVsJetPt({}),
                                                                                            fHistoGenLeadParticleInJetMomFrac({}),
                                                                                            fHistoJetTrackPtRadialProfile({}),
                                                                                            fHistoJetClusterPtRadialProfile({}),
@@ -835,6 +837,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoGenLeadParticleInJetMomFrac.resize(fnCuts);
     fHistoJetTrackPtRadialProfile.resize(fnCuts);
     fHistoJetClusterPtRadialProfile.resize(fnCuts);
+    fHistoGenParticleAllVsJetPt.resize(fnCuts);
     if(fDoWeightGenParticles>0){
       fHistoGenParticleInJetWeighted.resize(fnCuts);
     }
@@ -1484,6 +1487,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
           }
           fTrueJetList[iCut]->Add(fHistoGenParticleInJetWeighted[iCut]);
         }
+
+        fHistoGenParticleAllVsJetPt[iCut] = new TH3F("Inclusive_Particle_Pt_JetPt", "Inclusive_Particle_Pt_JetPt", 14, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        std::vector<TString> vecPartNamesPlusPi0 = {"#gamma", "#pi^{#pm}", "K^{#pm}", "K^{0}_{s}", "K^{0}_{l}", "p", "n", "#Lambda", "e^{#pm}", "#Sigma", "#nu", "other", "#pi^{0}", "#eta"};
+        for(size_t i = 0; i < vecPartNamesPlusPi0.size(); ++i){
+          fHistoGenParticleAllVsJetPt[iCut]->GetXaxis()->SetBinLabel(i+1, vecPartNamesPlusPi0[i]);
+        }
+        fTrueJetList[iCut]->Add(fHistoGenParticleAllVsJetPt[iCut]);
       }
     }
 
@@ -2588,7 +2598,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
           AliVParticle* tmpPart = vecTruePart[ipart];
           if(!tmpPart) continue;
-
+          if(!tmpPart->IsPhysicalPrimary()){
+            cout << "Particle is not a physical primary but ends up in my jet..." << endl;
+          } 
+          // else {
+          //   cout << "I am actually a primary :) " << endl;
+          // }
           int pdgCode = std::abs(tmpPart->PdgCode());
           if(tmpPart->Pt() > leadingpT){
             leadingpT = tmpPart->Pt();
@@ -2615,6 +2630,31 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           fHistoTrueJetPtVsMomFracVsLeadingPart[fiCut]->Fill(ipart, arrPartEnergy[ipart]/fTrueVectorJetPt.at(i), fTrueVectorJetPt.at(i), fWeightJetJetMC);
         }
       }      
+    }
+  }
+
+  // Now loop over all generated particles
+
+  if(fDoJetQA){
+    // Loop over all primary MC particle
+    for (Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
+
+      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+      if (!particle)
+        continue;
+      
+      int pdgCode = particle->PdgCode();
+      if(!(particle->IsPhysicalPrimary() || pdgCode == 111 || pdgCode == 221)){
+        continue;
+      }
+
+      int matchedJet = -1;
+      double RJetPi0Cand = 0;
+      double trueJetPt = 0.;
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)) {
+        trueJetPt = fTrueVectorJetPt[matchedJet];
+      }
+      fHistoGenParticleAllVsJetPt[fiCut]->Fill(GetParticleIndex(pdgCode), particle->Pt(), trueJetPt, fWeightJetJetMC);
     }
   }
 }
@@ -4894,6 +4934,10 @@ int AliAnalysisTaskMesonJetCorrelation::GetParticleIndex(int pdgcode){
     return 9;
   } else if(pdgcode == 12 || pdgcode == 14 || pdgcode == 16 ){ // Neutrinos
     return 10;
+  } else if(pdgcode == 111 ){ // Pi0
+    return 12;
+  } else if(pdgcode == 221 ){ // Eta
+    return 13;
   }
   return 11;
 }
