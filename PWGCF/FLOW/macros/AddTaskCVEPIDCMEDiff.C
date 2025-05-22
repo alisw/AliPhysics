@@ -7,12 +7,11 @@
 #include "TFile.h"
 #include <TError.h>
 
-bool isLocolTest = 0;
+static bool isLocalTest = 0;
 
-// 统一管理校准文件路径
 TString GetCalibFilePath(const TString& fileName) {
     TString basePath;
-    if (isLocolTest) {
+    if (isLocalTest) {
         basePath = "file:./calibration_files/";
     } else {
         basePath = "alien:///alice/cern.ch/user/c/chunzhen/calibration_files/";
@@ -21,7 +20,7 @@ TString GetCalibFilePath(const TString& fileName) {
 }
 
 AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
-  TString period                = "LHC18q",
+  TString period                = "LHC18r",
   TString plane                 = "TPC",
   TString pairs                 = "Proton",
   TString uniqueID              = "")
