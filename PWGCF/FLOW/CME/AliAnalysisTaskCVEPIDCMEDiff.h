@@ -76,6 +76,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   void SetDaughtersNSigmaTPC(float daughtersNSigmaTPC) { this -> fDaughtersNSigmaTPC = daughtersNSigmaTPC; }
 
  private:
+  bool fDebug;
   ////////////////////////
   // Procedural function
   ////////////////////////
@@ -235,7 +236,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   TH1I* fHistRunNumBin;
   std::array<TH1D*, 2> fHistCent;
   std::array<TH1D*, 2> fHistVz;
-  std::array<TH2D*, 8> fHist2CentQA;
+  std::array<TH2D*, 6> fHist2CentQA;
   std::array<TH2D*, 2> fHist2MultCentQA; // need for cheak pile up
   std::array<TH2D*, 6> fHist2MultMultQA; // need for cheak pile up
   // Track-wise
@@ -251,13 +252,13 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   TH1D* fHistProtonPt;
   TH1D* fHistProtonEta;
   TH1D* fHistProtonPhi;
-  TH1D* fHistProtonDcaXY;
-  TH1D* fHistProtonDcaZ;
+  TH2D* fHistProtonPtDcaXY;
+  TH2D* fHistProtonPtDcaZ;
   TH1D* fHistAntiProtonPt;
   TH1D* fHistAntiProtonEta;
   TH1D* fHistAntiProtonPhi;
-  TH1D* fHistAntiProtonDcaXY;
-  TH1D* fHistAntiProtonDcaZ;
+  TH2D* fHistAntiProtonPtDcaXY;
+  TH2D* fHistAntiProtonPtDcaZ;
 
   // V0s QA
   TH1D* fHistV0Pt;              // !Raw V0s' pT

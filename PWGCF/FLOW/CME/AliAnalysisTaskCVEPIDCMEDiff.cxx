@@ -19,6 +19,7 @@
 //--------------------------------------------------------------------------------
 
 #include <TString.h>
+#include <cstdio>
 #include <sys/time.h>
 
 #include <algorithm>
@@ -29,6 +30,7 @@
 #include <vector>
 #include <cmath>
 // ROOT classes
+#include "AliLog.h"
 #include "TChain.h"
 #include "TF1.h"
 #include "TList.h"
@@ -70,6 +72,8 @@ static const int MASSBIN = 30;
 //---------------------------------------------------
 AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
     : AliAnalysisTaskSE(),
+      fDebug(false),
+
       isCalculateLambdaHadron(false),
       isCalculateLambdaPion(false),
       isCalculateLambdaProton(false),
@@ -148,13 +152,13 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
       fHistProtonPt(nullptr),
       fHistProtonEta(nullptr),
       fHistProtonPhi(nullptr),
-      fHistProtonDcaXY(nullptr),
-      fHistProtonDcaZ(nullptr),
+      fHistProtonPtDcaXY(nullptr),
+      fHistProtonPtDcaZ(nullptr),
       fHistAntiProtonPt(nullptr),
       fHistAntiProtonEta(nullptr),
       fHistAntiProtonPhi(nullptr),
-      fHistAntiProtonDcaXY(nullptr),
-      fHistAntiProtonDcaZ(nullptr),
+      fHistAntiProtonPtDcaXY(nullptr),
+      fHistAntiProtonPtDcaZ(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Eta(nullptr),
       fHistV0DcatoPrimVertex(nullptr),
@@ -219,6 +223,8 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
 //---------------------------------------------------
 AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
     : AliAnalysisTaskSE(name),
+      fDebug(false),
+
       isCalculateLambdaHadron(false),
       isCalculateLambdaPion(false),
       isCalculateLambdaProton(false),
@@ -297,13 +303,13 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
       fHistProtonPt(nullptr),
       fHistProtonEta(nullptr),
       fHistProtonPhi(nullptr),
-      fHistProtonDcaXY(nullptr),
-      fHistProtonDcaZ(nullptr),
+      fHistProtonPtDcaXY(nullptr),
+      fHistProtonPtDcaZ(nullptr),
       fHistAntiProtonPt(nullptr),
       fHistAntiProtonEta(nullptr),
       fHistAntiProtonPhi(nullptr),
-      fHistAntiProtonDcaXY(nullptr),
-      fHistAntiProtonDcaZ(nullptr),
+      fHistAntiProtonPtDcaXY(nullptr),
+      fHistAntiProtonPtDcaZ(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Eta(nullptr),
       fHistV0DcatoPrimVertex(nullptr),
@@ -376,13 +382,16 @@ AliAnalysisTaskCVEPIDCMEDiff::~AliAnalysisTaskCVEPIDCMEDiff() {
   // histograms are in the output list and deleted when the output
   if (fQAList) delete fQAList;
   if (fResultsList) delete fResultsList;
+  if (fListNUE) delete fListNUE;
+  if (fListNUA) delete fListNUA;
+  if (fListVZEROCalib) delete fListVZEROCalib;
 }
 
 //---------------------------------------------------
 
 void AliAnalysisTaskCVEPIDCMEDiff::Terminate(Option_t*) {
   // Terminate loop
-  Printf("Terminate");
+  AliInfo("Terminate");
 }
 
 //---------------------------------------------------
@@ -422,6 +431,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
 
     fMultCutPU = std::unique_ptr<TF1>(new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90));
     fMultCutPU->SetParameters(parFB32);
+  } else {
+    AliFatal("Sorry only support LHC18q/r dataset!");
   }
 
   ////////////////////////
@@ -430,9 +441,9 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   // Load Calibration Files
   // The global read-in lists and hists are loaded here.
   // They do not need to be loaded run by run.
-  if (isDoNUE) {
+  if (isDoNUE || isDoLambdaNUE) {
     if (!fListNUE) {
-      std::cout << ("NUE list not found") << std::endl;
+      AliFatal("NUE list not found");
       return;
     }
   }
@@ -441,12 +452,12 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   ////////////////////////
   if (fPlaneEstimator.EqualTo("TPC")) {
     if (!fListNUA) {
-      std::cout << ("NUA list not found") << std::endl;
+      AliFatal("NUA list not found");
       return;
     }
     if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
-      hCorrectNUAPos = nullptr;
-      hCorrectNUANeg = nullptr;
+      hCorrectNUAPos = (TH3F*)nullptr;
+      hCorrectNUANeg = (TH3F*)nullptr;
     }
   }
   ////////////////////////
@@ -454,14 +465,13 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   ////////////////////////
   if (fPlaneEstimator.EqualTo("V0C")) {
     if (!fListVZEROCalib) {
-      std::cout << ("V0C list not found") << std::endl;
-      return;
+      AliFatal("V0C calibration list not found");
     }
     contQxncm = (AliOADBContainer*)fListVZEROCalib->FindObject(Form("fqxc%im", 2));  // V0C Qx Mean
     contQyncm = (AliOADBContainer*)fListVZEROCalib->FindObject(Form("fqyc%im", 2));  // V0C Qy Mean
-    hQx2mV0C = nullptr;
-    hQy2mV0C = nullptr;
-    fHCorrectV0ChWeghts = nullptr;
+    hQx2mV0C = (TH1D*)nullptr;
+    hQy2mV0C = (TH1D*)nullptr;
+    fHCorrectV0ChWeghts = (TH2F*)nullptr;
   }
 
   //------------------
@@ -471,29 +481,27 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fQAList->SetName("fQAList");
   fQAList->SetOwner(kTRUE);
   // event-wise
-  fEvtCount = new TH1D("EvtCount", "Event Count", 23, 1, 24);
+  fEvtCount = new TH1D("EvtCount", "Event Count", 20, 1, 21);
   fEvtCount->GetXaxis()->SetBinLabel(1, "All");
   fEvtCount->GetXaxis()->SetBinLabel(2, "Manager");
   fEvtCount->GetXaxis()->SetBinLabel(3, "Handler");
   fEvtCount->GetXaxis()->SetBinLabel(4, "fAOD");
   fEvtCount->GetXaxis()->SetBinLabel(5, "fPID");
-  fEvtCount->GetXaxis()->SetBinLabel(6, "fUtils");
-  fEvtCount->GetXaxis()->SetBinLabel(7, "fMultSel");
-  fEvtCount->GetXaxis()->SetBinLabel(8, "Trigger");
-  fEvtCount->GetXaxis()->SetBinLabel(9, "Run Number");
-  fEvtCount->GetXaxis()->SetBinLabel(10, "Read in");
-  fEvtCount->GetXaxis()->SetBinLabel(11, "Vertex");
-  fEvtCount->GetXaxis()->SetBinLabel(12, "Centrality");
-  fEvtCount->GetXaxis()->SetBinLabel(13, "Pile up");
-  fEvtCount->GetXaxis()->SetBinLabel(14, "Get VZERO Plane");
-  fEvtCount->GetXaxis()->SetBinLabel(15, "Get ZDC Plane");
-  fEvtCount->GetXaxis()->SetBinLabel(16, "Reset Vector");
-  fEvtCount->GetXaxis()->SetBinLabel(17, "Loop Track");
-  fEvtCount->GetXaxis()->SetBinLabel(18, "Get TPC Plane");
-  fEvtCount->GetXaxis()->SetBinLabel(19, "Resolution");
-  fEvtCount->GetXaxis()->SetBinLabel(20, "Loop V0");
-  fEvtCount->GetXaxis()->SetBinLabel(21, "Pair V0Trk");
-  fEvtCount->GetXaxis()->SetBinLabel(22, "Pair V0V0");
+  fEvtCount->GetXaxis()->SetBinLabel(6, "fMultSel");
+  fEvtCount->GetXaxis()->SetBinLabel(7, "Trigger");
+  fEvtCount->GetXaxis()->SetBinLabel(8, "Run Number");
+  fEvtCount->GetXaxis()->SetBinLabel(9, "Calib Readin");
+  fEvtCount->GetXaxis()->SetBinLabel(10, "Vertex");
+  fEvtCount->GetXaxis()->SetBinLabel(11, "Centrality");
+  fEvtCount->GetXaxis()->SetBinLabel(12, "Pile up");
+  fEvtCount->GetXaxis()->SetBinLabel(13, "Reset Vector");
+  fEvtCount->GetXaxis()->SetBinLabel(14, "Loop Track");
+  fEvtCount->GetXaxis()->SetBinLabel(15, "Get Plane");
+  fEvtCount->GetXaxis()->SetBinLabel(16, "Resolution");
+  fEvtCount->GetXaxis()->SetBinLabel(17, "Loop V0");
+  fEvtCount->GetXaxis()->SetBinLabel(18, "Pair V0Trk");
+  fEvtCount->GetXaxis()->SetBinLabel(19, "Pair V0V0");
+  fEvtCount->GetXaxis()->SetBinLabel(20, "Final Event");
 
   fQAList->Add(fEvtCount);
 
@@ -542,12 +550,10 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fHistVz[1] = new TH1D("fHistVzAfCut", "Dist of Vz After Cut", 200, -20., 20.);
   fHist2CentQA[0] = new TH2D("fHist2CentQA_V0M_SPD1_BfCut", ";centV0M;centSPD1", 80, 0, 80., 80, 0, 80.);
   fHist2CentQA[1] = new TH2D("fHist2CentQA_V0M_SPD1_AfCut", ";centV0M;centSPD1", 80, 0, 80., 80, 0, 80.);
-  fHist2CentQA[2] = new TH2D("fHist2CentQA_V0M_TRK_BfCut", ";centV0M;centTRK", 80, 0, 80., 80, 0, 80.);
-  fHist2CentQA[3] = new TH2D("fHist2CentQA_V0M_TRK_AfCut", ";centV0M;centTRK", 80, 0, 80., 80, 0, 80.);
-  fHist2CentQA[4] = new TH2D("fHist2CentQA_V0M_SPD0_BfCut", ";centV0M;centSPD0", 80, 0, 80., 80, 0, 80.);
-  fHist2CentQA[5] = new TH2D("fHist2CentQA_V0M_SPD0_AfCut", ";centV0M;centSPD0", 80, 0, 80., 80, 0, 80.);
-  fHist2CentQA[6] = new TH2D("fHist2CentQA_SPD1_SPD0_BfCut", ";centSPD1;centSPD0", 80, 0, 80., 80, 0, 80.);
-  fHist2CentQA[7] = new TH2D("fHist2CentQA_SPD1_SPD0_AfCut", ";centSPD1;centSPD0", 80, 0, 80., 80, 0, 80.);
+  fHist2CentQA[2] = new TH2D("fHist2CentQA_V0M_SPD0_BfCut", ";centV0M;centSPD0", 80, 0, 80., 80, 0, 80.);
+  fHist2CentQA[3] = new TH2D("fHist2CentQA_V0M_SPD0_AfCut", ";centV0M;centSPD0", 80, 0, 80., 80, 0, 80.);
+  fHist2CentQA[4] = new TH2D("fHist2CentQA_SPD1_SPD0_BfCut", ";centSPD1;centSPD0", 80, 0, 80., 80, 0, 80.);
+  fHist2CentQA[5] = new TH2D("fHist2CentQA_SPD1_SPD0_AfCut", ";centSPD1;centSPD0", 80, 0, 80., 80, 0, 80.);
   fHist2MultCentQA[0] = new TH2D("fHist2MultCentQA_BfCut", ";centV0M;multFB32", 80, 0, 80., 50, 0, 5000.);
   fHist2MultCentQA[1] = new TH2D("fHist2MultCentQA_AfCut", ";centV0M;multFB32", 80, 0, 80., 50, 0, 5000.);
 
@@ -577,24 +583,24 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fHistProtonPt = new TH1D("fHistProtonPt", "fHistProtonPt;p_{T}", 200, 0., 20.);
   fHistProtonEta = new TH1D("fHistProtonEta", "fHistProtonEta;#eta", 100, -2., 2.);
   fHistProtonPhi = new TH1D("fHistProtonPhi", "fHistProtonPhi;#phi", 360, 0., TMath::TwoPi());
-  fHistProtonDcaXY = new TH1D("fHistProtonDcaXY", "fHistProtonDcaXY;DcaXY", 500, 0., 5);
-  fHistProtonDcaZ = new TH1D("fHistProtonDcaZ", "fHistProtonDcaZ;DcaZ", 500, 0., 5);
+  fHistProtonPtDcaXY = new TH2D("fHistProtonPtDcaXY", "fHistProtonPtDcaXY;Pt;DcaXY", 23, 0.4, 5.0,300, 0., 2);
+  fHistProtonPtDcaZ  = new TH2D("fHistProtonPtDcaZ", "fHistProtonPtDcaZ;Pt;DcaZ", 23, 0.4, 5.0,300, 0., 2);
   fQAList->Add(fHistProtonPt);
   fQAList->Add(fHistProtonEta);
   fQAList->Add(fHistProtonPhi);
-  fQAList->Add(fHistProtonDcaXY);
-  fQAList->Add(fHistProtonDcaZ);
+  fQAList->Add(fHistProtonPtDcaXY);
+  fQAList->Add(fHistProtonPtDcaZ);
 
   fHistAntiProtonPt = new TH1D("fHistAntiProtonPt", "fHistAntiProtonPt;p_{T}", 200, 0., 20.);
   fHistAntiProtonEta = new TH1D("fHistAntiProtonEta", "fHistAntiProtonEta;#eta", 100, -2., 2.);
   fHistAntiProtonPhi = new TH1D("fHistAntiProtonPhi", "fHistAntiProtonPhi;#phi", 360, 0., TMath::TwoPi());
-  fHistAntiProtonDcaXY = new TH1D("fHistAntiProtonDcaXY", "fHistAntiProtonDcaXY;DcaXY", 500, 0., 5);
-  fHistAntiProtonDcaZ = new TH1D("fHistAntiProtonDcaZ", "fHistAntiProtonDcaZ;DcaZ", 500, 0., 5);
+  fHistAntiProtonPtDcaXY = new TH2D("fHistAntiProtonPtDcaXY", "fHistAntiProtonPtDcaXY;Pt;DcaXY", 23, 0.4, 5.0,300, 0., 2);
+  fHistAntiProtonPtDcaZ  = new TH2D("fHistAntiProtonPtDcaZ", "fHistAntiProtonPtDcaZ;Pt;DcaZ", 23, 0.4, 5.0,300, 0., 2);
   fQAList->Add(fHistAntiProtonPt);
   fQAList->Add(fHistAntiProtonEta);
   fQAList->Add(fHistAntiProtonPhi);
-  fQAList->Add(fHistAntiProtonDcaXY);
-  fQAList->Add(fHistAntiProtonDcaZ);
+  fQAList->Add(fHistAntiProtonPtDcaXY);
+  fQAList->Add(fHistAntiProtonPtDcaZ);
 
   // V0s QA
   fHistV0Pt = new TH1D("hV0Pt", "", 200, 0., 20.);
@@ -685,7 +691,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fQAList->Add(fHist3AntiLambdaCentPtMass[1]);
 
   PostData(1, fQAList);
-  if (fDebug) Printf("Post fQAList Data Success!");
+  if (fDebug) AliInfo("Post fQAList Data Success!");
 
   ////////////////////////
   // Results
@@ -791,7 +797,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
     }
   }
   PostData(2, fResultsList);
-  if (fDebug) Printf("Post fResultsList Data Success!");
+  if (fDebug) AliInfo("Post fResultsList Data Success!");
 }
 
 //------------------------------------------------
@@ -800,11 +806,11 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   bool isNeedPairV0Trk = isCalculateLambdaProton || isCalculateLambdaPion || isCalculateLambdaHadron;
   bool isNeedPairV0V0 = isCalculateLambdaLambda;
 
-  if (fDebug) Printf("===============================We are in UserExec!!!===================================");
+  if (fDebug) AliInfo("===============================We are in UserExec!!!===================================");
   fEvtCount->Fill(1);
-  //----------------------------
+  // ----------------------------
   // Handle
-  //----------------------------
+  // ----------------------------
   AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager) {
     AliError(Form("%s: Could not get Analysis Manager", GetName()));
@@ -829,14 +835,14 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   } else
     fEvtCount->Fill(5);
 
-  fMultSel = (AliMultSelection*)InputEvent()->FindListObject("MultSelection");
+  fMultSel = (AliMultSelection*)fAOD->FindListObject("MultSelection");
   if (!fMultSel) {
     AliError(Form("%s: Could not get AliMultSelection", GetName()));
   } else
-    fEvtCount->Fill(7);
+    fEvtCount->Fill(6);
 
   if (!manager || !handler || !fAOD || !fPIDResponse || !fMultSel) return;
-  if (fDebug) Printf("Handles done!");
+  if (fDebug) AliInfo("Handles done!");
 
   //----------------------------
   // Trigger
@@ -852,14 +858,22 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   else if (fTrigger.EqualTo("kINT7+kCentral+kSemiCentral"))
     isTrigselected = mask & (AliVEvent::kINT7 + AliVEvent::kCentral + AliVEvent::kSemiCentral);
   if (isTrigselected == false) return;
-  fEvtCount->Fill(8);
-  if (fDebug) Printf("trigger done!");
+  fEvtCount->Fill(7);
+  if (fDebug) AliInfo("trigger done!");
 
   //----------------------------
   // Run Number
   //----------------------------
   fRunNum = fAOD->GetRunNumber();
-  fEvtCount->Fill(9);
+  if (!(runNumList->find(fRunNum) != runNumList->end())) {
+    AliError(Form("Run number %d not in runNumList! No calib files", fRunNum));
+  }
+  fHistRunNumBin->Fill(fRunNumBin);
+  fEvtCount->Fill(8);
+
+  //----------------------------
+  // Calib load
+  //----------------------------
   if (fRunNum != fOldRunNum) {
     // Load the run dependent calibration hist
     if (!LoadCalibHistForThisRun()) return;
@@ -867,9 +881,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     fOldRunNum = fRunNum;
     if (fRunNumBin < 0) return;
   }
-  fHistRunNumBin->Fill(fRunNumBin);
-  fEvtCount->Fill(10);
-  if (fDebug) Printf("read in done!");
+  fEvtCount->Fill(9);
+  if (fDebug) AliInfo("calib file load done!");
 
   //----------------------------
   // Vertex
@@ -889,42 +902,37 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     }
   }
   if (fVzBin < 0) return;
-  fEvtCount->Fill(11);
-  if (fDebug) Printf("vertex done!");
+  fEvtCount->Fill(10);
+  if (fDebug) AliInfo("vertex done!");
 
   //----------------------------
   // Centrality
   //----------------------------
   float centV0M = fMultSel->GetMultiplicityPercentile("V0M");
-  float centTRK = fMultSel->GetMultiplicityPercentile("TRK");
   float centSPD0 = fMultSel->GetMultiplicityPercentile("CL0");
   float centSPD1 = fMultSel->GetMultiplicityPercentile("CL1");
 
   // we use centV0M as the default centrality
   fCent = centV0M;
   fHist2CentQA[0]->Fill(centV0M, centSPD1);
-  fHist2CentQA[2]->Fill(centV0M, centTRK);
-  fHist2CentQA[4]->Fill(centV0M, centSPD0);
-  fHist2CentQA[6]->Fill(centSPD1, centSPD0);
+  fHist2CentQA[2]->Fill(centV0M, centSPD0);
+  fHist2CentQA[4]->Fill(centSPD1, centSPD0);
   if (fabs(fCent - centSPD1) > 7.5) return;
   fHist2CentQA[1]->Fill(centV0M, centSPD1);
-  fHist2CentQA[3]->Fill(centV0M, centTRK);
-  fHist2CentQA[5]->Fill(centV0M, centSPD0);
-  fHist2CentQA[7]->Fill(centSPD1, centSPD0);
+  fHist2CentQA[3]->Fill(centV0M, centSPD0);
+  fHist2CentQA[5]->Fill(centSPD1, centSPD0);
   if (fCent < 0 || fCent >= 80) return;
 
-  // PF-Preview comment
   if (fCent > 30 && fCent < 50) {
     if (!(mask & (AliVEvent::kINT7 + AliVEvent::kSemiCentral))) return;
   } else {
     if (!(mask & AliVEvent::kINT7)) return;
   }
-
-  // cent bin
+  // PF-Preview comment to make the shape edge of cent dist
   fCentBin = (int)fCent / 10;
   fHistCent[0]->Fill(fCent);
-  fEvtCount->Fill(12);
-  if (fDebug) Printf("centrality done!");
+  fEvtCount->Fill(11);
+  if (fDebug) AliInfo("centrality done!");
 
   //----------------------------
   // Pile up
@@ -933,20 +941,20 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     if (!RejectEvtTFFit(centSPD0)) return;
   }
   fHistCent[1]->Fill(fCent);
-  fEvtCount->Fill(13);
-  if (fDebug) Printf("pile-up done!");
+  fEvtCount->Fill(12);
+  if (fDebug) AliInfo("pile-up done!");
   //----------------------------
   // Loop Tracks / Fill Vectors
   //----------------------------
   // Reset vectors
   ResetVectors();
-  fEvtCount->Fill(16);
-  // must loop tracks becasue we need the TPC plane
+  fEvtCount->Fill(13);
+  // must loop tracks
   if (!LoopTracks()) return;
-  fEvtCount->Fill(17);
-  if (fDebug) Printf("Loop Tracks done!");
+  fEvtCount->Fill(14);
+  if (fDebug) AliInfo("Loop Tracks done!");
   //----------------------------
-  // TPC Plane
+  // Plane
   //----------------------------
   if (fPlaneEstimator.EqualTo("TPC")) {
     fPsi2 = GetTPCPlane();
@@ -957,39 +965,42 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     return;
   }
   if (TMath::IsNaN(fPsi2)) return;
-  fEvtCount->Fill(18);
-  if (fDebug) Printf("Get Plane done!");
+  fEvtCount->Fill(15);
+  if (fDebug) AliInfo("Get Plane done!");
   //----------------------------
   // Fill Resolution
   //----------------------------
   fHist2Psi2->Fill(fCent, fPsi2);
-  fEvtCount->Fill(19);
+  fEvtCount->Fill(16);
   //----------------------------
   // Get Lambda Vector
   //----------------------------
   if (!LoopV0s()) return;
-  fEvtCount->Fill(20);
-  if (fDebug) Printf("Get Lambda Vector done!");
+  fEvtCount->Fill(17);
+  if (fDebug) AliInfo("Get Lambda Vector done!");
   //----------------------------
   // Pair V0 Trk
   //----------------------------
-  if (isNeedPairV0Trk)
+  if (isNeedPairV0Trk) {
     if (!PairV0Trk()) return;
-  fEvtCount->Fill(21);
-  if (fDebug) Printf("Pair V0 & Trk done!");
+    else fEvtCount->Fill(18);
+  }
+  if (fDebug) AliInfo("Pair V0 & Trk done!");
   //----------------------------
   // Pair V0 V0
   //----------------------------
-  if (isNeedPairV0V0)
-    if (!PairV0V0()) return;
-  fEvtCount->Fill(22);
-  if (fDebug) Printf("Pair V0 & V0 done!");
+  if (isNeedPairV0V0) {
+    if (!PairV0V0()) return; 
+    else fEvtCount->Fill(19);
+  }
+  if (fDebug) AliInfo("Pair V0 & V0 done!");
   //------------------
   // Post output data.
   //------------------
+  fEvtCount->Fill(20);
   PostData(1, fQAList);
   PostData(2, fResultsList);
-  if (fDebug) Printf("analysis done!");
+  if (fDebug) AliInfo("analysis done!");
 }
 
 //---------------------------------------------------
@@ -1025,17 +1036,13 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     float weight = 1.;
     if (isDoNUE) {
       float wEff = GetNUECor(charge, pt);
-      if (wEff < 0)
-        continue;
-      else
-        weight *= wEff;
+      if (wEff < 0) continue;
+      else weight *= wEff;
     }
     if (fPlaneEstimator.EqualTo("TPC")) {
       float wAcc = GetNUACor(charge, phi, eta, fVertex[2]);
-      if (wAcc < 0)
-        continue;
-      else
-        weight *= wAcc;
+      if (wAcc < 0) continue;
+      else weight *= wAcc;
       fHistPhi[1]->Fill(phi, wAcc);
     }
 
@@ -1077,38 +1084,35 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
       if (isProtonCustomizedDCACut)
         isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < 1. && fabs(dcaxy) < (0.0105 + 0.035 / TMath::Power(pt, 1.1)));
     }
+    if(isCalculateLambdaHadron) {
+        isPIDTrkWeWant = true;
+    }
     if (!isPIDTrkWeWant) continue;
 
     int code = 0;
     float pid_weight = 1.;
     if (charge > 0) {
-      if (isCalculateLambdaProton)
-        code = 2212;
-      else if (isCalculateLambdaPion)
-        code = 211;
-      else
-        code = 999;
+      if (isCalculateLambdaProton) code = 2212;
+      else if (isCalculateLambdaPion) code = 211;
+      else code = 999;
       fHistProtonPt->Fill(pt);
       fHistProtonEta->Fill(eta);
       fHistProtonPhi->Fill(phi);
-      fHistProtonDcaXY->Fill(fabs(dcaxy));
-      fHistProtonDcaZ->Fill(fabs(dcaz));
+      fHistProtonPtDcaXY->Fill(pt,fabs(dcaxy));
+      fHistProtonPtDcaZ->Fill(pt,fabs(dcaz));
       if (isDoNUE) {
         float nue_pid_weight = GetPIDNUECor(code, pt);
         if (nue_pid_weight > 0) pid_weight *= nue_pid_weight;
       }
     } else {
-      if (isCalculateLambdaProton)
-        code = -2212;
-      else if (isCalculateLambdaPion)
-        code = -211;
-      else
-        code = -999;
+      if (isCalculateLambdaProton) code = -2212;
+      else if (isCalculateLambdaPion) code = -211;
+      else code = -999;
       fHistAntiProtonPt->Fill(pt);
       fHistAntiProtonEta->Fill(eta);
       fHistAntiProtonPhi->Fill(phi);
-      fHistAntiProtonDcaXY->Fill(fabs(dcaxy));
-      fHistAntiProtonDcaZ->Fill(fabs(dcaz));
+      fHistAntiProtonPtDcaXY->Fill(pt,fabs(dcaxy));
+      fHistAntiProtonPtDcaZ->Fill(pt,fabs(dcaz));
       if (isDoNUE) {
         float nue_pid_weight = GetPIDNUECor(code, pt);
         if (nue_pid_weight > 0) pid_weight *= nue_pid_weight;
@@ -1272,9 +1276,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk() {
       float phi = particle[2];
       int id = (int)particle[3];
       int code = (int)particle[4];
-      float weight = particle[5];
       float pidweight = particle[6];
-      float dcaz = particle[7];
       if (id == id_daughter_1 || id == id_daughter_2) continue;
 
       float psi2_forThisPair = nan("");
@@ -1329,7 +1331,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk() {
         bitsLambdaHadronPair.SetBitNumber(2, code_lambda == -3122 && code > 0);
         bitsLambdaHadronPair.SetBitNumber(3, code_lambda == -3122 && code < 0);
         for (int iBits = 0; iBits < nBits; iBits++) {
-          float weight_all = weight_lambda * weight;
+          float weight_all = weight_lambda * pidweight;
           if (bitsLambdaHadronPair.TestBitNumber(iBits)) {
             fHist3LambdaHadronMassIntg[iBits]->Fill(fCent, intgBin, mass_lambda);
             fProfile3DDeltaLambdaHadronMassIntg[iBits]->Fill(fCent, intgBin, mass_lambda, delta, weight_all);
@@ -1345,7 +1347,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk() {
         bitsLambdaPionPair.SetBitNumber(2, code_lambda == -3122 && code == 211);
         bitsLambdaPionPair.SetBitNumber(3, code_lambda == -3122 && code == -211);
         for (int iBits = 0; iBits < nBits; iBits++) {
-          float weight_all = weight_lambda * weight;
+          float weight_all = weight_lambda * pidweight;
           if (bitsLambdaPionPair.TestBitNumber(iBits)) {
             fHist3LambdaPionMassIntg[iBits]->Fill(fCent, intgBin, mass_lambda);
             fProfile3DDeltaLambdaPionMassIntg[iBits]->Fill(fCent, intgBin, mass_lambda, delta, weight_all);
@@ -1454,9 +1456,18 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadCalibHistForThisRun() {
     hQy2mV0C = ((TH1D*)contQyncm->GetObject(fRunNum));
     // for gain equalization
     fHCorrectV0ChWeghts = (TH2F*)fListVZEROCalib->FindObject(Form("hWgtV0ChannelsvsVzRun%d", fRunNum));
-    if (!hQx2mV0C) return false;
-    if (!hQy2mV0C) return false;
-    if (!fHCorrectV0ChWeghts) return false;
+    if (!hQx2mV0C) {
+      AliError("Not found hQx2mV0C");
+      return false;
+    }
+    if (!hQy2mV0C) {
+      AliError("Not found hQy2mV0C");
+      return false;
+    }
+    if (!fHCorrectV0ChWeghts) {
+      AliError("Not found fHCorrectV0ChWeghts");
+      return false;
+    }
   }
   return true;
 }
@@ -1464,13 +1475,14 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadCalibHistForThisRun() {
 //---------------------------------------------------
 
 bool AliAnalysisTaskCVEPIDCMEDiff::RejectEvtTFFit(float centSPD0) {
-  int nITSClsLy0 = fAOD->GetNumberOfITSClusters(0);
-  int nITSClsLy1 = fAOD->GetNumberOfITSClusters(1);
+  const int nITSClsLy0 = fAOD->GetNumberOfITSClusters(0);
+  const int nITSClsLy1 = fAOD->GetNumberOfITSClusters(1);
   int nITSCls = nITSClsLy0 + nITSClsLy1;
 
   AliAODTracklets* aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
+  if(!aodTrkl) return false;
 
-  int nITSTrkls = aodTrkl->GetNumberOfTracklets();
+  const int nITSTrkls = aodTrkl->GetNumberOfTracklets();
 
   const int nTracks = fAOD->GetNumberOfTracks();
   int multTrk = 0;
@@ -1486,14 +1498,14 @@ bool AliAnalysisTaskCVEPIDCMEDiff::RejectEvtTFFit(float centSPD0) {
 
   AliAODVZERO* aodV0 = fAOD->GetVZEROData();
   if(!aodV0) return false;
-  float multV0a = aodV0->GetMTotV0A();
-  float multV0c = aodV0->GetMTotV0C();
+  const float multV0a = aodV0->GetMTotV0A();
+  const float multV0c = aodV0->GetMTotV0C();
   float multV0Tot = multV0a + multV0c;
-  unsigned short multV0aOn = aodV0->GetTriggerChargeA();
-  unsigned short multV0cOn = aodV0->GetTriggerChargeC();
-  unsigned short multV0On = multV0aOn + multV0cOn;
+  const auto multV0aOn = aodV0->GetTriggerChargeA();
+  const auto multV0cOn = aodV0->GetTriggerChargeC();
+  auto multV0On = multV0aOn + multV0cOn;
 
-  // pile-up cuts
+    // pile-up cuts with logging
   if (centSPD0 < fCenCutLowPU->Eval(fCent)) return false;
   if (centSPD0 > fCenCutHighPU->Eval(fCent)) return false;
   if (nITSCls > fSPDCutPU->Eval(nITSTrkls)) return false;
@@ -1502,7 +1514,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::RejectEvtTFFit(float centSPD0) {
   if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
   if (fAOD->IsIncompleteDAQ()) return false;
 
-  if (isTightPileUp == true) {
+  if (isTightPileUp) {
     int tpcClsTot = fAOD->GetNumberOfTPCClusters();
     float nclsDif = tpcClsTot - (53182.6 + 113.326 * multV0Tot - 0.000831275 * multV0Tot * multV0Tot);
     if (nclsDif > 200000)  // can be varied to 150000, 200000
@@ -1539,7 +1551,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::CheckPIDofParticle(AliAODTrack* ftrack, int p
   if (pidToCheck == 0) return kTRUE;  //// Charge Particles do not need PID check
 
   if (!fPIDResponse) {
-    Printf("\n Could Not access PIDResponse Task, please Add the Task...\n return with kFALSE pid\n");
+    AliInfo("\n Could Not access PIDResponse Task, please Add the Task...\n return with kFALSE pid\n");
     return kFALSE;
   }
 
@@ -1590,7 +1602,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::CheckPIDofParticle(AliAODTrack* ftrack, int p
     // }
     return isProton;
   } else {
-    Printf("\n -Ve number not allowed! Choose among: 0,1,2,3 (Charge Pion, Kaon, Proton)\n return with kFALSE \n");
+    AliInfo("\n -Ve number not allowed! Choose among: 0,1,2,3 (Charge Pion, Kaon, Proton)\n return with kFALSE \n");
     return false;
   }
 }
@@ -1600,51 +1612,19 @@ bool AliAnalysisTaskCVEPIDCMEDiff::CheckPIDofParticle(AliAODTrack* ftrack, int p
 float AliAnalysisTaskCVEPIDCMEDiff::GetNUECor(int charge, float pt) {
   if (!fListNUE) return -1;
   if (charge == 0) return -1;
-  TString histName = (charge > 0) ? "h_eff_pos_hadron" : "h_eff_neg_hadron";
+
+  TString histName;
+  if (fPeriod.EqualTo("LHC18q")) {
+    histName = (charge > 0) ? "eff_pt_poshadron_18q_hist" : "eff_pt_neghadron_18q_hist";
+  } else if (fPeriod.EqualTo("LHC18r")) {
+    histName = (charge > 0) ? "eff_pt_poshadron_18r_hist" : "eff_pt_neghadron_18r_hist";
+  } else {
+    return -1;
+  }
+
   TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
   if (!efficiencyHist) return -1;
-  int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
-  float binContent = efficiencyHist->GetBinContent(ptBin);
 
-  if (binContent > 1.e-5) {
-    return 1.0 / binContent;
-  } else
-    return -1;
-  // float binContent = -1;
-  // TString histName = (charge > 0) ? "h2_eff_pos_hadron_dcazcut" : "h2_eff_neg_hadron_dcazcut";
-  // TH2D* h2_eff = (TH2D*)fListNUE->FindObject(histName);
-  // if (!h2_eff) return -1;
-  // float dcazcut = fDcaCutZ;
-  // if (dcazcut > 1.0) dcazcut = 1.0;
-  // dcazcut = dcazcut - 1.e-6;
-  // binContent = h2_eff->GetBinContent(h2_eff->FindBin(dcazcut, pt));
-
-  // if (binContent > 1.e-6) {
-  //   return 1.0 / binContent;
-  // } else return -1;
-}
-
-//---------------------------------------------------
-float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, float pt) {
-  if (!fListNUE) return -1;
-  TString histName;
-
-  if (pdgcode == 2212)
-    histName = "h_eff_pos_proton";
-  else if (pdgcode == -2212)
-    histName = "h_eff_neg_proton";
-  else if (pdgcode == 3122)
-    histName = "h_eff_lambda";
-  else if (pdgcode == -3122)
-    histName = "h_eff_antilambda";
-  else if (pdgcode == 211)
-    histName = "h_eff_pos_pion";
-  else if (pdgcode == -211)
-    histName = "h_eff_neg_pion";
-  else return -1;
-
-  TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
-  if (!efficiencyHist) return 1.0;
   int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
   float binContent = efficiencyHist->GetBinContent(ptBin);
 
@@ -1653,26 +1633,48 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, float pt) {
   } else {
     return -1;
   }
+}
 
-  // float binContent = -1;
-  // if(fabs(pdgcode) == 2212) {
-  //   pdgcode == 2212 ? histName = "h2_eff_pos_proton_dcazcut" : "h2_eff_neg_proton_dcazcut";
-  //   TH2D* h2_eff = (TH2D*)fListNUE->FindObject(histName);
-  //   if (!h2_eff) return -1;
-  //   float dcazcut = fDcaCutZ;
-  //   if (dcazcut > 1.0) dcazcut = 1.0;
-  //   dcazcut = dcazcut - 1.e-6;
-  //   binContent = h2_eff->GetBinContent(h2_eff->FindBin(dcazcut, pt));
-  // } else if (fabs(pdgcode == 3122)) {
-  //   pdgcode == 3122 ? histName = "h_eff_lambda" : "h_eff_antilambda";
-  //   TH1D* h_eff = (TH1D*)fListNUE->FindObject(histName);
-  //   if (!h_eff) return -1;
-  //   binContent = h_eff->GetBinContent(h_eff->FindBin(pt));
-  // } else return -1;
+//---------------------------------------------------
+float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, float pt) {
+  if (!fListNUE) return -1;
+  TString histName;
 
-  // if (binContent > 1.e-6) {
-  // return 1.0 / binContent;
-  // } else return -1;
+  if (fPeriod.EqualTo("LHC18q")) {
+    if      (pdgcode == 2212)  histName = "eff_pt_proton_18q_hist";
+    else if (pdgcode == -2212) histName = "eff_pt_antiproton_18q_hist";
+    else if (pdgcode == 3122)  histName = "eff_pt_lambda_18q_hist";
+    else if (pdgcode == -3122) histName = "eff_pt_antilambda_18q_hist";
+    else if (pdgcode == 211)   histName = "eff_pt_pospion_18q_hist";
+    else if (pdgcode == -211)  histName = "eff_pt_negpion_18q_hist";
+    else if (pdgcode == 999)   histName = "eff_pt_poshadron_18q_hist";
+    else if (pdgcode == -999)  histName = "eff_pt_neghadron_18q_hist";
+    else return -1;
+  } else if (fPeriod.EqualTo("LHC18r")) {
+    if (pdgcode == 2212)       histName = "eff_pt_proton_18r_hist";
+    else if (pdgcode == -2212) histName = "eff_pt_antiproton_18r_hist";
+    else if (pdgcode == 3122)  histName = "eff_pt_lambda_18r_hist";
+    else if (pdgcode == -3122) histName = "eff_pt_antilambda_18r_hist";
+    else if (pdgcode == 211)   histName = "eff_pt_pospion_18r_hist";
+    else if (pdgcode == -211)  histName = "eff_pt_negpion_18r_hist";
+    else if (pdgcode == 999)   histName = "eff_pt_poshadron_18r_hist";
+    else if (pdgcode == -999)  histName = "eff_pt_neghadron_18r_hist";
+    else return -1;
+  } else {
+    return -1;
+  }
+
+  TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
+  if (!efficiencyHist) return 1.0;
+
+  int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
+  float binContent = efficiencyHist->GetBinContent(ptBin);
+
+  if (binContent > 1.e-6) {
+    return 1.0 / binContent;
+  } else {
+    return -1;
+  }
 }
 
 //---------------------------------------------------
@@ -1706,7 +1708,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::IsGoodV0(AliAODv0* aodV0) {
   AliAODTrack* myTrackPosTest = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(0));
   AliAODTrack* myTrackNegTest = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(1));
   if (!myTrackPosTest || !myTrackNegTest) {
-    Printf("strange analysis::UserExec:: Error:Could not retreive one of the daughter track\n");
+    AliInfo("strange analysis::UserExec:: Error:Could not retreive one of the daughter track\n");
     return false;
   }
   // Unlike signs of daughters
@@ -1778,10 +1780,8 @@ int AliAnalysisTaskCVEPIDCMEDiff::GetLambdaCode(const AliAODTrack* pTrack, const
 
 inline float AliAnalysisTaskCVEPIDCMEDiff::GetEventPlane(float qx, float qy, float harmonic) {
   float psi = (1. / harmonic) * TMath::ATan2(qy, qx);
-  if (psi < 0)
-    return psi += TMath::TwoPi() / harmonic;
-  else
-    return psi;
+  if (psi < 0) return psi += TMath::TwoPi() / harmonic;
+  else return psi;
 }
 
 //---------------------------------------------------
@@ -1880,7 +1880,7 @@ inline float AliAnalysisTaskCVEPIDCMEDiff::GetDCABin(float dca) {
 
 //---------------------------------------------------
 
-[[maybe_unused]] float AliAnalysisTaskCVEPIDCMEDiff::GetV0CPlane(float centSPD1) {
+float AliAnalysisTaskCVEPIDCMEDiff::GetV0CPlane(float centSPD1) {
   float psi2V0C = nan("");
   float Qx2 = 0, Qy2 = 0, Mult = 0;
 
