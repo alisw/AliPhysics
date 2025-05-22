@@ -91,6 +91,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoAnalysisPt(true),
                                                                              fDoAnalysisZ(true),
                                                                              fDoCutOnEnergyAsymm(false),
+                                                                             fDoProcessOnlyJets(false),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
                                                                              fMCEventNeg(nullptr),
@@ -396,6 +397,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoAnalysisPt(true),
                                                                                            fDoAnalysisZ(true),
                                                                                            fDoCutOnEnergyAsymm(false),
+                                                                                           fDoProcessOnlyJets(false),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
                                                                                            fMCEventNeg(nullptr),
@@ -728,7 +730,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   }
 
   // cluster histograms
-  if (!fIsConv) {
+  if (fIsCalo || fIsConvCalo) {
     fHistoClusterPt.resize(fnCuts);
     fHistoClusterE.resize(fnCuts);
     fHistoClusterPtInJet.resize(fnCuts);
@@ -739,7 +741,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoClusterPtResolutionInJet.resize(fnCuts);
     }
   }
-  if (!fIsCalo) {
+  if (fIsConv || fIsConvCalo) {
     // conversion histos
     fHistoConvGammaPt.resize(fnCuts);
     fHistoConvGammaPtInJet.resize(fnCuts);
@@ -750,7 +752,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   //----------------------
   // MC gen histograms
   //----------------------
-  if (fIsMC) {
+  if (fIsMC && !fDoProcessOnlyJets) {
     fHistoMCGammaPtNotTriggered.resize(fnCuts);
     fHistoMCGammaPtNoVertex.resize(fnCuts);
     fHistoMCAllGammaPt.resize(fnCuts);
@@ -800,7 +802,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   //----------------------
   // true conversion photon histograms
   //----------------------
-  if (fIsMC) {
+  if (fIsMC && !fDoProcessOnlyJets) {
     fHistoTrueConvGammaPt.resize(fnCuts);
     fHistoTruePrimaryConvGammaPt.resize(fnCuts);
     fHistoTruePrimaryConvGammaESDPtMCPt.resize(fnCuts);
@@ -1011,6 +1013,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       cutString = Form("%s_%s_%s", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data());
     else if (fIsConvCalo)
       cutString = Form("%s_%s_%s_%s", cutstringEvent.Data(), cutstringConv.Data(), cutstringCalo.Data(), cutstringMeson.Data());
+    else 
+      cutString = Form("%s", cutstringEvent.Data());
 
     fCutFolder[iCut] = new TList();
     fCutFolder[iCut]->SetName(Form("Cut Number %s", cutString.Data()));
@@ -1033,15 +1037,17 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fTrueJetList[iCut]->SetOwner(true);
       fCutFolder[iCut]->Add(fTrueJetList[iCut]);
 
-      fTrueList[iCut] = new TList();
-      fTrueList[iCut]->SetName(Form("%s True histograms", cutString.Data()));
-      fTrueList[iCut]->SetOwner(true);
-      fCutFolder[iCut]->Add(fTrueList[iCut]);
+      if(!fDoProcessOnlyJets){
+        fTrueList[iCut] = new TList();
+        fTrueList[iCut]->SetName(Form("%s True histograms", cutString.Data()));
+        fTrueList[iCut]->SetOwner(true);
+        fCutFolder[iCut]->Add(fTrueList[iCut]);
 
-      fMCList[iCut] = new TList();
-      fMCList[iCut]->SetName(Form("%s MC histograms", cutString.Data()));
-      fMCList[iCut]->SetOwner(true);
-      fCutFolder[iCut]->Add(fMCList[iCut]);
+        fMCList[iCut] = new TList();
+        fMCList[iCut]->SetName(Form("%s MC histograms", cutString.Data()));
+        fMCList[iCut]->SetOwner(true);
+        fCutFolder[iCut]->Add(fMCList[iCut]);
+      }
     }
 
     if (fIsConv && fFillDCATree) {
@@ -1138,7 +1144,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     }
 
     // cluster related histograms
-    if (!fIsConv) {
+    if (fIsCalo || fIsConvCalo) {
       fHistoClusterPt[iCut] = new TH1F("ClusGamma_Pt", "ClusGamma_Pt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
       fHistoClusterPt[iCut]->SetXTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoClusterPt[iCut]);
@@ -1178,7 +1184,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     }
 
     // conversion related histograms
-    if (!fIsCalo) {
+    if (fIsConv || fIsConvCalo) {
       fHistoConvGammaPt[iCut] = new TH1F("ConvGamma_Pt", "ConvGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
       fHistoConvGammaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
@@ -1198,7 +1204,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     }
 
     // MC histograms
-    if (fIsMC) {
+    if (fIsMC && !fDoProcessOnlyJets) {
       fHistoMCGammaPtNotTriggered[iCut] = new TH1F("MC_AllGammaNotTriggered_Pt", "MC_AllGammaNotTriggered_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
       fHistoMCGammaPtNotTriggered[iCut]->SetXTitle("p_{T} (GeV/c)");
       fMCList[iCut]->Add(fHistoMCGammaPtNotTriggered[iCut]);
@@ -1374,7 +1380,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     } // end MC generated histos
 
     // conversion photons
-    if (fIsMC && !fIsCalo) {
+    if (fIsMC && !fIsCalo && !fDoProcessOnlyJets) {
       fHistoTrueConvGammaPt[iCut] = new TH1F("ESD_TrueConvGamma_Pt", "ESD_TrueConvGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
       fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
       if (!fDoLightOutput) {
@@ -1386,7 +1392,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       }
     }
 
-    if (fIsMC && !fIsConv) {
+    if (fIsMC && !fIsConv && !fDoProcessOnlyJets) {
       fHistoTrueClusGammaPt[iCut] = new TH1F("TrueClusGamma_Pt", "ESD_TrueClusGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
       fHistoTrueClusGammaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueClusGammaPt[iCut]);
@@ -1954,8 +1960,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     // Call Sumw2 forall histograms in list
     if (fIsMC) {
       CallSumw2ForLists(fESDList[iCut]);
-      CallSumw2ForLists(fTrueList[iCut]);
-      CallSumw2ForLists(fMCList[iCut]);
+      if(!fDoProcessOnlyJets) CallSumw2ForLists(fTrueList[iCut]);
+      if(!fDoProcessOnlyJets) CallSumw2ForLists(fMCList[iCut]);
       CallSumw2ForLists(fJetList[iCut]);
       CallSumw2ForLists(fTrueJetList[iCut]);
     }
@@ -1978,32 +1984,24 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
   // now add all the cut lists if needed
   for (int iCut = 0; iCut < fnCuts; iCut++) {
-    // if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
     if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms()) {
       fCutFolder[iCut]->Add(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms());
     }
     if (fIsCalo || fIsConvCalo) {
-      // if(!((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))) continue;
       if (((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms()) {
         fCutFolder[iCut]->Add(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms());
       }
     }
 
     if (fIsConv || fIsConvCalo) {
-      // if(!((AliConversionPhotonCuts*)fConvCutArray->At(iCut))) continue;
       if (((AliConversionPhotonCuts*)fConvCutArray->At(iCut))->GetCutHistograms()) {
         fCutFolder[iCut]->Add(((AliConversionPhotonCuts*)fConvCutArray->At(iCut))->GetCutHistograms());
       }
     }
-    // if(fSetPlotHistsExtQA){
-    //   if(!((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))) continue;
-    //   if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetExtQAHistograms()){
-    //     fCutFolder[iCut]->Add(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetExtQAHistograms());
-    //   }
-    // }
-    // if(!((AliConversionMesonCuts*)fMesonCutArray->At(iCut))) continue;
-    if (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms()) {
-      fCutFolder[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
+    if(!fDoProcessOnlyJets){
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms()) {
+        fCutFolder[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
+      }
     }
   }
 
@@ -2117,20 +2115,34 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   // Jet pt Binning
   //---------------------------
   double valJetPt = 0;
-  for (int i = 0; i < 1000; ++i) {
-    fVecBinsJetPt.push_back(valJetPt);
-    if (valJetPt < 5.0 - epsilon)
-      valJetPt += 2.5;
-    else if (valJetPt < 20.0 - epsilon)
-      valJetPt += 5;
-    else if (valJetPt < 100 - epsilon)
-      valJetPt += 10;
-    else if (valJetPt < 200 - epsilon)
-      valJetPt += 25;
-    else if (valJetPt < 500 - epsilon)
-      valJetPt += 100;
-    else
-      break;
+  if(fDoProcessOnlyJets){
+    for (int i = 0; i < 1000; ++i) {
+      fVecBinsJetPt.push_back(valJetPt);
+      if (valJetPt < 5.0 - epsilon)
+        valJetPt += 2.5;
+      else if (valJetPt < 100.0 - epsilon)
+        valJetPt += 5;
+      else if (valJetPt < 500 - epsilon)
+        valJetPt += 10;
+      else
+        break;
+    }
+  } else {
+    for (int i = 0; i < 1000; ++i) {
+      fVecBinsJetPt.push_back(valJetPt);
+      if (valJetPt < 5.0 - epsilon)
+        valJetPt += 2.5;
+      else if (valJetPt < 20.0 - epsilon)
+        valJetPt += 5;
+      else if (valJetPt < 100 - epsilon)
+        valJetPt += 10;
+      else if (valJetPt < 200 - epsilon)
+        valJetPt += 25;
+      else if (valJetPt < 500 - epsilon)
+        valJetPt += 100;
+      else
+        break;
+    }
   }
   //---------------------------
   // Fragmentation Binning
@@ -2936,12 +2948,16 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     if (fLocalDebugFlag) {
       printf("CalculateMesonCandidates\n");
     }
-    CalculateMesonCandidates();
+    if(!fDoProcessOnlyJets) {
+      CalculateMesonCandidates();
+    }
 
     if (fLocalDebugFlag) {
       printf("CalculateBackground\n");
     }
-    CalculateBackground();
+    if(!fDoProcessOnlyJets) {
+      CalculateBackground();
+    }
 
     if ((fUseMixedBackAdd && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) || !((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
       if (fLocalDebugFlag) {
@@ -4027,6 +4043,7 @@ bool AliAnalysisTaskMesonJetCorrelation::MCParticleIsSelected(AliAODMCParticle* 
 //________________________________________________________________________
 void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEventSelected)
 {
+  if(fDoProcessOnlyJets) return;
 
   const AliVVertex* primVtxMC = fMCEvent->GetPrimaryVertex();
   double mcProdVtxX = primVtxMC->GetX();

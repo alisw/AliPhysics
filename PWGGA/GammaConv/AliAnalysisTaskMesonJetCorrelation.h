@@ -115,7 +115,17 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetDoMesonQA(int flag) { fDoMesonQA = flag; }
   void SetDoPhotonQA(int flag) { fDoPhotonQA = flag; }
   void SetDoClusterQA(int flag) { fDoClusterQA = flag; }
-  void SetDoJetQA(int flag) { fDoJetQA = flag; }
+  void SetDoJetQA(int flag) { 
+    if(flag >= 10) {
+      fDoProcessOnlyJets = true;
+      fDoAnalysisPt = false;
+      fDoAnalysisZ = false;
+      fIsConv = false;
+      fIsCalo = false;
+      flag-=10;
+    }
+    fDoJetQA = flag; 
+    }
   // Function to set correction task setting
   void SetCorrectionTaskSetting(TString setting) { fCorrTaskSetting = setting; }
   void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag; }
@@ -263,6 +273,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDoAnalysisPt;                                   // flag to enable filling of pt dependent histograms
   bool fDoAnalysisZ;                                    // flag to enable filling of z dependent histograms
   bool fDoCutOnEnergyAsymm;                             // flag to cut on energy asymmetry between true and rec. jets. Values are provided by JetReader
+  bool fDoProcessOnlyJets;                              // flag to only process the jets and not the pi0s
 
   //-------------------------------
   // conversions
@@ -591,7 +602,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 27);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 28);
 };
 
 #endif
