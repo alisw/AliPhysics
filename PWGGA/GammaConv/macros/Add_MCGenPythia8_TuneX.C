@@ -191,6 +191,37 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
         (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
         (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
+    } else if (specialTune.EqualTo("JetSetting")){
+        // For comparison to Pythia+POWHEG from Markus Fasel and Hadi Hassan
+        std::cout << "Running with specialTune JetSetting" << std::endl;
+        (AliPythia8::Instance())->ReadString("Next:numberShowInfo = 1");
+        (AliPythia8::Instance())->ReadString("Next:numberShowProcess = 1");
+        (AliPythia8::Instance())->ReadString("Next:numberShowEvent = 1");
+        (AliPythia8::Instance())->ReadString("Main:timesAllowErrors = 10");
+
+        (AliPythia8::Instance())->ReadString("Init:showChangedSettings = on");
+        (AliPythia8::Instance())->ReadString("Init:showChangedParticleData = off");
+
+        (AliPythia8::Instance())->ReadString("PartonLevel:MPI = on");
+        // Switch On Pi0 Decay
+        (AliPythia8::Instance())->ReadString("111:mayDecay  = on");
+        (AliPythia8::Instance())->ReadString("310:mayDecay  = off");
+        (AliPythia8::Instance())->ReadString("3122:mayDecay = off");
+        (AliPythia8::Instance())->ReadString("3112:mayDecay = off");
+        (AliPythia8::Instance())->ReadString("3212:mayDecay = off");
+        (AliPythia8::Instance())->ReadString("3222:mayDecay = off");
+        (AliPythia8::Instance())->ReadString("3312:mayDecay = off");
+        (AliPythia8::Instance())->ReadString("3322:mayDecay = off");
+        (AliPythia8::Instance())->ReadString("3334:mayDecay = off");
+
+        // Tune Parameters
+        (AliPythia8::Instance())->ReadString("Tune:preferLHAPDF = 2");
+        (AliPythia8::Instance())->ReadString("Tune:pp = 21"); // Tune A14 NNPDF3.2
+
+        // PDF Selection
+        (AliPythia8::Instance())->ReadString("PDF:pSet = 14");
+
+
     } else if(specialTune.EqualTo("") || specialTune.EqualTo("Monash")){
         // setting tune
         std::cout << "setting tune: " << tune << std::endl;
