@@ -115,6 +115,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
     return funcJER->Eval(pt);
   }
   double GetJERCut(double pt) const {
+    if(!funcJERCut) return 1.e3;
     return funcJERCut->Eval(pt);
   }
 
