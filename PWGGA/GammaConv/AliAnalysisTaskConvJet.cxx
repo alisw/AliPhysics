@@ -169,7 +169,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
     TString JetName = jetCont->GetTitle();
     TObjArray* arr = JetName.Tokenize("__");
     TObjString* testObjString = (TObjString*)arr->At(2);
-    if (!(static_cast<TString>(testObjString->GetString())).Contains("mcparticles")) {
+    if (!(static_cast<TString>(testObjString->GetString())).Contains("mcparticles") || (static_cast<TString>(testObjString->GetString()).Contains("mcparticles") && static_cast<TString>(testObjString->GetString()).Contains("Rec"))) {
       fAccType = jetCont->GetAcceptanceType();
       UInt_t count = 0;
       fNJets = 0;
