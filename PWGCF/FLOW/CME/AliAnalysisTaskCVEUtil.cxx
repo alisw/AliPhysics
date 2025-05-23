@@ -48,16 +48,16 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 // Alice PID classes
-#include "AliAnalysisTaskProtonPtDCA.h"
+#include "AliAnalysisTaskCVEUtil.h"
 #include "AliPIDResponse.h"
 
 
-ClassImp(AliAnalysisTaskProtonPtDCA);
+ClassImp(AliAnalysisTaskCVEUtil);
 
 
 
 //---------------------------------------------------
-AliAnalysisTaskProtonPtDCA::AliAnalysisTaskProtonPtDCA()
+AliAnalysisTaskCVEUtil::AliAnalysisTaskCVEUtil()
     : AliAnalysisTaskSE(),
       isNarrowDcaCuts768(true),
       isProtonCustomizedDCACut(true),
@@ -96,7 +96,7 @@ AliAnalysisTaskProtonPtDCA::AliAnalysisTaskProtonPtDCA()
 }
 
 //---------------------------------------------------
-AliAnalysisTaskProtonPtDCA::AliAnalysisTaskProtonPtDCA(const char* name)
+AliAnalysisTaskCVEUtil::AliAnalysisTaskCVEUtil(const char* name)
     : AliAnalysisTaskSE(name),
       isNarrowDcaCuts768(true),
       isProtonCustomizedDCACut(true),
@@ -139,7 +139,7 @@ AliAnalysisTaskProtonPtDCA::AliAnalysisTaskProtonPtDCA(const char* name)
 
 //------------------------------------------------
 
-AliAnalysisTaskProtonPtDCA::~AliAnalysisTaskProtonPtDCA() {
+AliAnalysisTaskCVEUtil::~AliAnalysisTaskCVEUtil() {
   // Destructor
   // histograms are in the output list and deleted when the output
   if (fQAList) delete fQAList;
@@ -147,14 +147,14 @@ AliAnalysisTaskProtonPtDCA::~AliAnalysisTaskProtonPtDCA() {
 
 //---------------------------------------------------
 
-void AliAnalysisTaskProtonPtDCA::Terminate(Option_t*) {
+void AliAnalysisTaskCVEUtil::Terminate(Option_t*) {
   // Terminate loop
   Printf("Terminate");
 }
 
 //---------------------------------------------------
 
-void AliAnalysisTaskProtonPtDCA::UserCreateOutputObjects() {
+void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
 
   ////////////////////////
   // Pile up Function
@@ -209,7 +209,7 @@ void AliAnalysisTaskProtonPtDCA::UserCreateOutputObjects() {
 
 //------------------------------------------------
 
-void AliAnalysisTaskProtonPtDCA::UserExec(Option_t*) {
+void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
 
   if (fDebug) Printf("===============================We are in UserExec!!!===================================");
   //----------------------------
@@ -314,7 +314,7 @@ void AliAnalysisTaskProtonPtDCA::UserExec(Option_t*) {
 
 //---------------------------------------------------
 
-bool AliAnalysisTaskProtonPtDCA::LoopTracks() {
+bool AliAnalysisTaskCVEUtil::LoopTracks() {
   int nTrks = fAOD->GetNumberOfTracks();
   if (nTrks < 10) return false;
   for (int iTrk = 0; iTrk < nTrks; ++iTrk) {
@@ -366,7 +366,7 @@ bool AliAnalysisTaskProtonPtDCA::LoopTracks() {
 
 //---------------------------------------------------
 
-bool AliAnalysisTaskProtonPtDCA::RejectEvtTFFit(float centSPD0) {
+bool AliAnalysisTaskCVEUtil::RejectEvtTFFit(float centSPD0) {
   int nITSClsLy0 = fAOD->GetNumberOfITSClusters(0);
   int nITSClsLy1 = fAOD->GetNumberOfITSClusters(1);
   int nITSCls = nITSClsLy0 + nITSClsLy1;
@@ -414,7 +414,7 @@ bool AliAnalysisTaskProtonPtDCA::RejectEvtTFFit(float centSPD0) {
 
 //---------------------------------------------------
 
-bool AliAnalysisTaskProtonPtDCA::AcceptAODTrack(AliAODTrack* track) {
+bool AliAnalysisTaskCVEUtil::AcceptAODTrack(AliAODTrack* track) {
   //------------------
   // track cut
   //------------------
@@ -434,7 +434,7 @@ bool AliAnalysisTaskProtonPtDCA::AcceptAODTrack(AliAODTrack* track) {
 
 //---------------------------------------------------
 
-bool AliAnalysisTaskProtonPtDCA::CheckPIDofParticle(AliAODTrack* ftrack, int pidToCheck) {
+bool AliAnalysisTaskCVEUtil::CheckPIDofParticle(AliAODTrack* ftrack, int pidToCheck) {
   if (pidToCheck == 0) return kTRUE;  //// Charge Particles do not need PID check
 
   if (!fPIDResponse) {
@@ -486,7 +486,7 @@ bool AliAnalysisTaskProtonPtDCA::CheckPIDofParticle(AliAODTrack* ftrack, int pid
 
 //---------------------------------------------------
 
-bool AliAnalysisTaskProtonPtDCA::GetDCA(float& dcaxy, float& dcaz, AliAODTrack* track) {
+bool AliAnalysisTaskCVEUtil::GetDCA(float& dcaxy, float& dcaz, AliAODTrack* track) {
   if (!track) return false;
   double r[3];
   if (track->GetXYZ(r)) {

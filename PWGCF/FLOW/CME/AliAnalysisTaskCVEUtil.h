@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskProtonPtDCA_cxx
-#define AliAnalysisTaskProtonPtDCA_cxx
+#ifndef AliAnalysisTaskCVEUtil_cxx
+#define AliAnalysisTaskCVEUtil_cxx
 #include <TH3.h>
 #include <memory>
 #include "AliAnalysisTaskSE.h"
@@ -10,12 +10,12 @@
 #include "TList.h"
 #include "TProfile.h"
 
-class AliAnalysisTaskProtonPtDCA : public AliAnalysisTaskSE
+class AliAnalysisTaskCVEUtil : public AliAnalysisTaskSE
 {
  public:
-  AliAnalysisTaskProtonPtDCA();
-  AliAnalysisTaskProtonPtDCA(const char* name);
-  virtual ~AliAnalysisTaskProtonPtDCA();
+  AliAnalysisTaskCVEUtil();
+  AliAnalysisTaskCVEUtil(const char* name);
+  virtual ~AliAnalysisTaskCVEUtil();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
@@ -102,10 +102,10 @@ class AliAnalysisTaskProtonPtDCA : public AliAnalysisTaskSE
   TH2D* h2AntiProtonPtDcaXY;
   TH2D* h2AntiProtonPtDcaZ;
 
-  AliAnalysisTaskProtonPtDCA(const AliAnalysisTaskProtonPtDCA&);
-  AliAnalysisTaskProtonPtDCA& operator=(const AliAnalysisTaskProtonPtDCA&);
+  AliAnalysisTaskCVEUtil(const AliAnalysisTaskCVEUtil&);
+  AliAnalysisTaskCVEUtil& operator=(const AliAnalysisTaskCVEUtil&);
 
-  ClassDef(AliAnalysisTaskProtonPtDCA, 1);
+  ClassDef(AliAnalysisTaskCVEUtil, 1);
 };
 
 #endif

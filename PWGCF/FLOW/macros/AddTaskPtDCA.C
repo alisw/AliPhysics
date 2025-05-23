@@ -1,4 +1,4 @@
-AliAnalysisTaskProtonPtDCA* AddTaskPtDCA(TString name = "name")
+AliAnalysisTaskCVEUtil* AddTaskPtDCA(TString name = "name")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -16,7 +16,7 @@ AliAnalysisTaskProtonPtDCA* AddTaskPtDCA(TString name = "name")
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskProtonPtDCA* task = new AliAnalysisTaskProtonPtDCA(name.Data());   
+    AliAnalysisTaskCVEUtil* task = new AliAnalysisTaskCVEUtil(name.Data());   
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     // add your task to the manager

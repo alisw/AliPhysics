@@ -31,7 +31,7 @@ set(SRCS
   AliAnalysisTaskCMEv2A.cxx
   AliAnalysisTaskPIDCME.cxx
   AliAnalysisTaskCVEPIDCMEDiff.cxx
-  AliAnalysisTaskProtonPtDCA.cxx
+  AliAnalysisTaskCVEUtil.cxx
   )
 
 # Headers from sources
