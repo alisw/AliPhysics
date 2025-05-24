@@ -19,6 +19,7 @@
 //--------------------------------------------------------------------------------
 
 #include <TString.h>
+#include <cstddef>
 #include <cstdio>
 #include <sys/time.h>
 
@@ -93,6 +94,9 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
       fChi2Max(2.5),
       fChi2Min(0.1),
 
+      fSpecialHadronDCAzMax(-999.),
+      fSpecialProtonDCAzMax(-999.),
+
       fNSigmaTPC(3.0),
       fNSigmaRMS(3.0),
 
@@ -128,17 +132,18 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
       fCenCutHighPU(nullptr),
       fMultCutPU(nullptr),
       fListNUE(nullptr),
-      hNUEweightPlus(nullptr),
-      hNUEweightMinus(nullptr),
+
       fListNUA(nullptr),
       hCorrectNUAPos(nullptr),
       hCorrectNUANeg(nullptr),
+
       fListVZEROCalib(nullptr),
       contQxncm(nullptr),
       contQyncm(nullptr),
       hQx2mV0C(nullptr),
       hQy2mV0C(nullptr),
       fHCorrectV0ChWeghts(nullptr),
+
       fQAList(nullptr),
       fEvtCount(nullptr),
       runNumList(nullptr),
@@ -167,57 +172,62 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
       fHistV0NegDaughterDca(nullptr),
       fHistV0PosDaughterDca(nullptr),
       fResultsList(nullptr),
-      fHist2Psi2(nullptr) {
-  for (auto& v : fVertex) v = 0;
+      fHist2Psi2(nullptr)
+{
+    fVertex.fill(0.);
 
-  for (auto& h : fHistCent) h = nullptr;
-  for (auto& h : fHistVz) h = nullptr;
-  for (auto& h : fHist2CentQA) h = nullptr;
-  for (auto& h : fHist2MultCentQA) h = nullptr;
-  for (auto& h : fHist2MultMultQA) h = nullptr;
+    fHistCent.fill(nullptr);
+    fHistVz.fill(nullptr);
+    fHist2CentQA.fill(nullptr);
+    fHist2MultCentQA.fill(nullptr);
+    fHist2MultMultQA.fill(nullptr);
 
-  for (auto& h : fHistPhi) h = nullptr;
+    fHistPhi.fill(nullptr);
 
-  for (auto& h : fHistLambdaPt) h = nullptr;
-  for (auto& h : fHistLambdaEta) h = nullptr;
-  for (auto& h : fHistLambdaPhi) h = nullptr;
-  for (auto& h : fHistLambdaDcaToPrimVertex) h = nullptr;
-  for (auto& h : fHistLambdaNegDaugtherDca) h = nullptr;
-  for (auto& h : fHistLambdaPosDaugtherDca) h = nullptr;
-  for (auto& h : fHistLambdaCPA) h = nullptr;
-  for (auto& h : fHistLambdaDecayLength) h = nullptr;
-  for (auto& h : fHist3LambdaCentPtMass) h = nullptr;
-  for (auto& h : fHist2LambdaMassPtY) h = nullptr;
-  for (auto& h : fHistAntiLambdaPt) h = nullptr;
-  for (auto& h : fHistAntiLambdaEta) h = nullptr;
-  for (auto& h : fHistAntiLambdaPhi) h = nullptr;
-  for (auto& h : fHistAntiLambdaDcaToPrimVertex) h = nullptr;
-  for (auto& h : fHistAntiLambdaNegDaugtherDca) h = nullptr;
-  for (auto& h : fHistAntiLambdaPosDaugtherDca) h = nullptr;
-  for (auto& h : fHistAntiLambdaCPA) h = nullptr;
-  for (auto& h : fHistAntiLambdaDecayLength) h = nullptr;
-  for (auto& h : fHist3AntiLambdaCentPtMass) h = nullptr;
-  for (auto& h : fHist2AntiLambdaMassPtY) h = nullptr;
+    fHistLambdaPt.fill(nullptr);
+    fHistLambdaEta.fill(nullptr);
+    fHistLambdaPhi.fill(nullptr);
+    fHistLambdaDcaToPrimVertex.fill(nullptr);
+    fHistLambdaNegDaugtherDca.fill(nullptr);
+    fHistLambdaPosDaugtherDca.fill(nullptr);
+    fHistLambdaCPA.fill(nullptr);
+    fHistLambdaDecayLength.fill(nullptr);
+    fHist3LambdaCentPtMass.fill(nullptr);
+    fHist2LambdaMassPtY.fill(nullptr);
+    fHistAntiLambdaPt.fill(nullptr);
+    fHistAntiLambdaEta.fill(nullptr);
+    fHistAntiLambdaPhi.fill(nullptr);
+    fHistAntiLambdaDcaToPrimVertex.fill(nullptr);
+    fHistAntiLambdaNegDaugtherDca.fill(nullptr);
+    fHistAntiLambdaPosDaugtherDca.fill(nullptr);
+    fHistAntiLambdaCPA.fill(nullptr);
+    fHistAntiLambdaDecayLength.fill(nullptr);
+    fHist3AntiLambdaCentPtMass.fill(nullptr);
+    fHist2AntiLambdaMassPtY.fill(nullptr);
 
-  for (auto& h : fHist3LambdaProtonMassIntg) h = nullptr;
-  for (auto& h : fHist3LambdaProtonMassSPt) h = nullptr;
-  for (auto& h : fHist3LambdaProtonMassDEta) h = nullptr;
+    fHist3LambdaProtonMassIntg.fill(nullptr);
+    fHist3LambdaProtonMassSPt.fill(nullptr);
+    fHist3LambdaProtonMassDEta.fill(nullptr);
 
-  for (auto& h : fProfile3DDeltaLambdaProtonMassIntg) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaProtonMassSPt) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaProtonMassDEta) h = nullptr;
+    fProfile3DDeltaLambdaProtonMassIntg.fill(nullptr);
+    fProfile3DDeltaLambdaProtonMassSPt.fill(nullptr);
+    fProfile3DDeltaLambdaProtonMassDEta.fill(nullptr);
 
-  for (auto& h : fHist3LambdaHadronMassIntg) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaHadronMassIntg) h = nullptr;
-  for (auto& h : fProfile3DGammaLambdaHadronMassIntg) h = nullptr;
+    fProfile3DGammaLambdaProtonMassIntg.fill(nullptr);
+    fProfile3DGammaLambdaProtonMassSPt.fill(nullptr);
+    fProfile3DGammaLambdaProtonMassDEta.fill(nullptr);
 
-  for (auto& h : fHist3LambdaPionMassIntg) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaPionMassIntg) h = nullptr;
-  for (auto& h : fProfile3DGammaLambdaPionMassIntg) h = nullptr;
+    fHist3LambdaHadronMassIntg.fill(nullptr);
+    fProfile3DDeltaLambdaHadronMassIntg.fill(nullptr);
+    fProfile3DGammaLambdaHadronMassIntg.fill(nullptr);
 
-  for (auto& h : fHist3LambdaLambdaMassMass) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaLambdaMassMass) h = nullptr;
-  for (auto& h : fProfile3DGammaLambdaLambdaMassMass) h = nullptr;
+    fHist3LambdaPionMassIntg.fill(nullptr);
+    fProfile3DDeltaLambdaPionMassIntg.fill(nullptr);
+    fProfile3DGammaLambdaPionMassIntg.fill(nullptr);
+
+    fHist3LambdaLambdaMassMass.fill(nullptr);
+    fProfile3DDeltaLambdaLambdaMassMass.fill(nullptr);
+    fProfile3DGammaLambdaLambdaMassMass.fill(nullptr);
 }
 
 //---------------------------------------------------
@@ -244,6 +254,9 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
       fChi2Max(2.5),
       fChi2Min(0.1),
 
+      fSpecialHadronDCAzMax(-999.),
+      fSpecialProtonDCAzMax(-999.),
+
       fNSigmaTPC(3.0),
       fNSigmaRMS(3.0),
 
@@ -279,17 +292,18 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
       fCenCutHighPU(nullptr),
       fMultCutPU(nullptr),
       fListNUE(nullptr),
-      hNUEweightPlus(nullptr),
-      hNUEweightMinus(nullptr),
+
       fListNUA(nullptr),
       hCorrectNUAPos(nullptr),
       hCorrectNUANeg(nullptr),
+
       fListVZEROCalib(nullptr),
       contQxncm(nullptr),
       contQyncm(nullptr),
       hQx2mV0C(nullptr),
       hQy2mV0C(nullptr),
       fHCorrectV0ChWeghts(nullptr),
+
       fQAList(nullptr),
       fEvtCount(nullptr),
       runNumList(nullptr),
@@ -318,58 +332,62 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
       fHistV0NegDaughterDca(nullptr),
       fHistV0PosDaughterDca(nullptr),
       fResultsList(nullptr),
-      fHist2Psi2(nullptr) {
-  for (auto& v : fVertex) v = 0;
+      fHist2Psi2(nullptr)
+{
+  fVertex.fill(0.);
 
-  for (auto& h : fHistCent) h = nullptr;
-  for (auto& h : fHistVz) h = nullptr;
-  for (auto& h : fHist2CentQA) h = nullptr;
-  for (auto& h : fHist2MultCentQA) h = nullptr;
-  for (auto& h : fHist2MultMultQA) h = nullptr;
+  fHistCent.fill(nullptr);
+  fHistVz.fill(nullptr);
+  fHist2CentQA.fill(nullptr);
+  fHist2MultCentQA.fill(nullptr);
+  fHist2MultMultQA.fill(nullptr);
 
-  for (auto& h : fHistPhi) h = nullptr;
+  fHistPhi.fill(nullptr);
 
-  for (auto& h : fHistLambdaPt) h = nullptr;
-  for (auto& h : fHistLambdaEta) h = nullptr;
-  for (auto& h : fHistLambdaPhi) h = nullptr;
-  for (auto& h : fHistLambdaDcaToPrimVertex) h = nullptr;
-  for (auto& h : fHistLambdaNegDaugtherDca) h = nullptr;
-  for (auto& h : fHistLambdaPosDaugtherDca) h = nullptr;
-  for (auto& h : fHistLambdaCPA) h = nullptr;
-  for (auto& h : fHistLambdaDecayLength) h = nullptr;
-  for (auto& h : fHist3LambdaCentPtMass) h = nullptr;
-  for (auto& h : fHist2LambdaMassPtY) h = nullptr;
-  for (auto& h : fHistAntiLambdaPt) h = nullptr;
-  for (auto& h : fHistAntiLambdaEta) h = nullptr;
-  for (auto& h : fHistAntiLambdaPhi) h = nullptr;
-  for (auto& h : fHistAntiLambdaDcaToPrimVertex) h = nullptr;
-  for (auto& h : fHistAntiLambdaNegDaugtherDca) h = nullptr;
-  for (auto& h : fHistAntiLambdaPosDaugtherDca) h = nullptr;
-  for (auto& h : fHistAntiLambdaCPA) h = nullptr;
-  for (auto& h : fHistAntiLambdaDecayLength) h = nullptr;
-  for (auto& h : fHist3AntiLambdaCentPtMass) h = nullptr;
-  for (auto& h : fHist2AntiLambdaMassPtY) h = nullptr;
+  fHistLambdaPt.fill(nullptr);
+  fHistLambdaEta.fill(nullptr);
+  fHistLambdaPhi.fill(nullptr);
+  fHistLambdaDcaToPrimVertex.fill(nullptr);
+  fHistLambdaNegDaugtherDca.fill(nullptr);
+  fHistLambdaPosDaugtherDca.fill(nullptr);
+  fHistLambdaCPA.fill(nullptr);
+  fHistLambdaDecayLength.fill(nullptr);
+  fHist3LambdaCentPtMass.fill(nullptr);
+  fHist2LambdaMassPtY.fill(nullptr);
+  fHistAntiLambdaPt.fill(nullptr);
+  fHistAntiLambdaEta.fill(nullptr);
+  fHistAntiLambdaPhi.fill(nullptr);
+  fHistAntiLambdaDcaToPrimVertex.fill(nullptr);
+  fHistAntiLambdaNegDaugtherDca.fill(nullptr);
+  fHistAntiLambdaPosDaugtherDca.fill(nullptr);
+  fHistAntiLambdaCPA.fill(nullptr);
+  fHistAntiLambdaDecayLength.fill(nullptr);
+  fHist3AntiLambdaCentPtMass.fill(nullptr);
+  fHist2AntiLambdaMassPtY.fill(nullptr);
 
-  for (auto& h : fHist3LambdaProtonMassIntg) h = nullptr;
-  for (auto& h : fHist3LambdaProtonMassSPt) h = nullptr;
-  for (auto& h : fHist3LambdaProtonMassDEta) h = nullptr;
+  fHist3LambdaProtonMassIntg.fill(nullptr);
+  fHist3LambdaProtonMassSPt.fill(nullptr);
+  fHist3LambdaProtonMassDEta.fill(nullptr);
 
-  for (auto& h : fProfile3DDeltaLambdaProtonMassIntg) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaProtonMassSPt) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaProtonMassDEta) h = nullptr;
+  fProfile3DDeltaLambdaProtonMassIntg.fill(nullptr);
+  fProfile3DDeltaLambdaProtonMassSPt.fill(nullptr);
+  fProfile3DDeltaLambdaProtonMassDEta.fill(nullptr);
 
-  for (auto& h : fHist3LambdaHadronMassIntg) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaHadronMassIntg) h = nullptr;
-  for (auto& h : fProfile3DGammaLambdaHadronMassIntg) h = nullptr;
+  fProfile3DGammaLambdaProtonMassIntg.fill(nullptr);
+  fProfile3DGammaLambdaProtonMassSPt.fill(nullptr);
+  fProfile3DGammaLambdaProtonMassDEta.fill(nullptr);
 
-  for (auto& h : fHist3LambdaPionMassIntg) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaPionMassIntg) h = nullptr;
-  for (auto& h : fProfile3DGammaLambdaPionMassIntg) h = nullptr;
+  fHist3LambdaHadronMassIntg.fill(nullptr);
+  fProfile3DDeltaLambdaHadronMassIntg.fill(nullptr);
+  fProfile3DGammaLambdaHadronMassIntg.fill(nullptr);
 
-  for (auto& h : fHist3LambdaLambdaMassMass) h = nullptr;
-  for (auto& h : fProfile3DDeltaLambdaLambdaMassMass) h = nullptr;
-  for (auto& h : fProfile3DGammaLambdaLambdaMassMass) h = nullptr;
+  fHist3LambdaPionMassIntg.fill(nullptr);
+  fProfile3DDeltaLambdaPionMassIntg.fill(nullptr);
+  fProfile3DGammaLambdaPionMassIntg.fill(nullptr);
 
+  fHist3LambdaLambdaMassMass.fill(nullptr);
+  fProfile3DDeltaLambdaLambdaMassMass.fill(nullptr);
+  fProfile3DGammaLambdaLambdaMassMass.fill(nullptr);
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -380,6 +398,7 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
 AliAnalysisTaskCVEPIDCMEDiff::~AliAnalysisTaskCVEPIDCMEDiff() {
   // Destructor
   // histograms are in the output list and deleted when the output
+  if (runNumList) delete runNumList;
   if (fQAList) delete fQAList;
   if (fResultsList) delete fResultsList;
   if (fListNUE) delete fListNUE;
@@ -803,11 +822,13 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
 //------------------------------------------------
 
 void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
-  bool isNeedPairV0Trk = isCalculateLambdaProton || isCalculateLambdaPion || isCalculateLambdaHadron;
-  bool isNeedPairV0V0 = isCalculateLambdaLambda;
 
   if (fDebug) AliInfo("===============================We are in UserExec!!!===================================");
   fEvtCount->Fill(1);
+
+  bool isNeedPairV0Trk = isCalculateLambdaProton || isCalculateLambdaPion || isCalculateLambdaHadron;
+  bool isNeedPairV0V0 = isCalculateLambdaLambda;
+
   // ----------------------------
   // Handle
   // ----------------------------
@@ -854,9 +875,9 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   else if (fTrigger.EqualTo("kINT7"))
     isTrigselected = mask & AliVEvent::kINT7;
   else if (fTrigger.EqualTo("kINT7+kSemiCentral"))
-    isTrigselected = mask & (AliVEvent::kINT7 + AliVEvent::kSemiCentral);
+    isTrigselected = mask & (AliVEvent::kINT7 | AliVEvent::kSemiCentral);
   else if (fTrigger.EqualTo("kINT7+kCentral+kSemiCentral"))
-    isTrigselected = mask & (AliVEvent::kINT7 + AliVEvent::kCentral + AliVEvent::kSemiCentral);
+    isTrigselected = mask & (AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   if (isTrigselected == false) return;
   fEvtCount->Fill(7);
   if (fDebug) AliInfo("trigger done!");
@@ -864,9 +885,14 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   //----------------------------
   // Run Number
   //----------------------------
+  if (!runNumList || runNumList->empty()) {
+      AliError("runNumList not initialized!");
+      return;
+  }
   fRunNum = fAOD->GetRunNumber();
   if (!(runNumList->find(fRunNum) != runNumList->end())) {
     AliError(Form("Run number %d not in runNumList! No calib files", fRunNum));
+    return;
   }
   fHistRunNumBin->Fill(fRunNumBin);
   fEvtCount->Fill(8);
@@ -888,12 +914,14 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   // Vertex
   //----------------------------
   AliAODVertex* fVtx = fAOD->GetPrimaryVertex();
+  if (!fVtx) return;
   fVtx->GetXYZ(fVertex.data());
   AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+  if (!vtSPD) return;
   if (fabs(fVertex[0]) < 1e-6 || fabs(fVertex[1]) < 1e-6 || fabs(fVertex[2]) < 1e-6) return;
   fHistVz[0]->Fill(fVertex[2]);
   if (fabs(fVertex[2]) > fVzCut) return;
-  if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors() < 1) return;
+  if (fVtx->GetNContributors() < 2 || vtSPD->GetNContributors() < 1) return;
   fHistVz[1]->Fill(fVertex[2]);
   for (int i = 0; i < 20; ++i) {
     if (fVertex[2] > -10 + i * 1 && fVertex[2] < -10 + (i + 1) * 1) {
@@ -990,7 +1018,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   // Pair V0 V0
   //----------------------------
   if (isNeedPairV0V0) {
-    if (!PairV0V0()) return; 
+    if (!PairV0V0()) return;
     else fEvtCount->Fill(19);
   }
   if (fDebug) AliInfo("Pair V0 & V0 done!");
@@ -1049,7 +1077,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     // DCA Cut
     float dcaxy = -999, dcaz = -999;
     if (!GetDCA(dcaxy, dcaz, track)) continue;
-    // if FB = 96 or 768, we don't need special DCA cut
+    // if FB = 96, we don't need special DCA cut
 
     if (pt > 0.2 && pt < 2.0) {
       // Do we need to set pT as weight for Better resolution?
@@ -1067,6 +1095,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     // but we need to set the dca cut for 768 when we start to choose the paiticle for pair
     if (fabs(dcaxy) > 2.4) continue;
     if (fabs(dcaz) > 3.2) continue;
+
     if (fFilterBit == 768 && isNarrowDcaCuts768) {
       if (fabs(dcaz) > 2.0) continue;
       if (fabs(dcaxy) > 7.0 * (0.0026 + 0.005 / TMath::Power(pt, 1.01))) continue;
@@ -1077,15 +1106,24 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     bool isPIDTrkWeWant = false;
     if (isCalculateLambdaPion) {
       isPIDTrkWeWant = CheckPIDofParticle(track, 1);  // 3=pion
+      if (fSpecialHadronDCAzMax > 0) {
+          isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialHadronDCAzMax);
+      }
     }
     if (isCalculateLambdaProton) {
       isPIDTrkWeWant = CheckPIDofParticle(track, 3);  // 3=proton
       isPIDTrkWeWant = isPIDTrkWeWant && (pt < 5.0 && pt > 0.4);
-      if (isProtonCustomizedDCACut)
+      if (isProtonCustomizedDCACut) {
         isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < 1. && fabs(dcaxy) < (0.0105 + 0.035 / TMath::Power(pt, 1.1)));
+      }
+      if(fSpecialProtonDCAzMax > 0) {
+        isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialProtonDCAzMax);
+      }
     }
     if(isCalculateLambdaHadron) {
-        isPIDTrkWeWant = true;
+        if(fSpecialHadronDCAzMax > 0) {
+        isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialHadronDCAzMax);
+        }
     }
     if (!isPIDTrkWeWant) continue;
 
@@ -1780,8 +1818,8 @@ int AliAnalysisTaskCVEPIDCMEDiff::GetLambdaCode(const AliAODTrack* pTrack, const
 
 inline float AliAnalysisTaskCVEPIDCMEDiff::GetEventPlane(float qx, float qy, float harmonic) {
   float psi = (1. / harmonic) * TMath::ATan2(qy, qx);
-  if (psi < 0) return psi += TMath::TwoPi() / harmonic;
-  else return psi;
+  if (psi < 0) psi += TMath::TwoPi() / harmonic;
+  return psi;
 }
 
 //---------------------------------------------------
