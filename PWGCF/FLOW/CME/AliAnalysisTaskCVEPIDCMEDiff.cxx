@@ -1414,7 +1414,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0V0() {
     int id_a_daughter_1 = (int)lambda_a[7];
     int id_a_daughter_2 = (int)lambda_a[8];
 
-    for (size_t j = i + 1; j < nV0; ++j) {
+    for (size_t j = 0; j < nV0; ++j) {
       const auto &lambda_b = vecParticleV0[j];
 
       double phi_b = lambda_b[2];
