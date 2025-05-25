@@ -1105,7 +1105,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
 
     bool isPIDTrkWeWant = false;
     if (isCalculateLambdaPion) {
-      isPIDTrkWeWant = CheckPIDofParticle(track, 1);  // 3=pion
+      isPIDTrkWeWant = CheckPIDofParticle(track, 1);  // 1=pion
       if (fSpecialHadronDCAzMax > 0) {
           isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialHadronDCAzMax);
       }
@@ -1121,9 +1121,10 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
       }
     }
     if(isCalculateLambdaHadron) {
-        if(fSpecialHadronDCAzMax > 0) {
+      isPIDTrkWeWant = CheckPIDofParticle(track, 0);  // 0 = hadron
+      if(fSpecialHadronDCAzMax > 0) {
         isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialHadronDCAzMax);
-        }
+      }
     }
     if (!isPIDTrkWeWant) continue;
 
