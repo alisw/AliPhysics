@@ -32,6 +32,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliConvEventCuts.h"
+#include "AliConvK0LambdaCuts.h"
 #include "AliConversionAODBGHandlerRP.h"
 #include "AliConversionMesonCuts.h"
 #include "AliConversionPhotonCuts.h"
@@ -76,13 +77,17 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void FillMesonHistograms(AliAODConversionPhoton* gamma0, AliAODConversionPhoton* gamma1, int firstGammaIndex, int secondGammaIndex);
   void ProcessTrueBackgroundCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand);
   float GetFrag(AliAODConversionMother* Pi0Candidate, const int matchedJet, int isTrueJet);
+  float GetFrag(double pt, double arrPartP[3], const int matchedJet, int isTrueJet);
   float GetFrag(AliAODMCParticle* Pi0Candidate, const int matchedJet, int isTrueJet);
   float GetRadiusJetPart(AliAODConversionMother* Pi0Candidate, const int matchedJet, int isTrueJet);
   float GetRadiusJetPart(AliAODMCParticle* Pi0Candidate, const int matchedJet, int isTrueJet);
   void FillMesonDCATree(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* gamma0, AliAODConversionPhoton* gamma1, const int matchedJet, const bool isTrueMeson);
+  void ProcessK0Lambda();
+  void ProcessTrueK0Lambda(AliAODv0* v0, const int matchedJet, const double massV0);
 
   // MC functions
   void ProcessAODMCParticles(int isCurrentEventSelected = 0);
+  void ProcessAODMCParticlesK0sLambda(int isCurrentEventSelected = 0);
   void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate, const int matchedJet = -1);
   void ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate);
   bool MCParticleIsSelected(AliAODMCParticle* particle1, AliAODMCParticle* particle2, bool checkConversion);
@@ -136,7 +141,17 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetV0ReaderName(TString name) { fV0ReaderName = name; }
   void SetTrackMatcherRunningMode(int mode) { fTrackMatcherRunningMode = mode; }
   void SetUseTHnSparseForResponse(bool tmp) { fUseThNForResponse = tmp; }
-  void SetMesonKind(int meson) { (meson == 0) ? fMesonPDGCode = 111 : fMesonPDGCode = 221; }
+  void SetMesonKind(int meson) { 
+    if(meson == 0) fMesonPDGCode = 111;
+    else if (meson == 1) fMesonPDGCode = 221; 
+    else if (meson == 2) {
+      fMesonPDGCode = 310;
+      fDoProcessK0 = true;
+    } else if (meson == 3) { // Lambda
+      fMesonPDGCode = 3122;
+      fDoProcessLambda = true;
+    }
+  }
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
   void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
   void SetFillMesonDCATree(bool tmp) { fFillDCATree = tmp; }
@@ -186,6 +201,13 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
     fMesonCutArray = CutArray;
   }
 
+  void SetK0LambdaCutList(int nCuts, 
+                          TList* CutArray)
+  {
+    fnCuts = nCuts;
+    fK0LambdaCutArray = CutArray;
+  }
+
   void SetParticleWeighting(const char * name, int modeJetWeighting){
     fNameJetWeightingFile = name;
     fDoWeightGenParticles = modeJetWeighting;
@@ -220,6 +242,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   TList* fEventCutArray;   // Event cut output container
   TList* fConvCutArray;    // Conversion cut output container
   TList* fClusterCutArray; // Cluster cut output container
+  TList* fK0LambdaCutArray;// K0+Lambda cut output container
   TList* fMesonCutArray;   // Meson cut output container
 
   std::vector<AliAODConversionPhoton*> fGammaCandidates;   //! current list of photon candidates
@@ -245,6 +268,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   int fMesonPDGCode;                                    // PDG code of current meson (111 for pi0 etc.)
   std::vector<int> fOtherMesonsPDGCodes;                // PDG code of other mesons (eta code if we are looking for a pi0)
+  bool fDoProcessK0;
+  bool fDoProcessLambda;
   int fiCut;                                            // index of the current cut
   int fIsMC;                                            // flag for data or MC (JJ MC > 1)
   int fnCuts;                                           // number of cuts
@@ -602,7 +627,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 28);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 29);
 };
 
 #endif

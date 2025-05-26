@@ -33,6 +33,7 @@
 #pragma link C++ class EventMixPoolMesonJets+;
 #pragma link C++ class EventWithJetAxis+;
 #pragma link C++ class ElectronMixing+;
+#pragma link C++ class AliConvK0LambdaCuts+;
 
 
 // User tasks
