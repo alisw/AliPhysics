@@ -76,6 +76,7 @@ set(SRCS
     AliGAKFVertex.cxx
     AliResponseMatrixHelper.cxx
     AliGammaConvEventMixing.cxx
+    AliConvK0LambdaCuts.cxx
     GammaConvTH1ExponentialInterpolation.cxx
     GammaConvUtilsTH1.cxx
    )
