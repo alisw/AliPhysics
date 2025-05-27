@@ -101,7 +101,9 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const char *name,const char *title) :
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fPIDResponse(NULL),
+  fIsMC(0),
   fDoLightOutput(0),
+  fDoQA(false),
   fMaxR(0.),
   fMinR(0.),
   fEtaCut(0.),
@@ -118,10 +120,15 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const char *name,const char *title) :
   fPIDnSigmaBelow(0.),
   fTofPIDnSigmaAbove(0.),
   fTofPIDnSigmaBelow(0.),
-  fDoQtGammaSelection(0),
-  fDo2DQt(false),
+  fDoArmenteros1DCuts(true),
+  fDoArmenteros2DCuts(false),
+  maxDevNegArmPod2D(0.),
+  maxDevPosArmPod2D(0.),
+  maxRangeHist2DArmPod(0.),
   fQtMax(0.),
-  fQtPtMax(0.),
+  fQtMin(0.),
+  fAlphaMin(-1.),
+  fAlphaMax(1.),
   fUseOnFlyV0Finder(false),
   fCosPAngleCut(0.),
   fDCAZPrimVtxCut(0.),
@@ -131,9 +138,17 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const char *name,const char *title) :
   fIsHeavyIon(0),
   fExcludeMinR(0.),
   fExcludeMaxR(0.),
+  fHistArmPodRefK0s(nullptr),
+  fHistArmPodRefLambda(nullptr),
+  fHistArmPodRefAntiLambda(nullptr),
   fHistoCutIndex(nullptr),
   fHistoArmenterosbefore(nullptr),
-  fHistoArmenterosafter(nullptr)
+  fHistoArmenterosafter(nullptr),
+  fHistoChi2before(nullptr),
+  fHistoChi2after(nullptr),
+  fHistoArmenterosTrue(nullptr),
+  fHistoNSigmaPosTrackTrue(nullptr),
+  fHistoNSigmaNegTrackTrue(nullptr)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -145,7 +160,9 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const AliConvK0LambdaCuts &ref) :
   AliAnalysisCuts(ref),
   fHistograms(NULL),
   fPIDResponse(NULL),
+  fIsMC(0),
   fDoLightOutput(ref.fDoLightOutput),
+  fDoQA(false),
   fMaxR(0.),
   fMinR(0.),
   fEtaCut(0.),
@@ -162,10 +179,15 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const AliConvK0LambdaCuts &ref) :
   fPIDnSigmaBelow(0.),
   fTofPIDnSigmaAbove(0.),
   fTofPIDnSigmaBelow(0.),
-  fDoQtGammaSelection(0),
-  fDo2DQt(false),
+  fDoArmenteros1DCuts(true),
+  fDoArmenteros2DCuts(false),
+  maxDevNegArmPod2D(0.),
+  maxDevPosArmPod2D(0.),
+  maxRangeHist2DArmPod(0.),
   fQtMax(0.),
-  fQtPtMax(0.),
+  fQtMin(0.),
+  fAlphaMin(-1.),
+  fAlphaMax(1.),
   fUseOnFlyV0Finder(false),
   fCosPAngleCut(0.),
   fDCAZPrimVtxCut(0.),
@@ -175,9 +197,17 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const AliConvK0LambdaCuts &ref) :
   fIsHeavyIon(0),
   fExcludeMinR(0.),
   fExcludeMaxR(0.),
+  fHistArmPodRefK0s(nullptr),
+  fHistArmPodRefLambda(nullptr),
+  fHistArmPodRefAntiLambda(nullptr),
   fHistoCutIndex(nullptr),
   fHistoArmenterosbefore(nullptr),
-  fHistoArmenterosafter(nullptr)
+  fHistoArmenterosafter(nullptr),
+  fHistoChi2before(nullptr),
+  fHistoChi2after(nullptr),
+  fHistoArmenterosTrue(nullptr),
+  fHistoNSigmaPosTrackTrue(nullptr),
+  fHistoNSigmaNegTrackTrue(nullptr)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -191,7 +221,21 @@ AliConvK0LambdaCuts::~AliConvK0LambdaCuts() {
     delete fHistograms;
   }
 }
-
+//________________________________________________________________________
+void AliConvK0LambdaCuts::CallSumw2ForLists(TList* l)
+{
+  if (fIsMC > 1) {
+    TIter iter(l->MakeIterator());
+    while (TObject* obj = iter()) {
+      TString className = obj->ClassName();
+      if (className.Contains("TH1")) {
+        static_cast<TH1*>(obj)->Sumw2();
+      } else if (className.Contains("TH2")) {
+        static_cast<TH2*>(obj)->Sumw2();
+      }
+    }
+  }
+}
 //________________________________________________________________________
 void AliConvK0LambdaCuts::InitCutHistograms(TString name, bool preCut){
 
@@ -232,11 +276,32 @@ void AliConvK0LambdaCuts::InitCutHistograms(TString name, bool preCut){
   fHistograms->Add(fHistoCutIndex);
 
   if(!fDoLightOutput){
-    fHistoArmenterosbefore=new TH2F(Form("Armenteros_before %s",GetCutNumber().Data()),"Armenteros_before",200,-1,1,100,0,1.);
+    fHistoArmenterosbefore=new TH2F(Form("Armenteros_before %s",GetCutNumber().Data()),"Armenteros_before",400,-1,1,300,0,0.3);
     fHistograms->Add(fHistoArmenterosbefore);
 
-    fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,100,0,1.);
+    fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",400,-1,1,300,0,0.3);
     fHistograms->Add(fHistoArmenterosafter);
+
+    fHistoChi2before = new TH2F(Form("Chi2V0_before %s",GetCutNumber().Data()),"Chi2V0_before",100, 0, 20, 100, 0, 500);
+    fHistograms->Add(fHistoChi2before);
+
+    fHistoChi2after = new TH2F(Form("Chi2V0_after %s",GetCutNumber().Data()),"Chi2V0_after",100, 0, 20, 100, 0, 500);
+    fHistograms->Add(fHistoChi2after);
+  }
+
+  if(fDoQA){
+    fHistoArmenterosTrue=new TH2F(Form("Armenteros_TruePart %s",GetCutNumber().Data()),"Armenteros_TruePart",400,-1,1,300,0,0.3);
+    fHistograms->Add(fHistoArmenterosTrue);
+
+    fHistoNSigmaPosTrackTrue=new TH2F(Form("NSigmaPosTrack_TruePart %s",GetCutNumber().Data()),"NSigmaPosTrack_TruePart",100, 0., 20, 200, -5, 5);
+    fHistograms->Add(fHistoNSigmaPosTrackTrue);
+
+    fHistoNSigmaNegTrackTrue=new TH2F(Form("NSigmaNegTrack_TruePart %s",GetCutNumber().Data()),"NSigmaNegTrack_TruePart",100, 0., 20, 200, -5, 5);
+    fHistograms->Add(fHistoNSigmaNegTrackTrue);
+
+  }
+  if(fIsMC > 1){
+    CallSumw2ForLists(fHistograms);
   }
 
   TH1::AddDirectory(kTRUE);
@@ -345,8 +410,37 @@ bool AliConvK0LambdaCuts::DoDCAToPrimVtxCut(double dca) const{
   return true;
 }
 
+bool AliConvK0LambdaCuts::DoArmenterosQtCut(AliAODv0* v0, int mode) const{
+  if(fDoArmenteros1DCuts){
+    if(v0->AlphaV0() < fAlphaMin || v0->AlphaV0() > fAlphaMax){
+      return false;
+    }
+    if(v0->PtArmV0() < fQtMin || v0->PtArmV0() > fQtMax){
+      return false;
+    }
+  } else if(fDoArmenteros2DCuts){
+    double valExpect = 0.;
+    double momentum = v0->P();
+    if(momentum > maxRangeHist2DArmPod){
+      momentum = maxRangeHist2DArmPod;
+    }
+    if(mode == 2){
+      valExpect = fHistArmPodRefK0s->GetBinContent(v0->AlphaV0(), momentum);
+    } else if(mode == 3){
+      valExpect = fHistArmPodRefLambda->GetBinContent(v0->AlphaV0(), momentum);
+    } else if(mode == 4){
+      valExpect = fHistArmPodRefAntiLambda->GetBinContent(v0->AlphaV0(), momentum);
+    }
+    if(v0->PtArmV0() < valExpect - maxDevNegArmPod2D || v0->PtArmV0() > valExpect + maxDevPosArmPod2D){
+      return false;
+    }
+  }
+  return true;
 
-bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0){
+}
+
+
+bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0, double weight){
   const AliAODTrack *ntrack=(AliAODTrack*) v0->GetDaughter(1);
   const AliAODTrack *ptrack=(AliAODTrack*) v0->GetDaughter(0);
 
@@ -355,7 +449,8 @@ bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0){
   }
 
   // Fill some histograms before
-  if(fHistoArmenterosbefore)fHistoArmenterosbefore->Fill(v0->AlphaV0(),v0->PtArmV0());
+  if(fHistoArmenterosbefore)fHistoArmenterosbefore->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
+  if(fHistoChi2before) fHistoChi2before->Fill(v0->P(),v0->Chi2V0(), weight);
 
   double cutindex = 0.;
   fHistoCutIndex->Fill(cutindex, v0->Pt());
@@ -404,20 +499,21 @@ bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0){
   }
   cutindex++;
 
-  // if(!DoCosPACut(v0->GetV0CosineOfPointingAngle())){ // not a member of 
-  //   fHistoCutIndex->Fill(cutindex, v0->Pt());
-  //   return false;
-  // }
-  cutindex++;
-
-  if(!DoDCAToPrimVtxCut(v0->DcaV0ToPrimVertex())){
+  if(!DoArmenterosQtCut(v0, fDoProcessK0)){
     fHistoCutIndex->Fill(cutindex, v0->Pt());
     return false;
   }
   cutindex++;
 
+  if(!DoDCAToPrimVtxCut(v0->DcaV0ToPrimVertex())){
+    fHistoCutIndex->Fill(cutindex, v0->Pt(), weight);
+    return false;
+  }
+  cutindex++;
+
   fHistoCutIndex->Fill(cutindex, v0->Pt());
-  if(fHistoArmenterosafter)fHistoArmenterosafter->Fill(v0->AlphaV0(),v0->PtArmV0());
+  if(fHistoArmenterosafter)fHistoArmenterosafter->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
+  if(fHistoChi2after) fHistoChi2after->Fill(v0->P(),v0->Chi2V0(), weight);
   return true;
 }
 
@@ -554,7 +650,7 @@ bool AliConvK0LambdaCuts::SetCut(cutIds cutID, const Int_t value) {
       } else return kFALSE;
 
     case kQtMaxCut:
-      if( SetQtMaxCut(value)) {
+      if( SetArmenterosQTCut(value)) {
         fCuts[kQtMaxCut] = value;
         UpdateCutString();
         return kTRUE;
@@ -887,19 +983,59 @@ bool AliConvK0LambdaCuts::SetTRDElectronPIDCut(Int_t TRDelectronPID){
 
 
 ///________________________________________________________________________
-bool AliConvK0LambdaCuts::SetQtMaxCut(Int_t QtMaxCut){   // Set Cut
+bool AliConvK0LambdaCuts::SetArmenterosQTCut(Int_t QtMaxCut){   // Set Cut
   switch(QtMaxCut){
   case 0: //
+    fDoArmenteros1DCuts = true;
     fQtMax=1.;
-    fDoQtGammaSelection=0;
-    fDo2DQt=kFALSE;
+    fQtMin=0.03;
+    fAlphaMin = -1.;
+    fAlphaMax = 1.;
+    fDoArmenteros2DCuts=false;
     break;
-  case 1:
-    fQtPtMax=0.11;
-    fQtMax=0.040;
-    fDoQtGammaSelection=2;
-    fDo2DQt=kTRUE;
+  case 1: // Default selection for K0s: Cut away photons and large asymmetries
+    fDoArmenteros1DCuts = true;
+    fQtMax=0.25;
+    fQtMin=0.04;
+    fAlphaMin = -0.9;
+    fAlphaMax = 0.9;
+    fDoArmenteros2DCuts=false;
     break;
+  case 2: // Default selection for Lambda: Cut away photons and large asymmetries
+    fDoArmenteros1DCuts = true;
+    fQtMax=0.12;
+    fQtMin=0.03;
+    fAlphaMin = 0.5;
+    fAlphaMax = 0.9;
+    fDoArmenteros2DCuts=false;
+    break;
+  case 3: // Default selection for Anti-Lambda: Cut away photons and large asymmetries
+    fDoArmenteros1DCuts = true;
+    fQtMax=0.12;
+    fQtMin=0.03;
+    fAlphaMin = -0.9;
+    fAlphaMax = -0.5;
+    fDoArmenteros2DCuts=false;
+    break;
+  case 10: // Selection with 2D cuts, diff of 0.03
+    fDoArmenteros1DCuts = false;
+    fDoArmenteros2DCuts=true;
+    maxDevNegArmPod2D = 0.01;
+    maxDevPosArmPod2D = 0.01;
+    break;
+  case 11: // Selection with 2D cuts, diff of 0.03
+    fDoArmenteros1DCuts = false;
+    fDoArmenteros2DCuts=true;
+    maxDevNegArmPod2D = 0.02;
+    maxDevPosArmPod2D = 0.02;
+    break;
+  case 12: // Default selection for Anti-Lambda: Cut away photons and large asymmetries
+    fDoArmenteros1DCuts = false;
+    fDoArmenteros2DCuts=true;
+    maxDevNegArmPod2D = 0.03;
+    maxDevPosArmPod2D = 0.03;
+    break;
+
   default:
     AliError(Form("Warning: QtMaxCut not defined %d",QtMaxCut));
     return kFALSE;
@@ -1094,4 +1230,65 @@ bool AliConvK0LambdaCuts::SetDCAPrimVtxCut(Int_t DCARPrimVtx){
 TString AliConvK0LambdaCuts::GetCutNumber(){
   // returns TString with current cut number
   return fCutStringRead;
+}
+
+
+void AliConvK0LambdaCuts::FillTrueHistograms(AliAODv0 *v0, int pdg, double weight){
+  if(!fDoQA){
+    return;
+  }
+  if(!fPIDResponse){InitPIDResponse();}
+
+  fHistoArmenterosTrue->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
+
+  const AliAODTrack *ntrack=(AliAODTrack*) v0->GetDaughter(1);
+  const AliAODTrack *ptrack=(AliAODTrack*) v0->GetDaughter(0);
+
+  if(!ntrack || !ptrack){
+    AliError("Tracks are nullptr!");
+    return;
+  }
+
+  AliPID::EParticleType PIDPos = AliPID::kUnknown;
+  AliPID::EParticleType PIDNeg = AliPID::kUnknown;
+  if(pdg == 310){ // K0s, both are pions
+    PIDPos = AliPID::kPion;
+    PIDNeg = AliPID::kPion;
+  } else if (pdg == 3122){ // Lambda: Pos track is proton, negative is pion
+    PIDPos = AliPID::kProton;
+    PIDNeg = AliPID::kPion;
+  } else if (pdg == -3122){ // Anti-Lambda: Neg track is proton, positive is pion
+    PIDPos = AliPID::kPion;
+    PIDNeg = AliPID::kProton;
+  }
+
+  double nSigPos = fPIDResponse->NumberOfSigmasTPC(ptrack,PIDPos);
+  double nSigNeg = fPIDResponse->NumberOfSigmasTPC(ntrack,PIDNeg);
+  fHistoNSigmaPosTrackTrue->Fill(ptrack->P(), nSigPos);
+  fHistoNSigmaNegTrackTrue->Fill(ntrack->P(), nSigNeg);
+}
+
+///__________________________________________________________________
+void AliConvK0LambdaCuts::InitArmPodRefHistos(const char * filename){
+  cout << "Trying to initialize refernece histo for Armenteros Podolanski " << filename << endl;
+  TFile *f = TFile::Open(filename);
+  if(!f){
+    AliFatal(Form("file %s does not exist...", filename));
+  }
+  fHistArmPodRefK0s = (TH2F*) f->Get("K0s");
+  if(!fHistArmPodRefK0s){
+    AliFatal("K0s histogram does not exist...");
+  }
+  fHistArmPodRefK0s->SetDirectory(0);
+  maxRangeHist2DArmPod = fHistArmPodRefK0s->GetYaxis()->GetBinCenter(fHistArmPodRefK0s->GetYaxis()->GetNbins());
+  fHistArmPodRefLambda = (TH2F*) f->Get("Lambda");
+  if(!fHistArmPodRefLambda){
+    AliFatal("Lambda histogram does not exist...");
+  }
+  fHistArmPodRefLambda->SetDirectory(0);
+  fHistArmPodRefAntiLambda = (TH2F*) f->Get("AntiLambda");
+  if(!fHistArmPodRefAntiLambda){
+    AliFatal("Anti-Lambda histogram does not exist...");
+  }
+  fHistArmPodRefAntiLambda->SetDirectory(0);
 }

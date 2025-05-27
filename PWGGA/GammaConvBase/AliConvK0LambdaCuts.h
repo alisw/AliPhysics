@@ -149,9 +149,14 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     void InitCutHistograms(TString name="",bool preCut = kTRUE);
     TList *GetCutHistograms(){return fHistograms;}
     void PrintCuts();
+    void CallSumw2ForLists(TList* l);
 
+    void SetIsMC(int mc) {fIsMC = mc;}
+    void SetDoQA(bool qa) {fDoQA = qa;}
 
-    bool IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0);
+    void InitArmPodRefHistos(const char * filename);
+
+    bool IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0, double weight);
 
     // Set Individual Cuts
     bool SetRCut(int RCut);
@@ -165,7 +170,7 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     bool SetMinPhiSectorCut(int minPhiCut);
     bool SetMaxPhiSectorCut(int maxPhiCut);
     bool SetMinMomPiondEdxCut(int piMinMomdedxSigmaCut);
-    bool SetQtMaxCut(int QtMaxCut);
+    bool SetArmenterosQTCut(int QtMaxCut);
     bool SetTOFElectronPIDCut(int TOFelectronPID);
     bool SetAsymmetryCut(int doPhotonAsymmetryCut);
     bool SetPhotonRDepPtCut(int doPhotonRDepPtCut);
@@ -189,12 +194,17 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     bool DoChi2Cut(double chi2) const;
     bool DoCosPACut(double cosPA) const;
     bool DoDCAToPrimVtxCut(double dca) const;
+    bool DoArmenterosQtCut(AliAODv0* v0, int mode) const;
+
+    void FillTrueHistograms(AliAODv0 *v0, int mode, double weight);
 
   private:
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
+    int             fIsMC;
     int             fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    bool            fDoQA;                                ///< switch for running QA
 
     // //cuts
     double          fMaxR;                                ///< r cut
@@ -213,10 +223,15 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     double          fPIDnSigmaBelow;          ///< sigma cut
     double          fTofPIDnSigmaAbove;       ///< sigma cut RRnewTOF
     double          fTofPIDnSigmaBelow;       ///< sigma cut RRnewTOF
-    int             fDoQtGammaSelection;                  ///< Select gammas using qtMax
-    bool            fDo2DQt;                              ///< Select gammas using ellipse cut
+    bool            fDoArmenteros1DCuts;
+    bool            fDoArmenteros2DCuts;                              ///< Select gammas using ellipse cut
+    double          maxDevNegArmPod2D;
+    double          maxDevPosArmPod2D;
+    double          maxRangeHist2DArmPod;
     double          fQtMax;                               ///< Maximum Qt from Armenteros to select Gammas
-    double          fQtPtMax;                             ///< Maximum Qt vs Pt param from Armenteros to select Gammas
+    double          fQtMin;                             ///< Maximum Qt vs Pt param from Armenteros to select Gammas
+    double          fAlphaMin;
+    double          fAlphaMax;
     bool            fUseOnFlyV0Finder;                    ///< flag
     float           fCosPAngleCut;                        ///<
     double          fDCAZPrimVtxCut;                      ///< cut value for the maximum distance in Z between the photon & the primary vertex [cm]
@@ -227,14 +242,24 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     double          fExcludeMinR;                         ///< r cut exclude region
     double          fExcludeMaxR;                         ///< r cut exclude region
 
+    // cut histograms
+    TH2F*           fHistArmPodRefK0s;                      //
+    TH2F*           fHistArmPodRefLambda;                   //
+    TH2F*           fHistArmPodRefAntiLambda;               //
+
 
     // Histograms
     TH2F*             fHistoCutIndex;                       ///< histogram with individual cuts vs.v0 pt   
     TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
     TH2F*             fHistoArmenterosafter;                ///< armenteros podolanski plot after cuts
+    TH2F*             fHistoChi2before;                     ///< Chi2 distribution before cuts
+    TH2F*             fHistoChi2after;                      ///< Chi2 distribution after cuts
+    TH2F*             fHistoArmenterosTrue;                 ///< armenteros podolanski plot for true particles
+    TH2F*             fHistoNSigmaPosTrackTrue;             ///< NSigma TPC of positive tracks for true particles
+    TH2F*             fHistoNSigmaNegTrackTrue;             ///< NSigma TPC of negative tracks for true particles
 
     /// \cond CLASSIMP
-    ClassDef(AliConvK0LambdaCuts,1)
+    ClassDef(AliConvK0LambdaCuts,2)
     /// \endcond
 };
 
