@@ -150,6 +150,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
     } else if (meson == 3) { // Lambda
       fMesonPDGCode = 3122;
       fDoProcessLambda = true;
+    } else if (meson == 4) { // Anti-Lambda
+      fMesonPDGCode = -3122;
+      fDoProcessAntiLambda = true;
     }
   }
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
@@ -270,6 +273,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<int> fOtherMesonsPDGCodes;                // PDG code of other mesons (eta code if we are looking for a pi0)
   bool fDoProcessK0;
   bool fDoProcessLambda;
+  bool fDoProcessAntiLambda;
   int fiCut;                                            // index of the current cut
   int fIsMC;                                            // flag for data or MC (JJ MC > 1)
   int fnCuts;                                           // number of cuts

@@ -31,7 +31,7 @@ void AddTask_MesonJetCorr_K0Lambda(
   TString photonCutNumberV0Reader = "", // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
   TString periodNameV0Reader = "",
   // general setting for task
-  Int_t enableQAMesonTask = 0,             // enable QA in AliAnalysisTaskGammaConvV1
+  Int_t enableQAK0Lambda = 0,             // enable QA in AliAnalysisTaskGammaConvV1
   Int_t enableQAJets = 0,                  // enable additional QA for jets
   int enableLightOutput = kFALSE,          // switch to run light output (only essential histograms for afterburner)
   Bool_t enableTHnSparse = kFALSE,         // switch on THNsparse
@@ -77,6 +77,7 @@ void AddTask_MesonJetCorr_K0Lambda(
   TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FEPC:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
   TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMAW:");
+  TString fileNameArmPodExpectation = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FAPE:");
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString strTrackMatcherRunningMode = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
@@ -180,11 +181,50 @@ void AddTask_MesonJetCorr_K0Lambda(
   task->SetV0ReaderName(V0ReaderName);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode); // have to do this!
 
+
+  if (trainConfig == 1) { // default cuts but no armenteros
+    cuts.AddCutPCM("00010103", "10200011500000000000000000", "2r52103l00000000");
+  } else if (trainConfig == 2) { // default cuts but no armenteros
+    cuts.AddCutPCM("000fc103", "10200011500000000000000000", "2r52103l00000000");
+  } else if (trainConfig == 3) { // default cuts but no armenteros
+    cuts.AddCutPCM("000fb103", "10200011500000000000000000", "2r52103l00000000"); 
+
+  } else if (trainConfig == 10) { // default cuts with cut around armenteros of expected position within 0.02
+    cuts.AddCutPCM("00010103", "10200011500000b00000000000", "2r52103l00000000");
+  } else if (trainConfig == 11) { // default cuts with cut around armenteros of expected position within 0.02
+    cuts.AddCutPCM("000fc103", "10200011500000b00000000000", "2r52103l00000000");
+  } else if (trainConfig == 12) { // default cuts with cut around armenteros of expected position within 0.02
+    cuts.AddCutPCM("000fb103", "10200011500000b00000000000", "2r52103l00000000"); 
+
   //---------------------------------------
-  // configs for pi0 meson pp 13 TeV
+  // configs for K0s meson pp 13 TeV
   //---------------------------------------
-  if (trainConfig == 1) { // Completely open cuts
-    cuts.AddCutPCM("00010103", "10000000000000000000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 101) { // K0s default cuts, min bias
+    cuts.AddCutPCM("00010103", "10200011500000100000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 102) { // K0s default cuts, EJ2
+    cuts.AddCutPCM("000fc103", "10200011500000100000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 103) { // K0s default cuts, EJ1
+    cuts.AddCutPCM("000fb103", "10200011500000100000000000", "2r52103l00000000"); 
+
+  //---------------------------------------
+  // configs for Lambda pp 13 TeV
+  //---------------------------------------
+  } else if (trainConfig == 201) { // K0s default cuts, min bias
+    cuts.AddCutPCM("00010103", "10200011500000200000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 202) { // K0s default cuts, EJ2
+    cuts.AddCutPCM("000fc103", "10200011500000200000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 203) { // K0s default cuts, EJ1
+    cuts.AddCutPCM("000fb103", "10200011500000200000000000", "2r52103l00000000"); 
+
+  //---------------------------------------
+  // configs for Anti-Lambda pp 13 TeV
+  //---------------------------------------
+  } else if (trainConfig == 301) { // K0s default cuts, min bias
+    cuts.AddCutPCM("00010103", "10200011500000300000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 302) { // K0s default cuts, EJ2
+    cuts.AddCutPCM("000fc103", "10200011500000300000000000", "2r52103l00000000"); 
+  } else if (trainConfig == 303) { // K0s default cuts, EJ1
+    cuts.AddCutPCM("000fb103", "10200011500000300000000000", "2r52103l00000000"); 
 
   } else {
     Error(Form("MesonJetCorrelation_%i", trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -248,7 +288,11 @@ void AddTask_MesonJetCorr_K0Lambda(
     analysisK0LambdaCuts[i] = new AliConvK0LambdaCuts();
     if (enableLightOutput > 0)
       analysisK0LambdaCuts[i]->SetLightOutput(1);
-
+    analysisK0LambdaCuts[i]->SetDoQA(enableQAK0Lambda); 
+    analysisK0LambdaCuts[i]->SetIsMC(isMC); 
+    if(!fileNameArmPodExpectation.EqualTo("")){
+      analysisK0LambdaCuts[i]->InitArmPodRefHistos(fileNameArmPodExpectation);
+    }
     analysisK0LambdaCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisK0LambdaCuts[i]->SetFillCutHistograms("K0LambdaCuts", true);
     K0LambdaCutList->Add(analysisK0LambdaCuts[i]);
@@ -272,7 +316,6 @@ void AddTask_MesonJetCorr_K0Lambda(
   task->SetEventCutList(numberOfCuts, EventCutList);
   task->SetK0LambdaCutList(numberOfCuts, K0LambdaCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);
-  task->SetDoMesonQA(enableQAMesonTask); 
   task->SetDoJetQA(enableQAJets);
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
