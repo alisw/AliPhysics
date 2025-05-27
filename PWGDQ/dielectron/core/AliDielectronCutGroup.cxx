@@ -29,7 +29,7 @@ ClassImp(AliDielectronCutGroup)
 
 AliDielectronCutGroup::AliDielectronCutGroup(Bool_t compOperator /*=kCompOR*/) :
   AliAnalysisCuts(),
-  fCutGroupList(0x0),
+  fCutGroupList(),
   fCompOperator(compOperator)
 {
   //
@@ -40,7 +40,7 @@ AliDielectronCutGroup::AliDielectronCutGroup(Bool_t compOperator /*=kCompOR*/) :
 //_____________________________________________________________________
 AliDielectronCutGroup::AliDielectronCutGroup(const char* name, const char* title, Bool_t compOperator /*=kCompOR*/) :
   AliAnalysisCuts(name, title),
-  fCutGroupList(0x0),
+  fCutGroupList(),
   fCompOperator(compOperator)
 {
   //
