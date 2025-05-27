@@ -182,7 +182,13 @@ void AliAnalysisTaskEmcalJetCorrection::GetPtFromModel(AliEmcalJet* jet, Float_t
     // ####### Run Python script that does inference on jet
     fPythonCLI->Exec(Form("data_inference = numpy.array([[%s]])", arrayStr.Data()));
     fPythonCLI->Exec("result = estimator.predict(data_inference)");
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,36,0)
     pt_ML   = fPythonCLI->Eval("result[0]");
+#else
+    std::any res;
+    fPythonCLI->Exec("_anyresult = result[0]", &res);
+    pt_ML = std::any_cast<Float_t>(res);
+#endif
   #endif
 }
 
