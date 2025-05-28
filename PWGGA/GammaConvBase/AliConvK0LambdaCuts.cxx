@@ -362,22 +362,23 @@ bool AliConvK0LambdaCuts::DoTPCClusCut(const AliAODTrack *trNeg, const AliAODTra
   return true;
 }
 
-bool AliConvK0LambdaCuts::DodEdXCut(int mode, const AliAODTrack *trNeg, const AliAODTrack *trPos) const{
-  if(mode == 2){ // K0s, both are pions
+bool AliConvK0LambdaCuts::DodEdXCut(int pdgCode, const AliAODTrack *trNeg, const AliAODTrack *trPos){
+  if(!fPIDResponse){InitPIDResponse();}
+  if(pdgCode == 310){ // K0s, both are pions
     if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) > fPIDnSigmaAbove){
       return false;
     } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) > fPIDnSigmaAbove){
       return false;
     }
     return true;
-  } else if (mode == 3){ // Lambda: Pos track is proton, negative is pion
+  } else if (pdgCode == 3122){ // Lambda: Pos track is proton, negative is pion
     if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) > fPIDnSigmaAbove){
       return false;
     } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kProton) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kProton) > fPIDnSigmaAbove){
       return false;
     }
     return true;
-  } else if (mode == 4){ // Anti-Lambda: Neg track is proton, positive is pion
+  } else if (pdgCode == -3122){ // Anti-Lambda: Neg track is proton, positive is pion
     if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kProton) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kProton) > fPIDnSigmaAbove){
       return false;
     } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) > fPIDnSigmaAbove){
@@ -410,7 +411,7 @@ bool AliConvK0LambdaCuts::DoDCAToPrimVtxCut(double dca) const{
   return true;
 }
 
-bool AliConvK0LambdaCuts::DoArmenterosQtCut(AliAODv0* v0, int mode) const{
+bool AliConvK0LambdaCuts::DoArmenterosQtCut(AliAODv0* v0, int pdgcode) const{
   if(fDoArmenteros1DCuts){
     if(v0->AlphaV0() < fAlphaMin || v0->AlphaV0() > fAlphaMax){
       return false;
@@ -424,14 +425,17 @@ bool AliConvK0LambdaCuts::DoArmenterosQtCut(AliAODv0* v0, int mode) const{
     if(momentum > maxRangeHist2DArmPod){
       momentum = maxRangeHist2DArmPod;
     }
-    if(mode == 2){
-      valExpect = fHistArmPodRefK0s->GetBinContent(v0->AlphaV0(), momentum);
-    } else if(mode == 3){
-      valExpect = fHistArmPodRefLambda->GetBinContent(v0->AlphaV0(), momentum);
-    } else if(mode == 4){
-      valExpect = fHistArmPodRefAntiLambda->GetBinContent(v0->AlphaV0(), momentum);
+    if(pdgcode == 310){
+      if(!fHistArmPodRefK0s){
+        AliFatal("fHistArmPodRefK0s not there");
+      }
+      valExpect = fHistArmPodRefK0s->GetBinContent(fHistArmPodRefK0s->GetXaxis()->FindBin(v0->AlphaV0()), fHistArmPodRefK0s->GetYaxis()->FindBin(momentum));
+    } else if(pdgcode == 3122){
+      valExpect = fHistArmPodRefLambda->GetBinContent(fHistArmPodRefLambda->GetXaxis()->FindBin(v0->AlphaV0()), fHistArmPodRefLambda->GetYaxis()->FindBin(momentum));
+    } else if(pdgcode == -3122){
+      valExpect = fHistArmPodRefAntiLambda->GetBinContent(fHistArmPodRefAntiLambda->GetXaxis()->FindBin(v0->AlphaV0()), fHistArmPodRefAntiLambda->GetYaxis()->FindBin(momentum));
     }
-    if(v0->PtArmV0() < valExpect - maxDevNegArmPod2D || v0->PtArmV0() > valExpect + maxDevPosArmPod2D){
+    if(valExpect == 0 || v0->PtArmV0() < valExpect - maxDevNegArmPod2D || v0->PtArmV0() > valExpect + maxDevPosArmPod2D){
       return false;
     }
   }
@@ -440,7 +444,7 @@ bool AliConvK0LambdaCuts::DoArmenterosQtCut(AliAODv0* v0, int mode) const{
 }
 
 
-bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0, double weight){
+bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int mesonPDGCode, double weight){
   const AliAODTrack *ntrack=(AliAODTrack*) v0->GetDaughter(1);
   const AliAODTrack *ptrack=(AliAODTrack*) v0->GetDaughter(0);
 
@@ -487,7 +491,7 @@ bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0, do
   }
   cutindex++;
 
-  if(!DodEdXCut(fDoProcessK0, ntrack, ptrack)){
+  if(!DodEdXCut(mesonPDGCode, ntrack, ptrack)){
     fHistoCutIndex->Fill(cutindex, v0->Pt());
     return false;
   }
@@ -499,7 +503,7 @@ bool AliConvK0LambdaCuts::IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0, do
   }
   cutindex++;
 
-  if(!DoArmenterosQtCut(v0, fDoProcessK0)){
+  if(!DoArmenterosQtCut(v0, mesonPDGCode)){
     fHistoCutIndex->Fill(cutindex, v0->Pt());
     return false;
   }
@@ -984,6 +988,7 @@ bool AliConvK0LambdaCuts::SetTRDElectronPIDCut(Int_t TRDelectronPID){
 
 ///________________________________________________________________________
 bool AliConvK0LambdaCuts::SetArmenterosQTCut(Int_t QtMaxCut){   // Set Cut
+  cout << "SetArmenterosQTCut " << QtMaxCut << endl;
   switch(QtMaxCut){
   case 0: //
     fDoArmenteros1DCuts = true;

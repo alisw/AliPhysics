@@ -156,7 +156,7 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
 
     void InitArmPodRefHistos(const char * filename);
 
-    bool IsK0sLambdaAccepted(AliAODv0 *v0, int fDoProcessK0, double weight);
+    bool IsK0sLambdaAccepted(AliAODv0 *v0, int mesonPDGCode, double weight);
 
     // Set Individual Cuts
     bool SetRCut(int RCut);
@@ -190,7 +190,7 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     bool DoRCut(AliAODv0 *v0) const;
     bool DoSinglePtCut(const AliAODTrack *trNeg, const AliAODTrack *trPos) const;
     bool DoTPCClusCut(const AliAODTrack *trNeg, const AliAODTrack *trPos) const;
-    bool DodEdXCut(int mode, const AliAODTrack *trNeg, const AliAODTrack *trPos) const;
+    bool DodEdXCut(int mode, const AliAODTrack *trNeg, const AliAODTrack *trPos);
     bool DoChi2Cut(double chi2) const;
     bool DoCosPACut(double cosPA) const;
     bool DoDCAToPrimVtxCut(double dca) const;

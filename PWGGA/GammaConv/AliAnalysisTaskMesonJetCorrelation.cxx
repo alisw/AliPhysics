@@ -62,11 +62,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fMaxPtJet(0),
                                                                              fOutlierJetReader(nullptr),
                                                                              // global settings
-                                                                             fMesonPDGCode(111),
+                                                                             fMesonPDGCode({111}),
                                                                              fOtherMesonsPDGCodes({111, 221, 331}),
-                                                                             fDoProcessK0(false),
-                                                                             fDoProcessLambda(false),
-                                                                             fDoProcessAntiLambda(false),
+                                                                             fDoProcessK0Lambda(false),
                                                                              fiCut(0),
                                                                              fIsMC(0),
                                                                              fnCuts(0),
@@ -372,11 +370,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fMaxPtJet(0),
                                                                                            fOutlierJetReader(nullptr),
                                                                                            // global settings
-                                                                                           fMesonPDGCode(111),
+                                                                                           fMesonPDGCode({111}),
                                                                                            fOtherMesonsPDGCodes({111, 221, 331}),
-                                                                                           fDoProcessK0(false),
-                                                                                           fDoProcessLambda(false),
-                                                                                           fDoProcessAntiLambda(false),
+                                                                                           fDoProcessK0Lambda(false),
                                                                                            fiCut(0),
                                                                                            fIsMC(0),
                                                                                            fnCuts(0),
@@ -1013,7 +1009,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     TString cutstringCalo = (fIsCalo == true || fIsConvCalo == true) ? ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber() : "";
     TString cutstringMeson = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
     TString cutstringConv = (fIsConv == true || fIsConvCalo == true) ? ((AliConversionPhotonCuts*)fConvCutArray->At(iCut))->GetCutNumber() : "";
-    TString cutstringK0Lambda = (fDoProcessK0 == true || fDoProcessLambda == true || fDoProcessAntiLambda == true ) ? ((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(iCut))->GetCutNumber() : "";
+    TString cutstringK0Lambda = ( fDoProcessK0Lambda == true ) ? ((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(iCut))->GetCutNumber() : "";
     TString cutString = "";
     if (fIsConv)
       cutString = Form("%s_%s_%s", cutstringEvent.Data(), cutstringConv.Data(), cutstringMeson.Data());
@@ -1021,7 +1017,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       cutString = Form("%s_%s_%s", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data());
     else if (fIsConvCalo)
       cutString = Form("%s_%s_%s_%s", cutstringEvent.Data(), cutstringConv.Data(), cutstringCalo.Data(), cutstringMeson.Data());
-    else if (fDoProcessK0 == true || fDoProcessLambda == true  || fDoProcessAntiLambda == true)
+    else if (fDoProcessK0Lambda)
       cutString = Form("%s_%s_%s", cutstringEvent.Data(), cutstringK0Lambda.Data(), cutstringMeson.Data());
     else 
       cutString = Form("%s", cutstringEvent.Data());
@@ -2009,13 +2005,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       }
     }
 
-    if((fDoProcessK0 == true || fDoProcessLambda == true || fDoProcessAntiLambda == true )){
+    if(fDoProcessK0Lambda ){
       if (((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(iCut))->GetCutHistograms()) {
         fCutFolder[iCut]->Add(((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(iCut))->GetCutHistograms());
       }
     }
 
-    if(!(fDoProcessOnlyJets || fDoProcessK0 == true || fDoProcessLambda == true || fDoProcessAntiLambda == true )){
+    if(!(fDoProcessOnlyJets || fDoProcessK0Lambda )){
       if (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms()) {
         fCutFolder[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
       }
@@ -2038,7 +2034,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
 
   double epsilon = 1e-6;
 
-  if (fMesonPDGCode == 111) { // pi0
+  if (fMesonPDGCode[0] == 111) { // pi0
     double valInvMass = 0;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
@@ -2047,7 +2043,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
       else
         break;
     }
-  } else if (fMesonPDGCode == 221) { // eta
+  } else if (fMesonPDGCode[0] == 221) { // eta
     double valInvMass = 0.3;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
@@ -2056,7 +2052,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
       else
         break;
     }
-  } else if (fMesonPDGCode == 310) { // K0s
+  } else if (fMesonPDGCode[0] == 310) { // K0s
     double valInvMass = 0.4;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
@@ -2065,7 +2061,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
       else
         break;
     }
-  } else if (fMesonPDGCode == 3122) { // Lambda
+  } else if (std::abs(fMesonPDGCode[0]) == 3122) { // Lambda
     double valInvMass = 1.0;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
@@ -2984,19 +2980,21 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     if (fLocalDebugFlag) {
       printf("CalculateMesonCandidates\n");
     }
-    if(!(fDoProcessOnlyJets || fDoProcessK0 || fDoProcessLambda || fDoProcessAntiLambda)) {
+    if(!(fDoProcessOnlyJets || fDoProcessK0Lambda)) {
       CalculateMesonCandidates();
     }
 
     if (fLocalDebugFlag) {
       printf("CalculateBackground\n");
     }
-    if(!(fDoProcessOnlyJets || fDoProcessK0 || fDoProcessLambda || fDoProcessAntiLambda)) {
+    if(!(fDoProcessOnlyJets || fDoProcessK0Lambda)) {
       CalculateBackground();
     }
 
-    if(fDoProcessK0 || fDoProcessLambda || fDoProcessAntiLambda){
-      ProcessK0Lambda();
+    if(fDoProcessK0Lambda){
+      for(const auto & pdg : fMesonPDGCode){
+        ProcessK0Lambda(pdg);
+      }
     }
 
     if ((fUseMixedBackAdd && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) || !((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
@@ -4105,7 +4103,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticlesK0sLambda(int isCu
     if (!particle)
       continue;
 
-    if(particle->GetPdgCode() != fMesonPDGCode){
+    if(std::find(fMesonPDGCode.begin(), fMesonPDGCode.end(), particle->GetPdgCode()) == fMesonPDGCode.end()) {
       continue;
     }
 
@@ -4138,15 +4136,17 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticlesK0sLambda(int isCu
         AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(0)));
         AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(1)));
 
-        if(fMesonPDGCode == 310){
+        if(fMesonPDGCode[0] == 310) { // K0s
           if(!(std::abs(daughter0->GetPdgCode()) == 211 && daughter0->GetPdgCode() == -1*daughter1->GetPdgCode())){
             continue;
           }
-        } else {
-          if(fMesonPDGCode == 3122){
-            if(!((std::abs(daughter0->GetPdgCode()) == 2212 && std::abs(daughter1->GetPdgCode()) == 211) || (std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 2212)) ){
-              continue;
-            }
+        } else if(particle->GetPdgCode() == 3122 && (std::find(fMesonPDGCode.begin(), fMesonPDGCode.end(), 3122) == fMesonPDGCode.end())) { // Lambda
+          if(!((std::abs(daughter0->GetPdgCode()) == 2212 && std::abs(daughter1->GetPdgCode()) == 211) || (std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 2212)) ){
+            continue;
+          }
+        } else if(particle->GetPdgCode() == -3122 && (std::find(fMesonPDGCode.begin(), fMesonPDGCode.end(), -3122) == fMesonPDGCode.end())) { // Anti-Lambda
+          if(!((std::abs(daughter0->GetPdgCode()) == 2212 && std::abs(daughter1->GetPdgCode()) == 211) || (std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 2212)) ){
+            continue;
           }
         }
 
@@ -4232,15 +4232,17 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticlesK0sLambda(int isCu
         AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(0)));
         AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetDaughterLabel(1)));
 
-        if(fMesonPDGCode == 310){
-          if(!(std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 211 && daughter0->GetPdgCode() == -1*daughter0->GetPdgCode())){
+        if(fMesonPDGCode[0] == 310) { // K0s
+          if(!(std::abs(daughter0->GetPdgCode()) == 211 && daughter0->GetPdgCode() == -1*daughter1->GetPdgCode())){
             continue;
           }
-        } else {
-          if(fMesonPDGCode == 3122){
-            if(!((std::abs(daughter0->GetPdgCode()) == 2212 && std::abs(daughter1->GetPdgCode()) == 211) || (std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 2212)) ){
-              continue;
-            }
+        } else if(particle->GetPdgCode() == 3122 && (std::find(fMesonPDGCode.begin(), fMesonPDGCode.end(), 3122) == fMesonPDGCode.end())) { // Lambda
+          if(!((std::abs(daughter0->GetPdgCode()) == 2212 && std::abs(daughter1->GetPdgCode()) == 211) || (std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 2212)) ){
+            continue;
+          }
+        } else if(particle->GetPdgCode() == -3122 && (std::find(fMesonPDGCode.begin(), fMesonPDGCode.end(), -3122) == fMesonPDGCode.end())) { // Anti-Lambda
+          if(!((std::abs(daughter0->GetPdgCode()) == 2212 && std::abs(daughter1->GetPdgCode()) == 211) || (std::abs(daughter0->GetPdgCode()) == 211 && std::abs(daughter1->GetPdgCode()) == 2212)) ){
+            continue;
           }
         }
         if (matchedJet >= 0) {
@@ -4267,7 +4269,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticlesK0sLambda(int isCu
 void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEventSelected)
 {
   if(fDoProcessOnlyJets) return;
-  else if (fDoProcessK0 || fDoProcessLambda || fDoProcessAntiLambda){
+  else if (fDoProcessK0Lambda){
     ProcessAODMCParticlesK0sLambda(isCurrentEventSelected);
     return;
   }
@@ -4406,7 +4408,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
         }
       }
       // check neutral mesons
-      if (particle->GetPdgCode() == fMesonPDGCode) {
+      if (particle->GetPdgCode() == fMesonPDGCode[0]) {
 
         if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
               ->MesonIsSelectedAODMC(particle, fAODMCTrackArray, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())) {
@@ -4516,8 +4518,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
         AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particle->GetMother()));
         int pdgCode = mother->GetPdgCode();
         int source = -1;
-        if (particle->GetPdgCode() == fMesonPDGCode) {
-          source = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSourceClassification(fMesonPDGCode, pdgCode);
+        if (particle->GetPdgCode() == fMesonPDGCode[0]) {
+          source = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSourceClassification(fMesonPDGCode[0], pdgCode);
           fHistoMCSecMesonPtvsSource[fiCut]->Fill(particle->Pt(), source, fWeightJetJetMC); // All MC Pi0
           fHistoMCSecMesonSource[fiCut]->Fill(pdgCode, fWeightJetJetMC);
 
@@ -4749,9 +4751,9 @@ bool AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
   AliAODMCParticle* trueMesonCand = nullptr;
   if (gamma0MotherLabel >= 0 && gamma0MotherLabel == gamma1MotherLabel) {
     trueMesonCand = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel));
-    if (trueMesonCand->GetPdgCode() == fMesonPDGCode) {
+    if (trueMesonCand->GetPdgCode() == fMesonPDGCode[0]) {
       isTrueParticle = true;
-    } else if (std::find(fOtherMesonsPDGCodes.begin(), fOtherMesonsPDGCodes.end(), fMesonPDGCode) != fOtherMesonsPDGCodes.end()) {
+    } else if (std::find(fOtherMesonsPDGCodes.begin(), fOtherMesonsPDGCodes.end(), fMesonPDGCode[0]) != fOtherMesonsPDGCodes.end()) {
       isTrueOtherParticle = true;
     }
   }
@@ -4947,7 +4949,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesInTrueJetsAOD
   AliAODMCParticle* trueMesonCand = nullptr;
   if (gamma0MotherLabel >= 0 && gamma0MotherLabel == gamma1MotherLabel) {
     trueMesonCand = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel));
-    if (trueMesonCand->GetPdgCode() == fMesonPDGCode) {
+    if (trueMesonCand->GetPdgCode() == fMesonPDGCode[0]) {
       isTrueParticle = true;
     }
   }
@@ -5080,7 +5082,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonDCATree(AliAODConversionMother
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMesonJetCorrelation::ProcessK0Lambda(){
+void AliAnalysisTaskMesonJetCorrelation::ProcessK0Lambda(const int pdgCode){
 
   AliAODEvent* aodEvt = static_cast<AliAODEvent*>(fInputEvent);
   const int nV0s = aodEvt->GetNumberOfV0s();
@@ -5088,7 +5090,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessK0Lambda(){
    { // This is the begining of the V0 loop
       AliAODv0 *v0 = aodEvt->GetV0(iV0);
       if (!v0) continue;
-      if(! ((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(fiCut))->IsK0sLambdaAccepted(v0, fDoProcessK0, fWeightJetJetMC)){
+      if(! ((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(fiCut))->IsK0sLambdaAccepted(v0, pdgCode, fWeightJetJetMC)){
         continue;
       }
       double tDecayVertexV0[3] = {0., 0., 0.}; 
@@ -5096,9 +5098,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessK0Lambda(){
       double tV0mom[3] = {0., 0., 0.}; 
       v0->GetPxPyPz( tV0mom ); 
       double massV0 = 0.;
-      if(fDoProcessK0 == true) massV0 = v0->MassK0Short();
-      else if(fDoProcessLambda == true) massV0 = v0->MassLambda();
-      else if(fDoProcessAntiLambda == true) massV0 = v0->MassAntiLambda();
+      if(pdgCode == 310) massV0 = v0->MassK0Short();
+      else if(pdgCode == 3122) massV0 = v0->MassLambda();
+      else if(pdgCode == -3122) massV0 = v0->MassAntiLambda();
 
       if (fDoAnalysisPt) {
         if (fDoMesonQA > 0) {
@@ -5130,7 +5132,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessK0Lambda(){
 
 
         if(fIsMC > 0){
-          ProcessTrueK0Lambda(v0, matchedJet, massV0);
+          ProcessTrueK0Lambda(pdgCode, v0, matchedJet, massV0);
         }
       }
 
@@ -5138,7 +5140,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessK0Lambda(){
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMesonJetCorrelation::ProcessTrueK0Lambda(AliAODv0* v0, const int matchedJet, const double massV0){
+void AliAnalysisTaskMesonJetCorrelation::ProcessTrueK0Lambda(const int pdgCode, AliAODv0* v0, const int matchedJet, const double massV0){
   const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
   const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
 
@@ -5161,10 +5163,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueK0Lambda(AliAODv0* v0, const
   if(ipMother > 0 && ipMother == inMother){
     AliAODMCParticle *v0MCPart = (AliAODMCParticle*)fAODMCTrackArray->UncheckedAt(ipMother);
 
-    if(fMesonPDGCode == v0MCPart->PdgCode()){
+    if(pdgCode == v0MCPart->PdgCode()){
 
       // Fill QA histograms
-      ((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(fiCut))->FillTrueHistograms(v0, fMesonPDGCode, fWeightJetJetMC);
+      ((AliConvK0LambdaCuts*)fK0LambdaCutArray->At(fiCut))->FillTrueHistograms(v0, pdgCode, fWeightJetJetMC);
       
       // Define most important variables here
       float jetPtRec = (matchedJet < 0) ? 0 : fVectorJetPt[matchedJet];
