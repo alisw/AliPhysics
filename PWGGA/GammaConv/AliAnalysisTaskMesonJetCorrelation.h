@@ -82,8 +82,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   float GetRadiusJetPart(AliAODConversionMother* Pi0Candidate, const int matchedJet, int isTrueJet);
   float GetRadiusJetPart(AliAODMCParticle* Pi0Candidate, const int matchedJet, int isTrueJet);
   void FillMesonDCATree(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* gamma0, AliAODConversionPhoton* gamma1, const int matchedJet, const bool isTrueMeson);
-  void ProcessK0Lambda();
-  void ProcessTrueK0Lambda(AliAODv0* v0, const int matchedJet, const double massV0);
+  void ProcessK0Lambda(const int pdgCode);
+  void ProcessTrueK0Lambda(const int pdgCode, AliAODv0* v0, const int matchedJet, const double massV0);
 
   // MC functions
   void ProcessAODMCParticles(int isCurrentEventSelected = 0);
@@ -142,17 +142,20 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetTrackMatcherRunningMode(int mode) { fTrackMatcherRunningMode = mode; }
   void SetUseTHnSparseForResponse(bool tmp) { fUseThNForResponse = tmp; }
   void SetMesonKind(int meson) { 
-    if(meson == 0) fMesonPDGCode = 111;
-    else if (meson == 1) fMesonPDGCode = 221; 
+    if(meson == 0) fMesonPDGCode = {111};
+    else if (meson == 1) fMesonPDGCode = {221}; 
     else if (meson == 2) {
-      fMesonPDGCode = 310;
-      fDoProcessK0 = true;
+      fMesonPDGCode = {310};
+      fDoProcessK0Lambda = true;
     } else if (meson == 3) { // Lambda
-      fMesonPDGCode = 3122;
-      fDoProcessLambda = true;
+      fMesonPDGCode = {3122};
+      fDoProcessK0Lambda = true;
     } else if (meson == 4) { // Anti-Lambda
-      fMesonPDGCode = -3122;
-      fDoProcessAntiLambda = true;
+      fMesonPDGCode = {-3122};
+      fDoProcessK0Lambda = true;
+    } else if (meson == 5) { // Lambda + Anti-Lambda
+      fMesonPDGCode = {3122, -3122};
+      fDoProcessK0Lambda = true;
     }
   }
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
@@ -269,11 +272,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   // global settings and variables
   //-------------------------------
-  int fMesonPDGCode;                                    // PDG code of current meson (111 for pi0 etc.)
+  std::vector<int> fMesonPDGCode;                       // PDG code of current meson (111 for pi0 etc.). Can be multiple in case of Lambda+Antilambda
   std::vector<int> fOtherMesonsPDGCodes;                // PDG code of other mesons (eta code if we are looking for a pi0)
-  bool fDoProcessK0;
-  bool fDoProcessLambda;
-  bool fDoProcessAntiLambda;
+  bool fDoProcessK0Lambda;
   int fiCut;                                            // index of the current cut
   int fIsMC;                                            // flag for data or MC (JJ MC > 1)
   int fnCuts;                                           // number of cuts
@@ -631,7 +632,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 29);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 30);
 };
 
 #endif

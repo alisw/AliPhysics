@@ -189,42 +189,49 @@ void AddTask_MesonJetCorr_K0Lambda(
   } else if (trainConfig == 3) { // default cuts but no armenteros
     cuts.AddCutPCM("000fb103", "10200011500000000000000000", "2r52103l00000000"); 
 
+  } else if (trainConfig == 4) { // default cuts, loose armenteros
+    cuts.AddCutPCM("00010103", "10200011500000001000000000", "2r52103l00000000");
+  } else if (trainConfig == 5) { // default cuts, loose armenteros
+    cuts.AddCutPCM("000fc103", "10200011500000001000000000", "2r52103l00000000");
+  } else if (trainConfig == 6) { // default cuts, loose armenteros
+    cuts.AddCutPCM("000fb103", "10200011500000001000000000", "2r52103l00000000"); 
+
   } else if (trainConfig == 10) { // default cuts with cut around armenteros of expected position within 0.02
-    cuts.AddCutPCM("00010103", "10200011500000b00000000000", "2r52103l00000000");
+    cuts.AddCutPCM("00010103", "1020001150000000b000000000", "2r52103l00000000");
   } else if (trainConfig == 11) { // default cuts with cut around armenteros of expected position within 0.02
-    cuts.AddCutPCM("000fc103", "10200011500000b00000000000", "2r52103l00000000");
+    cuts.AddCutPCM("000fc103", "1020001150000000b000000000", "2r52103l00000000");
   } else if (trainConfig == 12) { // default cuts with cut around armenteros of expected position within 0.02
-    cuts.AddCutPCM("000fb103", "10200011500000b00000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fb103", "1020001150000000b000000000", "2r52103l00000000"); 
 
   //---------------------------------------
   // configs for K0s meson pp 13 TeV
   //---------------------------------------
   } else if (trainConfig == 101) { // K0s default cuts, min bias
-    cuts.AddCutPCM("00010103", "10200011500000100000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("00010103", "10200011500000001000000000", "2r52103l00000000"); 
   } else if (trainConfig == 102) { // K0s default cuts, EJ2
-    cuts.AddCutPCM("000fc103", "10200011500000100000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fc103", "10200011500000001000000000", "2r52103l00000000"); 
   } else if (trainConfig == 103) { // K0s default cuts, EJ1
-    cuts.AddCutPCM("000fb103", "10200011500000100000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fb103", "10200011500000001000000000", "2r52103l00000000"); 
 
   //---------------------------------------
   // configs for Lambda pp 13 TeV
   //---------------------------------------
   } else if (trainConfig == 201) { // K0s default cuts, min bias
-    cuts.AddCutPCM("00010103", "10200011500000200000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("00010103", "10200011500000002000000000", "2r52103l00000000"); 
   } else if (trainConfig == 202) { // K0s default cuts, EJ2
-    cuts.AddCutPCM("000fc103", "10200011500000200000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fc103", "10200011500000002000000000", "2r52103l00000000"); 
   } else if (trainConfig == 203) { // K0s default cuts, EJ1
-    cuts.AddCutPCM("000fb103", "10200011500000200000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fb103", "10200011500000002000000000", "2r52103l00000000"); 
 
   //---------------------------------------
   // configs for Anti-Lambda pp 13 TeV
   //---------------------------------------
   } else if (trainConfig == 301) { // K0s default cuts, min bias
-    cuts.AddCutPCM("00010103", "10200011500000300000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("00010103", "10200011500000003000000000", "2r52103l00000000"); 
   } else if (trainConfig == 302) { // K0s default cuts, EJ2
-    cuts.AddCutPCM("000fc103", "10200011500000300000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fc103", "10200011500000003000000000", "2r52103l00000000"); 
   } else if (trainConfig == 303) { // K0s default cuts, EJ1
-    cuts.AddCutPCM("000fb103", "10200011500000300000000000", "2r52103l00000000"); 
+    cuts.AddCutPCM("000fb103", "10200011500000003000000000", "2r52103l00000000"); 
 
   } else {
     Error(Form("MesonJetCorrelation_%i", trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
