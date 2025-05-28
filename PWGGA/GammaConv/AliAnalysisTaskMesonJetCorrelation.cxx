@@ -2062,11 +2062,11 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
         break;
     }
   } else if (std::abs(fMesonPDGCode[0]) == 3122) { // Lambda
-    double valInvMass = 1.0;
+    double valInvMass = 1.08;
     for (int i = 0; i <= 1000; ++i) {
       fVecBinsMesonInvMass.push_back(valInvMass);
-      if (valInvMass >= 1.0 - epsilon && valInvMass < 1.3 - epsilon)
-        valInvMass += 0.002;
+      if (valInvMass >= 1.0 - epsilon && valInvMass < 1.2 - epsilon)
+        valInvMass += 0.001;
       else
         break;
     }
