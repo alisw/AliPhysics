@@ -304,7 +304,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDoAnalysisZ;                                    // flag to enable filling of z dependent histograms
   bool fDoCutOnEnergyAsymm;                             // flag to cut on energy asymmetry between true and rec. jets. Values are provided by JetReader
   bool fDoProcessOnlyJets;                              // flag to only process the jets and not the pi0s
-
+  int fJetErrCounter;                                   // counter for number of error mesages of previous jet events
   //-------------------------------
   // conversions
   //-------------------------------
@@ -358,6 +358,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   vector<double> fTrueVectorJetPartonPy; //! Vector of parton pt matched to true jet
   vector<double> fTrueVectorJetPartonPz; //! Vector of parton pt matched to true jet
   vector<double> fTrueVectorJetWeight;   //! Vector of true jet weights
+  double fJetPtPrevEvt;                  //! jet pt of first jet in previous event. This is used to check that the jets have actually changed and nothing nasty has happened!
   double fTrueJetPtPrevEvt;              //! true pt of first jet in previous event. This is used to check that the jets have actually changed and nothing nasty has happened!
 
   vector<double> fVectorJetEtaPerp; //! vector of jet -eta (opposite eta to original jet)
@@ -632,7 +633,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 30);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 31);
 };
 
 #endif
