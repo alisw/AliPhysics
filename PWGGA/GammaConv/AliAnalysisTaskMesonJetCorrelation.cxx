@@ -94,6 +94,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoAnalysisZ(true),
                                                                              fDoCutOnEnergyAsymm(false),
                                                                              fDoProcessOnlyJets(false),
+                                                                             fJetErrCounter(0),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
                                                                              fMCEventNeg(nullptr),
@@ -136,7 +137,8 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fTrueVectorJetPartonPy({}),
                                                                              fTrueVectorJetPartonPz({}),
                                                                              fTrueVectorJetWeight({}),
-                                                                             fTrueJetPtPrevEvt(0.),
+                                                                             fJetPtPrevEvt(-1.),
+                                                                             fTrueJetPtPrevEvt(-1.),
                                                                              fVectorJetEtaPerp({}),
                                                                              fVectorJetPhiPerp({}),
                                                                              MapRecJetsTrueJets(),
@@ -402,6 +404,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoAnalysisZ(true),
                                                                                            fDoCutOnEnergyAsymm(false),
                                                                                            fDoProcessOnlyJets(false),
+                                                                                           fJetErrCounter(0),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
                                                                                            fMCEventNeg(nullptr),
@@ -444,7 +447,8 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fTrueVectorJetPartonPy({}),
                                                                                            fTrueVectorJetPartonPz({}),
                                                                                            fTrueVectorJetWeight({}),
-                                                                                           fTrueJetPtPrevEvt(0.),
+                                                                                           fJetPtPrevEvt(-1.),
+                                                                                           fTrueJetPtPrevEvt(-1.),
                                                                                            fVectorJetEtaPerp({}),
                                                                                            fVectorJetPhiPerp({}),
                                                                                            MapRecJetsTrueJets(),
@@ -2268,6 +2272,19 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
     }
   }
 
+  if(fVectorJetPt.size() > 0 ){
+    if(fJetPtPrevEvt == fVectorJetPt[0]){
+      if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events jet is the same as this event.... skipping this event  %f", fVectorJetPt[0]) << endl;
+      if(fJetErrCounter == 100) cout << "Too many errors about --The last events jet is the same as this event-- Disabeling error messages from now on" << endl;
+      fJetErrCounter++;
+      return false;
+    } else {
+      fJetPtPrevEvt = fVectorJetPt[0];
+    }
+  } else {
+    fJetPtPrevEvt = 0.;
+  }
+
   if (fIsMC > 0) {
     if (!fAODMCTrackArray)
       fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -2288,7 +2305,9 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
 
     if(fTrueVectorJetPt.size() > 0 ){
       if(fTrueJetPtPrevEvt == fTrueVectorJetPt[0]){
-        cout << "Something bad happened! The last events jet is the same as this event.... skipping this event  " << fTrueVectorJetPt[0] << endl;
+        if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events true jet is the same as this event.... skipping this event  %f", fTrueVectorJetPt[0]) << endl;
+        if(fJetErrCounter == 100) cout << "Too many errors about --The last events true jet is the same as this event-- Disabeling error messages from now on" << endl;
+        fJetErrCounter++;
         return false;
       } else {
         fTrueJetPtPrevEvt = fTrueVectorJetPt[0];
