@@ -19,6 +19,7 @@
 #include "AliMCEvent.h"
 #include "TProfile2D.h"
 #include "TH1F.h"
+#include "TH3F.h"
 #include "TF1.h"
 #include "AliAnalysisManager.h"
 #include "AliCaloTrackMatcher.h"
@@ -373,6 +374,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetReduceTriggeredPhiDueBadDDLs()               {return fReduceTriggeredPhiDueBadDDLs;}
     void        FillEtaPhiMapForClusterInBg(const Double_t eta, const Double_t phi, const Double_t weight){  if(fHistClusterEtavsPhiBackground && !fDoLightOutput && fUseEtaPhiMapForBackCand) fHistClusterEtavsPhiBackground->Fill(phi, eta, weight);}
     void        SetUseEtaPhiMapForBackCand(const Bool_t tmp)    {fUseEtaPhiMapForBackCand = tmp;}
+
+    int         GetParticleIndex(int pdgcode);
+    void        FillHistEnergyFracPartInClus(AliVEvent* event, AliAODCaloCluster* clus, double weight);
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -796,7 +800,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronPositronClusterMatchEoverPMixing;    // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell and matched to a cluster vs E/p
     std::vector<ElectronMixing> vecElectronMixing;              //! vector holding information on electron tracks for electron mixing 
 
-
+    // histogram for cluster energy fraction studies
+    TH3F*     fHistEnergyFracClusVsPart;                // histogram with particle index, energy fraction of particle in cluster and cluster energy
+    TH3F*     fHistDepEnergyClusVsPart;                 // histogram with particle index, total deposited energy of particle and cluster energy
+    TH3F*     fHistDepEnergyPartPVsPart;                // histogram with particle index, deposited energy in cluster and MC particle energy
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
     TH2F*     fHistInvMassConvFlagging;                 // histogram for monitoring rejected di-cluster mass
@@ -807,7 +814,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,145)
+    ClassDef(AliCaloPhotonCuts,146)
 };
 
 #endif

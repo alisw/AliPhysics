@@ -363,6 +363,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistElectronPositronOnEMCCellMatchedMixing(NULL),
   fHistElectronPositronClusterMatchEoverPMixing(NULL),
   vecElectronMixing({}),
+  fHistEnergyFracClusVsPart(NULL),
+  fHistDepEnergyClusVsPart(NULL),
+  fHistDepEnergyPartPVsPart(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -647,6 +650,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistElectronPositronOnEMCCellMatchedMixing(NULL),
   fHistElectronPositronClusterMatchEoverPMixing(NULL),
   vecElectronMixing({}),
+  fHistEnergyFracClusVsPart(NULL),
+  fHistDepEnergyClusVsPart(NULL),
+  fHistDepEnergyPartPVsPart(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -1106,6 +1112,31 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistograms->Add(fHistClusterEM20BeforeQA);
     }
   }
+
+  if(fIsMC && fExtendedMatchAndQA == 3){
+    std::vector<double> arrPartIndex(13);
+    for(unsigned int i = 0; i < arrPartIndex.size(); ++i){ arrPartIndex[i] = i - 0.5; }
+    std::vector<double> arrFracMom(101);
+    for(unsigned int i = 0; i < arrFracMom.size(); ++i){ arrFracMom[i] = static_cast<double>(i)/100.; }
+    fHistEnergyFracClusVsPart     = new TH3F(Form("PartIndexVsEFracVsClusE %s",GetCutNumber().Data()),"PartIndexVsEFracVsClusE",arrPartIndex.size()-1, arrPartIndex.data(), arrFracMom.size()-1, arrFracMom.data(), nBinsClusterECell, arrClusEBinningCoarse);
+    fHistEnergyFracClusVsPart->GetXaxis()->SetTitle("particle index");
+    fHistEnergyFracClusVsPart->GetYaxis()->SetTitle("energy fraction");
+    fHistEnergyFracClusVsPart->GetZaxis()->SetTitle("E_{cl} (GeV)");
+    fHistograms->Add(fHistEnergyFracClusVsPart);
+    fHistDepEnergyClusVsPart      = new TH3F(Form("PartIndexVsDepEVsClusE %s",GetCutNumber().Data()),"PartIndexVsDepEVsClusE",arrPartIndex.size()-1, arrPartIndex.data(), nBinsClusterECell, arrClusEBinningCoarse, nBinsClusterECell, arrClusEBinningCoarse);
+    fHistDepEnergyClusVsPart->GetXaxis()->SetTitle("particle index");
+    fHistDepEnergyClusVsPart->GetYaxis()->SetTitle("E_{MC part} (GeV)");
+    fHistDepEnergyClusVsPart->GetZaxis()->SetTitle("E_{cl} (GeV)");
+    fHistograms->Add(fHistDepEnergyClusVsPart);
+
+    std::vector<double> arrDepEnergyAxis(101);
+    for(unsigned int i = 0; i < arrDepEnergyAxis.size(); ++i){ arrDepEnergyAxis[i] = static_cast<double>(i)/50.; }
+    fHistDepEnergyPartPVsPart    = new TH3F(Form("PartIndexVsEPartVsClusE %s",GetCutNumber().Data()),"PartIndexVsEPartVsClusE",arrPartIndex.size()-1, arrPartIndex.data(), arrDepEnergyAxis.size()-1, arrDepEnergyAxis.data(), nBinsClusterECell, arrClusEBinningCoarse);
+    fHistDepEnergyPartPVsPart->GetXaxis()->SetTitle("particle index");
+    fHistDepEnergyPartPVsPart->GetYaxis()->SetTitle("E_{frac, clus}/P_{part} (GeV)");
+    fHistDepEnergyPartPVsPart->GetZaxis()->SetTitle("P_{part} (GeV)");
+    fHistograms->Add(fHistDepEnergyPartPVsPart);
+  }
   //----------------
   if(fIsMC > 1){
     if(!fDoLightOutput) fHistClusterTimevsEBeforeQA->Sumw2();
@@ -1139,6 +1170,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       if(fExtendedMatchAndQA  == 3){
         fHistClusterEM20AfterQA->Sumw2();
         fHistClusterEM20BeforeQA->Sumw2();
+
+        fHistEnergyFracClusVsPart->Sumw2();
+        fHistDepEnergyClusVsPart->Sumw2();
+        fHistDepEnergyPartPVsPart->Sumw2();
       }
     }
   }
@@ -11732,4 +11767,61 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTr
 
      // Set new Efrac
      clus->SetClusterMCEdepFractionFromEdepArray(newEFrac);
+}
+
+  //________________________________________________________________________
+int AliCaloPhotonCuts::GetParticleIndex(int pdgcode){
+  if(pdgcode == 22){ // gamma
+    return 0;
+  } else if(pdgcode == 211){ // pi+-
+    return 1;
+  } else if(pdgcode == 321){ // Kaon
+    return 2;
+  } else if(pdgcode == 130){ // K0s
+    return 3;
+  } else if(pdgcode == 310){ // K0l
+    return 4;
+  } else if(pdgcode == 2212){ // proton
+    return 5;
+  } else if(pdgcode == 2112){ // neutron
+    return 6;
+  } else if(pdgcode == 3122){  // Lambda
+    return 7;
+  } else if(pdgcode == 11){ // electron
+    return 8;
+  } else if(pdgcode == 3112 || pdgcode == 3222 || pdgcode == 3322 ){ // Sigma baryons
+    return 9;
+  } else if(pdgcode == 12 || pdgcode == 14 || pdgcode == 16 ){ // Neutrinos
+    return 10;
+  }
+  return 11;
+}
+
+void AliCaloPhotonCuts::FillHistEnergyFracPartInClus(AliVEvent* event, AliAODCaloCluster* clus, double weight){
+  if(!fHistEnergyFracClusVsPart){
+    return;
+  }
+
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+  int* mclabelsCluster = clus->GetLabels();
+  double clusterE = clus->E();
+  double totEFrac = 0.;
+  if (clus->GetNLabels()>0){
+    for (Int_t i =0; i < (int)clus->GetNLabels(); i++){
+      
+      AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(std::abs(mclabelsCluster[i])));
+      if(!part){
+        continue;
+      }
+      float partE = part->E();
+      float eFrac = clus->GetClusterMCEdepFraction(i);
+      float eDepositPart = eFrac*clusterE;
+      const int index = GetParticleIndex(std::abs(part->GetPdgCode()));
+
+      fHistEnergyFracClusVsPart->Fill(index, eFrac, clusterE, weight);
+      fHistDepEnergyClusVsPart->Fill(index, eDepositPart, clusterE, weight);
+      fHistDepEnergyPartPVsPart->Fill(index, eDepositPart/part->P(), part->P(), weight);
+    }
+  }
+  return;
 }
