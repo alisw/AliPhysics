@@ -51,6 +51,7 @@
 #include "AliMCEventHandler.h"
 // Alice PID classes
 #include "AliAnalysisTaskCVEUtil.h"
+#include <bitset>
 #include "AliPIDResponse.h"
 
 
