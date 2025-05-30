@@ -202,11 +202,11 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   ////////////////////////
   // Pile up Function
   ////////////////////////
-  std::unique_ptr<TF1> fSPDCutPU;
-  std::unique_ptr<TF1> fV0CutPU;
-  std::unique_ptr<TF1> fCenCutLowPU;
-  std::unique_ptr<TF1> fCenCutHighPU;
-  std::unique_ptr<TF1> fMultCutPU;
+  std::unique_ptr<TF1> fSPDCutPU; //!<!
+  std::unique_ptr<TF1> fV0CutPU;  //!<!
+  std::unique_ptr<TF1> fCenCutLowPU; //!<!
+  std::unique_ptr<TF1> fCenCutHighPU; //!<!
+  std::unique_ptr<TF1> fMultCutPU; //!<!
   ////////////////////////
   // NUE
   ////////////////////////
@@ -304,7 +304,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
 
   TList* fResultsList;  //!<!
   // Plane
-  TH2D* fHist2Psi2;
+  TH2D* fHist2Psi2; //!<!
 
   // Lambda - Proton
   // Inv Mass
