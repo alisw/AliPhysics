@@ -3784,6 +3784,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       continue;
     }
 
+    if(fIsMC){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistEnergyFracPartInClus(fInputEvent, static_cast<AliAODCaloCluster*>(clus), fWeightJetJetMC);
+    }
+
     fNCurrentClusterBasic++;
 
     // TLorentzvector with cluster
