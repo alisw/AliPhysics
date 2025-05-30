@@ -74,7 +74,7 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
 
   // NUE
   if (period.EqualTo("LHC18q") || period.EqualTo("LHC18r")) {
-    TString nueFileName = "eff_pt_calib.root";
+    TString nueFileName = "eff_pt_calib_cent.root";
 
     fNUEFile = TFile::Open(GetCalibFilePath(nueFileName), "READ");
     if (fNUEFile) {

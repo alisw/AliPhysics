@@ -21,6 +21,8 @@
 #ifndef AliAnalysisTaskCVEUtil_h
 #define AliAnalysisTaskCVEUtil_h
 
+#include <TH1.h>
+#include <TString.h>
 #include <array>
 #include <map>
 #include <memory>
@@ -143,6 +145,7 @@ public:
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t*);
 
+  void SetPeriod(TString period) { fPeriod = period; }
   void SetMC(bool isMC) { fIsMC = isMC; }
 
 private:
@@ -165,7 +168,8 @@ private:
   //----------------------------------------------------------------
   //  Switches / config flags
   //----------------------------------------------------------------
-  bool        fDebug              {true};
+  std::map<int, int>*  runNumList{nullptr};  //!<! List of run numbers
+  bool        fDebug              {false};
   bool        fIsMC               {false};
   bool        fUseNarrowDCA768    {true};
   bool        fCustomProtonDCA    {true};
@@ -197,8 +201,6 @@ private:
   //  Event-level variables (cached each entry)
   //----------------------------------------------------------------
   std::array<double,3> fVertex  {0.,0.,0.};
-  int         fRunNum          {0};
-  int         fRunNumBin       {0};
   float       fCent            {0.f};
 
   std::vector<ParticleType>    fParticles{
@@ -225,6 +227,7 @@ private:
   //  Histogram container
   //----------------------------------------------------------------
   TList                   *fOutputList {nullptr}; //!<! owner list
+  TH1I                    *fHistRunNumBin{nullptr}; //!<! run number histogram
   MCParticleHistsMap      *fMCHists    {nullptr}; //!<! all mc histograms
   DataParticleHistsMap    *fDataHists  {nullptr}; //!<! all data histograms
   //----------------------------------------------------------------

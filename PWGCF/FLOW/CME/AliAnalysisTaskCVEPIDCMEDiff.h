@@ -78,6 +78,12 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   void SetRatioCrossedRowsFindable(float ratioCrossedRowsFindable) { this->fRatioCrossedRowsFindable = ratioCrossedRowsFindable; }
   void SetDaughtersNSigmaTPC(float daughtersNSigmaTPC) { this -> fDaughtersNSigmaTPC = daughtersNSigmaTPC; }
 
+  // Min Pt Setting
+  void SetLambdaMinPt(float lambdaMinPt) { this->fLambdaMinPt = lambdaMinPt; }
+  void SetProtonMinPt(float protonMinPt) { this->fProtonMinPt = protonMinPt; }
+  void SetHardonMinPt(float hardonMinPt) { this->fHadronMinPt = hardonMinPt; }
+  void SetPionMinPt(float pionMinPt) { this->fPionMinPt = pionMinPt; }
+
  private:
   bool fDebug;
   ////////////////////////
@@ -164,6 +170,11 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   float fDaughtersDCAToPrimVtxMin; //
   float fRatioCrossedRowsFindable; //
   float fDaughtersNSigmaTPC;       //
+
+  float fLambdaMinPt;
+  float fProtonMinPt;
+  float fHadronMinPt;
+  float fPionMinPt;
 
   ///////////////////The following files are from the data//////////////////////////////////
   /////////////
