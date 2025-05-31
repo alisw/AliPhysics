@@ -18,6 +18,7 @@
 // Contributor: Chunzheng Wang, <chunzheng.wang@cern.ch>, Shanghai
 //--------------------------------------------------------------------------------
 
+#include <TGraphErrors.h>
 #include <TString.h>
 #include <cstddef>
 #include <cstdio>
@@ -109,6 +110,11 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff()
       fDaughtersDCAToPrimVtxMin(0.05),
       fRatioCrossedRowsFindable(0.8),
       fDaughtersNSigmaTPC(3.0),
+
+      fLambdaMinPt{-1.f},
+      fProtonMinPt{-1.f},
+      fHadronMinPt{-1.f},
+      fPionMinPt{-1.f},
 
       fAOD(nullptr),
       fPIDResponse(nullptr),
@@ -269,6 +275,11 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name)
       fDaughtersDCAToPrimVtxMin(0.05),
       fRatioCrossedRowsFindable(0.8),
       fDaughtersNSigmaTPC(3.0),
+
+      fLambdaMinPt{-1.f},
+      fProtonMinPt{-1.f},
+      fHadronMinPt{-1.f},
+      fPionMinPt{-1.f},
 
       fAOD(nullptr),
       fPIDResponse(nullptr),
@@ -949,14 +960,15 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   fHist2CentQA[1]->Fill(centV0M, centSPD1);
   fHist2CentQA[3]->Fill(centV0M, centSPD0);
   fHist2CentQA[5]->Fill(centSPD1, centSPD0);
-  if (fCent < 0 || fCent >= 80) return;
+  if (fCent <= 0.f || fCent > 70.f) return;
 
+  // PF-Preview comment to make the shape edge of cent dist
   if (fCent > 30 && fCent < 50) {
     if (!(mask & (AliVEvent::kINT7 + AliVEvent::kSemiCentral))) return;
   } else {
     if (!(mask & AliVEvent::kINT7)) return;
   }
-  // PF-Preview comment to make the shape edge of cent dist
+
   fCentBin = (int)fCent / 10;
   fHistCent[0]->Fill(fCent);
   fEvtCount->Fill(11);
@@ -1109,6 +1121,9 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
       if (fSpecialHadronDCAzMax > 0) {
           isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialHadronDCAzMax);
       }
+      if(fPionMinPt > 0) {
+        isPIDTrkWeWant = isPIDTrkWeWant && (pt > fPionMinPt);
+      }
     }
     if (isCalculateLambdaProton) {
       isPIDTrkWeWant = CheckPIDofParticle(track, 3);  // 3=proton
@@ -1119,11 +1134,17 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
       if(fSpecialProtonDCAzMax > 0) {
         isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialProtonDCAzMax);
       }
+      if(fProtonMinPt > 0) {
+        isPIDTrkWeWant = isPIDTrkWeWant && (pt > fProtonMinPt);
+      }
     }
     if(isCalculateLambdaHadron) {
       isPIDTrkWeWant = CheckPIDofParticle(track, 0);  // 0 = hadron
       if(fSpecialHadronDCAzMax > 0) {
         isPIDTrkWeWant = isPIDTrkWeWant && (fabs(dcaz) < fSpecialHadronDCAzMax);
+      }
+      if(fHadronMinPt > 0) {
+        isPIDTrkWeWant = isPIDTrkWeWant && (pt > fHadronMinPt);
       }
     }
     if (!isPIDTrkWeWant) continue;
@@ -1256,6 +1277,9 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     isInLambdaRange = isInLambdaRange && (pt > 0.5 && pt < 10);
     isInLambdaRange = isInLambdaRange && (fabs(rap) < 0.5);
     isInLambdaRange = isInLambdaRange && (fabs(mass-LAMBDAMASS) < MASSCUT);
+    if(fLambdaMinPt > 0) {
+      isInLambdaRange = isInLambdaRange && (pt > fLambdaMinPt);
+    }
     if (!isInLambdaRange) continue;
 
     if (code == 3122) {
@@ -1652,68 +1676,60 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetNUECor(int charge, float pt) {
   if (!fListNUE) return -1;
   if (charge == 0) return -1;
 
-  TString histName;
+  TString graphName;
   if (fPeriod.EqualTo("LHC18q")) {
-    histName = (charge > 0) ? "eff_pt_poshadron_18q_hist" : "eff_pt_neghadron_18q_hist";
+    graphName = (charge > 0) ? "nue_pt_poshadron_18q" : "nue_pt_neghadron_18q";
   } else if (fPeriod.EqualTo("LHC18r")) {
-    histName = (charge > 0) ? "eff_pt_poshadron_18r_hist" : "eff_pt_neghadron_18r_hist";
+    graphName = (charge > 0) ? "nue_pt_poshadron_18r" : "nue_pt_neghadron_18r";
   } else {
     return -1;
   }
+  graphName += Form("_cent%d",fCentBin);
 
-  TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
-  if (!efficiencyHist) return -1;
+  auto graph_nue = (TGraphErrors*)fListNUE->FindObject(graphName);
+  if (!graph_nue) return -1;
 
-  int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
-  float binContent = efficiencyHist->GetBinContent(ptBin);
-
-  if (binContent > 1.e-6) {
-    return 1.0 / binContent;
-  } else {
-    return -1;
-  }
+  return graph_nue->Eval(pt);
 }
 
 //---------------------------------------------------
 float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, float pt) {
   if (!fListNUE) return -1;
-  TString histName;
 
-  if (fPeriod.EqualTo("LHC18q")) {
-    if      (pdgcode == 2212)  histName = "eff_pt_proton_18q_hist";
-    else if (pdgcode == -2212) histName = "eff_pt_antiproton_18q_hist";
-    else if (pdgcode == 3122)  histName = "eff_pt_lambda_18q_hist";
-    else if (pdgcode == -3122) histName = "eff_pt_antilambda_18q_hist";
-    else if (pdgcode == 211)   histName = "eff_pt_pospion_18q_hist";
-    else if (pdgcode == -211)  histName = "eff_pt_negpion_18q_hist";
-    else if (pdgcode == 999)   histName = "eff_pt_poshadron_18q_hist";
-    else if (pdgcode == -999)  histName = "eff_pt_neghadron_18q_hist";
-    else return -1;
-  } else if (fPeriod.EqualTo("LHC18r")) {
-    if (pdgcode == 2212)       histName = "eff_pt_proton_18r_hist";
-    else if (pdgcode == -2212) histName = "eff_pt_antiproton_18r_hist";
-    else if (pdgcode == 3122)  histName = "eff_pt_lambda_18r_hist";
-    else if (pdgcode == -3122) histName = "eff_pt_antilambda_18r_hist";
-    else if (pdgcode == 211)   histName = "eff_pt_pospion_18r_hist";
-    else if (pdgcode == -211)  histName = "eff_pt_negpion_18r_hist";
-    else if (pdgcode == 999)   histName = "eff_pt_poshadron_18r_hist";
-    else if (pdgcode == -999)  histName = "eff_pt_neghadron_18r_hist";
-    else return -1;
+  TString period;
+  if      (fPeriod.EqualTo("LHC18q")) period = "18q";
+  else if (fPeriod.EqualTo("LHC18r")) period = "18r";
+  else return -1;
+
+  TString graphName;
+  if (pdgcode == 211 || pdgcode == -211) {
+    if (pt <= 0.5) {
+      graphName = (pdgcode > 0) ? "nue_pt_pospion_tpc_region" : "nue_pt_negpion_tpc_region";
+    } else {
+      graphName = (pdgcode > 0) ? "nue_pt_pospion_tof_region" : "nue_pt_negpion_tof_region";
+    }
+  } else if (pdgcode == 2212) {
+    graphName = "nue_pt_proton";
+  } else if (pdgcode == -2212) {
+    graphName = "nue_pt_antiproton";
+  } else if (pdgcode == 3122) {
+    graphName = "nue_pt_lambda";
+  } else if (pdgcode == -3122) {
+    graphName = "nue_pt_antilambda";
+  } else if (pdgcode == 999) {
+    graphName = "nue_pt_poshadron";
+  } else if (pdgcode == -999) {
+    graphName = "nue_pt_neghadron";
   } else {
     return -1;
   }
 
-  TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
-  if (!efficiencyHist) return 1.0;
+  graphName += Form("_%s_cent%d", period.Data(), fCentBin);
 
-  int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
-  float binContent = efficiencyHist->GetBinContent(ptBin);
+  auto graph_nue = (TGraph*)fListNUE->FindObject(graphName);
+  if (!graph_nue) return -1;
 
-  if (binContent > 1.e-6) {
-    return 1.0 / binContent;
-  } else {
-    return -1;
-  }
+  return graph_nue->Eval(pt);
 }
 
 //---------------------------------------------------

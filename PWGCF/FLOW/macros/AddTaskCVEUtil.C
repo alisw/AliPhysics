@@ -1,9 +1,11 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskCVEUtil.h"
 #include "TError.h"
+#include <TString.h>
 
 AliAnalysisTaskCVEUtil* AddTaskCVEUtil(
     bool isMC = false,
+    TString period = "LHC18q",
     TString uniqueID = "default"
 )
 {
@@ -23,6 +25,7 @@ AliAnalysisTaskCVEUtil* AddTaskCVEUtil(
       return nullptr;
     }
     task -> SetMC(isMC);
+    task -> SetPeriod(period);
 
     AliAnalysisDataContainer* inputContainer = mgr->GetCommonInputContainer();
     if (!inputContainer) {

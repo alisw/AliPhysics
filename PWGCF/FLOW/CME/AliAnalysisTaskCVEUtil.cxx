@@ -58,12 +58,15 @@
 ClassImp(AliAnalysisTaskCVEUtil);
 
 static float PTBINMAX = 10.f;
-static int PTBINS = 50;
+static int PTBINS = 200;
+static float PTBINMAX2D = 5;
+static int PTBINS2D = 50;
 static float DCAXYMAX = 1.0f;
 static float DCAZMAX = 2.0f;
 static int DCABINS = 500;
 static float CENTBINMAX = 70.f;
 static int CENTBINS = 7;
+static int kRunSplit = 296657;
 
 //---------------------------------------------------
 AliAnalysisTaskCVEUtil::AliAnalysisTaskCVEUtil()
@@ -86,8 +89,9 @@ AliAnalysisTaskCVEUtil::~AliAnalysisTaskCVEUtil() {
   // Destructor
   // histograms are in the output list and deleted when the output
   if (fOutputList) delete fOutputList;
-  // if (fMCHists) delete fMCHists;
-  // if (fDataHists) delete fDataHists;
+  if (runNumList) delete fOutputList;
+  if (fMCHists) delete fMCHists;
+  if (fDataHists) delete fDataHists;
 }
 
 //---------------------------------------------------
@@ -124,8 +128,43 @@ void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
     fMultCutPU = std::unique_ptr<TF1>(new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90));
     fMultCutPU->SetParameters(parFB32);
   } else {
-    AliFatal("Sorry only support LHC18q/r dataset!");
+      if(!fIsMC) {
+          AliFatal("Sorry, Sorry only support LHC18q/r dataset and their anchored MC");
+      }
   }
+
+  TString runNumList18q[125] = {
+      "296623", "296622", "296621", "296619", "296618", "296616", "296615", "296594", "296553", "296552", "296551",
+      "296550", "296548", "296547", "296516", "296512", "296511", "296510", "296509", "296472", "296433", "296424",
+      "296423", "296420", "296419", "296415", "296414", "296383", "296381", "296380", "296379", "296378", "296377",
+      "296376", "296375", "296312", "296309", "296304", "296303", "296280", "296279", "296273", "296270", "296269",
+      "296247", "296246", "296244", "296243", "296242", "296241", "296240", "296198", "296197", "296196", "296195",
+      "296194", "296192", "296191", "296143", "296142", "296135", "296134", "296133", "296132", "296123", "296074",
+      "296066", "296065", "296063", "296062", "296060", "296016", "295942", "295941", "295937", "295936", "295913",
+      "295910", "295909", "295861", "295860", "295859", "295856", "295855", "295854", "295853", "295831", "295829",
+      "295826", "295825", "295822", "295819", "295818", "295816", "295791", "295788", "295786", "295763", "295762",
+      "295759", "295758", "295755", "295754", "295725", "295723", "295721", "295719", "295718", "295717", "295714",
+      "295712", "295676", "295675", "295673", "295668", "295667", "295666", "295615", "295612", "295611", "295610",
+      "295589", "295588", "295586", "295585"};
+  TString runNumList18r[89] = {"297595", "297590", "297588", "297558", "297544", "297542", "297541", "297540", "297537",
+                               "297512", "297483", "297479", "297452", "297451", "297450", "297446", "297442", "297441",
+                               "297415", "297414", "297413", "297406", "297405", "297380", "297379", "297372", "297367",
+                               "297366", "297363", "297336", "297335", "297333", "297332", "297317", "297311", "297310",
+                               "297278", "297222", "297221", "297218", "297196", "297195", "297193", "297133", "297132",
+                               "297129", "297128", "297124", "297123", "297119", "297118", "297117", "297085", "297035",
+                               "297031", "296966", "296941", "296938", "296935", "296934", "296932", "296931", "296930",
+                               "296903", "296900", "296899", "296894", "296852", "296851", "296850", "296848", "296839",
+                               "296838", "296836", "296835", "296799", "296794", "296793", "296790", "296787", "296786",
+                               "296785", "296784", "296781", "296752", "296694", "296693", "296691", "296690"};
+  runNumList = new std::map<int, int>;
+  if (fPeriod.EqualTo("LHC18q"))
+    for (int i = 0; i < 125; i++) runNumList->insert(std::pair<int, int>(runNumList18q[i].Atoi(), i + 1));
+  else if (fPeriod.EqualTo("LHC18r"))
+    for (int i = 0; i < 89; i++) runNumList->insert(std::pair<int, int>(runNumList18r[i].Atoi(), i + 1));
+  else return;
+  fHistRunNumBin = new TH1I("runNumBin", "", (int)runNumList->size(), 1, (int)runNumList->size() + 1);
+  std::map<int, int>::iterator iter;
+  for (auto runNum : *runNumList) fHistRunNumBin->GetXaxis()->SetBinLabel(runNum.second, Form("%i", runNum.first));
 
   //------------------
   // Output list
@@ -136,12 +175,13 @@ void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
 
   CreateAllHistograms();
 
+  fOutputList->Add(fHistRunNumBin);
+
   PostData(1, fOutputList);
   if (fDebug) Printf("Post fOutputList Data Success!");
 }
 
 //------------------------------------------------
-//
 
 void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
 
@@ -211,6 +251,28 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   if (fabs(fVertex[2]) > fVzCut) return;
   if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors() < 1) return;
   if (fDebug) Printf("vertex done!");
+
+  //----------------------------
+  // Run number
+  //----------------------------
+  if (!runNumList || runNumList->empty()) {
+    AliError("runNumList not initialized!");
+    return;
+  }
+  int runNum = fAOD->GetRunNumber();
+  if (fPeriod.EqualTo("LHC18q")) {
+    if (runNum > kRunSplit) return;
+  }
+  else if (fPeriod.EqualTo("LHC18r")) {
+    if (runNum < kRunSplit) return;
+  }
+  auto it = runNumList->find(runNum);
+  if (it == runNumList->end()) {
+    AliError(Form("Run number %d not in runNumList! No calib files", runNum));
+    return;
+  }
+  int runNumBin = it->second;
+  fHistRunNumBin->Fill(runNumBin);
 
   //----------------------------
   // Centrality
@@ -600,31 +662,31 @@ void AliAnalysisTaskCVEUtil::CreateAllHistograms() {
          (*fMCHists)[particle].h2_pt_rc                = new TH2F(Form("h2_pt_rc_%s", ParticleName(particle)), Form("p_{T} distribution of %s in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS, 0.f, PTBINMAX);
          (*fMCHists)[particle].h2_pt_rc_real           = new TH2F(Form("h2_pt_rc_real_%s", ParticleName(particle)), Form("p_{T} distribution of %s in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS, 0.f, PTBINMAX);
 
-         (*fMCHists)[particle].h3_pt_dcaXY_origin_rc   = new TH3F(Form("h3_pt_dcaXY_origin_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaXY_material_rc = new TH3F(Form("h3_pt_dcaXY_material_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaXY_lambda_rc   = new TH3F(Form("h3_pt_dcaXY_lambda_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaXY_other_rc    = new TH3F(Form("h3_pt_dcaXY_other_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_origin_rc    = new TH3F(Form("h3_pt_dcaZ_origin_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_material_rc  = new TH3F(Form("h3_pt_dcaZ_material_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_lambda_rc    = new TH3F(Form("h3_pt_dcaZ_lambda_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_other_rc     = new TH3F(Form("h3_pt_dcaZ_other_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_origin_rc   = new TH3F(Form("h3_pt_dcaXY_origin_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_material_rc = new TH3F(Form("h3_pt_dcaXY_material_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_lambda_rc   = new TH3F(Form("h3_pt_dcaXY_lambda_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_other_rc    = new TH3F(Form("h3_pt_dcaXY_other_rc_%s", ParticleName(particle)), Form("p_{T}, dcaXY, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_origin_rc    = new TH3F(Form("h3_pt_dcaZ_origin_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_material_rc  = new TH3F(Form("h3_pt_dcaZ_material_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_lambda_rc    = new TH3F(Form("h3_pt_dcaZ_lambda_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_other_rc     = new TH3F(Form("h3_pt_dcaZ_other_rc_%s", ParticleName(particle)), Form("p_{T}, dcaZ, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
 
-         (*fMCHists)[particle].h3_pt_dcaXY_origin_rc_real   = new TH3F(Form("h3_pt_dcaXY_origin_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaXY_material_rc_real = new TH3F(Form("h3_pt_dcaXY_material_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaXY_lambda_rc_real   = new TH3F(Form("h3_pt_dcaXY_lambda_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaXY_other_rc_real    = new TH3F(Form("h3_pt_dcaXY_other_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAXYMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_origin_rc_real    = new TH3F(Form("h3_pt_dcaZ_origin_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_material_rc_real  = new TH3F(Form("h3_pt_dcaZ_material_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_lambda_rc_real    = new TH3F(Form("h3_pt_dcaZ_lambda_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
-         (*fMCHists)[particle].h3_pt_dcaZ_other_rc_real     = new TH3F(Form("h3_pt_dcaZ_other_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS,0.f,PTBINMAX, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_origin_rc_real   = new TH3F(Form("h3_pt_dcaXY_origin_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_material_rc_real = new TH3F(Form("h3_pt_dcaXY_material_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_lambda_rc_real   = new TH3F(Form("h3_pt_dcaXY_lambda_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaXY_other_rc_real    = new TH3F(Form("h3_pt_dcaXY_other_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaXY, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_origin_rc_real    = new TH3F(Form("h3_pt_dcaZ_origin_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, origin, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_material_rc_real  = new TH3F(Form("h3_pt_dcaZ_material_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, material, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_lambda_rc_real    = new TH3F(Form("h3_pt_dcaZ_lambda_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, lambda, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fMCHists)[particle].h3_pt_dcaZ_other_rc_real     = new TH3F(Form("h3_pt_dcaZ_other_rc_real_%s", ParticleName(particle)), Form("p_{T}, dcaZ, other, %s distribution in real collision", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
          (*fMCHists)[particle].AddToList(fOutputList);
      }
  } else {
      fDataHists = new std::map<ParticleType, DataParticleHists>();
      for (auto particle : fParticles) {
-         (*fDataHists)[particle].h2_pt  = new TH2F(Form("h2_pt_%s", ParticleName(particle)), Form("p_{T}, %s distribution in data", ParticleName(particle)), 7, 0, 70, 100, 0, 10);
-         (*fDataHists)[particle].h3_pt_dcaXY = new TH3F(Form("h3_pt_dcaXY_%s", ParticleName(particle)), Form("p_{T}, dcaXY, %s distribution in data", ParticleName(particle)), 7, 0, 70, 100, 0, 10, 100, 0, 0.3);
-         (*fDataHists)[particle].h3_pt_dcaZ = new TH3F(Form("h3_pt_dcaZ_%s", ParticleName(particle)), Form("p_{T}, dcaZ, %s distribution in data", ParticleName(particle)), 7, 0, 70, 100, 0, 10, 100, 0, 0.3);
+         (*fDataHists)[particle].h2_pt  = new TH2F(Form("h2_pt_%s", ParticleName(particle)), Form("p_{T}, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS, 0.f, PTBINMAX);
+         (*fDataHists)[particle].h3_pt_dcaXY = new TH3F(Form("h3_pt_dcaXY_%s", ParticleName(particle)), Form("p_{T}, dcaXY, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fDataHists)[particle].h3_pt_dcaZ = new TH3F(Form("h3_pt_dcaZ_%s", ParticleName(particle)), Form("p_{T}, dcaZ, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
          (*fDataHists)[particle].AddToList(fOutputList);
      }
   }
