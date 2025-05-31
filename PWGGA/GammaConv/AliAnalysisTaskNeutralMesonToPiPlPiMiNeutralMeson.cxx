@@ -6252,7 +6252,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         if(isPiMiGlobalC == isPiPlGlobalC){
           fHistovParticleChi2PerNDFBothConstrained[fiCut]->Fill(chi2);
           fHistovParticledSBothConstrained[fiCut]->Fill(ds);
-        } else{
+        } else {
           fHistovParticleChi2PerNDFOneConstrained[fiCut]->Fill(chi2);
           fHistovParticledSOneConstrained[fiCut]->Fill(ds);
         }
@@ -6476,10 +6476,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         } else {
           passMassCut = vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut();
         }
-        if (passMassCut){
+        if (passMassCut) {
           survivesMassCut = kTRUE;
         }
-      } else{
+      } else {
         survivesMassCut = kTRUE;
       }
 
@@ -6487,17 +6487,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
           if(fEnableBasicMesonQA){
             fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
           }
-          
           CalculateMesonCandidates(vParticle);
-          
           delete vParticle;
           vParticle=0x0;
-      }else{
+      } else {
           delete vParticle;
           vParticle=0x0;
       }
       delete virtualPhoton;
       virtualPhoton=0x0;
+    
     }
   }
 
@@ -8892,6 +8891,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     trueMesonFlag-=10;
     trueMesonAdditionalFlag = kTRUE;
   }
+
   Int_t NDMMCLabel     = TrueNeutralDecayMesonCandidate->GetMCLabel();
 
   Float_t weighted= fWeightJetJetMC * weightMatBudget;
@@ -8915,9 +8915,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   } else {
     NDMMotherLabel = (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)))->GetMother();
     NDMMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)); // pi0
-    NDMMC_PDGCheck=NDMMC->GetPdgCode()==fPDGCodeNDM;
+    NDMMC_PDGCheck=(NDMMC->GetPdgCode()==fPDGCodeNDM);
   }
-
 
   if(positiveMC->GetMother()>-1&&(negativeMC->GetMother() == positiveMC->GetMother())){
     virtualParticleMCLabel = positiveMC->GetMother();
@@ -8978,6 +8977,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         }
     }
   }
+
 
   if(areAllPionsCorrectlyIdentified&&isSameMotherPiPlPiMiNDM){
     if((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetPdgCode()                        == fPDGCodeAnalyzedMeson){
