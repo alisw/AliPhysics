@@ -632,13 +632,12 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   fCentBin = (int)fCent / 10;
   fHistCent[0]->Fill(fCent);
   fEvtCount->Fill(11);
-  if (fDebug) AliInfo("centrality done!");
-
   // load cent dependent nue graph
   if (fCentBin != fOldCentBin) {
     if (!LoadNUEGraphForThisCent()) return;
     fOldCentBin = fCentBin;
   }
+  if (fDebug) AliInfo("centrality done!");
 
   //----------------------------
   // Pile up
@@ -1650,30 +1649,26 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUEGraphForThisCent() {
   else
     return false;
 
-  // Pion
-  gNUEPosPion_TPC_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_pospion_tpc_region_%s_cent%d", period.Data(), fCentBin));
-  gNUEPosPion_TOF_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_pospion_tof_region_%s_cent%d", period.Data(), fCentBin));
-  gNUENegPion_TPC_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_negpion_tpc_region_%s_cent%d", period.Data(), fCentBin));
-  gNUENegPion_TOF_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_negpion_tof_region_%s_cent%d", period.Data(), fCentBin));
-  // Hadron
-  gNUEPosHadron_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_poshadron_%s_cent%d", period.Data(), fCentBin));
-  gNUENegHadron_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_neghadron_%s_cent%d", period.Data(), fCentBin));
-  // Proton
-  gNUEProton_thisCent     = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_proton_%s_cent%d", period.Data(), fCentBin));
-  gNUEAntiProton_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_antiproton_%s_cent%d", period.Data(), fCentBin));
-  // Lambda
-  gNUELambda_thisCent     = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_lambda_%s_cent%d", period.Data(), fCentBin));
-  gNUEAntiLambda_thisCent = (TGraphErrors*)fListNUE->FindObject(Form("nue_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
+  std::vector<std::pair<TGraphErrors**, TString>> nueGraphs = {
+    {&gNUEPosPion_TPC_thisCent, Form("nue_pt_pospion_tpc_region_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUEPosPion_TOF_thisCent, Form("nue_pt_pospion_tof_region_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUENegPion_TPC_thisCent, Form("nue_pt_negpion_tpc_region_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUENegPion_TOF_thisCent, Form("nue_pt_negpion_tof_region_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUEPosHadron_thisCent, Form("nue_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUENegHadron_thisCent, Form("nue_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUEProton_thisCent, Form("nue_pt_proton_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUEAntiProton_thisCent, Form("nue_pt_antiproton_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUELambda_thisCent, Form("nue_pt_lambda_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUEAntiLambda_thisCent, Form("nue_pt_antilambda_%s_cent%d", period.Data(), fCentBin)}
+  };
 
-  std::vector<TGraphErrors*> nueGraphs = {gNUEPosPion_TPC_thisCent, gNUEPosPion_TOF_thisCent, gNUENegPion_TPC_thisCent, gNUENegPion_TOF_thisCent,
-                                          gNUEPosHadron_thisCent, gNUENegHadron_thisCent, gNUEProton_thisCent, gNUEAntiProton_thisCent,
-                                          gNUELambda_thisCent, gNUEAntiLambda_thisCent};
-
-  for (auto graph : nueGraphs) {
-    if (!graph) {
-      AliError("Could not find one of the required NUE graphs!");
-      return false;
+  bool allFound = true;
+  for (auto& p : nueGraphs) {
+    *(p.first) = (TGraphErrors*)fListNUE->FindObject(p.second);
+    if (!*(p.first)) {
+      AliError(Form("Could not find NUE graph: %s", p.second.Data()));
+      allFound = false;
     }
   }
-  return true;
+  return allFound;
 }

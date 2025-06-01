@@ -13,7 +13,7 @@ TString GetCalibFilePath(const TString& fileName) {
     if (isLocalTest) {
         basePath = "file:./calibration_files/";
     } else {
-        basePath = "alien:/alice/cern.ch/user/c/chunzhen/calibration_files/";
+        basePath = "alien:///alice/cern.ch/user/c/chunzhen/calibration_files/";
     }
     return basePath + fileName;
 }
@@ -50,7 +50,7 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
     // NUE
     TList* fListNUE = nullptr;
     {
-        TString nueFileName = "eff_pt_calib.root";
+        TString nueFileName = "eff_pt_calib_cent.root";
         TFile* fNUEFile = TFile::Open(GetCalibFilePath(nueFileName), "READ");
         if (fNUEFile) {
             fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
@@ -102,6 +102,12 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
         } else {
             Fatal("AddTaskCVEPIDCMEDiff.C", "VZERO File not found!");
         }
+    } else if (plane.EqualTo("TPC")) {
+        fListVZERO = new TList();
+        fListVZERO->SetName("dummyVZEROList");
+        Info("AddTaskCVEPIDCMEDiff.C","No need for VZERO calibration for TPC, dummy list created.");
+    } else {
+        Fatal("AddTaskCVEPIDCMEDiff.C", "Unsupported plane!");
     }
 
     mgr->AddTask(task);
@@ -113,6 +119,8 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
         AliAnalysisDataContainer* cinputNUE = mgr->CreateContainer(Form("NUEInput_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
         cinputNUE->SetData(fListNUE);
         mgr->ConnectInput(task, 1, cinputNUE);
+    } else {
+        Fatal("AddTaskCVEPIDCMEDiff.C", "NUE List not found!");
     }
 
 
@@ -120,6 +128,8 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
         AliAnalysisDataContainer* cinputNUA = mgr->CreateContainer(Form("NUAInput_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
         cinputNUA->SetData(fListNUA);
         mgr->ConnectInput(task, 2, cinputNUA);
+    } else {
+        Fatal("AddTaskCVEPIDCMEDiff.C", "NUA List not found!");
     }
 
     if (fListVZERO) {
