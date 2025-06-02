@@ -366,6 +366,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistEnergyFracClusVsPart(NULL),
   fHistDepEnergyClusVsPart(NULL),
   fHistDepEnergyPartPVsPart(NULL),
+  fHistDepEnergyClusEVsPart(NULL),
+  fHistPartPVsPartIndex(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -653,6 +655,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistEnergyFracClusVsPart(NULL),
   fHistDepEnergyClusVsPart(NULL),
   fHistDepEnergyPartPVsPart(NULL),
+  fHistDepEnergyClusEVsPart(NULL),
+  fHistPartPVsPartIndex(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -1136,6 +1140,17 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistDepEnergyPartPVsPart->GetYaxis()->SetTitle("E_{frac, clus}/P_{part} (GeV)");
     fHistDepEnergyPartPVsPart->GetZaxis()->SetTitle("P_{part} (GeV)");
     fHistograms->Add(fHistDepEnergyPartPVsPart);
+
+    fHistDepEnergyClusEVsPart   = new TH3F(Form("PartIndexVsClusEVsClusE %s",GetCutNumber().Data()),"PartIndexVsClusEVsClusE",arrPartIndex.size()-1, arrPartIndex.data(), arrDepEnergyAxis.size()-1, arrDepEnergyAxis.data(), nBinsClusterECell, arrClusEBinningCoarse);
+    fHistDepEnergyClusEVsPart->GetXaxis()->SetTitle("particle index");
+    fHistDepEnergyClusEVsPart->GetYaxis()->SetTitle("E_{frac, clus}/P_{part} (GeV)");
+    fHistDepEnergyClusEVsPart->GetZaxis()->SetTitle("E_{clus} (GeV)");
+    fHistograms->Add(fHistDepEnergyClusEVsPart);
+
+    fHistPartPVsPartIndex       = new TH2F(Form("PartIndexVsPartP %s",GetCutNumber().Data()),"PartIndexVsPartP",arrPartIndex.size()-1, arrPartIndex.data(), nBinsClusterECell, arrClusEBinningCoarse);
+    fHistPartPVsPartIndex->GetXaxis()->SetTitle("particle index");
+    fHistPartPVsPartIndex->GetYaxis()->SetTitle("P_{part} (GeV/c)");
+    fHistograms->Add(fHistPartPVsPartIndex);
   }
   //----------------
   if(fIsMC > 1){
@@ -1174,6 +1189,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistEnergyFracClusVsPart->Sumw2();
         fHistDepEnergyClusVsPart->Sumw2();
         fHistDepEnergyPartPVsPart->Sumw2();
+        fHistDepEnergyClusEVsPart->Sumw2();
+        fHistPartPVsPartIndex->Sumw2();
       }
     }
   }
@@ -2653,6 +2670,46 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
     return kTRUE;// return in case of accepted gamma
   }
   return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliCaloPhotonCuts::ParticleIsSelectedAODMC(AliVEvent* event, AliAODMCParticle *particle, bool selectStable){
+  // MonteCarlo Particle Selection
+
+  if(!particle) return kFALSE;
+
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  if(selectStable){ // for speed-up, reject quarks and gluons
+    if(std::abs(particle->GetPdgCode()) < 10 || std::abs(particle->GetPdgCode()) == 21) 
+    {
+      return false;
+    }
+  }
+
+  if ( fClusterType == 4){
+    //pseudorapidty range same for EMC and DMC
+    if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
+    //check if outside of EMC and DMC phi acceptance
+    if ( (particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut) && (particle->Phi() < fMinPhiCutDMC || particle->Phi() > fMaxPhiCutDMC) ) return kFALSE;
+    //if in DMC phi range, reject clusters in hole
+  } else {
+    if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
+    if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+    if ( fClusterType == 3 && particle->Eta() < fMaxEtaInnerEdge && particle->Eta() > fMinEtaInnerEdge ) return kFALSE;
+  }
+
+    if(selectStable) { // select only stable particles that reach the EMCal and dont decay before
+    if(particle->GetNDaughters() > 0){ // particle has daughter
+      int tmpLabel = std::abs(particle->GetDaughterFirst());
+      AliAODMCParticle* partDaughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+      if(sqrt(partDaughter->Xv()*partDaughter->Xv() + partDaughter->Yv()*partDaughter->Yv() + partDaughter->Zv()*partDaughter->Zv()) < 430){
+        return false;
+      }
+    }
+  }
+
+  return kTRUE;// return in case of accepted particle
 }
 
 //________________________________________________________________________
@@ -11821,7 +11878,22 @@ void AliCaloPhotonCuts::FillHistEnergyFracPartInClus(AliVEvent* event, AliAODCal
       fHistEnergyFracClusVsPart->Fill(index, eFrac, clusterE, weight);
       fHistDepEnergyClusVsPart->Fill(index, eDepositPart, clusterE, weight);
       fHistDepEnergyPartPVsPart->Fill(index, eDepositPart/part->P(), part->P(), weight);
+      fHistDepEnergyClusEVsPart->Fill(index, eDepositPart/part->P(), clusterE, weight);
     }
   }
   return;
+}
+
+void AliCaloPhotonCuts::FillHistParticleAbundanceMC(AliVEvent* event, AliAODMCParticle* part, double weight){
+  if(!fHistPartPVsPartIndex){
+    return;
+  }
+  if(!part){
+    return;
+  }
+  if(!ParticleIsSelectedAODMC(event, part, true)){
+    return;
+  }
+  const int index = GetParticleIndex(std::abs(part->GetPdgCode()));
+  fHistPartPVsPartIndex->Fill(index, part->P(), weight);
 }

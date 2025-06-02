@@ -4745,6 +4745,11 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles(Int_t isCurrentEventSelecte
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
     if (!particle) continue;
 
+    // Cluster QA
+    if(isCurrentEventSelected == 0){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistParticleAbundanceMC(fInputEvent, particle, fWeightJetJetMC);
+    }
+
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if (isPrimary){
 
