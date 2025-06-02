@@ -303,6 +303,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsIsolated(Int_t clusterID, AliAODConversionPhoton *PhotonCandidate);
+    Bool_t      ParticleIsSelectedAODMC(AliVEvent* event, AliAODMCParticle *particle, bool selectStable = true);
 
     void        SetLightOutput( Int_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
@@ -377,6 +378,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     int         GetParticleIndex(int pdgcode);
     void        FillHistEnergyFracPartInClus(AliVEvent* event, AliAODCaloCluster* clus, double weight);
+    void        FillHistParticleAbundanceMC(AliVEvent* event, AliAODMCParticle* part, double weight);
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -804,6 +806,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH3F*     fHistEnergyFracClusVsPart;                // histogram with particle index, energy fraction of particle in cluster and cluster energy
     TH3F*     fHistDepEnergyClusVsPart;                 // histogram with particle index, total deposited energy of particle and cluster energy
     TH3F*     fHistDepEnergyPartPVsPart;                // histogram with particle index, deposited energy in cluster and MC particle energy
+    TH3F*     fHistDepEnergyClusEVsPart;                // histogram with particle index, deposited energy in cluster and cluster energy
+    TH2F*     fHistPartPVsPartIndex;                    // histogram with MC gen particle momentum for different particles
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
     TH2F*     fHistInvMassConvFlagging;                 // histogram for monitoring rejected di-cluster mass
@@ -814,7 +818,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,146)
+    ClassDef(AliCaloPhotonCuts,147)
 };
 
 #endif
