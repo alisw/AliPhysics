@@ -686,6 +686,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","j453503000000000"); // EG2, pT cut on one eta daugher
   } else if(trainConfig == 227)  { 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","j453503000000000"); // EG1, pT cut on one eta daugher
+  
     // possible new defualt pp 13 TeV, 3 sigmas mass cut
   } else if(trainConfig == 228)  { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643700000000","j453503000000000"); // INT7, pT cut on eta
@@ -726,7 +727,15 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 242){ // 4 sigma for mass cut
     cuts.AddCutHeavyMesonPCMCalo("00074113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643800000000","j453503000000000"); // VOHM
     cuts.AddCutHeavyMesonPCMCalo("00076113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643800000000","j453503000000000"); // VOHM with SPD
-
+ 
+  // possible new default pp 13 TeV, 2 sigmas mass cut with NCell = 2
+  } else if(trainConfig == 245)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe329v0000","32c510796","h000643600000000","j453503000000000"); // INT7, pT cut on eta
+  } else if(trainConfig == 246)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe329v0000","32c510796","h0006c3600000000","j453503000000000"); // EG2, pT cut on one eta daugher
+  } else if(trainConfig == 247)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe329v0000","32c510796","h0006d3600000000","j453503000000000"); // EG1, pT cut on one eta daugher
+  
   // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190wa01cc00000","32c510700","0103603l00000000","0453503000000000"); // INT7
@@ -782,11 +791,11 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     // possible new default pp 13 TeV, 2 sigmas mass cut, mixed event, sideband both sides of eta
   } else if(trainConfig == 293)  { 
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","jf53503000000000"); // INT7, pT cut on eta
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","jg53503000000000"); // INT7, pT cut on eta
   } else if(trainConfig == 294)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","jf53503000000000"); // EG2, pT cut on one eta daugher
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","jg53503000000000"); // EG2, pT cut on one eta daugher
   } else if(trainConfig == 295)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","jf53503000000000"); // EG1, pT cut on one eta daugher
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","jg53503000000000"); // EG1, pT cut on one eta daugher
 
   // Eta Prime, 13 TeV, Systematics
 
