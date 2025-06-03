@@ -102,6 +102,7 @@ public:
   void SetCutITSTOFtracks(Int_t val = 1) {fdCutITSTOFtracks = val;}
   void SetCutTPCsignalNCut(Int_t val = 50) {fdTPCsignalNCut = val;}
 
+
   Bool_t IsSelectedForAnalysis();
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
@@ -157,7 +158,7 @@ public:
   void SetCutCascadeV0RadiusDecayMin(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMin = val;}
   void SetCutCascadeV0RadiusDecayMax(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMax = val;}
   void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
-  
+  void SetCutV0MassDiff(Double_t val = 0.005) {fdCutV0MassDiff = val;}
   
   // axis: Xi invariant mass
   static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
@@ -184,7 +185,7 @@ private:
   TClonesArray* arrayMC; //!MC particle array
   TRandom* fRandom; //! random-number generator
   AliEventPoolManager* fPoolMgr; //! event pool manager
-  AliEventCuts fEventCutsStrictAntipileup; //! Event cuts class
+  AliEventCuts fEventCuts; //! Event cuts class
   TList* fOutputListStd; //! Output list for inclusive analysis results
   TList* fOutputListJet; //! Output list for jet analysis results
   TList* fOutputListQA; //! Output list for quality assurance
@@ -543,8 +544,9 @@ private:
   Double_t fdCutCascadeV0RadiusDecayMax; //(100.) max V0 from cascade decay radius
 
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
-
-  static const Int_t fgkiNCategCascade = 21; // number of Cascade selection steps  
+  Double_t fdCutV0MassDiff; //(0.005) [GeV] V0 daughter mass difference from Lambda mass
+ 
+  static const Int_t fgkiNCategCascade = 22; // number of Cascade selection steps  
   //Histograms 
   TH1D* fh1CascadeCandPerEvent; //! number of Cascade cand per event
    //QA 
@@ -790,7 +792,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 29) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 30) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
