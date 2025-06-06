@@ -39,6 +39,7 @@
 #include <TH2.h>
 #include <TH3.h>
 #include <TList.h>
+#include <TProfile3D.h>
 
 // ------------------------------------------------------------
 //  ENUMS
@@ -165,6 +166,11 @@ private:
   bool          IsGoodDaughterTrack(const AliAODTrack *track);
   int           GetLambdaCode(const AliAODTrack *pTrack, const AliAODTrack *nTrack);
 
+  bool          LoadCalibHistForThisRun(); // deal with all the readin
+  bool          LoadNUEGraphForThisCent(); // deal with all the readin
+  float         GetNUECor(int charge, float pt);
+  float         GetNUACor(int charge, float phi, float eta, float vz);
+
   //----------------------------------------------------------------
   //  Switches / config flags
   //----------------------------------------------------------------
@@ -188,6 +194,21 @@ private:
   float       fNSigmaTPC          {3.f};
   float       fNSigmaRMS          {3.f};
 
+
+  ////////////////////////
+  // NUE
+  ////////////////////////
+  TList* fListNUE{nullptr};
+  // Hadron
+  TGraphErrors* gNUEPosHadron_thisCent{nullptr}; //!<!
+  TGraphErrors* gNUENegHadron_thisCent{nullptr}; //!<!
+  ////////////////////////
+  // NUA
+  ////////////////////////
+  TList* fListNUA{nullptr};      //!<! read lists for NUA
+  TH3F* hCorrectNUAPos{nullptr}; //!<!
+  TH3F* hCorrectNUANeg{nullptr}; //!<!
+
   //----------------------------------------------------------------
   //  Runtime handles
   //----------------------------------------------------------------
@@ -200,6 +221,11 @@ private:
   //----------------------------------------------------------------
   //  Event-level variables (cached each entry)
   //----------------------------------------------------------------
+  int fRunNum{0};
+  int fOldRunNum{0};
+  int fCentBin{0};
+  int fOldCentBin{0};
+
   std::array<double,3> fVertex  {0.,0.,0.};
   float       fCent            {0.f};
 
@@ -230,6 +256,15 @@ private:
   TH1I                    *fHistRunNumBin{nullptr}; //!<! run number histogram
   MCParticleHistsMap      *fMCHists    {nullptr}; //!<! all mc histograms
   DataParticleHistsMap    *fDataHists  {nullptr}; //!<! all data histograms
+
+  // TPC recenter
+  float fVzBin{0.f};
+  float fTPCQx{0.f}; //!<<! TPC recenter X
+  float fTPCQy{0.f}; //!<<! TPC recenter Y
+  float fTPCM{0.f}; //!<<! TPC recenter Z
+  TProfile3D* fProfile3DQxTPCRunCentVz{nullptr}; //!<! TPC recenter profile
+  TProfile3D* fProfile3DQyTPCRunCentVz{nullptr}; //!<! TPC recenter profile
+  TH2F* fHistQxQyTPC{nullptr}; //!<! TPC Qx Qy
   //----------------------------------------------------------------
   //  Histogram creation helpers
   //----------------------------------------------------------------
@@ -241,7 +276,7 @@ private:
   AliAnalysisTaskCVEUtil(const AliAnalysisTaskCVEUtil &);
   AliAnalysisTaskCVEUtil &operator=(const AliAnalysisTaskCVEUtil &);
 
-  ClassDef(AliAnalysisTaskCVEUtil, 2)
+  ClassDef(AliAnalysisTaskCVEUtil, 3)
 };
 
 #endif // AliAnalysisTaskCVEUtil_h
