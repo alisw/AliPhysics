@@ -53,6 +53,7 @@
 #include "AliAnalysisTaskCVEUtil.h"
 #include <bitset>
 #include "AliPIDResponse.h"
+#include "TGraphErrors.h"
 
 
 ClassImp(AliAnalysisTaskCVEUtil);
@@ -61,7 +62,7 @@ static float PTBINMAX = 10.f;
 static int PTBINS = 200;
 static float PTBINMAX2D = 5;
 static int PTBINS2D = 50;
-static float DCAXYMAX = 1.0f;
+static float DCAXYMAX = 0.2f;
 static float DCAZMAX = 2.0f;
 static int DCABINS = 500;
 static float CENTBINMAX = 70.f;
@@ -80,6 +81,8 @@ AliAnalysisTaskCVEUtil::AliAnalysisTaskCVEUtil(const char* name)
     {
 
   DefineInput(0, TChain::Class());
+  DefineInput(1, TList::Class()); // NUE
+  DefineInput(2, TList::Class()); // NUA
   DefineOutput(1, TList::Class());
 }
 
@@ -89,7 +92,7 @@ AliAnalysisTaskCVEUtil::~AliAnalysisTaskCVEUtil() {
   // Destructor
   // histograms are in the output list and deleted when the output
   if (fOutputList) delete fOutputList;
-  if (runNumList) delete fOutputList;
+  if (runNumList) delete runNumList;
   if (fMCHists) delete fMCHists;
   if (fDataHists) delete fDataHists;
 }
@@ -104,6 +107,19 @@ void AliAnalysisTaskCVEUtil::Terminate(Option_t*) {
 //---------------------------------------------------
 
 void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
+  /////////////////////////
+  // Input stream
+  /////////////////////////
+  fListNUE   = dynamic_cast<TList*>(GetInputData(1));
+  if (!fListNUE) {
+    AliFatal("Input list not found!");
+    return;
+  }
+  fListNUA   = dynamic_cast<TList*>(GetInputData(2));
+  if (!fListNUA) {
+    AliFatal("Input list not found!");
+    return;
+  }
 
   ////////////////////////
   // Pile up Function
@@ -166,6 +182,12 @@ void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
   std::map<int, int>::iterator iter;
   for (auto runNum : *runNumList) fHistRunNumBin->GetXaxis()->SetBinLabel(runNum.second, Form("%i", runNum.first));
 
+  if (!fIsMC) {
+    fProfile3DQxTPCRunCentVz = new TProfile3D("QxTPCRunCentVz", "QxTPCRunCentVz;RunNumberBin;Centrality;VzBin", (int)runNumList->size(), 0, (float)runNumList->size(), 7, 0, 70, 3, 0, 3);
+    fProfile3DQyTPCRunCentVz = new TProfile3D("QyTPCRunCentVz", "QyTPCRunCentVz;RunNumberBin;Centrality;VzBin", (int)runNumList->size(), 0, (float)runNumList->size(), 7, 0, 70, 3, 0, 3);
+    fHistQxQyTPC = new TH2F("QxQyTPC", "QxQyTPC;QxTPC;QyTPC", 100, -1, 1, 100, -1, 1);
+  }
+
   //------------------
   // Output list
   //------------------
@@ -176,6 +198,11 @@ void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
   CreateAllHistograms();
 
   fOutputList->Add(fHistRunNumBin);
+  if (!fIsMC) {
+    fOutputList->Add(fProfile3DQxTPCRunCentVz);
+    fOutputList->Add(fProfile3DQyTPCRunCentVz);
+    fOutputList->Add(fHistQxQyTPC);
+  }
 
   PostData(1, fOutputList);
   if (fDebug) Printf("Post fOutputList Data Success!");
@@ -251,6 +278,7 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   if (fabs(fVertex[2]) > fVzCut) return;
   if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors() < 1) return;
   if (fDebug) Printf("vertex done!");
+  fVzBin = (fVertex[2] < -2.) ? 0.5 : (fVertex[2] > 2.) ? 2.5 : 1.5;
 
   //----------------------------
   // Run number
@@ -275,6 +303,18 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   fHistRunNumBin->Fill(runNumBin);
 
   //----------------------------
+  // Run-by-run Calib load
+  //----------------------------
+  if (!fIsMC) {
+    fRunNum = runNum;
+    if (fRunNum != fOldRunNum) {
+        // Load the run dependent calibration hist
+        if (!LoadCalibHistForThisRun()) return;
+        fOldRunNum = fRunNum;
+    }
+  }
+
+  //----------------------------
   // Centrality
   //----------------------------
   float centV0M = fMultSel->GetMultiplicityPercentile("V0M");
@@ -283,7 +323,7 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   // we use centV0M as the default centrality
   fCent = centV0M;
   if (fabs(fCent - centSPD1) > 7.5) return;
-  if (fCent < 0 || fCent >= 80) return;
+  if (fCent < 0 || fCent >= 70) return;
 
   // PF-Preview comment
   if (fCent > 30 && fCent < 50) {
@@ -291,7 +331,14 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   } else {
     if (!(mask & AliVEvent::kINT7)) return;
   }
-  if (fDebug) Printf("centrality done!");
+
+  if (!fIsMC) {
+    fCentBin = (int)fCent / 10;  // load cent dependent nue graph
+    if (fCentBin != fOldCentBin) {
+      if (!LoadNUEGraphForThisCent()) return;
+      fOldCentBin = fCentBin;
+    }
+  }
 
   //----------------------------
   // Pile up
@@ -317,6 +364,13 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   // Loop Tracks / Fill Vectors
   //----------------------------
   if (!LoopTracks()) return;
+  if (!fIsMC) {
+    fProfile3DQxTPCRunCentVz -> Fill(runNumBin - 0.5, fCent, fVzBin, fTPCQx/fTPCM);
+    fProfile3DQyTPCRunCentVz -> Fill(runNumBin - 0.5, fCent, fVzBin, fTPCQy/fTPCM);
+    fHistQxQyTPC -> Fill(fTPCQx/fTPCM, fTPCQy/fTPCM);
+    //!!reset the Qvector
+    fTPCQx = 0.f, fTPCQy = 0.f, fTPCM = 0.f;
+  }
   if (fDebug) Printf("Loop Tracks done!");
 
   //----------------------------
@@ -347,7 +401,24 @@ bool AliAnalysisTaskCVEUtil::LoopTracks() {
     if (!AcceptAODTrack(track)) continue;
 
     float pt = track->Pt();
+    float eta = track->Eta();
+    float phi = track->Phi();
     int charge = track->Charge();
+
+    float weight = 1.;
+
+    if (!fIsMC) {
+      float wEff = GetNUECor(charge, pt);
+      if (wEff < 0) continue;
+      else weight *= wEff;
+      float wAcc = GetNUACor(charge, phi, eta, fVertex[2]);
+      if (wAcc < 0) continue;
+      else weight *= wAcc;
+
+      fTPCQx += weight * TMath::Cos(2 * phi);
+      fTPCQy += weight * TMath::Sin(2 * phi);
+      fTPCM  += weight;
+    }
 
     // DCA Cut
     float dcaxy = -999, dcaz = -999;
@@ -685,7 +756,7 @@ void AliAnalysisTaskCVEUtil::CreateAllHistograms() {
      fDataHists = new std::map<ParticleType, DataParticleHists>();
      for (auto particle : fParticles) {
          (*fDataHists)[particle].h2_pt  = new TH2F(Form("h2_pt_%s", ParticleName(particle)), Form("p_{T}, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS, 0.f, PTBINMAX);
-         (*fDataHists)[particle].h3_pt_dcaXY = new TH3F(Form("h3_pt_dcaXY_%s", ParticleName(particle)), Form("p_{T}, dcaXY, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fDataHists)[particle].h3_pt_dcaXY = new TH3F(Form("h3_pt_dcaXY_%s", ParticleName(particle)), Form("p_{T}, dcaXY, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
          (*fDataHists)[particle].h3_pt_dcaZ = new TH3F(Form("h3_pt_dcaZ_%s", ParticleName(particle)), Form("p_{T}, dcaZ, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
          (*fDataHists)[particle].AddToList(fOutputList);
      }
@@ -827,5 +898,84 @@ bool AliAnalysisTaskCVEUtil::LoopV0s() {
     }
   }
 
+  return true;
+}
+
+
+//---------------------------------------------------
+
+float AliAnalysisTaskCVEUtil::GetNUECor(int charge, float pt) {
+  if (!fListNUE) return -1;
+  if (charge == 0) return -1;
+
+  float nue_weight = 1.;
+  if (charge > 0) {
+    nue_weight = gNUEPosHadron_thisCent->Eval(pt);
+  } else {
+    nue_weight = gNUENegHadron_thisCent->Eval(pt);
+  }
+
+  return nue_weight;
+}
+
+
+//---------------------------------------------------
+
+float AliAnalysisTaskCVEUtil::GetNUACor(int charge, float phi, float eta, float vz) {
+  float weightNUA = 1;
+  if (fVzBin < 0 || fCentBin < 0 || fRunNum < 0) return -1;
+  if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) { // Rihan and Protty 's NUA Results
+    if (charge > 0) {
+      if (!hCorrectNUAPos) return -1;
+      int iBinNUA = hCorrectNUAPos->FindBin(vz, phi, eta);
+      if (hCorrectNUAPos->GetBinContent(iBinNUA) > 0) weightNUA = (float)hCorrectNUAPos->GetBinContent(iBinNUA);
+      return weightNUA;
+    } else if (charge < 0) {
+      if (!hCorrectNUANeg) return -1;
+      int iBinNUA = hCorrectNUANeg->FindBin(vz, phi, eta);
+      if (hCorrectNUANeg->GetBinContent(iBinNUA) > 0) weightNUA = (float)hCorrectNUANeg->GetBinContent(iBinNUA);
+      return weightNUA;
+    }
+    // In Rihan and Protty 's NUA results, the phi distribution is independent on centrality and particle charge
+  }
+  return weightNUA;
+}
+
+//---------------------------------------------------
+//
+bool AliAnalysisTaskCVEUtil::LoadNUEGraphForThisCent() {
+  TString period;
+  if (fPeriod.EqualTo("LHC18q"))
+    period = "18q";
+  else if (fPeriod.EqualTo("LHC18r"))
+    period = "18r";
+  else
+    return false;
+
+  std::vector<std::pair<TGraphErrors**, TString>> nueGraphs = {
+    {&gNUEPosHadron_thisCent, Form("nue_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
+    {&gNUENegHadron_thisCent, Form("nue_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
+  };
+
+  bool allFound = true;
+  for (auto& p : nueGraphs) {
+    *(p.first) = (TGraphErrors*)fListNUE->FindObject(p.second);
+    if (!*(p.first)) {
+      AliError(Form("Could not find NUE graph: %s", p.second.Data()));
+      allFound = false;
+    }
+  }
+  return allFound;
+}
+
+//---------------------------------------------------
+//
+
+bool AliAnalysisTaskCVEUtil::LoadCalibHistForThisRun() {
+  // 18q/r NUA
+  hCorrectNUAPos = (TH3F*)fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d", 0, fRunNum));
+  hCorrectNUANeg = (TH3F*)fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d", 0, fRunNum));
+  if (!hCorrectNUAPos) return false;
+  if (!hCorrectNUANeg) return false;
   return true;
 }

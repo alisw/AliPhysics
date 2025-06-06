@@ -864,9 +864,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
 //---------------------------------------------------
 
 float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlane() {
-  float psi2TPC = std::numeric_limits<float>::quiet_NaN();;
-  psi2TPC       = GetEventPlane(fSumQ2xTPC, fSumQ2yTPC, 2);
-  return psi2TPC;
+  return GetEventPlane(fSumQ2xTPC/fWgtMultTPC, fSumQ2yTPC/fWgtMultTPC, 2);
 }
 
 //---------------------------------------------------
@@ -1524,7 +1522,7 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlaneNoAutoCorr(std::vector<int> vec_i
   tempWgtMult -= repeWgtMult;
 
   if (tempWgtMult > 1.e-6) {
-    psiNoAuto = GetEventPlane(tempSumQ2x, tempSumQ2y, 2.);
+    psiNoAuto = GetEventPlane(tempSumQ2x/tempWgtMult, tempSumQ2y/tempWgtMult, 2.);
   } else
     psiNoAuto = std::numeric_limits<float>::quiet_NaN();;
 
