@@ -335,7 +335,10 @@ void AliAnalysisTaskCVEUtil::UserExec(Option_t*) {
   if (!fIsMC) {
     fCentBin = (int)fCent / 10;  // load cent dependent nue graph
     if (fCentBin != fOldCentBin) {
-      if (!LoadNUEGraphForThisCent()) return;
+      if (!LoadNUEGraphForThisCent()) {
+          AliFatal("Failed to load NUE graph for this centrality bin");
+          return;
+      }
       fOldCentBin = fCentBin;
     }
   }
@@ -905,13 +908,14 @@ bool AliAnalysisTaskCVEUtil::LoopV0s() {
 //---------------------------------------------------
 
 float AliAnalysisTaskCVEUtil::GetNUECor(int charge, float pt) {
-  if (!fListNUE) return -1;
   if (charge == 0) return -1;
 
   float nue_weight = 1.;
   if (charge > 0) {
+    if (!gNUEPosHadron_thisCent) return -1;
     nue_weight = gNUEPosHadron_thisCent->Eval(pt);
   } else {
+    if (!gNUENegHadron_thisCent) return -1;
     nue_weight = gNUENegHadron_thisCent->Eval(pt);
   }
 

@@ -221,10 +221,10 @@ private:
   //----------------------------------------------------------------
   //  Event-level variables (cached each entry)
   //----------------------------------------------------------------
-  int fRunNum{0};
-  int fOldRunNum{0};
-  int fCentBin{0};
-  int fOldCentBin{0};
+  int fRunNum{-1};
+  int fOldRunNum{-2};
+  int fCentBin{-1};
+  int fOldCentBin{-2};
 
   std::array<double,3> fVertex  {0.,0.,0.};
   float       fCent            {0.f};
