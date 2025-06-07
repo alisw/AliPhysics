@@ -186,19 +186,19 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);*/
 	  
 	  /*mecetaphitpc[aniter] = new AliFemtoSphericityEventCut();
-	  mecetaphitpc[aniter]->SetEventMult(0.01,100000);
+	  mecetaphitpc[aniter]->SetEventMult(0,100000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
 	  mecetaphitpc[aniter]->SetStMin(0.7);
 	  mecetaphitpc[aniter]->SetStMax(1.0);*/
       
       mecetaphitpc[aniter] = new AliFemtoSphericityEventCut();
-	  mecetaphitpc[aniter]->SetEventMult(0.01,100000);
+	  mecetaphitpc[aniter]->SetEventMult(0,100000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
 	  mecetaphitpc[aniter]->SetStMin(0.0);
 	  mecetaphitpc[aniter]->SetStMax(0.3);
 
 	  /*mecetaphitpc[aniter] = new AliFemtoSpherocityEventCut();
-	  mecetaphitpc[aniter]->SetEventMult(0.01,100000);
+	  mecetaphitpc[aniter]->SetEventMult(0,100000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
 	  mecetaphitpc[aniter]->SetSoMin(0.8);
 	  mecetaphitpc[aniter]->SetSoMax(1.0);*/
@@ -346,8 +346,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //3D cartesian (without kT bins)
 	  if(run3d){
 	    //cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
-	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
-	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
+	    //cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
+	    //anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
 	    
 	  }
 	  
@@ -382,7 +382,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	      if (run3d) {
 		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
-		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,0.5);
+		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,0.5);	
+		//cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
+		//anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
 		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
