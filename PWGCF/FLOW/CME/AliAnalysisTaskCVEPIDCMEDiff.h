@@ -41,6 +41,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   void IfCalculateLambdaPion(bool b) { this->isCalculateLambdaPion = b; }
   void IfDoNUE(bool bDoNUE) { this->isDoNUE = bDoNUE; }
   void IfDoLambdaNUE(bool bDoLambdaNUE) { this->isDoLambdaNUE = bDoLambdaNUE; }
+  void IfRecentreTPC(bool bRecentreTPC) { this->isRecentreTPC = bRecentreTPC; }
   void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
   void IfProtonCustomizedDCACut(bool bProtonCustomizedDCACut) { this->isProtonCustomizedDCACut = bProtonCustomizedDCACut; }
   void IfTightPileUp(bool bTightPileUp) { this->isTightPileUp = bTightPileUp; }
@@ -135,6 +136,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
 
   bool isDoNUE{true};
   bool isDoLambdaNUE{true};
+  bool isRecentreTPC{true};
   bool isNarrowDcaCuts768{true};
   bool isProtonCustomizedDCACut{true};
   bool isTightPileUp{false};
@@ -197,9 +199,9 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   int fCentBin{-1};    // centrality bin: 0-7
   int fOldCentBin{-2}; // latest centrality bin: 0-7
   // Variable to get TPC Plane
-  float fSumQ2xTPC{0.f};
-  float fSumQ2yTPC{0.f};
-  float fWgtMultTPC{0.f};
+  float fSumQ2x{0.f};
+  float fSumQ2y{0.f};
+  float fWgtMult{0.f};
   // Plane
   float fPsi2{-1};
 
@@ -246,6 +248,15 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TList* fListNUA{nullptr};      //!<! read lists for NUA
   TH3F* hCorrectNUAPos{nullptr}; //!<!
   TH3F* hCorrectNUANeg{nullptr}; //!<!
+
+  ////////////////////////
+  /// TPC
+  ////////////////////////
+  TList* fListTPC{nullptr}; //!<!
+  TProfile3D* fQxTPCRunCentVz{nullptr}; //!<!
+  TProfile3D* fQyTPCRunCentVz{nullptr}; //!<!
+  float fQxMeanTPC{0.0};
+  float fQyMeanTPC{0.0};
 
   ////////////////////////
   // VZERO
@@ -325,6 +336,9 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   std::array<TH3D*, 2> fHist3AntiLambdaCentPtMass{nullptr};     //!<!
   std::array<TH2D*, 2> fHist2AntiLambdaMassPtY{nullptr};        //!<!
 
+  TProfile2D* fProfile2DQxCentVz{nullptr}; //!<!
+  TProfile2D* fProfile2DQyCentVz{nullptr}; //!<!
+
   /////////////
   // Results //
   /////////////
@@ -372,7 +386,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   AliAnalysisTaskCVEPIDCMEDiff(const AliAnalysisTaskCVEPIDCMEDiff&);
   AliAnalysisTaskCVEPIDCMEDiff& operator=(const AliAnalysisTaskCVEPIDCMEDiff&);
 
-  ClassDef(AliAnalysisTaskCVEPIDCMEDiff, 4);
+  ClassDef(AliAnalysisTaskCVEPIDCMEDiff, 5);
 };
 
 #endif

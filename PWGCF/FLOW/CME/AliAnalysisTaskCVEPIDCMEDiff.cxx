@@ -19,6 +19,8 @@
 //--------------------------------------------------------------------------------
 
 #include <TGraphErrors.h>
+#include <TProfile2D.h>
+#include <TProfile3D.h>
 #include <TString.h>
 #include <sys/time.h>
 
@@ -105,7 +107,8 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char* name) : A
   DefineInput(0, TChain::Class());
   DefineInput(1, TList::Class()); // NUE
   DefineInput(2, TList::Class()); // NUA
-  DefineInput(3, TList::Class()); // VZERO
+  DefineInput(3, TList::Class()); // TPC
+  DefineInput(4, TList::Class()); // VZERO
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -138,7 +141,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   /////////////////////////
   fListNUE   = dynamic_cast<TList*>(GetInputData(1));
   fListNUA   = dynamic_cast<TList*>(GetInputData(2));
-  fListVZERO = dynamic_cast<TList*>(GetInputData(3));
+  fListTPC   = dynamic_cast<TList*>(GetInputData(3));
+  fListVZERO = dynamic_cast<TList*>(GetInputData(4));
 
   /////////////////////////
   // Deal with calc flags
@@ -194,8 +198,25 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
       return;
     }
   }
+
   ////////////////////////
-  // V0C
+  /// TPC
+  ////////////////////////
+  if (fPlaneEstimator.EqualTo("TPC") && isRecentreTPC) {
+    if (!fListTPC) {
+      AliFatal("TPC recentre list not found");
+      return;
+    }
+    fQxTPCRunCentVz = (TProfile3D*)fListTPC->FindObject("QxTPCRunCentVz");
+    fQyTPCRunCentVz = (TProfile3D*)fListTPC->FindObject("QyTPCRunCentVz");
+    if (!fQxTPCRunCentVz || !fQyTPCRunCentVz) {
+      AliFatal("TPC recentre hist not found");
+      return;
+    }
+  }
+
+  ////////////////////////
+  // VZERO
   ////////////////////////
   if (fPlaneEstimator.EqualTo("V0C")) {
     if (!fListVZERO) {
@@ -388,6 +409,12 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
                                            LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
   fQAList->Add(fHist3AntiLambdaCentPtMass[0]);
   fQAList->Add(fHist3AntiLambdaCentPtMass[1]);
+
+  fProfile2DQxCentVz = new TProfile2D("fProfile2DQxCentVz", ";Centrality;VzBin;Qx", 70, 0, 70, 3, 0, 3);
+  fProfile2DQyCentVz = new TProfile2D("fProfile2DQyCentVz", ";Centrality;VzBin;Qy", 70, 0, 70, 3, 0, 3);
+  fQAList->Add(fProfile2DQxCentVz);
+  fQAList->Add(fProfile2DQyCentVz);
+
 
   PostData(1, fQAList);
   if (fDebug) AliInfo("Post fQAList Data Success!");
@@ -640,6 +667,26 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   if (fDebug) AliInfo("centrality done!");
 
   //----------------------------
+  // TPC recenter
+  //----------------------------
+  if (isRecentreTPC) {
+      if (!fQxTPCRunCentVz || !fQyTPCRunCentVz) {
+          fQxMeanTPC = 0.f;
+          fQyMeanTPC = 0.f;
+      } else {
+          float vzBin = (fVertex[2] < -2.) ? 0.5 : (fVertex[2] > 2.) ? 2.5 : 1.5;
+          int bin = fQxTPCRunCentVz->FindBin(fRunNumBin - 0.5, fCent, vzBin);
+          if (bin < 1) {
+              AliError("TPC QVector Calibration histogram bin out of range");
+              fQxMeanTPC = 0.f;
+              fQyMeanTPC = 0.f;
+          } else {
+              fQxMeanTPC = fQxTPCRunCentVz->GetBinContent(bin);
+              fQyMeanTPC = fQyTPCRunCentVz->GetBinContent(bin);
+          }
+      }
+  }
+  //----------------------------
   // Pile up
   //----------------------------
   if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
@@ -669,8 +716,16 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     std::cout << "Wrong fPlaneEstimator!" << std::endl;
     return;
   }
-  if (TMath::IsNaN(fPsi2)) return;
-  fEvtCount->Fill(15);
+  if (std::isnan(fPsi2) || std::isinf(fPsi2)) {
+    AliError("fPsi2 of this event is NaN or Inf");
+    return;
+  }
+  float vzBin = (fVertex[2] < -2.) ? 0.5 : (fVertex[2] > 2.) ? 2.5 : 1.5;
+  if(fWgtMult > 1.e-6) {
+    fProfile2DQxCentVz->Fill(fCent, vzBin, fSumQ2x/fWgtMult);
+    fProfile2DQyCentVz->Fill(fCent, vzBin, fSumQ2y/fWgtMult);
+    fEvtCount->Fill(15);
+  }
   if (fDebug) AliInfo("Get Plane done!");
   //----------------------------
   // Fill Resolution
@@ -762,9 +817,9 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
 
     if (pt > 0.2 && pt < 2.0) {
       // Do we need to set pT as weight for Better resolution?
-      fSumQ2xTPC += weight * TMath::Cos(2 * phi);
-      fSumQ2yTPC += weight * TMath::Sin(2 * phi);
-      fWgtMultTPC += weight;
+      fSumQ2x += weight * TMath::Cos(2 * phi);
+      fSumQ2y += weight * TMath::Sin(2 * phi);
+      fWgtMult += weight;
       if (fPlaneEstimator.EqualTo("TPC")) {
         std::vector<float> vec_phi_weight;
         vec_phi_weight.emplace_back(phi);
@@ -857,14 +912,21 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     vecParticle.emplace_back(std::array<float, 8>{pt, eta, phi, (float)id, (float)code, weight, pid_weight, dcaz});
   }
 
-  if (fabs(fSumQ2xTPC) < 1.e-6 || fabs(fSumQ2yTPC) < 1.e-6 || fWgtMultTPC < 1.e-5) return false;
+  if (fabs(fSumQ2x) < 1.e-6 || fabs(fSumQ2y) < 1.e-6 || fWgtMult < 1.e-5) return false;
   return true;
 }
 
 //---------------------------------------------------
 
 float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlane() {
-  return GetEventPlane(fSumQ2xTPC/fWgtMultTPC, fSumQ2yTPC/fWgtMultTPC, 2);
+  double q2x = fSumQ2x/fWgtMult;
+  double q2y = fSumQ2y/fWgtMult;
+  //recentre
+  if (isRecentreTPC) {
+    q2x = q2x - fQxMeanTPC;
+    q2y = q2y - fQyMeanTPC;
+  }
+  return GetEventPlane(q2x, q2y, 2);
 }
 
 //---------------------------------------------------
@@ -1162,9 +1224,9 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0V0() {
 //---------------------------------------------------
 
 void AliAnalysisTaskCVEPIDCMEDiff::ResetVectors() {
-  fSumQ2xTPC  = 0.;
-  fSumQ2yTPC  = 0.;
-  fWgtMultTPC = 0.;
+  fSumQ2x  = 0.f, fSumQ2y  = 0.f;
+  fWgtMult = 0.f;
+  fQxMeanTPC = 0.f, fQyMeanTPC = 0.f;
   std::unordered_map<int, std::vector<float>>().swap(mapTPCTrksIDPhiWgt);
   std::vector<std::array<float, 8>>().swap(vecParticle);
   std::vector<std::array<float, 9>>().swap(vecParticleV0);
@@ -1499,9 +1561,9 @@ inline float AliAnalysisTaskCVEPIDCMEDiff::GetEventPlane(float qx, float qy, flo
 float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlaneNoAutoCorr(std::vector<int> vec_id) {
   float psiNoAuto = std::numeric_limits<float>::quiet_NaN();;
 
-  float tempSumQ2x  = fSumQ2xTPC;
-  float tempSumQ2y  = fSumQ2yTPC;
-  float tempWgtMult = fWgtMultTPC;
+  float tempSumQ2x  = fSumQ2x;
+  float tempSumQ2y  = fSumQ2y;
+  float tempWgtMult = fWgtMult;
   float repeQ2x = 0., repeQ2y = 0., repeWgtMult = 0.;
 
   std::vector<std::unordered_map<int, std::vector<float>>::iterator> vec_it;
@@ -1522,7 +1584,14 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlaneNoAutoCorr(std::vector<int> vec_i
   tempWgtMult -= repeWgtMult;
 
   if (tempWgtMult > 1.e-6) {
-    psiNoAuto = GetEventPlane(tempSumQ2x/tempWgtMult, tempSumQ2y/tempWgtMult, 2.);
+    //recentre
+    tempSumQ2x /= tempWgtMult;
+    tempSumQ2y /= tempWgtMult;
+    if (isRecentreTPC) {
+      tempSumQ2x -= fQxMeanTPC;
+      tempSumQ2y -= fQyMeanTPC;
+    }
+    psiNoAuto = GetEventPlane(tempSumQ2x, tempSumQ2y, 2);
   } else
     psiNoAuto = std::numeric_limits<float>::quiet_NaN();;
 
@@ -1630,6 +1699,10 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetV0CPlane(float centSPD1) {
   // recenter the Q vector
   Qx2 -= Qx2Mean;
   Qy2 -= Qy2Mean;
+
+  fSumQ2x = Qx2;
+  fSumQ2y = Qy2;
+  fWgtMult = Mult;
 
   psi2V0C = GetEventPlane(Qx2, Qy2, 2.);
 

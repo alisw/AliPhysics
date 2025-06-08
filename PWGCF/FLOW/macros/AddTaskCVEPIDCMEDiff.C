@@ -1,10 +1,11 @@
 #include "TString.h"
 #include "TGrid.h"
 #include "TFile.h"
+#include "TError.h"
+#include "TList.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskCVEPIDCMEDiff.h"
-#include <TError.h>
 
 static bool isLocalTest = false;
 
@@ -84,6 +85,33 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
         } else {
             Fatal("AddTaskCVEPIDCMEDiff.C", "NUA File not found!");
         }
+    } else {
+        fListNUA = new TList();
+        fListNUA->SetName("dummyNUAList");
+    }
+
+    // TPC
+    TList* fListTPC = nullptr;
+    if (plane.EqualTo("TPC")) {
+        TString tpcFileName;
+        if      (period.EqualTo("LHC18q")) tpcFileName = "TPCQVectorMean18q.root";
+        else if (period.EqualTo("LHC18r")) tpcFileName = "TPCQVectorMean18r.root";
+        else {
+            Fatal("AddTaskCVEPIDCMEDiff.C", "Unsupported period for TPC calibration.");
+        }
+        TFile* fTPCFile = TFile::Open(GetCalibFilePath(tpcFileName), "READ");
+        if (fTPCFile) {
+            fListTPC = dynamic_cast<TList*>(fTPCFile->Get("fListTPC"));
+            if (!fListTPC) Fatal("AddTaskCVEPIDCMEDiff.C", "TPC List not found!");
+        } else {
+            Fatal("AddTaskCVEPIDCMEDiff.C", "TPC File not found!");
+        }
+    } else if (plane.EqualTo("V0C")) {
+        fListTPC = new TList();
+        fListTPC->SetName("dummyTPCList");
+        Info("AddTaskCVEPIDCMEDiff.C", "No need for TPC Plane calibration, dummy list created.");
+    } else {
+        Fatal("AddTaskCVEPIDCMEDiff.C", "Unsupported plane for TPC calibration.");
     }
 
     // VZERO
@@ -105,7 +133,7 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
     } else if (plane.EqualTo("TPC")) {
         fListVZERO = new TList();
         fListVZERO->SetName("dummyVZEROList");
-        Info("AddTaskCVEPIDCMEDiff.C","No need for VZERO calibration for TPC, dummy list created.");
+        Info("AddTaskCVEPIDCMEDiff.C","No need for VZERO calibration, dummy list created.");
     } else {
         Fatal("AddTaskCVEPIDCMEDiff.C", "Unsupported plane!");
     }
@@ -132,10 +160,18 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
         Fatal("AddTaskCVEPIDCMEDiff.C", "NUA List not found!");
     }
 
+    if (fListTPC) {
+        AliAnalysisDataContainer* cinputTPC = mgr->CreateContainer(Form("TPCInput_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
+        cinputTPC->SetData(fListTPC);
+        mgr->ConnectInput(task, 3, cinputTPC);
+    } else {
+        Fatal("AddTaskCVEPIDCMEDiff.C", "TPC List not found!");
+    }
+
     if (fListVZERO) {
         AliAnalysisDataContainer* cinputVZERO = mgr->CreateContainer(Form("VZEROInput_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
         cinputVZERO->SetData(fListVZERO);
-        mgr->ConnectInput(task, 3, cinputVZERO);
+        mgr->ConnectInput(task, 4, cinputVZERO);
     }
 
     // Output containers (QA, results)
