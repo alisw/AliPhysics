@@ -96,6 +96,12 @@ static const std::array<TString, 89> runNumList18r{
 std::array<double, 8> parV0{43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
 std::array<double, 6> parV0CL0{0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
 std::array<double, 8> parFB32{2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
+
+template <typename G>
+inline float EvalGraph(G* g, float pt) {
+  return (g ? g->Eval(pt) : 1.f);
+}
+
 } // namespace
 
 //---------------------------------------------------
@@ -121,8 +127,8 @@ AliAnalysisTaskCVEPIDCMEDiff::~AliAnalysisTaskCVEPIDCMEDiff() {
   if (runNumList) delete runNumList;
   if (fQAList) delete fQAList;
   if (fResultsList) delete fResultsList;
-  if (fListNUE) delete fListNUE;
-  if (fListNUA) delete fListNUA;
+  if (fListNUENUA) delete fListNUENUA;
+  if (fListPlaneNUA) delete fListPlaneNUA;
   if (fListVZERO) delete fListVZERO;
 }
 
@@ -139,10 +145,10 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   /////////////////////////
   // Input stream
   /////////////////////////
-  fListNUE   = dynamic_cast<TList*>(GetInputData(1));
-  fListNUA   = dynamic_cast<TList*>(GetInputData(2));
-  fListTPC   = dynamic_cast<TList*>(GetInputData(3));
-  fListVZERO = dynamic_cast<TList*>(GetInputData(4));
+  fListNUENUA     = dynamic_cast<TList*>(GetInputData(1));
+  fListPlaneNUA   = dynamic_cast<TList*>(GetInputData(2));
+  fListTPC        = dynamic_cast<TList*>(GetInputData(3));
+  fListVZERO      = dynamic_cast<TList*>(GetInputData(4));
 
   /////////////////////////
   // Deal with calc flags
@@ -178,23 +184,14 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   }
 
   ////////////////////////
-  // NUE
+  // NUE NUA
   ////////////////////////
   // Load Calibration Files
   // The global read-in lists and hists are loaded here.
   // They do not need to be loaded run by run.
-  if (isDoNUE || isDoLambdaNUE) {
-    if (!fListNUE) {
+  if (isDoNUE || isDoNUA || isDoLambdaNUE || isDoLambdaNUA) {
+    if (!fListNUENUA) {
       AliFatal("NUE list not found");
-      return;
-    }
-  }
-  ////////////////////////
-  // NUA
-  ////////////////////////
-  if (fPlaneEstimator.EqualTo("TPC")) {
-    if (!fListNUA) {
-      AliFatal("NUA list not found");
       return;
     }
   }
@@ -202,16 +199,22 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   ////////////////////////
   /// TPC
   ////////////////////////
-  if (fPlaneEstimator.EqualTo("TPC") && isRecentreTPC) {
-    if (!fListTPC) {
-      AliFatal("TPC recentre list not found");
-      return;
+  if (fPlaneEstimator.EqualTo("TPC")) {
+    if (!fListPlaneNUA || !fListNUENUA) {
+        AliFatal("TPC NUA or NUE list not found");
+        return;
     }
-    fQxTPCRunCentVz = (TProfile3D*)fListTPC->FindObject("QxTPCRunCentVz");
-    fQyTPCRunCentVz = (TProfile3D*)fListTPC->FindObject("QyTPCRunCentVz");
-    if (!fQxTPCRunCentVz || !fQyTPCRunCentVz) {
-      AliFatal("TPC recentre hist not found");
-      return;
+    if (isRecentreTPC) {
+      if (!fListTPC) {
+          AliFatal("TPC recentre list not found");
+          return;
+      }
+      fQxTPCRunCentVz = (TProfile3D*)fListTPC->FindObject("QxTPCRunCentVz");
+      fQyTPCRunCentVz = (TProfile3D*)fListTPC->FindObject("QyTPCRunCentVz");
+      if (!fQxTPCRunCentVz || !fQyTPCRunCentVz) {
+          AliFatal("TPC recentre hist not found");
+          return;
+      }
     }
   }
 
@@ -592,20 +595,29 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     AliError(Form("Run number %d not in runNumList! No calib files", fRunNum));
     return;
   }
-  fHistRunNumBin->Fill(fRunNumBin);
   fEvtCount->Fill(8);
+
+  //----------------------------
+  // Reset event-by-event Vectors
+  //----------------------------
+  ResetVectors();
+  fEvtCount->Fill(9);
 
   //----------------------------
   // Run-by-run Calib load
   //----------------------------
   if (fRunNum != fOldRunNum) {
     // Load the run dependent calibration hist
-    if (!LoadCalibHistForThisRun()) return;
+    if (!LoadCalibHistForThisRun()) {
+        AliError(Form("loading calib hist for this run failed %d", fRunNum));
+        return;
+    }
     fRunNumBin = runNumList->at(fRunNum);
     fOldRunNum = fRunNum;
     if (fRunNumBin < 0) return;
   }
-  fEvtCount->Fill(9);
+  fHistRunNumBin->Fill(fRunNumBin);
+  fEvtCount->Fill(10);
   if (fDebug) AliInfo("calib file load done!");
 
   //----------------------------
@@ -628,7 +640,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     }
   }
   if (fVzBin < 0) return;
-  fEvtCount->Fill(10);
+  fEvtCount->Fill(11);
   if (fDebug) AliInfo("vertex done!");
 
   //----------------------------
@@ -658,10 +670,13 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
 
   fCentBin = (int)fCent / 10;
   fHistCent[0]->Fill(fCent);
-  fEvtCount->Fill(11);
+  fEvtCount->Fill(12);
   // load cent dependent nue graph
   if (fCentBin != fOldCentBin) {
-    if (!LoadNUEGraphForThisCent()) return;
+    if (!LoadNUENUAGraphForThisCent()) {
+        AliError("NUE or NUA list loading failed");
+        return;
+    }
     fOldCentBin = fCentBin;
   }
   if (fDebug) AliInfo("centrality done!");
@@ -693,14 +708,11 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
     if (!RejectEvtTFFit(centSPD0)) return;
   }
   fHistCent[1]->Fill(fCent);
-  fEvtCount->Fill(12);
+  fEvtCount->Fill(13);
   if (fDebug) AliInfo("pile-up done!");
   //----------------------------
   // Loop Tracks / Fill Vectors
   //----------------------------
-  // Reset vectors
-  ResetVectors();
-  fEvtCount->Fill(13);
   // must loop tracks
   if (!LoopTracks()) return;
   fEvtCount->Fill(14);
@@ -722,8 +734,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   }
   float vzBin = (fVertex[2] < -2.) ? 0.5 : (fVertex[2] > 2.) ? 2.5 : 1.5;
   if(fWgtMult > 1.e-6) {
-    fProfile2DQxCentVz->Fill(fCent, vzBin, fSumQ2x/fWgtMult);
-    fProfile2DQyCentVz->Fill(fCent, vzBin, fSumQ2y/fWgtMult);
+    fProfile2DQxCentVz->Fill(fCent, vzBin, fSumQ2x/fWgtMult - fQxMeanTPC);
+    fProfile2DQyCentVz->Fill(fCent, vzBin, fSumQ2y/fWgtMult - fQyMeanTPC);
     fEvtCount->Fill(15);
   }
   if (fDebug) AliInfo("Get Plane done!");
@@ -776,10 +788,16 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     }
     if (!track->TestFilterBit(fFilterBit)) continue;
     if (!AcceptAODTrack(track)) continue;
+    // DCA Cut
+    float dcaxy = -999, dcaz = -999;
+    if (!GetDCA(dcaxy, dcaz, track)) continue;
+    if (fabs(dcaxy) > 2.4) continue;
+    if (fabs(dcaz) > 3.2) continue;
     //------------------
     // NUE & NUA
     //------------------
     float phi  = track->Phi();
+    if (phi < 0) phi += 2 * TMath::Pi();
     float pt   = track->Pt();
     float eta  = track->Eta();
     int charge = track->Charge();
@@ -793,44 +811,26 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     fHist2PDedx->Fill(track->P() * charge, dedx);
     fHistPhi[0]->Fill(phi);
 
-    float weight = 1.;
-    if (isDoNUE) {
-      float wEff = GetNUECor(charge, pt);
-      if (wEff < 0)
-        continue;
-      else
-        weight *= wEff;
-    }
     if (fPlaneEstimator.EqualTo("TPC")) {
-      float wAcc = GetNUACor(charge, phi, eta, fVertex[2]);
-      if (wAcc < 0)
-        continue;
-      else
-        weight *= wAcc;
-      fHistPhi[1]->Fill(phi, wAcc);
-    }
+      if (pt > 0.2 && pt < 2.0) {
+        // weight just for plane
+        float weight = 1.;
+        float wEff = GetPlaneNUECor(charge, pt);
+        if (wEff < 0) continue;
+        else weight *= wEff;
 
-    // DCA Cut
-    float dcaxy = -999, dcaz = -999;
-    if (!GetDCA(dcaxy, dcaz, track)) continue;
-    // if FB = 96, we don't need special DCA cut
+        float wAcc = GetPlaneNUACor(charge, phi, eta, fVertex[2]);
+        if (wAcc < 0) continue;
+        else weight *= wAcc;
 
-    if (pt > 0.2 && pt < 2.0) {
-      // Do we need to set pT as weight for Better resolution?
-      fSumQ2x += weight * TMath::Cos(2 * phi);
-      fSumQ2y += weight * TMath::Sin(2 * phi);
-      fWgtMult += weight;
-      if (fPlaneEstimator.EqualTo("TPC")) {
-        std::vector<float> vec_phi_weight;
-        vec_phi_weight.emplace_back(phi);
-        vec_phi_weight.emplace_back(weight);
-        mapTPCTrksIDPhiWgt[id] = vec_phi_weight;
+        fHistPhi[1]->Fill(phi, wAcc);
+        // Do we need to set pT as weight for Better resolution?
+        fSumQ2x += weight * TMath::Cos(2 * phi);
+        fSumQ2y += weight * TMath::Sin(2 * phi);
+        fWgtMult += weight;
+        mapTPCTrksIDPhiWgt[id] = {phi,weight};
       }
     }
-
-    // but we need to set the dca cut for 768 when we start to choose the paiticle for pair
-    if (fabs(dcaxy) > 2.4) continue;
-    if (fabs(dcaz) > 3.2) continue;
 
     if (fFilterBit == 768 && isNarrowDcaCuts768) {
       if (fabs(dcaz) > 2.0) continue;
@@ -891,6 +891,10 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         float nue_pid_weight = GetPIDNUECor(code, pt);
         if (nue_pid_weight > 0) pid_weight *= nue_pid_weight;
       }
+      if (isDoNUA) {
+        float nua_pid_weight = GetPIDNUACor(code, pt);
+        if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
+      }
     } else {
       if (isCalculateLambdaProton)
         code = -2212;
@@ -907,9 +911,13 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         float nue_pid_weight = GetPIDNUECor(code, pt);
         if (nue_pid_weight > 0) pid_weight *= nue_pid_weight;
       }
+      if (isDoNUA) {
+        float nua_pid_weight = GetPIDNUACor(code, pt);
+        if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
+      }
     }
-
-    vecParticle.emplace_back(std::array<float, 8>{pt, eta, phi, (float)id, (float)code, weight, pid_weight, dcaz});
+    //vecParticle [pt,eta,phi,id,pdgcode,pidweight]
+    vecParticle.emplace_back(std::array<float, 6>{pt, eta, phi, (float)id, (float)code, pid_weight});
   }
 
   if (fabs(fSumQ2x) < 1.e-6 || fabs(fSumQ2y) < 1.e-6 || fWgtMult < 1.e-5) return false;
@@ -968,6 +976,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     if (abs(code) != 3122) continue;
 
     float phi         = v0->Phi();
+    if (phi < 0) phi += 2 * TMath::Pi();
     int id_daughter_1 = v0->GetPosID();
     int id_daughter_2 = v0->GetNegID();
     float rap         = v0->RapLambda();
@@ -1042,9 +1051,14 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     // lambda NUE
     float weight = 1.;
     if (isDoLambdaNUE) {
-      float nue_eight = GetPIDNUECor(code, pt);
-      if (nue_eight > 0.) weight *= nue_eight;
+      float nue_weight = GetPIDNUECor(code, pt);
+      if (nue_weight > 0.f) weight *= nue_weight;
     }
+    if (isDoLambdaNUA) {
+      float nua_weight = GetPIDNUACor(code, pt);
+      if (nua_weight > 0.f) weight *= nua_weight;
+    }
+    //vecParticleV0 [pt,eta,phi,id,pdgcode,pidweight, mass, id_daughter_1, id_daughter_2]
     vecParticleV0.emplace_back(std::array<float, 9>{pt, eta, phi, (float)id, (float)code, weight, mass, (float)id_daughter_1, (float)id_daughter_2});
   } // loop V0 end
   return true;
@@ -1065,13 +1079,14 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk() {
     int id_daughter_1   = (int)lambda[7];
     int id_daughter_2   = (int)lambda[8];
 
+    //vecParticle [pt,eta,phi,id,pdgcode,pidweight]
     for (auto particle : vecParticle) {
       float pt        = particle[0];
       float eta       = particle[1];
       float phi       = particle[2];
       int id          = (int)particle[3];
       int code        = (int)particle[4];
-      float pidweight = particle[6];
+      float pidweight = particle[5];
       if (id == id_daughter_1 || id == id_daughter_2) continue;
 
       float psi2_forThisPair = std::numeric_limits<float>::quiet_NaN();;
@@ -1084,7 +1099,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk() {
         return false;
       }
 
-      if (std::isnan(psi2_forThisPair)) continue;
+      if (std::isnan(psi2_forThisPair) || std::isinf(psi2_forThisPair)) continue;
       float delta = TMath::Cos(phi_lambda - phi);
       float gamma = TMath::Cos(phi_lambda + phi - 2 * psi2_forThisPair);
 
@@ -1198,6 +1213,8 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0V0() {
         return false;
       }
 
+      if (std::isnan(psi2_forThisPair) || std::isinf(psi2_forThisPair)) continue;
+
       int nBits = 4;
       TBits bitsLambdaLambdaPair(nBits);
       bitsLambdaLambdaPair.SetBitNumber(0, code_a == 3122 && code_b == 3122);
@@ -1227,8 +1244,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::ResetVectors() {
   fSumQ2x  = 0.f, fSumQ2y  = 0.f;
   fWgtMult = 0.f;
   fQxMeanTPC = 0.f, fQyMeanTPC = 0.f;
-  std::unordered_map<int, std::vector<float>>().swap(mapTPCTrksIDPhiWgt);
-  std::vector<std::array<float, 8>>().swap(vecParticle);
+  std::unordered_map<int, std::pair<float,float>>().swap(mapTPCTrksIDPhiWgt);
+  std::vector<std::array<float, 6>>().swap(vecParticle);
   std::vector<std::array<float, 9>>().swap(vecParticleV0);
 }
 
@@ -1237,8 +1254,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::ResetVectors() {
 bool AliAnalysisTaskCVEPIDCMEDiff::LoadCalibHistForThisRun() {
   // 18q/r NUA
   if (fPlaneEstimator.EqualTo("TPC")) {
-    hCorrectNUAPos = (TH3F*)fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d", 0, fRunNum));
-    hCorrectNUANeg = (TH3F*)fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d", 0, fRunNum));
+    hCorrectNUAPos = (TH3F*)fListPlaneNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d", 0, fRunNum));
+    hCorrectNUANeg = (TH3F*)fListPlaneNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d", 0, fRunNum));
     if (!hCorrectNUAPos) return false;
     if (!hCorrectNUANeg) return false;
   }
@@ -1399,60 +1416,16 @@ bool AliAnalysisTaskCVEPIDCMEDiff::CheckPIDofParticle(AliAODTrack* ftrack, int p
 }
 
 //---------------------------------------------------
-
-float AliAnalysisTaskCVEPIDCMEDiff::GetNUECor(int charge, float pt) {
-  if (!fListNUE) return -1;
-  if (charge == 0) return -1;
-
-  float nue_weight = 1.;
-  if (charge > 0) {
-    nue_weight = gNUEPosHadron_thisCent->Eval(pt);
-  } else {
-    nue_weight = gNUENegHadron_thisCent->Eval(pt);
-  }
-
-  return nue_weight;
-}
-
-//---------------------------------------------------
-//---------------------------------------------------
-float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, float pt) {
-  float nue_weight = 1.;
-
-  if (pdgcode == 211) {
-    if (pt <= 0.5) {
-      nue_weight = gNUEPosPion_TPC_thisCent->Eval(pt);
-    } else {
-      nue_weight = gNUEPosPion_TOF_thisCent->Eval(pt);
-    }
-  } else if (pdgcode == -211) {
-    if (pt <= 0.5) {
-      nue_weight = gNUENegPion_TPC_thisCent->Eval(pt);
-    } else {
-      nue_weight = gNUENegPion_TOF_thisCent->Eval(pt);
-    }
-  } else if (pdgcode == 2212) {
-    nue_weight = gNUEProton_thisCent->Eval(pt);
-  } else if (pdgcode == -2212) {
-    nue_weight = gNUEAntiProton_thisCent->Eval(pt);
-  } else if (pdgcode == 3122) {
-    nue_weight = gNUELambda_thisCent->Eval(pt);
-  } else if (pdgcode == -3122) {
-    nue_weight = gNUEAntiLambda_thisCent->Eval(pt);
-  } else if (pdgcode == 999) {
-    nue_weight = gNUEPosHadron_thisCent->Eval(pt);
-  } else if (pdgcode == -999) {
-    nue_weight = gNUENegHadron_thisCent->Eval(pt);
-  } else {
-    return -1;
-  }
-
-  return nue_weight;
+float AliAnalysisTaskCVEPIDCMEDiff::GetPlaneNUECor(int charge, float pt)
+{
+  if (charge == 0) return 1.f;
+  if (!gNUEPosHadron_thisCent || !gNUENegHadron_thisCent) return 1.f;
+  return (charge > 0) ? gNUEPosHadron_thisCent->Eval(pt) : gNUENegHadron_thisCent->Eval(pt);
 }
 
 //---------------------------------------------------
 
-float AliAnalysisTaskCVEPIDCMEDiff::GetNUACor(int charge, float phi, float eta, float vz) {
+float AliAnalysisTaskCVEPIDCMEDiff::GetPlaneNUACor(int charge, float phi, float eta, float vz) {
   float weightNUA = 1;
   if (fVzBin < 0 || fCentBin < 0 || fRunNum < 0) return -1;
   if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) { // Rihan and Protty 's NUA Results
@@ -1471,6 +1444,41 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetNUACor(int charge, float phi, float eta, 
   }
   return weightNUA;
 }
+
+//---------------------------------------------------
+//
+float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdg, float pt)
+{
+  if (!isDoNUE) return 1.f;
+
+  switch (pdg) {
+    case  999:  return EvalGraph(gNUEPosHadron_thisCent , pt);
+    case -999:  return EvalGraph(gNUENegHadron_thisCent , pt);
+    case  2212: return EvalGraph(gNUEProton_thisCent    , pt);
+    case -2212: return EvalGraph(gNUEAntiProton_thisCent, pt);
+    case  3122: return EvalGraph(gNUELambda_thisCent    , pt);
+    case -3122: return EvalGraph(gNUEAntiLambda_thisCent, pt);
+    default:    return 1.f;
+  }
+}
+
+//---------------------------------------------------
+//
+float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUACor(int pdg, float pt)
+{
+  if (!isDoNUA) return 1.f;
+
+  switch (pdg) {
+    case  999:  return EvalGraph(gNUAPosHadron_thisCent , pt);
+    case -999:  return EvalGraph(gNUANegHadron_thisCent , pt);
+    case  2212: return EvalGraph(gNUAProton_thisCent    , pt);
+    case -2212: return EvalGraph(gNUAAntiProton_thisCent, pt);
+    case  3122: return EvalGraph(gNUALambda_thisCent    , pt);
+    case -3122: return EvalGraph(gNUAAntiLambda_thisCent, pt);
+    default:    return 1.f;
+  }
+}
+
 
 //---------------------------------------------------
 
@@ -1566,16 +1574,18 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlaneNoAutoCorr(std::vector<int> vec_i
   float tempWgtMult = fWgtMult;
   float repeQ2x = 0., repeQ2y = 0., repeWgtMult = 0.;
 
-  std::vector<std::unordered_map<int, std::vector<float>>::iterator> vec_it;
+  std::vector<std::unordered_map<int, std::pair<float,float>>::iterator> vec_it;
   for (int id : vec_id) {
     vec_it.push_back(mapTPCTrksIDPhiWgt.find(id));
   }
 
   for (auto it : vec_it) {
     if (it != mapTPCTrksIDPhiWgt.end()) {
-      repeQ2x += it->second[1] * TMath::Cos(2 * (it->second)[0]);
-      repeQ2y += it->second[1] * TMath::Sin(2 * (it->second)[0]);
-      repeWgtMult += it->second[1];
+      float phi = it->second.first;
+      float wgt = it->second.second;
+      repeQ2x += wgt * TMath::Cos(2 * phi);
+      repeQ2y += wgt * TMath::Sin(2 * phi);
+      repeWgtMult += wgt;
     }
   }
 
@@ -1592,8 +1602,9 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetTPCPlaneNoAutoCorr(std::vector<int> vec_i
       tempSumQ2y -= fQyMeanTPC;
     }
     psiNoAuto = GetEventPlane(tempSumQ2x, tempSumQ2y, 2);
-  } else
+  } else {
     psiNoAuto = std::numeric_limits<float>::quiet_NaN();;
+  }
 
   return psiNoAuto;
 }
@@ -1623,9 +1634,9 @@ inline float AliAnalysisTaskCVEPIDCMEDiff::GetSumPtBin(float sumPt) {
   // else return -1
   if (sumPt > 1. && sumPt < 3.)
     return 0.5;
-  else if (sumPt > 3. && sumPt < 5.)
+  else if (sumPt >= 3. && sumPt < 5.)
     return 1.5;
-  else if (sumPt > 5. && sumPt < 8.)
+  else if (sumPt >= 5. && sumPt < 8.)
     return 2.5;
   else
     return -1.;
@@ -1634,11 +1645,11 @@ inline float AliAnalysisTaskCVEPIDCMEDiff::GetSumPtBin(float sumPt) {
 //---------------------------------------------------
 inline float AliAnalysisTaskCVEPIDCMEDiff::GetDeltaEtaBin(float deltaEta) {
   //-0.6 ~ 0.6 return 0.5
-  //-1.6 ~ -0.6 & 0.6 ~ 1.6 return 1.5
+  // < -0.6 & > 0.6 return 1.5
   // else return -1
-  if (deltaEta > -0.6 && deltaEta < 0.6)
+  if (deltaEta < 0.6)
     return 0.5;
-  else if (deltaEta < -0.6 || deltaEta > 0.6)
+  else if (deltaEta > 0.6)
     return 1.5;
   else
     return -1.;
@@ -1681,7 +1692,6 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetV0CPlane(float centSPD1) {
     float factor_gain = (float)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
 
     float energy_gain = energy_raw * factor_gain;
-    if (energy_gain < 1.e-6) return std::numeric_limits<float>::quiet_NaN();;
 
     Qx2 += energy_gain * TMath::Cos(2 * phi);
     Qy2 += energy_gain * TMath::Sin(2 * phi);
@@ -1711,7 +1721,7 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetV0CPlane(float centSPD1) {
 
 //---------------------------------------------------
 //
-bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUEGraphForThisCent() {
+bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUENUAGraphForThisCent() {
   TString period;
   if (fPeriod.EqualTo("LHC18q"))
     period = "18q";
@@ -1720,26 +1730,73 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUEGraphForThisCent() {
   else
     return false;
 
-  std::vector<std::pair<TGraphErrors**, TString>> nueGraphs = {
-    {&gNUEPosPion_TPC_thisCent, Form("nue_pt_pospion_tpc_region_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUEPosPion_TOF_thisCent, Form("nue_pt_pospion_tof_region_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUENegPion_TPC_thisCent, Form("nue_pt_negpion_tpc_region_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUENegPion_TOF_thisCent, Form("nue_pt_negpion_tof_region_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUEPosHadron_thisCent, Form("nue_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUENegHadron_thisCent, Form("nue_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUEProton_thisCent, Form("nue_pt_proton_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUEAntiProton_thisCent, Form("nue_pt_antiproton_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUELambda_thisCent, Form("nue_pt_lambda_%s_cent%d", period.Data(), fCentBin)},
-    {&gNUEAntiLambda_thisCent, Form("nue_pt_antilambda_%s_cent%d", period.Data(), fCentBin)}
-  };
-
   bool allFound = true;
-  for (auto& p : nueGraphs) {
-    *(p.first) = (TGraphErrors*)fListNUE->FindObject(p.second);
-    if (!*(p.first)) {
-      AliError(Form("Could not find NUE graph: %s", p.second.Data()));
+
+  // --- Load NUE graphs ---
+  if (isDoNUE) {
+    std::vector<std::pair<TGraphErrors**, TString>> nueGraphs = {
+        {&gNUEPosHadron_thisCent, Form("nue_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
+        {&gNUENegHadron_thisCent, Form("nue_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
+        {&gNUEProton_thisCent,    Form("nue_pt_proton_%s_cent%d",    period.Data(), fCentBin)},
+        {&gNUEAntiProton_thisCent,Form("nue_pt_antiproton_%s_cent%d",period.Data(), fCentBin)}
+    };
+
+    for (auto& p : nueGraphs) {
+      *(p.first) = (TGraphErrors*)fListNUENUA->FindObject(p.second);
+      if (!*(p.first)) {
+        AliError(Form("Could not find NUE graph: %s", p.second.Data()));
+        allFound = false;
+      }
+    }
+  }
+
+  if (isDoLambdaNUE) {
+    // Separately load Lambda NUE graphs
+    gNUELambda_thisCent     = (TGraphErrors*)fListNUENUA->FindObject(Form("nue_pt_lambda_%s_cent%d",     period.Data(), fCentBin));
+    gNUEAntiLambda_thisCent = (TGraphErrors*)fListNUENUA->FindObject(Form("nue_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
+
+    if (!gNUELambda_thisCent) {
+      AliError("Could not find NUE graph: nue_pt_lambda");
+      allFound = false;
+    }
+    if (!gNUEAntiLambda_thisCent) {
+      AliError("Could not find NUE graph: nue_pt_antilambda");
       allFound = false;
     }
   }
+
+  // --- Load NUA graphs ---
+  if (isDoNUA) {
+    std::vector<std::pair<TGraph**, TString>> nuaGraphs = {
+        {&gNUAPosHadron_thisCent, Form("nua_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
+        {&gNUANegHadron_thisCent, Form("nua_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
+        {&gNUAProton_thisCent,    Form("nua_pt_proton_%s_cent%d",    period.Data(), fCentBin)},
+        {&gNUAAntiProton_thisCent,Form("nua_pt_antiproton_%s_cent%d",period.Data(), fCentBin)}
+    };
+
+    for (auto& p : nuaGraphs) {
+      *(p.first) = (TGraph*)fListNUENUA->FindObject(p.second);
+      if (!*(p.first)) {
+        AliError(Form("Could not find NUA graph: %s", p.second.Data()));
+        allFound = false;
+      }
+    }
+  }
+
+  if (isDoLambdaNUA) {
+    // Separately load Lambda NUA graphs
+    gNUALambda_thisCent     = (TGraph*)fListNUENUA->FindObject(Form("nua_pt_lambda_%s_cent%d",     period.Data(), fCentBin));
+    gNUAAntiLambda_thisCent = (TGraph*)fListNUENUA->FindObject(Form("nua_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
+
+    if (!gNUALambda_thisCent) {
+      AliError("Could not find NUA graph: nua_pt_lambda");
+      allFound = false;
+    }
+    if (!gNUAAntiLambda_thisCent) {
+      AliError("Could not find NUA graph: nua_pt_antilambda");
+      allFound = false;
+    }
+  }
+
   return allFound;
 }

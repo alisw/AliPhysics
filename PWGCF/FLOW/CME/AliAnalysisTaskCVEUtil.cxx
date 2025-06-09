@@ -183,8 +183,8 @@ void AliAnalysisTaskCVEUtil::UserCreateOutputObjects() {
   for (auto runNum : *runNumList) fHistRunNumBin->GetXaxis()->SetBinLabel(runNum.second, Form("%i", runNum.first));
 
   if (!fIsMC) {
-    fProfile3DQxTPCRunCentVz = new TProfile3D("QxTPCRunCentVz", "QxTPCRunCentVz;RunNumberBin;Centrality;VzBin", (int)runNumList->size(), 0, (float)runNumList->size(), 7, 0, 70, 3, 0, 3);
-    fProfile3DQyTPCRunCentVz = new TProfile3D("QyTPCRunCentVz", "QyTPCRunCentVz;RunNumberBin;Centrality;VzBin", (int)runNumList->size(), 0, (float)runNumList->size(), 7, 0, 70, 3, 0, 3);
+    fProfile3DQxTPCRunCentVz = new TProfile3D("QxTPCRunCentVz", "QxTPCRunCentVz;RunNumberBin;Centrality;VzBin", (int)runNumList->size(), 0, (float)runNumList->size(), 35, 0, 70, 3, 0, 3);
+    fProfile3DQyTPCRunCentVz = new TProfile3D("QyTPCRunCentVz", "QyTPCRunCentVz;RunNumberBin;Centrality;VzBin", (int)runNumList->size(), 0, (float)runNumList->size(), 35, 0, 70, 3, 0, 3);
     fHistQxQyTPC = new TH2F("QxQyTPC", "QxQyTPC;QxTPC;QyTPC", 100, -1, 1, 100, -1, 1);
   }
 
@@ -406,6 +406,7 @@ bool AliAnalysisTaskCVEUtil::LoopTracks() {
     float pt = track->Pt();
     float eta = track->Eta();
     float phi = track->Phi();
+    if (phi < 0) phi += 2 * M_PI;
     int charge = track->Charge();
 
     float weight = 1.;
@@ -541,6 +542,7 @@ bool AliAnalysisTaskCVEUtil::LoopTracks() {
         (*fDataHists)[p].h2_pt -> Fill(fCent, pt);
         (*fDataHists)[p].h3_pt_dcaXY->Fill(fCent, pt, dcaxy);
         (*fDataHists)[p].h3_pt_dcaZ->Fill(fCent, pt, dcaz);
+        (*fDataHists)[p].h3_pt_phi->Fill(fCent, pt, phi);
       }
     }
   }
@@ -761,6 +763,7 @@ void AliAnalysisTaskCVEUtil::CreateAllHistograms() {
          (*fDataHists)[particle].h2_pt  = new TH2F(Form("h2_pt_%s", ParticleName(particle)), Form("p_{T}, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS, 0.f, PTBINMAX);
          (*fDataHists)[particle].h3_pt_dcaXY = new TH3F(Form("h3_pt_dcaXY_%s", ParticleName(particle)), Form("p_{T}, dcaXY, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAXYMAX);
          (*fDataHists)[particle].h3_pt_dcaZ = new TH3F(Form("h3_pt_dcaZ_%s", ParticleName(particle)), Form("p_{T}, dcaZ, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, DCABINS, 0.f, DCAZMAX);
+         (*fDataHists)[particle].h3_pt_phi = new TH3F(Form("h3_pt_phi_%s", ParticleName(particle)), Form("p_{T}, #phi, %s distribution in data", ParticleName(particle)), CENTBINS, 0.f, CENTBINMAX, PTBINS2D,0.f,PTBINMAX2D, 180, 0.f, 2*TMath::Pi());
          (*fDataHists)[particle].AddToList(fOutputList);
      }
   }
@@ -868,6 +871,9 @@ bool AliAnalysisTaskCVEUtil::LoopV0s() {
     else continue;
     if (fabs(mass - 1.115683) > 0.02) continue;
 
+    double phi = v0->Phi();
+    if (phi < 0) phi += 2 * M_PI;
+
     if(fIsMC) {
     // get pdg code from one-to-one MC matching
     if (pTrack->GetLabel() < 0 || nTrack->GetLabel() < 0) continue;
@@ -895,8 +901,10 @@ bool AliAnalysisTaskCVEUtil::LoopV0s() {
        // Fill histograms for data
        if (code == 3122) {
            (*fDataHists)[ParticleType::kLambda].h2_pt->Fill(fCent,pt);
+           (*fDataHists)[ParticleType::kLambda].h3_pt_phi->Fill(fCent,pt,phi);
        } else if (code == -3122) {
            (*fDataHists)[ParticleType::kAntiLambda].h2_pt->Fill(fCent,pt);
+           (*fDataHists)[ParticleType::kAntiLambda].h3_pt_phi->Fill(fCent,pt,phi);
        }
     }
   }
