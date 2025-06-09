@@ -2,6 +2,7 @@
 #define AliAnalysisTaskCVEPIDCMEDiff_cxx
 #include <TGraphErrors.h>
 #include <TH3.h>
+#include <TProfile2D.h>
 
 #include <map>
 #include <memory>
@@ -253,7 +254,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   ////////////////////////
   // Plane NUA
   ////////////////////////
-  TList* fListPlaneNUA{nullptr};      //!<! read lists for NUA
+  TList* fListPlaneNUA{nullptr}; //!<! read lists for Plane NUA
   TH3F* hCorrectNUAPos{nullptr}; //!<!
   TH3F* hCorrectNUANeg{nullptr}; //!<!
 
@@ -304,12 +305,12 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   // Proton QA
   TH1D* fHistProtonPt{nullptr};          //!<!
   TH1D* fHistProtonEta{nullptr};         //!<!
-  TH1D* fHistProtonPhi{nullptr};         //!<!
+  std::array<TH1D*, 2> fHistProtonPhi{nullptr};         //!<!
   TH2D* fHistProtonPtDcaXY{nullptr};     //!<!
   TH2D* fHistProtonPtDcaZ{nullptr};      //!<!
   TH1D* fHistAntiProtonPt{nullptr};      //!<!
   TH1D* fHistAntiProtonEta{nullptr};     //!<!
-  TH1D* fHistAntiProtonPhi{nullptr};     //!<!
+  std::array<TH1D*, 2> fHistAntiProtonPhi{nullptr};     //!<!
   TH2D* fHistAntiProtonPtDcaXY{nullptr}; //!<!
   TH2D* fHistAntiProtonPtDcaZ{nullptr};  //!<!
 
@@ -323,29 +324,29 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TH1D* fHistV0PosDaughterDca{nullptr};  //!<! Raw V0s' PosDaughterDca
   // Lambda QA
   //[0]:Before the Mass Cut [1]:After the Mass Cut
-  std::array<TH1D*, 2> fHistLambdaPt{nullptr};                  //!<!
-  std::array<TH1D*, 2> fHistLambdaEta{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistLambdaPhi{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistLambdaDcaToPrimVertex{nullptr};     //!<!
-  std::array<TH1D*, 2> fHistLambdaNegDaughterDca{nullptr};      //!<!
-  std::array<TH1D*, 2> fHistLambdaPosDaughterDca{nullptr};      //!<!
-  std::array<TH1D*, 2> fHistLambdaCPA{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistLambdaDecayLength{nullptr};         //!<!
-  std::array<TH3D*, 2> fHist3LambdaCentPtMass{nullptr};         //!<!
-  std::array<TH2D*, 2> fHist2LambdaMassPtY{nullptr};            //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPt{nullptr};              //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaEta{nullptr};             //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPhi{nullptr};             //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaDcaToPrimVertex{nullptr}; //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaNegDaughterDca{nullptr};  //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPosDaughterDca{nullptr};  //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaCPA{nullptr};             //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaDecayLength{nullptr};     //!<!
-  std::array<TH3D*, 2> fHist3AntiLambdaCentPtMass{nullptr};     //!<!
-  std::array<TH2D*, 2> fHist2AntiLambdaMassPtY{nullptr};        //!<!
+  TH1D* fHistLambdaPt{nullptr};                      //!<!
+  TH1D* fHistLambdaEta{nullptr};                     //!<!
+  std::array<TH1D*, 2> fHistLambdaPhi{nullptr};      //!<!
+  TH1D* fHistLambdaDcaToPrimVertex{nullptr};         //!<!
+  TH1D* fHistLambdaNegDaughterDca{nullptr};          //!<!
+  TH1D* fHistLambdaPosDaughterDca{nullptr};          //!<!
+  TH1D* fHistLambdaCPA{nullptr};                     //!<!
+  TH1D* fHistLambdaDecayLength{nullptr};             //!<!
+  TH3D* fHist3LambdaCentPtMass{nullptr};             //!<!
+  TH2D* fHist2LambdaMassPtY{nullptr};                //!<!
+  TH1D* fHistAntiLambdaPt{nullptr};                  //!<!
+  TH1D* fHistAntiLambdaEta{nullptr};                 //!<!
+  std::array<TH1D*, 2> fHistAntiLambdaPhi{nullptr};  //!<!
+  TH1D* fHistAntiLambdaDcaToPrimVertex{nullptr};     //!<!
+  TH1D* fHistAntiLambdaNegDaughterDca{nullptr};      //!<!
+  TH1D* fHistAntiLambdaPosDaughterDca{nullptr};      //!<!
+  TH1D* fHistAntiLambdaCPA{nullptr};                 //!<!
+  TH1D* fHistAntiLambdaDecayLength{nullptr};         //!<!
+  TH3D* fHist3AntiLambdaCentPtMass{nullptr};         //!<!
+  TH2D* fHist2AntiLambdaMassPtY{nullptr};            //!<!
 
-  TProfile2D* fProfile2DQxCentVz{nullptr}; //!<!
-  TProfile2D* fProfile2DQyCentVz{nullptr}; //!<!
+  std::array<TProfile2D*, 2> fProfile2DQxCentVz{nullptr}; //!<!
+  std::array<TProfile2D*, 2> fProfile2DQyCentVz{nullptr}; //!<!
 
   /////////////
   // Results //

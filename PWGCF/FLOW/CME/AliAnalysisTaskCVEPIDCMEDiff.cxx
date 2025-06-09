@@ -315,23 +315,27 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   // Proton QA
   fHistProtonPt      = new TH1D("fHistProtonPt", "fHistProtonPt;p_{T}", 200, 0., 20.);
   fHistProtonEta     = new TH1D("fHistProtonEta", "fHistProtonEta;#eta", 100, -2., 2.);
-  fHistProtonPhi     = new TH1D("fHistProtonPhi", "fHistProtonPhi;#phi", 360, 0., TMath::TwoPi());
+  fHistProtonPhi[0]    = new TH1D("fHistProtonPhi_bfNUA", "fHistProtonPhi;#phi", 360, 0., TMath::TwoPi());
+  fHistProtonPhi[1]    = new TH1D("fHistProtonPhi_afterNUA", "fHistProtonPhi;#phi", 360, 0., TMath::TwoPi());
   fHistProtonPtDcaXY = new TH2D("fHistProtonPtDcaXY", "fHistProtonPtDcaXY;Pt;DcaXY", 23, 0.4, 5.0, 300, 0., 2);
   fHistProtonPtDcaZ  = new TH2D("fHistProtonPtDcaZ", "fHistProtonPtDcaZ;Pt;DcaZ", 23, 0.4, 5.0, 300, 0., 2);
   fQAList->Add(fHistProtonPt);
   fQAList->Add(fHistProtonEta);
-  fQAList->Add(fHistProtonPhi);
+  fQAList->Add(fHistProtonPhi[0]);
+  fQAList->Add(fHistProtonPhi[1]);
   fQAList->Add(fHistProtonPtDcaXY);
   fQAList->Add(fHistProtonPtDcaZ);
 
   fHistAntiProtonPt      = new TH1D("fHistAntiProtonPt", "fHistAntiProtonPt;p_{T}", 200, 0., 20.);
   fHistAntiProtonEta     = new TH1D("fHistAntiProtonEta", "fHistAntiProtonEta;#eta", 100, -2., 2.);
-  fHistAntiProtonPhi     = new TH1D("fHistAntiProtonPhi", "fHistAntiProtonPhi;#phi", 360, 0., TMath::TwoPi());
+  fHistAntiProtonPhi[0]  = new TH1D("fHistAntiProtonPhi_bfNUA", "fHistAntiProtonPhi;#phi", 360, 0., TMath::TwoPi());
+  fHistAntiProtonPhi[1]  = new TH1D("fHistAntiProtonPhi_afterNUA", "fHistAntiProtonPhi;#phi", 360, 0., TMath::TwoPi());
   fHistAntiProtonPtDcaXY = new TH2D("fHistAntiProtonPtDcaXY", "fHistAntiProtonPtDcaXY;Pt;DcaXY", 23, 0.4, 5.0, 300, 0., 2);
   fHistAntiProtonPtDcaZ  = new TH2D("fHistAntiProtonPtDcaZ", "fHistAntiProtonPtDcaZ;Pt;DcaZ", 23, 0.4, 5.0, 300, 0., 2);
   fQAList->Add(fHistAntiProtonPt);
   fQAList->Add(fHistAntiProtonEta);
-  fQAList->Add(fHistAntiProtonPhi);
+  fQAList->Add(fHistAntiProtonPhi[0]);
+  fQAList->Add(fHistAntiProtonPhi[1]);
   fQAList->Add(fHistAntiProtonPtDcaXY);
   fQAList->Add(fHistAntiProtonPtDcaZ);
 
@@ -352,72 +356,69 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fQAList->Add(fHistV0PosDaughterDca);
 
   // Lambda QA
-  std::string charLambdaMassCut;
-  for (int i = 0; i < 2; i++) {
-    ///// Case 0 = before cut, case 1 = afterCut.
-    if (i == 0) charLambdaMassCut = "Bf";
-    if (i == 1) charLambdaMassCut = "Af";
-    /// Lambda:
-    fHistLambdaPt[i]              = new TH1D(Form("hLambdaPt_%sMassCut", charLambdaMassCut.data()), ";pT", 200, 0., 20.);
-    fHistLambdaEta[i]             = new TH1D(Form("hLambdaEta_%sMassCut", charLambdaMassCut.data()), ";#eta", 200, -3., 3.);
-    fHistLambdaPhi[i]             = new TH1D(Form("hLambdaPhi_%sMassCut", charLambdaMassCut.data()), ";phi", 360, 0., TMath::TwoPi());
-    fHistLambdaDcaToPrimVertex[i] = new TH1D(Form("hLambdaDcaToPrimVertex_%sMassCut", charLambdaMassCut.data()), "DcatoPV", 200, 0., 20.);
-    fHistLambdaNegDaughterDca[i]  = new TH1D(Form("hLambdaNegDaughterDca_%sMassCut", charLambdaMassCut.data()), "NegDaughterDcatoPV", 200, 0., 20.);
-    fHistLambdaPosDaughterDca[i]  = new TH1D(Form("hLambdaPosDaughterDca_%sMassCut", charLambdaMassCut.data()), "PosDaughterDcatoPV", 200, 0., 20.);
-    fHistLambdaCPA[i]             = new TH1D(Form("hLambdaCPA_%sMassCut", charLambdaMassCut.data()), ";cpa", 200, 0.9, 1.);
-    fHistLambdaDecayLength[i]     = new TH1D(Form("hLambdaDecayLength_%sMassCut", charLambdaMassCut.data()), ";DecayLength", 250, 0., 500.);
-    fHist2LambdaMassPtY[i]        = new TH2D(Form("fHist2LambdaMassPtY_%sMassCut", charLambdaMassCut.data()), ";pT;yH", 12, 0., 6., 20, -1., 1.);
-    fQAList->Add(fHistLambdaPt[i]);
-    fQAList->Add(fHistLambdaEta[i]);
-    fQAList->Add(fHistLambdaPhi[i]);
-    fQAList->Add(fHistLambdaDcaToPrimVertex[i]);
-    fQAList->Add(fHistLambdaNegDaughterDca[i]);
-    fQAList->Add(fHistLambdaPosDaughterDca[i]);
-    fQAList->Add(fHistLambdaCPA[i]);
-    fQAList->Add(fHistLambdaDecayLength[i]);
-    fQAList->Add(fHist2LambdaMassPtY[i]);
+  /// Lambda:
+  fHistLambdaPt              = new TH1D("hLambdaPt", ";pT", 200, 0., 20.);
+  fHistLambdaEta             = new TH1D("hLambdaEta", ";#eta", 200, -3., 3.);
+  fHistLambdaPhi[0]             = new TH1D("hLambdaPhi_bfNUA", ";phi", 360, 0., TMath::TwoPi());
+  fHistLambdaPhi[1]             = new TH1D("hLambdaPhi_afNUA", ";phi", 360, 0., TMath::TwoPi());
+  fHistLambdaDcaToPrimVertex = new TH1D("hLambdaDcaToPrimVertex", "DcatoPV", 200, 0., 20.);
+  fHistLambdaNegDaughterDca  = new TH1D("hLambdaNegDaughterDca", "NegDaughterDcatoPV", 200, 0., 20.);
+  fHistLambdaPosDaughterDca  = new TH1D("hLambdaPosDaughterDca", "PosDaughterDcatoPV", 200, 0., 20.);
+  fHistLambdaCPA             = new TH1D("hLambdaCPA", ";cpa", 200, 0.9, 1.);
+  fHistLambdaDecayLength     = new TH1D("hLambdaDecayLength", ";DecayLength", 250, 0., 500.);
+  fHist2LambdaMassPtY        = new TH2D("fHist2LambdaMassPtY", ";pT;yH", 12, 0., 6., 20, -1., 1.);
+  fQAList->Add(fHistLambdaPt);
+  fQAList->Add(fHistLambdaEta);
+  fQAList->Add(fHistLambdaPhi[0]);
+  fQAList->Add(fHistLambdaPhi[1]);
+  fQAList->Add(fHistLambdaDcaToPrimVertex);
+  fQAList->Add(fHistLambdaNegDaughterDca);
+  fQAList->Add(fHistLambdaPosDaughterDca);
+  fQAList->Add(fHistLambdaCPA);
+  fQAList->Add(fHistLambdaDecayLength);
+  fQAList->Add(fHist2LambdaMassPtY);
 
-    // AntiLambda
-    fHistAntiLambdaPt[i]              = new TH1D(Form("hAntiLambdaPt_%sMassCut", charLambdaMassCut.data()), ";pT", 200, 0., 20.);
-    fHistAntiLambdaEta[i]             = new TH1D(Form("hAntiLambdaEta_%sMassCut", charLambdaMassCut.data()), ";#eta", 200, -3., 3.);
-    fHistAntiLambdaPhi[i]             = new TH1D(Form("hAntiLambdaPhi_%sMassCut", charLambdaMassCut.data()), ";phi", 360, 0., TMath::TwoPi());
-    fHistAntiLambdaDcaToPrimVertex[i] = new TH1D(Form("hAntiLambdaDcaToPrimVertex_%sMassCut", charLambdaMassCut.data()), "DcatoPV", 200, 0., 20.);
-    fHistAntiLambdaNegDaughterDca[i] =
-      new TH1D(Form("hAntiLambdaNegDaugtherDca_%sMassCut", charLambdaMassCut.data()), "NegDaughterDcatoPV", 200, 0., 20.);
-    fHistAntiLambdaPosDaughterDca[i] =
-      new TH1D(Form("hAntiLambdaPosDaugtherDca_%sMassCut", charLambdaMassCut.data()), "PosDaughterDcatoPV", 200, 0., 20.);
-    fHistAntiLambdaCPA[i]         = new TH1D(Form("hAntiLambdaCPA_%sMassCut", charLambdaMassCut.data()), ";cpa", 200, 0.9, 1.);
-    fHistAntiLambdaDecayLength[i] = new TH1D(Form("hAntiLambdaDecayLength_%sMassCut", charLambdaMassCut.data()), ";DecayLength", 250, 0., 500.);
-    fHist2AntiLambdaMassPtY[i]    = new TH2D(Form("fHist2AntiLambdaMassPtY_%sMassCut", charLambdaMassCut.data()), ";pT;yH", 12, 0., 6., 20, -1., 1.);
-    fQAList->Add(fHistAntiLambdaPt[i]);
-    fQAList->Add(fHistAntiLambdaEta[i]);
-    fQAList->Add(fHistAntiLambdaPhi[i]);
-    fQAList->Add(fHistAntiLambdaDcaToPrimVertex[i]);
-    fQAList->Add(fHistAntiLambdaNegDaughterDca[i]);
-    fQAList->Add(fHistAntiLambdaPosDaughterDca[i]);
-    fQAList->Add(fHistAntiLambdaCPA[i]);
-    fQAList->Add(fHistAntiLambdaDecayLength[i]);
-    fQAList->Add(fHist2AntiLambdaMassPtY[i]);
-  }
-  fHist3LambdaCentPtMass[0] =
-    new TH3D("fHist3LambdaCentPtMass_BfMassCut", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10, 1000, 1., 1.25); //  Current bin size = 0.00025
-  fHist3LambdaCentPtMass[1] =
-    new TH3D("fHist3LambdaCentPtMass_AfMassCut", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10, MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
-  fQAList->Add(fHist3LambdaCentPtMass[0]);
-  fQAList->Add(fHist3LambdaCentPtMass[1]);
+  //AntiLambda
+  fHistAntiLambdaPt              = new TH1D("hAntiLambdaPt", ";pT", 200, 0., 20.);
+  fHistAntiLambdaEta             = new TH1D("hAntiLambdaEta", ";#eta", 200, -3., 3.);
+  fHistAntiLambdaPhi[0]             = new TH1D("hAntiLambdaPhi_bfNUA", ";phi", 360, 0., TMath::TwoPi());
+  fHistAntiLambdaPhi[1]             = new TH1D("hAntiLambdaPhi_afNUA", ";phi", 360, 0., TMath::TwoPi());
+  fHistAntiLambdaDcaToPrimVertex = new TH1D("hAntiLambdaDcaToPrimVertex", "DcatoPV", 200, 0., 20.);
+  fHistAntiLambdaNegDaughterDca  = new TH1D("hAntiLambdaNegDaughterDca", "NegDaughterDcatoPV", 200, 0., 20.);
+  fHistAntiLambdaPosDaughterDca  = new TH1D("hAntiLambdaPosDaughterDca", "PosDaughterDcatoPV", 200, 0., 20.);
+  fHistAntiLambdaCPA             = new TH1D("hAntiLambdaCPA", ";cpa", 200, 0.9, 1.);
+  fHistAntiLambdaDecayLength     = new TH1D("hAntiLambdaDecayLength", ";DecayLength", 250, 0., 500.);
+  fHist2AntiLambdaMassPtY        = new TH2D("fHist2AntiLambdaMassPtY", ";pT;yH", 12, 0., 6., 20, -1., 1.);
+  fQAList->Add(fHistAntiLambdaPt);
+  fQAList->Add(fHistAntiLambdaEta);
+  fQAList->Add(fHistAntiLambdaPhi[0]);
+  fQAList->Add(fHistAntiLambdaPhi[1]);
+  fQAList->Add(fHistAntiLambdaDcaToPrimVertex);
+  fQAList->Add(fHistAntiLambdaNegDaughterDca);
+  fQAList->Add(fHistAntiLambdaPosDaughterDca);
+  fQAList->Add(fHistAntiLambdaCPA);
+  fQAList->Add(fHistAntiLambdaDecayLength);
+  fQAList->Add(fHist2AntiLambdaMassPtY);
 
-  fHist3AntiLambdaCentPtMass[0] =
-    new TH3D("fHist3AntiLambdaCentPtMass_BfMassCut", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10, 1000, 1., 1.25); //  Current bin size = 0.00025
-  fHist3AntiLambdaCentPtMass[1] = new TH3D("fHist3AntiLambdaCentPtMass_AfMassCut", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10, MASSBIN,
-                                           LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
-  fQAList->Add(fHist3AntiLambdaCentPtMass[0]);
-  fQAList->Add(fHist3AntiLambdaCentPtMass[1]);
+  fHist3LambdaCentPtMass      = new TH3D("fHist3LambdaCentPtMass", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10,
+                                MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
+  fQAList->Add(fHist3LambdaCentPtMass);
 
-  fProfile2DQxCentVz = new TProfile2D("fProfile2DQxCentVz", ";Centrality;VzBin;Qx", 70, 0, 70, 3, 0, 3);
-  fProfile2DQyCentVz = new TProfile2D("fProfile2DQyCentVz", ";Centrality;VzBin;Qy", 70, 0, 70, 3, 0, 3);
-  fQAList->Add(fProfile2DQxCentVz);
-  fQAList->Add(fProfile2DQyCentVz);
+  fHist3AntiLambdaCentPtMass = new TH3D("fHist3AntiLambdaCentPtMass", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10,
+                                MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
+  fQAList->Add(fHist3AntiLambdaCentPtMass);
 
+
+  // Plane
+  fProfile2DQxCentVz[0] = new TProfile2D("fProfile2DQxCentVz_bfRC", ";Centrality;VzBin;Qx", 70, 0, 70, 3, 0, 3);
+  fProfile2DQyCentVz[0] = new TProfile2D("fProfile2DQyCentVz_bfRC", ";Centrality;VzBin;Qy", 70, 0, 70, 3, 0, 3);
+  fQAList->Add(fProfile2DQxCentVz[0]);
+  fQAList->Add(fProfile2DQyCentVz[0]);
+
+  fProfile2DQxCentVz[1] = new TProfile2D("fProfile2DQxCentVz_afRC", ";Centrality;VzBin;Qx", 70, 0, 70, 3, 0, 3);
+  fProfile2DQyCentVz[1] = new TProfile2D("fProfile2DQyCentVz_afRC", ";Centrality;VzBin;Qy", 70, 0, 70, 3, 0, 3);
+  fQAList->Add(fProfile2DQxCentVz[1]);
+  fQAList->Add(fProfile2DQyCentVz[1]);
 
   PostData(1, fQAList);
   if (fDebug) AliInfo("Post fQAList Data Success!");
@@ -734,8 +735,11 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t*) {
   }
   float vzBin = (fVertex[2] < -2.) ? 0.5 : (fVertex[2] > 2.) ? 2.5 : 1.5;
   if(fWgtMult > 1.e-6) {
-    fProfile2DQxCentVz->Fill(fCent, vzBin, fSumQ2x/fWgtMult - fQxMeanTPC);
-    fProfile2DQyCentVz->Fill(fCent, vzBin, fSumQ2y/fWgtMult - fQyMeanTPC);
+    fProfile2DQxCentVz[0]->Fill(fCent, vzBin, fSumQ2x/fWgtMult);
+    fProfile2DQyCentVz[0]->Fill(fCent, vzBin, fSumQ2y/fWgtMult);
+    fProfile2DQxCentVz[1]->Fill(fCent, vzBin, fSumQ2x/fWgtMult - fQxMeanTPC);
+    fProfile2DQyCentVz[1]->Fill(fCent, vzBin, fSumQ2y/fWgtMult - fQyMeanTPC);
+
     fEvtCount->Fill(15);
   }
   if (fDebug) AliInfo("Get Plane done!");
@@ -884,17 +888,20 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         code = 999;
       fHistProtonPt->Fill(pt);
       fHistProtonEta->Fill(eta);
-      fHistProtonPhi->Fill(phi);
+      fHistProtonPhi[0]->Fill(phi);
       fHistProtonPtDcaXY->Fill(pt, fabs(dcaxy));
       fHistProtonPtDcaZ->Fill(pt, fabs(dcaz));
+
+      if (isDoNUA) {
+        float nua_pid_weight = GetPIDNUACor(code, pt);
+        fHistProtonPhi[1]->Fill(phi, nua_pid_weight);
+        if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
+      }
       if (isDoNUE) {
         float nue_pid_weight = GetPIDNUECor(code, pt);
         if (nue_pid_weight > 0) pid_weight *= nue_pid_weight;
       }
-      if (isDoNUA) {
-        float nua_pid_weight = GetPIDNUACor(code, pt);
-        if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
-      }
+
     } else {
       if (isCalculateLambdaProton)
         code = -2212;
@@ -904,16 +911,18 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         code = -999;
       fHistAntiProtonPt->Fill(pt);
       fHistAntiProtonEta->Fill(eta);
-      fHistAntiProtonPhi->Fill(phi);
+      fHistAntiProtonPhi[0]->Fill(phi);
       fHistAntiProtonPtDcaXY->Fill(pt, fabs(dcaxy));
       fHistAntiProtonPtDcaZ->Fill(pt, fabs(dcaz));
+
+      if (isDoNUA) {
+        float nua_pid_weight = GetPIDNUACor(code, pt);
+        fHistAntiProtonPhi[1]->Fill(phi, nua_pid_weight);
+        if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
+      }
       if (isDoNUE) {
         float nue_pid_weight = GetPIDNUECor(code, pt);
         if (nue_pid_weight > 0) pid_weight *= nue_pid_weight;
-      }
-      if (isDoNUA) {
-        float nua_pid_weight = GetPIDNUACor(code, pt);
-        if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
       }
     }
     //vecParticle [pt,eta,phi,id,pdgcode,pidweight]
@@ -990,30 +999,6 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
 
     float mass = (code == 3122) ? v0->MassLambda() : v0->MassAntiLambda();
 
-    if (code == 3122) {
-      fHistLambdaPt[0]->Fill(pt);
-      fHistLambdaEta[0]->Fill(eta);
-      fHistLambdaPhi[0]->Fill(phi);
-      fHistLambdaDcaToPrimVertex[0]->Fill(dcaToPV);
-      fHistLambdaNegDaughterDca[0]->Fill(nDcaPV);
-      fHistLambdaPosDaughterDca[0]->Fill(pDcaPV);
-      fHistLambdaCPA[0]->Fill(cpa);
-      fHistLambdaDecayLength[0]->Fill(dl);
-      fHist3LambdaCentPtMass[0]->Fill(fCent, pt, mass);
-      fHist2LambdaMassPtY[0]->Fill(pt, rap);
-    } else {
-      fHistAntiLambdaPt[0]->Fill(pt);
-      fHistAntiLambdaEta[0]->Fill(eta);
-      fHistAntiLambdaPhi[0]->Fill(phi);
-      fHistAntiLambdaDcaToPrimVertex[0]->Fill(dcaToPV);
-      fHistAntiLambdaNegDaughterDca[0]->Fill(nDcaPV);
-      fHistAntiLambdaPosDaughterDca[0]->Fill(pDcaPV);
-      fHistAntiLambdaCPA[0]->Fill(cpa);
-      fHistAntiLambdaDecayLength[0]->Fill(dl);
-      fHist3AntiLambdaCentPtMass[0]->Fill(fCent, pt, mass);
-      fHist2AntiLambdaMassPtY[0]->Fill(pt, rap);
-    }
-
     // lambda mass and mom cuts
     bool isInLambdaRange = true;
     isInLambdaRange      = isInLambdaRange && (pt > 0.5 && pt < 10);
@@ -1025,38 +1010,42 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     if (!isInLambdaRange) continue;
 
     if (code == 3122) {
-      fHistLambdaPt[1]->Fill(pt);
-      fHistLambdaEta[1]->Fill(eta);
-      fHistLambdaPhi[1]->Fill(phi);
-      fHistLambdaDcaToPrimVertex[1]->Fill(dcaToPV);
-      fHistLambdaNegDaughterDca[1]->Fill(nDcaPV);
-      fHistLambdaPosDaughterDca[1]->Fill(pDcaPV);
-      fHistLambdaCPA[1]->Fill(cpa);
-      fHistLambdaDecayLength[1]->Fill(dl);
-      fHist3LambdaCentPtMass[1]->Fill(fCent, pt, mass);
-      fHist2LambdaMassPtY[1]->Fill(pt, rap);
+      fHistLambdaPt->Fill(pt);
+      fHistLambdaEta->Fill(eta);
+      fHistLambdaPhi[0]->Fill(phi);
+      fHistLambdaDcaToPrimVertex->Fill(dcaToPV);
+      fHistLambdaNegDaughterDca->Fill(nDcaPV);
+      fHistLambdaPosDaughterDca->Fill(pDcaPV);
+      fHistLambdaCPA->Fill(cpa);
+      fHistLambdaDecayLength->Fill(dl);
+      fHist3LambdaCentPtMass->Fill(fCent, pt, mass);
+      fHist2LambdaMassPtY->Fill(pt, rap);
     } else {
-      fHistAntiLambdaPt[1]->Fill(pt);
-      fHistAntiLambdaEta[1]->Fill(eta);
-      fHistAntiLambdaPhi[1]->Fill(phi);
-      fHistAntiLambdaDcaToPrimVertex[1]->Fill(dcaToPV);
-      fHistAntiLambdaNegDaughterDca[1]->Fill(nDcaPV);
-      fHistAntiLambdaPosDaughterDca[1]->Fill(pDcaPV);
-      fHistAntiLambdaCPA[1]->Fill(cpa);
-      fHistAntiLambdaDecayLength[1]->Fill(dl);
-      fHist3AntiLambdaCentPtMass[1]->Fill(fCent, pt, mass);
-      fHist2AntiLambdaMassPtY[1]->Fill(pt, rap);
+      fHistAntiLambdaPt->Fill(pt);
+      fHistAntiLambdaEta->Fill(eta);
+      fHistAntiLambdaPhi[0]->Fill(phi);
+      fHistAntiLambdaDcaToPrimVertex->Fill(dcaToPV);
+      fHistAntiLambdaNegDaughterDca->Fill(nDcaPV);
+      fHistAntiLambdaPosDaughterDca->Fill(pDcaPV);
+      fHistAntiLambdaCPA->Fill(cpa);
+      fHistAntiLambdaDecayLength->Fill(dl);
+      fHist3AntiLambdaCentPtMass->Fill(fCent, pt, mass);
+      fHist2AntiLambdaMassPtY->Fill(pt, rap);
+    }
+
+    // lambda NUA
+    float weight = 1.;
+    if (isDoLambdaNUA) {
+      float nua_weight = GetPIDNUACor(code, pt);
+      // NUA QA
+      code == 3122 ? fHistLambdaPhi[1]->Fill(phi, nua_weight) : fHistAntiLambdaPhi[1]->Fill(phi, nua_weight);
+      if (nua_weight > 0.f) weight *= nua_weight;
     }
 
     // lambda NUE
-    float weight = 1.;
     if (isDoLambdaNUE) {
       float nue_weight = GetPIDNUECor(code, pt);
       if (nue_weight > 0.f) weight *= nue_weight;
-    }
-    if (isDoLambdaNUA) {
-      float nua_weight = GetPIDNUACor(code, pt);
-      if (nua_weight > 0.f) weight *= nua_weight;
     }
     //vecParticleV0 [pt,eta,phi,id,pdgcode,pidweight, mass, id_daughter_1, id_daughter_2]
     vecParticleV0.emplace_back(std::array<float, 9>{pt, eta, phi, (float)id, (float)code, weight, mass, (float)id_daughter_1, (float)id_daughter_2});
@@ -1706,13 +1695,18 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetV0CPlane(float centSPD1) {
   float Qy2Mean = hQy2mV0C->GetBinContent(iCentSPD + 1);
   if (Qy2Mean < -900 || Qx2Mean < -900) return std::numeric_limits<float>::quiet_NaN();;
 
-  // recenter the Q vector
-  Qx2 -= Qx2Mean;
-  Qy2 -= Qy2Mean;
+  // QA
+  float vzBin = (fVertex[2] < -2.) ? 0.5 : (fVertex[2] > 2.) ? 2.5 : 1.5;
+  fProfile2DQxCentVz[0]->Fill(fCent, vzBin, Qx2/Mult);
+  fProfile2DQyCentVz[0]->Fill(fCent, vzBin, Qy2/Mult);
 
-  fSumQ2x = Qx2;
-  fSumQ2y = Qy2;
+  // recenter the Q vector
+  fSumQ2x = Qx2 - Qx2Mean;
+  fSumQ2y = Qy2 - Qy2Mean;
   fWgtMult = Mult;
+
+  fProfile2DQxCentVz[1]->Fill(fCent, vzBin, fSumQ2x/fWgtMult);
+  fProfile2DQyCentVz[1]->Fill(fCent, vzBin, fSumQ2y/fWgtMult);
 
   psi2V0C = GetEventPlane(Qx2, Qy2, 2.);
 
