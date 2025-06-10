@@ -349,6 +349,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1V0K0sPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated K0s in event
+  TH2D* fh2V0K0sCentMCGen[fgkiNBinsCent];  //! centrality of all generated K0s in event
   TH2D* fh2V0K0sPtMassMCRec[fgkiNBinsCent]; //! pt-mass spectrum of successfully reconstructed K0s in event
   TH1D* fh1V0K0sPtMCRecFalse[fgkiNBinsCent]; //! pt spectrum of false reconstructed K0s in event
   // inclusive eta-pT efficiency
@@ -400,6 +401,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1V0LambdaPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2V0LambdaCentMCGen[fgkiNBinsCent];  //! 
   TH2D* fh2V0LambdaPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1V0LambdaPtMCRecFalse[fgkiNBinsCent]; //!
   // inclusive eta-pT efficiency
@@ -424,8 +426,8 @@ private:
   THnSparse* fhnV0LambdaInclMCFromXi0[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
-  TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
-  TH1D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
 
   // ALambda
   TH1D* fh1V0CounterCentALambda[fgkiNBinsCent]; //! number of ALambda candidates after various cuts
@@ -459,6 +461,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2V0ALambdaCentMCGen[fgkiNBinsCent];  //! 
   TH2D* fh2V0ALambdaPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1V0ALambdaPtMCRecFalse[fgkiNBinsCent]; //!
   // inclusive eta-pT efficiency
@@ -483,8 +486,8 @@ private:
   THnSparse* fhnV0ALambdaInclMCFromAXi0[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
-  TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
-  TH1D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
 
   TH2D* fh2QAV0PhiPtK0sPeak[fgkiNQAIndeces]; //! K0S candidate in peak: azimuth; pt
   TH2D* fh2QAV0PhiPtLambdaPeak[fgkiNQAIndeces]; //! Lambda candidate in peak: azimuth; pt
@@ -588,6 +591,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeXiMinusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiMinusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeXiMinusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeXiMinusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeXiMinusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -642,6 +646,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeXiPlusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiPlusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeXiPlusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeXiPlusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeXiPlusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -708,6 +713,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeOmegaMinusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeOmegaMinusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeOmegaMinusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeOmegaMinusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeOmegaMinusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -759,6 +765,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeOmegaPlusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeOmegaPlusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeOmegaPlusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeOmegaPlusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeOmegaPlusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -792,7 +799,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 30) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 31) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
