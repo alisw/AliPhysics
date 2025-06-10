@@ -18,7 +18,8 @@
 // Contributor: Chunzheng Wang, <chunzheng.wang@cern.ch>, Shanghai
 //--------------------------------------------------------------------------------
 
-#include <TGraphErrors.h>
+#include <TGraph.h>
+#include <TH2.h>
 #include <TProfile2D.h>
 #include <TProfile3D.h>
 #include <TString.h>
@@ -102,6 +103,20 @@ inline float EvalGraph(G* g, float pt) {
   return (g ? g->Eval(pt) : 1.f);
 }
 
+float GetNUACorThisPDG(TH2F* h2_pt_nua, float pt, float phi) {
+  // int bin = h2_pt_phi->FindBin(pt);
+  // TH1* hist = h2_pt_phi->ProjectionY("_py_temp", bin, bin);
+  // TGraph graph(hist);
+  // float nua = EvalGraph(&graph, phi);
+  // delete hist;
+  // hist = nullptr;
+  // return nua;
+
+  int bin = h2_pt_nua->FindBin(pt,phi);
+  float nua = h2_pt_nua->GetBinContent(bin);
+  return nua > 1e-6f ? nua : 0.f;
+}
+
 } // namespace
 
 //---------------------------------------------------
@@ -125,11 +140,17 @@ AliAnalysisTaskCVEPIDCMEDiff::~AliAnalysisTaskCVEPIDCMEDiff() {
   // Destructor
   // histograms are in the output list and deleted when the output
   if (runNumList) delete runNumList;
+  runNumList = nullptr;
   if (fQAList) delete fQAList;
+  fQAList = nullptr;
   if (fResultsList) delete fResultsList;
+  fResultsList = nullptr;
   if (fListNUENUA) delete fListNUENUA;
+  fListNUENUA = nullptr;
   if (fListPlaneNUA) delete fListPlaneNUA;
+  fListPlaneNUA = nullptr;
   if (fListVZERO) delete fListVZERO;
+  fListVZERO = nullptr;
 }
 
 //---------------------------------------------------
@@ -893,7 +914,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
       fHistProtonPtDcaZ->Fill(pt, fabs(dcaz));
 
       if (isDoNUA) {
-        float nua_pid_weight = GetPIDNUACor(code, pt);
+        float nua_pid_weight = GetPIDNUACor(code, pt, phi);
         fHistProtonPhi[1]->Fill(phi, nua_pid_weight);
         if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
       }
@@ -916,7 +937,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
       fHistAntiProtonPtDcaZ->Fill(pt, fabs(dcaz));
 
       if (isDoNUA) {
-        float nua_pid_weight = GetPIDNUACor(code, pt);
+        float nua_pid_weight = GetPIDNUACor(code, pt, phi);
         fHistAntiProtonPhi[1]->Fill(phi, nua_pid_weight);
         if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
       }
@@ -1036,7 +1057,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     // lambda NUA
     float weight = 1.;
     if (isDoLambdaNUA) {
-      float nua_weight = GetPIDNUACor(code, pt);
+      float nua_weight = GetPIDNUACor(code, pt, phi);
       // NUA QA
       code == 3122 ? fHistLambdaPhi[1]->Fill(phi, nua_weight) : fHistAntiLambdaPhi[1]->Fill(phi, nua_weight);
       if (nua_weight > 0.f) weight *= nua_weight;
@@ -1453,19 +1474,20 @@ float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdg, float pt)
 
 //---------------------------------------------------
 //
-float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUACor(int pdg, float pt)
+float AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUACor(int pdg, float pt, float phi)
 {
   if (!isDoNUA) return 1.f;
 
   switch (pdg) {
-    case  999:  return EvalGraph(gNUAPosHadron_thisCent , pt);
-    case -999:  return EvalGraph(gNUANegHadron_thisCent , pt);
-    case  2212: return EvalGraph(gNUAProton_thisCent    , pt);
-    case -2212: return EvalGraph(gNUAAntiProton_thisCent, pt);
-    case  3122: return EvalGraph(gNUALambda_thisCent    , pt);
-    case -3122: return EvalGraph(gNUAAntiLambda_thisCent, pt);
+    case  999:  return GetNUACorThisPDG(h2NUAPosHadron_thisCent , pt, phi);
+    case -999:  return GetNUACorThisPDG(h2NUANegHadron_thisCent , pt, phi);
+    case  2212: return GetNUACorThisPDG(h2NUAProton_thisCent    , pt, phi);
+    case -2212: return GetNUACorThisPDG(h2NUAAntiProton_thisCent, pt, phi);
+    case  3122: return GetNUACorThisPDG(h2NUALambda_thisCent    , pt, phi);
+    case -3122: return GetNUACorThisPDG(h2NUAAntiLambda_thisCent, pt, phi);
     default:    return 1.f;
   }
+
 }
 
 
@@ -1728,7 +1750,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUENUAGraphForThisCent() {
 
   // --- Load NUE graphs ---
   if (isDoNUE) {
-    std::vector<std::pair<TGraphErrors**, TString>> nueGraphs = {
+    std::vector<std::pair<TGraph**, TString>> nueGraphs = {
         {&gNUEPosHadron_thisCent, Form("nue_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
         {&gNUENegHadron_thisCent, Form("nue_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
         {&gNUEProton_thisCent,    Form("nue_pt_proton_%s_cent%d",    period.Data(), fCentBin)},
@@ -1736,7 +1758,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUENUAGraphForThisCent() {
     };
 
     for (auto& p : nueGraphs) {
-      *(p.first) = (TGraphErrors*)fListNUENUA->FindObject(p.second);
+      *(p.first) = (TGraph*)fListNUENUA->FindObject(p.second);
       if (!*(p.first)) {
         AliError(Form("Could not find NUE graph: %s", p.second.Data()));
         allFound = false;
@@ -1746,8 +1768,8 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUENUAGraphForThisCent() {
 
   if (isDoLambdaNUE) {
     // Separately load Lambda NUE graphs
-    gNUELambda_thisCent     = (TGraphErrors*)fListNUENUA->FindObject(Form("nue_pt_lambda_%s_cent%d",     period.Data(), fCentBin));
-    gNUEAntiLambda_thisCent = (TGraphErrors*)fListNUENUA->FindObject(Form("nue_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
+    gNUELambda_thisCent     = (TGraph*)fListNUENUA->FindObject(Form("nue_pt_lambda_%s_cent%d",     period.Data(), fCentBin));
+    gNUEAntiLambda_thisCent = (TGraph*)fListNUENUA->FindObject(Form("nue_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
 
     if (!gNUELambda_thisCent) {
       AliError("Could not find NUE graph: nue_pt_lambda");
@@ -1761,15 +1783,15 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUENUAGraphForThisCent() {
 
   // --- Load NUA graphs ---
   if (isDoNUA) {
-    std::vector<std::pair<TGraph**, TString>> nuaGraphs = {
-        {&gNUAPosHadron_thisCent, Form("nua_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
-        {&gNUANegHadron_thisCent, Form("nua_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
-        {&gNUAProton_thisCent,    Form("nua_pt_proton_%s_cent%d",    period.Data(), fCentBin)},
-        {&gNUAAntiProton_thisCent,Form("nua_pt_antiproton_%s_cent%d",period.Data(), fCentBin)}
+    std::vector<std::pair<TH2F**, TString>> nuaHist2 = {
+        {&h2NUAPosHadron_thisCent, Form("nua_pt_poshadron_%s_cent%d", period.Data(), fCentBin)},
+        {&h2NUANegHadron_thisCent, Form("nua_pt_neghadron_%s_cent%d", period.Data(), fCentBin)},
+        {&h2NUAProton_thisCent,    Form("nua_pt_proton_%s_cent%d",    period.Data(), fCentBin)},
+        {&h2NUAAntiProton_thisCent,Form("nua_pt_antiproton_%s_cent%d",period.Data(), fCentBin)}
     };
 
-    for (auto& p : nuaGraphs) {
-      *(p.first) = (TGraph*)fListNUENUA->FindObject(p.second);
+    for (auto& p : nuaHist2) {
+      *(p.first) = (TH2F*)fListNUENUA->FindObject(p.second);
       if (!*(p.first)) {
         AliError(Form("Could not find NUA graph: %s", p.second.Data()));
         allFound = false;
@@ -1779,14 +1801,14 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoadNUENUAGraphForThisCent() {
 
   if (isDoLambdaNUA) {
     // Separately load Lambda NUA graphs
-    gNUALambda_thisCent     = (TGraph*)fListNUENUA->FindObject(Form("nua_pt_lambda_%s_cent%d",     period.Data(), fCentBin));
-    gNUAAntiLambda_thisCent = (TGraph*)fListNUENUA->FindObject(Form("nua_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
+    h2NUALambda_thisCent     = (TH2F*)fListNUENUA->FindObject(Form("nua_pt_lambda_%s_cent%d",     period.Data(), fCentBin));
+    h2NUAAntiLambda_thisCent = (TH2F*)fListNUENUA->FindObject(Form("nua_pt_antilambda_%s_cent%d", period.Data(), fCentBin));
 
-    if (!gNUALambda_thisCent) {
+    if (!h2NUALambda_thisCent) {
       AliError("Could not find NUA graph: nua_pt_lambda");
       allFound = false;
     }
-    if (!gNUAAntiLambda_thisCent) {
+    if (!h2NUAAntiLambda_thisCent) {
       AliError("Could not find NUA graph: nua_pt_antilambda");
       allFound = false;
     }

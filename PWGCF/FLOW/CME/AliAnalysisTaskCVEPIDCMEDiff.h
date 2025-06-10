@@ -112,7 +112,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   float GetPlaneNUECor(int charge, float pt);
   float GetPlaneNUACor(int charge, float phi, float eta, float vz);
   float GetPIDNUECor(int pdgcode, float pt);
-  float GetPIDNUACor(int pdgcode, float pt);
+  float GetPIDNUACor(int pdgcode, float pt, float phi);
   // V0
   bool IsGoodV0(AliAODv0* aodV0);
   bool IsGoodDaughterTrack(const AliAODTrack* track);
@@ -232,24 +232,24 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   ////////////////////////
   TList* fListNUENUA{nullptr}; //!<! read list for NUE
   // Hadron
-  TGraphErrors* gNUEPosHadron_thisCent{nullptr}; //!<!
-  TGraphErrors* gNUENegHadron_thisCent{nullptr}; //!<!
+  TGraph* gNUEPosHadron_thisCent{nullptr}; //!<!
+  TGraph* gNUENegHadron_thisCent{nullptr}; //!<!
   // Proton
-  TGraphErrors* gNUEProton_thisCent{nullptr};     //!<!
-  TGraphErrors* gNUEAntiProton_thisCent{nullptr}; //!<!
+  TGraph* gNUEProton_thisCent{nullptr};     //!<!
+  TGraph* gNUEAntiProton_thisCent{nullptr}; //!<!
   // Lambda
-  TGraphErrors* gNUELambda_thisCent{nullptr};     //!<!
-  TGraphErrors* gNUEAntiLambda_thisCent{nullptr}; //!<!
+  TGraph* gNUELambda_thisCent{nullptr};     //!<!
+  TGraph* gNUEAntiLambda_thisCent{nullptr}; //!<!
 
   // Hadron
-  TGraph* gNUAPosHadron_thisCent{nullptr}; //!<!
-  TGraph* gNUANegHadron_thisCent{nullptr}; //!<!
+  TH2F* h2NUAPosHadron_thisCent{nullptr}; //!<!
+  TH2F* h2NUANegHadron_thisCent{nullptr}; //!<!
   // Proton
-  TGraph* gNUAProton_thisCent{nullptr};     //!<!
-  TGraph* gNUAAntiProton_thisCent{nullptr}; //!<!
+  TH2F* h2NUAProton_thisCent{nullptr};     //!<!
+  TH2F* h2NUAAntiProton_thisCent{nullptr}; //!<!
   // Lambda
-  TGraph* gNUALambda_thisCent{nullptr};     //!<!
-  TGraph* gNUAAntiLambda_thisCent{nullptr}; //!<!
+  TH2F* h2NUALambda_thisCent{nullptr};     //!<!
+  TH2F* h2NUAAntiLambda_thisCent{nullptr}; //!<!
 
   ////////////////////////
   // Plane NUA
