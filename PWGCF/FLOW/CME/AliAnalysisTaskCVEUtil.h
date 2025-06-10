@@ -100,13 +100,14 @@ struct MCParticleHists {
 
 struct DataParticleHists {
   // ---- pt dca ----
-  TH2F *h2_pt                    {nullptr}; //!<!
-  TH3F *h3_pt_dcaXY              {nullptr}; //!<!
-  TH3F *h3_pt_dcaZ               {nullptr}; //!<!
+  TH2F *h2_pt                        {nullptr}; //!<!
+  TH3F *h3_pt_dcaXY                  {nullptr}; //!<!
+  TH3F *h3_pt_dcaZ                   {nullptr}; //!<!
+  TH3F *h3_pt_phi                    {nullptr}; //!<!
 
   void AddToList(TList* list) const {
     if (h2_pt) list->Add(h2_pt);
-    for (auto h3 : { h3_pt_dcaXY, h3_pt_dcaZ}) {
+    for (auto h3 : { h3_pt_dcaXY, h3_pt_dcaZ, h3_pt_phi}) {
         if (h3) list->Add(h3);
     }
   }
@@ -276,7 +277,7 @@ private:
   AliAnalysisTaskCVEUtil(const AliAnalysisTaskCVEUtil &);
   AliAnalysisTaskCVEUtil &operator=(const AliAnalysisTaskCVEUtil &);
 
-  ClassDef(AliAnalysisTaskCVEUtil, 3)
+  ClassDef(AliAnalysisTaskCVEUtil, 4)
 };
 
 #endif // AliAnalysisTaskCVEUtil_h

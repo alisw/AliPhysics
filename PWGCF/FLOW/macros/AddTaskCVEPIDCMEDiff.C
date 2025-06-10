@@ -48,21 +48,21 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
 
     if (!gGrid) TGrid::Connect("alien://");
 
-    // NUE
-    TList* fListNUE = nullptr;
+    // NUE NUA
+    TList* fListNUENUA = nullptr;
     {
         TString nueFileName = "eff_pt_calib_cent.root";
         TFile* fNUEFile = TFile::Open(GetCalibFilePath(nueFileName), "READ");
         if (fNUEFile) {
-            fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
-            if (!fListNUE) Fatal("AddTaskCVEPIDCMEDiff.C", "NUE List not found!");
+            fListNUENUA = dynamic_cast<TList*>(fNUEFile->Get("fListNUENUA"));
+            if (!fListNUENUA) Fatal("AddTaskCVEPIDCMEDiff.C", "NUENUA List not found!");
         } else {
-            Fatal("AddTaskCVEPIDCMEDiff.C", "NUE File not found!");
+            Fatal("AddTaskCVEPIDCMEDiff.C", "NUENUA File not found!");
         }
     }
 
-    // NUA
-    TList* fListNUA = nullptr;
+    // Plane NUA
+    TList* fListPlaneNUA = nullptr;
     if (plane.EqualTo("TPC")) {
         TString fileNameNUA{""};
         if (period.EqualTo("LHC18q")) {
@@ -80,14 +80,14 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
         }
         TFile* fNUAFile = TFile::Open(GetCalibFilePath(fileNameNUA), "READ");
         if (fNUAFile) {
-            fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
-            if (!fListNUA) Fatal("AddTaskCVEPIDCMEDiff.C", "NUA List not found!");
+            fListPlaneNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
+            if (!fListPlaneNUA) Fatal("AddTaskCVEPIDCMEDiff.C", "Plane NUA List not found!");
         } else {
-            Fatal("AddTaskCVEPIDCMEDiff.C", "NUA File not found!");
+            Fatal("AddTaskCVEPIDCMEDiff.C", "Plane NUA File not found!");
         }
     } else {
-        fListNUA = new TList();
-        fListNUA->SetName("dummyNUAList");
+        fListPlaneNUA = new TList();
+        fListPlaneNUA->SetName("dummyPlaneNUAList");
     }
 
     // TPC
@@ -143,18 +143,17 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
     AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
     mgr->ConnectInput(task, 0, cinput);
 
-    if (fListNUE) {
+    if (fListNUENUA) {
         AliAnalysisDataContainer* cinputNUE = mgr->CreateContainer(Form("NUEInput_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
-        cinputNUE->SetData(fListNUE);
+        cinputNUE->SetData(fListNUENUA);
         mgr->ConnectInput(task, 1, cinputNUE);
     } else {
         Fatal("AddTaskCVEPIDCMEDiff.C", "NUE List not found!");
     }
 
-
-    if (fListNUA) {
+    if (fListPlaneNUA) {
         AliAnalysisDataContainer* cinputNUA = mgr->CreateContainer(Form("NUAInput_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);
-        cinputNUA->SetData(fListNUA);
+        cinputNUA->SetData(fListPlaneNUA);
         mgr->ConnectInput(task, 2, cinputNUA);
     } else {
         Fatal("AddTaskCVEPIDCMEDiff.C", "NUA List not found!");

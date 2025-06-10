@@ -2,6 +2,7 @@
 #define AliAnalysisTaskCVEPIDCMEDiff_cxx
 #include <TGraphErrors.h>
 #include <TH3.h>
+#include <TProfile2D.h>
 
 #include <map>
 #include <memory>
@@ -47,8 +48,8 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   void IfTightPileUp(bool bTightPileUp) { this->isTightPileUp = bTightPileUp; }
 
   // read in
-  void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
-  void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
+  void SetListForNUENUA(TList* flist) { this->fListNUENUA = (TList*)flist->Clone(); }
+  void SetListForPlaneNUA(TList* flist) { this->fListPlaneNUA = (TList*)flist->Clone(); }
   void SetListForVZEROCalib(TList* flist) { this->fListVZERO = (TList*)flist->Clone(); }
 
   // Global
@@ -102,15 +103,16 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   ////////////////////////
   // Read in
   bool LoadCalibHistForThisRun(); // deal with all the readin
-  bool LoadNUEGraphForThisCent(); // deal with all the readin
+  bool LoadNUENUAGraphForThisCent(); // deal with all the readin
   // Pile-up
   bool RejectEvtTFFit(float centSPD0);
   // Track
   bool AcceptAODTrack(AliAODTrack* track);
   bool CheckPIDofParticle(AliAODTrack* ftrack, int pidToCheck);
-  float GetNUECor(int charge, float pt);
+  float GetPlaneNUECor(int charge, float pt);
+  float GetPlaneNUACor(int charge, float phi, float eta, float vz);
   float GetPIDNUECor(int pdgcode, float pt);
-  float GetNUACor(int charge, float phi, float eta, float vz);
+  float GetPIDNUACor(int pdgcode, float pt);
   // V0
   bool IsGoodV0(AliAODv0* aodV0);
   bool IsGoodDaughterTrack(const AliAODTrack* track);
@@ -136,6 +138,8 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
 
   bool isDoNUE{true};
   bool isDoLambdaNUE{true};
+  bool isDoNUA{true};
+  bool isDoLambdaNUA{true};
   bool isRecentreTPC{true};
   bool isNarrowDcaCuts768{true};
   bool isProtonCustomizedDCACut{true};
@@ -206,11 +210,11 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   float fPsi2{-1};
 
   // Plane tracks Map key:id value:(phi,weight)
-  std::unordered_map<int, std::vector<float>> mapTPCTrksIDPhiWgt{};
+  std::unordered_map<int, std::pair<float,float>> mapTPCTrksIDPhiWgt{};
 
-  // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight,pidweight,dcaxy]
-  std::vector<std::array<float, 8>> vecParticle{};
-  // Vector for V0s [pt,eta,phi,id,pdgcode,weight,mass,id1,id2]
+  // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,pidweight]
+  std::vector<std::array<float, 6>> vecParticle{};
+  // Vector for V0s [pt,eta,phi,id,pdgcode,pidweight,mass,id1,id2]
   std::vector<std::array<float, 9>> vecParticleV0{};
 
   ///////////////////The following files are read from external sources////////////////////
@@ -224,14 +228,9 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   std::unique_ptr<TF1> fMultCutPU{nullptr};    //!<!
 
   ////////////////////////
-  // NUE
+  // NUE NUA
   ////////////////////////
-  TList* fListNUE{nullptr}; //!<! read list for NUE
-  // Pion
-  TGraphErrors* gNUEPosPion_TPC_thisCent{nullptr}; //!<!
-  TGraphErrors* gNUEPosPion_TOF_thisCent{nullptr}; //!<!
-  TGraphErrors* gNUENegPion_TPC_thisCent{nullptr}; //!<!
-  TGraphErrors* gNUENegPion_TOF_thisCent{nullptr}; //!<!
+  TList* fListNUENUA{nullptr}; //!<! read list for NUE
   // Hadron
   TGraphErrors* gNUEPosHadron_thisCent{nullptr}; //!<!
   TGraphErrors* gNUENegHadron_thisCent{nullptr}; //!<!
@@ -242,10 +241,20 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TGraphErrors* gNUELambda_thisCent{nullptr};     //!<!
   TGraphErrors* gNUEAntiLambda_thisCent{nullptr}; //!<!
 
+  // Hadron
+  TGraph* gNUAPosHadron_thisCent{nullptr}; //!<!
+  TGraph* gNUANegHadron_thisCent{nullptr}; //!<!
+  // Proton
+  TGraph* gNUAProton_thisCent{nullptr};     //!<!
+  TGraph* gNUAAntiProton_thisCent{nullptr}; //!<!
+  // Lambda
+  TGraph* gNUALambda_thisCent{nullptr};     //!<!
+  TGraph* gNUAAntiLambda_thisCent{nullptr}; //!<!
+
   ////////////////////////
-  // NUA
+  // Plane NUA
   ////////////////////////
-  TList* fListNUA{nullptr};      //!<! read lists for NUA
+  TList* fListPlaneNUA{nullptr}; //!<! read lists for Plane NUA
   TH3F* hCorrectNUAPos{nullptr}; //!<!
   TH3F* hCorrectNUANeg{nullptr}; //!<!
 
@@ -255,8 +264,8 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TList* fListTPC{nullptr}; //!<!
   TProfile3D* fQxTPCRunCentVz{nullptr}; //!<!
   TProfile3D* fQyTPCRunCentVz{nullptr}; //!<!
-  float fQxMeanTPC{0.0};
-  float fQyMeanTPC{0.0};
+  float fQxMeanTPC{0.f};
+  float fQyMeanTPC{0.f};
 
   ////////////////////////
   // VZERO
@@ -296,12 +305,12 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   // Proton QA
   TH1D* fHistProtonPt{nullptr};          //!<!
   TH1D* fHistProtonEta{nullptr};         //!<!
-  TH1D* fHistProtonPhi{nullptr};         //!<!
+  std::array<TH1D*, 2> fHistProtonPhi{nullptr};         //!<!
   TH2D* fHistProtonPtDcaXY{nullptr};     //!<!
   TH2D* fHistProtonPtDcaZ{nullptr};      //!<!
   TH1D* fHistAntiProtonPt{nullptr};      //!<!
   TH1D* fHistAntiProtonEta{nullptr};     //!<!
-  TH1D* fHistAntiProtonPhi{nullptr};     //!<!
+  std::array<TH1D*, 2> fHistAntiProtonPhi{nullptr};     //!<!
   TH2D* fHistAntiProtonPtDcaXY{nullptr}; //!<!
   TH2D* fHistAntiProtonPtDcaZ{nullptr};  //!<!
 
@@ -315,29 +324,29 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TH1D* fHistV0PosDaughterDca{nullptr};  //!<! Raw V0s' PosDaughterDca
   // Lambda QA
   //[0]:Before the Mass Cut [1]:After the Mass Cut
-  std::array<TH1D*, 2> fHistLambdaPt{nullptr};                  //!<!
-  std::array<TH1D*, 2> fHistLambdaEta{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistLambdaPhi{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistLambdaDcaToPrimVertex{nullptr};     //!<!
-  std::array<TH1D*, 2> fHistLambdaNegDaughterDca{nullptr};      //!<!
-  std::array<TH1D*, 2> fHistLambdaPosDaughterDca{nullptr};      //!<!
-  std::array<TH1D*, 2> fHistLambdaCPA{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistLambdaDecayLength{nullptr};         //!<!
-  std::array<TH3D*, 2> fHist3LambdaCentPtMass{nullptr};         //!<!
-  std::array<TH2D*, 2> fHist2LambdaMassPtY{nullptr};            //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPt{nullptr};              //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaEta{nullptr};             //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPhi{nullptr};             //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaDcaToPrimVertex{nullptr}; //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaNegDaughterDca{nullptr};  //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPosDaughterDca{nullptr};  //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaCPA{nullptr};             //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaDecayLength{nullptr};     //!<!
-  std::array<TH3D*, 2> fHist3AntiLambdaCentPtMass{nullptr};     //!<!
-  std::array<TH2D*, 2> fHist2AntiLambdaMassPtY{nullptr};        //!<!
+  TH1D* fHistLambdaPt{nullptr};                      //!<!
+  TH1D* fHistLambdaEta{nullptr};                     //!<!
+  std::array<TH1D*, 2> fHistLambdaPhi{nullptr};      //!<!
+  TH1D* fHistLambdaDcaToPrimVertex{nullptr};         //!<!
+  TH1D* fHistLambdaNegDaughterDca{nullptr};          //!<!
+  TH1D* fHistLambdaPosDaughterDca{nullptr};          //!<!
+  TH1D* fHistLambdaCPA{nullptr};                     //!<!
+  TH1D* fHistLambdaDecayLength{nullptr};             //!<!
+  TH3D* fHist3LambdaCentPtMass{nullptr};             //!<!
+  TH2D* fHist2LambdaMassPtY{nullptr};                //!<!
+  TH1D* fHistAntiLambdaPt{nullptr};                  //!<!
+  TH1D* fHistAntiLambdaEta{nullptr};                 //!<!
+  std::array<TH1D*, 2> fHistAntiLambdaPhi{nullptr};  //!<!
+  TH1D* fHistAntiLambdaDcaToPrimVertex{nullptr};     //!<!
+  TH1D* fHistAntiLambdaNegDaughterDca{nullptr};      //!<!
+  TH1D* fHistAntiLambdaPosDaughterDca{nullptr};      //!<!
+  TH1D* fHistAntiLambdaCPA{nullptr};                 //!<!
+  TH1D* fHistAntiLambdaDecayLength{nullptr};         //!<!
+  TH3D* fHist3AntiLambdaCentPtMass{nullptr};         //!<!
+  TH2D* fHist2AntiLambdaMassPtY{nullptr};            //!<!
 
-  TProfile2D* fProfile2DQxCentVz{nullptr}; //!<!
-  TProfile2D* fProfile2DQyCentVz{nullptr}; //!<!
+  std::array<TProfile2D*, 2> fProfile2DQxCentVz{nullptr}; //!<!
+  std::array<TProfile2D*, 2> fProfile2DQyCentVz{nullptr}; //!<!
 
   /////////////
   // Results //
@@ -386,7 +395,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   AliAnalysisTaskCVEPIDCMEDiff(const AliAnalysisTaskCVEPIDCMEDiff&);
   AliAnalysisTaskCVEPIDCMEDiff& operator=(const AliAnalysisTaskCVEPIDCMEDiff&);
 
-  ClassDef(AliAnalysisTaskCVEPIDCMEDiff, 5);
+  ClassDef(AliAnalysisTaskCVEPIDCMEDiff, 6);
 };
 
 #endif
