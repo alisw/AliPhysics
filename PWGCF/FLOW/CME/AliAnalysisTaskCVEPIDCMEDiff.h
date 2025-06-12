@@ -300,17 +300,17 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TH2D* fHist2PDedx{nullptr};             //!<!
   TH1D* fHistDcaXY{nullptr};              //!<!
   TH1D* fHistDcaZ{nullptr};               //!<!
-  std::array<TH1D*, 2> fHistPhi{nullptr}; //!<!
+  std::array<TH2D*, 2> fHistPhi{nullptr}; //!<!
 
   // Proton QA
   TH1D* fHistProtonPt{nullptr};          //!<!
   TH1D* fHistProtonEta{nullptr};         //!<!
-  std::array<TH1D*, 2> fHistProtonPhi{nullptr};         //!<!
+  std::array<TH2D*, 2> fHistProtonPhi{nullptr};         //!<!
   TH2D* fHistProtonPtDcaXY{nullptr};     //!<!
   TH2D* fHistProtonPtDcaZ{nullptr};      //!<!
   TH1D* fHistAntiProtonPt{nullptr};      //!<!
   TH1D* fHistAntiProtonEta{nullptr};     //!<!
-  std::array<TH1D*, 2> fHistAntiProtonPhi{nullptr};     //!<!
+  std::array<TH2D*, 2> fHistAntiProtonPhi{nullptr};     //!<!
   TH2D* fHistAntiProtonPtDcaXY{nullptr}; //!<!
   TH2D* fHistAntiProtonPtDcaZ{nullptr};  //!<!
 
@@ -326,7 +326,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   //[0]:Before the Mass Cut [1]:After the Mass Cut
   TH1D* fHistLambdaPt{nullptr};                      //!<!
   TH1D* fHistLambdaEta{nullptr};                     //!<!
-  std::array<TH1D*, 2> fHistLambdaPhi{nullptr};      //!<!
+  std::array<TH2D*, 2> fHistLambdaPhi{nullptr};      //!<!
   TH1D* fHistLambdaDcaToPrimVertex{nullptr};         //!<!
   TH1D* fHistLambdaNegDaughterDca{nullptr};          //!<!
   TH1D* fHistLambdaPosDaughterDca{nullptr};          //!<!
@@ -336,7 +336,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TH2D* fHist2LambdaMassPtY{nullptr};                //!<!
   TH1D* fHistAntiLambdaPt{nullptr};                  //!<!
   TH1D* fHistAntiLambdaEta{nullptr};                 //!<!
-  std::array<TH1D*, 2> fHistAntiLambdaPhi{nullptr};  //!<!
+  std::array<TH2D*, 2> fHistAntiLambdaPhi{nullptr};  //!<!
   TH1D* fHistAntiLambdaDcaToPrimVertex{nullptr};     //!<!
   TH1D* fHistAntiLambdaNegDaughterDca{nullptr};      //!<!
   TH1D* fHistAntiLambdaPosDaughterDca{nullptr};      //!<!

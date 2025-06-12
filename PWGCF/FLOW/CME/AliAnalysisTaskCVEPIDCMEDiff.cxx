@@ -103,15 +103,13 @@ inline float EvalGraph(G* g, float pt) {
   return (g ? g->Eval(pt) : 1.f);
 }
 
-float GetNUACorThisPDG(TH2F* h2_pt_nua, float pt, float phi) {
-  // int bin = h2_pt_phi->FindBin(pt);
-  // TH1* hist = h2_pt_phi->ProjectionY("_py_temp", bin, bin);
-  // TGraph graph(hist);
-  // float nua = EvalGraph(&graph, phi);
-  // delete hist;
-  // hist = nullptr;
-  // return nua;
+static std::unordered_map<std::string, std::vector<double>> pt_ranges = {
+    {"hadron", {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.3,2.5,2.7,2.9,3.1,3.5,4.0,5.0}},
+    {"proton", {0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6,1.9,2.2,2.6,3.1,3.5,4.0,5.0}},
+    {"lambda", {1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.7,2.9,3.1,3.5,4.0,5.0,10.0}}
+};
 
+float GetNUACorThisPDG(TH2F* h2_pt_nua, float pt, float phi) {
   int bin = h2_pt_nua->FindBin(pt,phi);
   float nua = h2_pt_nua->GetBinContent(bin);
   return nua > 1e-6f ? nua : 0.f;
@@ -323,8 +321,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fHist2PDedx = new TH2D("fHist2PDedx", ";pdedx", 400, -10., 10., 400, 0, 1000);
   fHistDcaXY  = new TH1D("fHistDcaXY", ";DcaXY", 500, 0., 1);
   fHistDcaZ   = new TH1D("fHistDcaZ", ";DcaZ", 500, 0., 1);
-  fHistPhi[0] = new TH1D("fHistPhi", ";#phi", 100, 0, TMath::TwoPi());
-  fHistPhi[1] = new TH1D("fHistPhi_afterNUA", ";#phi", 100, 0, TMath::TwoPi());
+  fHistPhi[0] = new TH2D("fHistPhi_bfNUA", "hadron phi before NUA;p_{T};#phi", pt_ranges["hadron"].size() - 1, pt_ranges["hadron"].data(), 100, 0, TMath::TwoPi());
+  fHistPhi[1] = new TH2D("fHistPhi_afNUA", "hadron phi after NUA;p_{T};#phi", pt_ranges["hadron"].size() - 1, pt_ranges["hadron"].data(), 100, 0, TMath::TwoPi());
   fQAList->Add(fHistPt);
   fQAList->Add(fHistEta);
   fQAList->Add(fHistNhits);
@@ -334,10 +332,10 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   for (auto& h : fHistPhi) fQAList->Add(h);
 
   // Proton QA
-  fHistProtonPt      = new TH1D("fHistProtonPt", "fHistProtonPt;p_{T}", 200, 0., 20.);
+  fHistProtonPt      = new TH1D("fHistProtonPt", "fHistProtonPt;p_{T}", 200, 0., 5.);
   fHistProtonEta     = new TH1D("fHistProtonEta", "fHistProtonEta;#eta", 100, -2., 2.);
-  fHistProtonPhi[0]    = new TH1D("fHistProtonPhi_bfNUA", "fHistProtonPhi;#phi", 360, 0., TMath::TwoPi());
-  fHistProtonPhi[1]    = new TH1D("fHistProtonPhi_afterNUA", "fHistProtonPhi;#phi", 360, 0., TMath::TwoPi());
+  fHistProtonPhi[0]    = new TH2D("fHistProtonPhi_bfNUA", "Proton phi before NUA;p_{T};#phi", pt_ranges["proton"].size() - 1, pt_ranges["proton"].data(), 180, 0, TMath::TwoPi());
+  fHistProtonPhi[1]    = new TH2D("fHistProtonPhi_afNUA", "Proton phi after NUA;p_{T};#phi", pt_ranges["proton"].size() - 1, pt_ranges["proton"].data(), 180, 0, TMath::TwoPi());
   fHistProtonPtDcaXY = new TH2D("fHistProtonPtDcaXY", "fHistProtonPtDcaXY;Pt;DcaXY", 23, 0.4, 5.0, 300, 0., 2);
   fHistProtonPtDcaZ  = new TH2D("fHistProtonPtDcaZ", "fHistProtonPtDcaZ;Pt;DcaZ", 23, 0.4, 5.0, 300, 0., 2);
   fQAList->Add(fHistProtonPt);
@@ -347,10 +345,10 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fQAList->Add(fHistProtonPtDcaXY);
   fQAList->Add(fHistProtonPtDcaZ);
 
-  fHistAntiProtonPt      = new TH1D("fHistAntiProtonPt", "fHistAntiProtonPt;p_{T}", 200, 0., 20.);
+  fHistAntiProtonPt      = new TH1D("fHistAntiProtonPt", "fHistAntiProtonPt;p_{T}", 200, 0., 5.);
   fHistAntiProtonEta     = new TH1D("fHistAntiProtonEta", "fHistAntiProtonEta;#eta", 100, -2., 2.);
-  fHistAntiProtonPhi[0]  = new TH1D("fHistAntiProtonPhi_bfNUA", "fHistAntiProtonPhi;#phi", 360, 0., TMath::TwoPi());
-  fHistAntiProtonPhi[1]  = new TH1D("fHistAntiProtonPhi_afterNUA", "fHistAntiProtonPhi;#phi", 360, 0., TMath::TwoPi());
+  fHistAntiProtonPhi[0]  = new TH2D("fHistAntiProtonPhi_bfNUA", "AntiProton phi before NUA; p_{T}; #phi", pt_ranges["proton"].size() - 1, pt_ranges["proton"].data(), 180, 0, TMath::TwoPi());
+  fHistAntiProtonPhi[1]  = new TH2D("fHistAntiProtonPhi_afNUA", "AntiProton phi after NUA; p_{T}; #phi", pt_ranges["proton"].size() - 1, pt_ranges["proton"].data(), 180, 0, TMath::TwoPi());
   fHistAntiProtonPtDcaXY = new TH2D("fHistAntiProtonPtDcaXY", "fHistAntiProtonPtDcaXY;Pt;DcaXY", 23, 0.4, 5.0, 300, 0., 2);
   fHistAntiProtonPtDcaZ  = new TH2D("fHistAntiProtonPtDcaZ", "fHistAntiProtonPtDcaZ;Pt;DcaZ", 23, 0.4, 5.0, 300, 0., 2);
   fQAList->Add(fHistAntiProtonPt);
@@ -378,10 +376,10 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
 
   // Lambda QA
   /// Lambda:
-  fHistLambdaPt              = new TH1D("hLambdaPt", ";pT", 200, 0., 20.);
+  fHistLambdaPt              = new TH1D("hLambdaPt", ";pT", 200, 0., 10.);
   fHistLambdaEta             = new TH1D("hLambdaEta", ";#eta", 200, -3., 3.);
-  fHistLambdaPhi[0]             = new TH1D("hLambdaPhi_bfNUA", ";phi", 360, 0., TMath::TwoPi());
-  fHistLambdaPhi[1]             = new TH1D("hLambdaPhi_afNUA", ";phi", 360, 0., TMath::TwoPi());
+  fHistLambdaPhi[0]           = new TH2D("fHistLambdaPhi_bfNUA","Lambda phi before NUA;p_{T};phi", pt_ranges["lambda"].size()-1, pt_ranges["lambda"].data(), 180, 0, TMath::TwoPi());
+  fHistLambdaPhi[1]           = new TH2D("fHistLambdaPhi_afNUA","Lambda phi after NUA;p_{T};phi" , pt_ranges["lambda"].size()-1, pt_ranges["lambda"].data(), 180, 0, TMath::TwoPi());
   fHistLambdaDcaToPrimVertex = new TH1D("hLambdaDcaToPrimVertex", "DcatoPV", 200, 0., 20.);
   fHistLambdaNegDaughterDca  = new TH1D("hLambdaNegDaughterDca", "NegDaughterDcatoPV", 200, 0., 20.);
   fHistLambdaPosDaughterDca  = new TH1D("hLambdaPosDaughterDca", "PosDaughterDcatoPV", 200, 0., 20.);
@@ -400,10 +398,10 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
   fQAList->Add(fHist2LambdaMassPtY);
 
   //AntiLambda
-  fHistAntiLambdaPt              = new TH1D("hAntiLambdaPt", ";pT", 200, 0., 20.);
+  fHistAntiLambdaPt              = new TH1D("hAntiLambdaPt", ";pT", 200, 0., 10.);
   fHistAntiLambdaEta             = new TH1D("hAntiLambdaEta", ";#eta", 200, -3., 3.);
-  fHistAntiLambdaPhi[0]             = new TH1D("hAntiLambdaPhi_bfNUA", ";phi", 360, 0., TMath::TwoPi());
-  fHistAntiLambdaPhi[1]             = new TH1D("hAntiLambdaPhi_afNUA", ";phi", 360, 0., TMath::TwoPi());
+  fHistAntiLambdaPhi[0]          = new TH2D("fHistAntiLambdaPhi_bfNUA","AntiLambda phi before NUA;p_{T};phi", pt_ranges["lambda"].size()-1, pt_ranges["lambda"].data(), 180, 0, TMath::TwoPi());
+  fHistAntiLambdaPhi[1]          = new TH2D("fHistAntiLambdaPhi_afNUA","AntiLambda phi after NUA;p_{T};phi", pt_ranges["lambda"].size()-1, pt_ranges["lambda"].data(), 180, 0, TMath::TwoPi());
   fHistAntiLambdaDcaToPrimVertex = new TH1D("hAntiLambdaDcaToPrimVertex", "DcatoPV", 200, 0., 20.);
   fHistAntiLambdaNegDaughterDca  = new TH1D("hAntiLambdaNegDaughterDca", "NegDaughterDcatoPV", 200, 0., 20.);
   fHistAntiLambdaPosDaughterDca  = new TH1D("hAntiLambdaPosDaughterDca", "PosDaughterDcatoPV", 200, 0., 20.);
@@ -834,7 +832,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
     fHistEta->Fill(eta);
     fHistNhits->Fill(nhits);
     fHist2PDedx->Fill(track->P() * charge, dedx);
-    fHistPhi[0]->Fill(phi);
+    fHistPhi[0]->Fill(pt, phi);
 
     if (fPlaneEstimator.EqualTo("TPC")) {
       if (pt > 0.2 && pt < 2.0) {
@@ -848,7 +846,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         if (wAcc < 0) continue;
         else weight *= wAcc;
 
-        fHistPhi[1]->Fill(phi, wAcc);
+        fHistPhi[1]->Fill(pt, phi, wAcc);
         // Do we need to set pT as weight for Better resolution?
         fSumQ2x += weight * TMath::Cos(2 * phi);
         fSumQ2y += weight * TMath::Sin(2 * phi);
@@ -909,13 +907,13 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         code = 999;
       fHistProtonPt->Fill(pt);
       fHistProtonEta->Fill(eta);
-      fHistProtonPhi[0]->Fill(phi);
+      fHistProtonPhi[0]->Fill(pt, phi);
       fHistProtonPtDcaXY->Fill(pt, fabs(dcaxy));
       fHistProtonPtDcaZ->Fill(pt, fabs(dcaz));
 
       if (isDoNUA) {
         float nua_pid_weight = GetPIDNUACor(code, pt, phi);
-        fHistProtonPhi[1]->Fill(phi, nua_pid_weight);
+        fHistProtonPhi[1]->Fill(pt, phi, nua_pid_weight);
         if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
       }
       if (isDoNUE) {
@@ -932,13 +930,13 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks() {
         code = -999;
       fHistAntiProtonPt->Fill(pt);
       fHistAntiProtonEta->Fill(eta);
-      fHistAntiProtonPhi[0]->Fill(phi);
+      fHistAntiProtonPhi[0]->Fill(pt, phi);
       fHistAntiProtonPtDcaXY->Fill(pt, fabs(dcaxy));
       fHistAntiProtonPtDcaZ->Fill(pt, fabs(dcaz));
 
       if (isDoNUA) {
         float nua_pid_weight = GetPIDNUACor(code, pt, phi);
-        fHistAntiProtonPhi[1]->Fill(phi, nua_pid_weight);
+        fHistAntiProtonPhi[1]->Fill(pt, phi, nua_pid_weight);
         if (nua_pid_weight > 0) pid_weight *= nua_pid_weight;
       }
       if (isDoNUE) {
@@ -1033,7 +1031,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     if (code == 3122) {
       fHistLambdaPt->Fill(pt);
       fHistLambdaEta->Fill(eta);
-      fHistLambdaPhi[0]->Fill(phi);
+      fHistLambdaPhi[0]->Fill(pt, phi);
       fHistLambdaDcaToPrimVertex->Fill(dcaToPV);
       fHistLambdaNegDaughterDca->Fill(nDcaPV);
       fHistLambdaPosDaughterDca->Fill(pDcaPV);
@@ -1044,7 +1042,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     } else {
       fHistAntiLambdaPt->Fill(pt);
       fHistAntiLambdaEta->Fill(eta);
-      fHistAntiLambdaPhi[0]->Fill(phi);
+      fHistAntiLambdaPhi[0]->Fill(pt, phi);
       fHistAntiLambdaDcaToPrimVertex->Fill(dcaToPV);
       fHistAntiLambdaNegDaughterDca->Fill(nDcaPV);
       fHistAntiLambdaPosDaughterDca->Fill(pDcaPV);
@@ -1059,7 +1057,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
     if (isDoLambdaNUA) {
       float nua_weight = GetPIDNUACor(code, pt, phi);
       // NUA QA
-      code == 3122 ? fHistLambdaPhi[1]->Fill(phi, nua_weight) : fHistAntiLambdaPhi[1]->Fill(phi, nua_weight);
+      code == 3122 ? fHistLambdaPhi[1]->Fill(pt, phi, nua_weight) : fHistAntiLambdaPhi[1]->Fill(pt, phi, nua_weight);
       if (nua_weight > 0.f) weight *= nua_weight;
     }
 
