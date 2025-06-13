@@ -283,6 +283,10 @@ protected:
     TH2F                                *fnM20;
     TH2F                                *fnM02;
     TH2F                                *fnClsTime;
+    TH2F                                *fnM20TrueElec;
+    TH2F                                *fnM02TrueElec;
+    TH2F                                *fnM20TrueBkg;
+    TH2F                                *fnM02TrueBkg;
     TH2F                                *fAngULS;
     TH2F                                *fAngLS;
     TH2F                                *fAngChargPart;

@@ -184,6 +184,10 @@ fnClsE(0x0),
 fnM20(0x0),
 fnM02(0x0),
 fnClsTime(0x0),
+fnM20TrueElec(0x0),
+fnM02TrueElec(0x0),
+fnM20TrueBkg(0x0),
+fnM02TrueBkg(0x0),
 fAngULS(0x0),
 fAngLS(0x0),
 fAngChargPart(0x0),
@@ -404,6 +408,10 @@ fnClsE(0x0),
 fnM20(0x0),
 fnM02(0x0),
 fnClsTime(0x0),
+fnM20TrueElec(0x0),
+fnM02TrueElec(0x0),
+fnM20TrueBkg(0x0),
+fnM02TrueBkg(0x0),
 fAngULS(0x0),
 fAngLS(0x0),
 fAngChargPart(0x0),
@@ -840,6 +848,18 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fnClsTime = new TH2F("fnClsTime", "fnClsTime", 100, 0, 100, 100, -200,200);
     fOutput->Add(fnClsTime);
+    
+	fnM20TrueElec = new TH2F("fnM20TrueElec", "fnM20TrueElec", 100, 0, 50, 100, 0, 2);
+    fOutput->Add(fnM20TrueElec);
+	
+	fnM02TrueElec = new TH2F("fnM02TrueElec", "fnM02TrueElec", 100, 0, 50, 100, 0, 2);
+    fOutput->Add(fnM02TrueElec);
+	
+	fnM20TrueBkg = new TH2F("fnM20TrueBkg", "fnM20TrueBkg", 100, 0, 50, 100, 0, 2);
+    fOutput->Add(fnM20TrueBkg);
+	
+	fnM02TrueBkg = new TH2F("fnM02TrueBkg", "fnM02TrueBkg", 100, 0, 50, 100, 0, 2);
+    fOutput->Add(fnM02TrueBkg);
     
     fAngULS = new TH2F("fAngULS", "fAngULS", 5, bin_JetPt, 8, bin_g);
     fOutput->Add(fAngULS);
@@ -1777,7 +1797,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             
             // Electron ID with EMCal
             
-            Double_t EovP = -9., clsE = -9., m20 = -9.;
+            Double_t EovP = -9., clsE = -9., m20 = -9., m02 = -9.;
             
             Double_t emcphimim = 1.39;
             Double_t emcphimax = 3.265;
@@ -1795,6 +1815,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                 if(cluster && cluster->IsEMCAL() && phi > emcphimim && phi < emcphimax){
                     clsE = cluster->GetNonLinCorrEnergy();
                     m20 = cluster->GetM20();
+                    m02 = cluster->GetM02();
                 }
             }
             
@@ -1885,6 +1906,10 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         if (partPDG == 11){
                             nIE++;
                             pte=pt;
+
+							// EMCal shower shape studies
+							fnM20TrueElec -> Fill(pt, m20);
+							fnM02TrueElec -> Fill(pt, m02);
                             
                             if (isFromHFdecay) nHFE++;
                             if (iDecay>0 && iDecay<7) nPE++;
@@ -1894,7 +1919,12 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             	if (isFromHFdecay) nHFEptmin++;
                             	if (iDecay>0 && iDecay<7) nPEptmin++;
 							}
-                        }
+                        } else {
+							// EMCal shower shape studies
+							fnM20TrueBkg -> Fill(pt, m20);
+							fnM02TrueBkg -> Fill(pt, m02);
+						}
+
                         
                         if ((partPDG==11) && isFromHFdecay && nHFE<2){
                             fptTrueHFEeffTPCTOF[0]->Fill(pt);
