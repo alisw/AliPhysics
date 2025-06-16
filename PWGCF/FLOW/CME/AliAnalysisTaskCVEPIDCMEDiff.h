@@ -40,6 +40,8 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   void IfCalculateLambdaHadron(bool b) { this->isCalculateLambdaHadron = b; }
   void IfCalculateLambdaLambda(bool b) { this->isCalculateLambdaLambda = b; }
   void IfCalculateLambdaPion(bool b) { this->isCalculateLambdaPion = b; }
+  void IfDoNUA(bool bDoNUA) { this->isDoNUA = bDoNUA; }
+  void IfDoLambdaNUA(bool bDoLambdaNUA) { this->isDoLambdaNUA = bDoLambdaNUA; }
   void IfDoNUE(bool bDoNUE) { this->isDoNUE = bDoNUE; }
   void IfDoLambdaNUE(bool bDoLambdaNUE) { this->isDoLambdaNUE = bDoLambdaNUE; }
   void IfRecentreTPC(bool bRecentreTPC) { this->isRecentreTPC = bRecentreTPC; }
