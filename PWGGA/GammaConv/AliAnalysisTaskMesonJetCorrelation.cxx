@@ -291,6 +291,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoMCMesonPt({}),
                                                                              fHistoInclusiveMCMesonPt({}),
                                                                              fHistoMCMesonPtVsEta({}),
+                                                                             fHistoMCMesonPtVsRap({}),
                                                                              fHistoMCMesonWOEvtWeightPt({}),
                                                                              fHistoMCMesonInAccPt({}),
                                                                              fHistoMCMesonInAccPtNotTriggered({}),
@@ -601,6 +602,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoMCMesonPt({}),
                                                                                            fHistoInclusiveMCMesonPt({}),
                                                                                            fHistoMCMesonPtVsEta({}),
+                                                                                           fHistoMCMesonPtVsRap({}),
                                                                                            fHistoMCMesonWOEvtWeightPt({}),
                                                                                            fHistoMCMesonInAccPt({}),
                                                                                            fHistoMCMesonInAccPtNotTriggered({}),
@@ -785,6 +787,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoMCSecMesonInAccPtvsSource.resize(fnCuts);
     if (!fDoLightOutput) {
       fHistoMCMesonPtVsEta.resize(fnCuts);
+      fHistoMCMesonPtVsRap.resize(fnCuts);
     }
     if (fDoAnalysisPt) {
       fHistoMCJetPtVsMesonPt.resize(fnCuts);
@@ -1275,10 +1278,15 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fMCList[iCut]->Add(fHistoInclusiveMCMesonPt[iCut]);
 
       if (!fDoLightOutput) {
-        fHistoMCMesonPtVsEta[iCut] = new TH2F("MC_Pi0_Pt_Vs_Rap", "MC_Pi0_Pt_Vs_Rap", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data(), 2 * 28, -1.4, 1.4);
+        fHistoMCMesonPtVsEta[iCut] = new TH2F("MC_Pi0_Pt_Vs_PseudoRap", "MC_Pi0_Pt_Vs_PseudoRap", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data(), 2 * 28, -1.4, 1.4);
         fHistoMCMesonPtVsEta[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCMesonPtVsEta[iCut]->SetYTitle("#eta");
         fMCList[iCut]->Add(fHistoMCMesonPtVsEta[iCut]);
+
+        fHistoMCMesonPtVsRap[iCut] = new TH2F("MC_Pi0_Pt_Vs_Rap", "MC_Pi0_Pt_Vs_Rap", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data(), 2 * 28, -1.4, 1.4);
+        fHistoMCMesonPtVsRap[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fHistoMCMesonPtVsRap[iCut]->SetYTitle("y");
+        fMCList[iCut]->Add(fHistoMCMesonPtVsRap[iCut]);
       }
 
       fHistoMCMesonWOEvtWeightPt[iCut] = new TH1F("MC_Pi0_WOEventWeights_Pt", "MC_Pi0_WOEventWeights_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
@@ -2182,6 +2190,7 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
   //---------------------------
   // Fragmentation Binning
   //---------------------------
+  double maxValZ = fDoProcessK0Lambda ? 2. : 1.2; // For K0s and Lambdas this has to be increased as they are not part of the jet intrinsically (maybe change that)
   double valZ = 0;
   for (int i = 0; i < 1000; ++i) {
     fVecBinsFragment.push_back(valZ);
@@ -4147,7 +4156,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticlesK0sLambda(int isCu
     bool isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if (isPrimary) {
 
-      if (particle->Y() < 0.8) { // make this a real settable cut
+      if (particle->Y() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin() && particle->Y() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax()) {
         int label0 = particle->GetDaughterLabel(0);
         int label1 = particle->GetDaughterLabel(1);
         if(label0 < 1 || label1 < 1) continue; // could be a different decay then we want!
@@ -4176,8 +4185,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticlesK0sLambda(int isCu
             fHistoMCMesonPtNoVertex[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Pi0 in not triggered collisions
           }
           fHistoMCMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
-          if (!fDoLightOutput)
+          if (!fDoLightOutput){
             fHistoMCMesonPtVsEta[fiCut]->Fill(particle->Pt(), particle->Eta(), fWeightJetJetMC);
+            fHistoMCMesonPtVsRap[fiCut]->Fill(particle->Pt(), particle->Y(), fWeightJetJetMC);
+          }
           if (fIsMC > 1) {
             fHistoMCMesonWOEvtWeightPt[fiCut]->Fill(particle->Pt());
           }
@@ -4457,12 +4468,15 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
               fHistoMCMesonPtNoVertex[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC); // All MC Pi0 in not triggered collisions
             }
             fHistoMCMesonPt[fiCut]->Fill(particle->Pt(), weighted * fWeightJetJetMC);
-            if (!fDoLightOutput)
+            if (!fDoLightOutput){
               fHistoMCMesonPtVsEta[fiCut]->Fill(particle->Pt(), particle->Eta(), weighted * fWeightJetJetMC);
+              fHistoMCMesonPtVsRap[fiCut]->Fill(particle->Pt(), particle->Y(), weighted * fWeightJetJetMC);
+            }
             if (fIsMC > 1) {
               fHistoMCMesonWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             }
           }
+
 
           //------------------------
           // Fill histograms for meson fragmentation
