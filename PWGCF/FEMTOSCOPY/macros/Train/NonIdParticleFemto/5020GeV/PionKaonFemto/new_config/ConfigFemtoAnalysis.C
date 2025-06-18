@@ -57,11 +57,13 @@
 #include "AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h"
 #include "AliFemtoBetaTPairCut.h"
 #include "AliFemtoCutMonitorPairBetaT.h"
+#include "AliFemtoPairkTPairCut.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
+#include "AliFemtoCorrFctnPtKstarBeta.h"                                                                                                                                                                      
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax) {
-
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event, int ispileup, int trackpileup, double pTmin, double pTmax, int kt1, int kt2, int iskt, int isbeta) {
 
   double PionMass = 0.13957018;//0.13956995;
   double KaonMass = 0.493677;
@@ -69,16 +71,22 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   const int numOfMultBins = 7;  
   const int numOfChTypes = 4;
-  const int numOfkTbins = 2;
+  const int numOfkTbins = 7;
 
-  int runmults[numOfMultBins] = {runcentrality0, runcentrality1, runcentrality2, runcentrality3, runcentrality4, runcentrality5, runcentrality6};
-  int multbins[numOfMultBins + 1] = {0.001, 50, 100, 200, 300, 400, 500, 900};
+    int runmults[numOfMultBins] = {runcentrality0, runcentrality1, runcentrality2, runcentrality3, runcentrality4, runcentrality5, runcentrality6};
+    int multbins[numOfMultBins + 1] = {0, 50, 100, 200, 300, 400, 500, 900};
+
+  //  int runmults[numOfMultBins] = {runcentrality6, runcentrality7, runcentrality8};
+  //int multbins[numOfMultBins + 1] = {500, 600, 700, 800};
   
   int runch[numOfChTypes] = {1, 1, 1, 1};
   const char *chrgs[numOfChTypes] = { "PIpKp", "PImKm", "PIpKm","PImKp"};
-
+  //  double ktrngkt[numOfkTbins + 1];
+  //  double ktrngbeta[numOfkTbins + 1];
   //int runktdep = 1;
-  double ktrng[numOfkTbins + 1] = {0.5, 0.85, 1.0};
+
+double   ktrngkt[numOfkTbins + 1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.5};		
+double   ktrngbeta[numOfkTbins + 1] = {0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
   
   int runshlcms = 0;// 0:PRF(PAP), 1:LCMS(PP,APAP)
 
@@ -95,7 +103,17 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
   Reader->SetDCAglobalTrack(1);  
-  Reader->SetTrackPileUpRemoval(kTRUE); 
+  Reader->SetUseAliEventCuts(kTRUE);
+
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+  Reader->SetEPVZERO(kTRUE);
+  Reader->SetCentralityFlattening(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+
+  if(trackpileup == 1){
+    Reader->SetTrackPileUpRemoval(kTRUE);} 
+  if(ispileup == 1){
+  Reader->SetIsPileUpEvent(kTRUE);}
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -133,7 +151,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoCorrFctnDPhiStarKStarMergedFraction *dphistarkstarmftpc[size];
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction *dphistarkstarampftpc[size];
   //AliFemtoKTPairCut             *ktpcuts[size*numOfkTbins];
-  AliFemtoBetaTPairCut          *ktpcuts[size*numOfkTbins];
+  //  if (isbeta==1){	
+  AliFemtoBetaTPairCut          *ktpcutsbeta[size*numOfkTbins];
+//if (iskt==1){	
+  AliFemtoPairkTPairCut          *ktpcutskt[size*numOfkTbins];
+	
   AliFemtoCutMonitorPairBetaT   *cutpassbetatcutmonitor[size*numOfkTbins];
   AliFemtoCutMonitorPairBetaT   *cutfailbetatcutmonitor[size*numOfkTbins];
   //AliFemtoPairCutMergedFraction *ktpcuts[size*numOfkTbins];
@@ -153,6 +175,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta16[size];
   AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta20[size];
   AliFemtoCorrFctnNonIdDR       *cnonidkttpc[size*numOfkTbins];
+  AliFemtoCorrFctnPtKstarBeta       *ckstarpt[size*numOfkTbins];                                                                                                                                               
 
 
   // *** Begin pion-kaon analysis ***
@@ -170,13 +193,13 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(Vz_bin, -Vz, Vz, 2, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(3);
+	  anetaphitpc[aniter]->SetNumEventsToMix(no_mix_event);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
 	  //Select basic cuts:
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
-	  mecetaphitpc[aniter]->SetEventMult(0.001,100000);
+	  mecetaphitpc[aniter]->SetEventMult(0,100000);
 	  mecetaphitpc[aniter]->SetVertZPos(-Vz,Vz);
 
 	  //Study the multiplicity distribution:
@@ -219,20 +242,21 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	}
 
 	  if(pid_strict == 1) { 	  
+
 	  //Basic track cut for pions:
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	  dtc1etaphitpc[aniter]->SetNsigma(2.5);
+	  dtc1etaphitpc[aniter]->SetNsigma(2.7);
 	  
 	  //Basic track cut for kaons:
 	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCutFull();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(3.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.0);
 	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
@@ -242,20 +266,20 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  //Basic track cut for pions:
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	  dtc1etaphitpc[aniter]->SetNsigma(3.0);
+	  dtc1etaphitpc[aniter]->SetNsigma(3.3);
 	  
 	  //Basic track cut for kaons:
 	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCutFull();
-	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.5);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.5);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(3.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.5);
+	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.0);
 	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(3.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(2.5);
-	  dtc2etaphitpc[aniter]->SetNsigmaTOFge1000(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
+	  dtc2etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
 	}
 	  
 	  //Set charge of particles:
@@ -277,13 +301,13 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  }
 
 	  //Set particle 1:
-	  dtc1etaphitpc[aniter]->SetPt(0.19,1.5);
+	  dtc1etaphitpc[aniter]->SetPt(pTmin, pTmax);
 	  dtc1etaphitpc[aniter]->SetEta(-eta,eta);
 	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
 	  dtc1etaphitpc[aniter]->SetMostProbablePion();	 
  
 	  //Set particle 2:
-	  dtc2etaphitpc[aniter]->SetPt(0.19,1.5);
+	  dtc2etaphitpc[aniter]->SetPt(pTmin, pTmax);
           dtc2etaphitpc[aniter]->SetEta(-eta,eta);
 	  dtc2etaphitpc[aniter]->SetMass(KaonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableKaon();
@@ -424,18 +448,28 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    int ktm;
 	    for (int ikt=0; ikt<numOfkTbins; ikt++) {
 	      ktm = aniter*numOfkTbins + ikt;
+
+	     if (isbeta==1){		    		    
 	      //ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
-	      ktpcuts[ktm] = new AliFemtoBetaTPairCut(ktrng[ikt], ktrng[ikt + 1], PionMass, KaonMass);
+	      ktpcutsbeta[ktm] = new AliFemtoBetaTPairCut(ktrngbeta[ikt], ktrngbeta[ikt + 1], PionMass, KaonMass);
+	     }
+	     if (iskt==1){	
+  	      ktpcutskt[ktm] = new AliFemtoPairkTPairCut(ktrngkt[ikt], ktrngkt[ikt + 1], PionMass, KaonMass);
+	     }
 	      
-	      if (runbetatylm) {
-		cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%iD%lfF%lfbetat%d", chrgs[ichg], imult, distance, fraction1, ikt),3,nbinssh, 0.0,shqmax, runshlcms);
-		cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      if (runbetatylm){
+		cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%iD%lfF%lfbetat%d", chrgs[ichg], imult, distance, fraction1, ikt),lmax,nbinssh, 0.0,shqmax, runshlcms);
+		cylmkttpc[ktm]->SetPairSelectionCut(ktpcutsbeta[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
+		//ckstarpt[ktm] = new AliFemtoCorrFctnPtKstarBeta(Form("ckstarpT%stpcM%i_beta%d", chrgs[ichg], imult, ikt));
+		//ckstarpt[ktm]->SetPairSelectionCut(ktpcutsbeta[ktm]);
+		//anetaphitpc[aniter]->AddCorrFctn(ckstarpt[ktm]);
+
 	      }
 	      
-	      if (runbetatnonid) {
+	      if (runbetatnonid){
 		cnonidkttpc[ktm] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%ibetaT%i", chrgs[ichg], imult,ikt), nbinssh, 0.0, shqmax);
-		cnonidkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+		cnonidkttpc[ktm]->SetPairSelectionCut(ktpcutskt[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cnonidkttpc[ktm]);
 	      }
 	      
@@ -453,23 +487,3 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   return Manager;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
