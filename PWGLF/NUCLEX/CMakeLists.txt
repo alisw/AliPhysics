@@ -141,6 +141,7 @@ set(SRCS
   Nuclei/v2/AliAnalysisTaskNucleiv2PbPb18.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
+  Nuclei/NeutronCEX/AliAnalysisTaskAntineutron.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
