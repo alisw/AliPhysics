@@ -99,7 +99,8 @@
 #pragma link C++ class AliAnalysisTaskPythiaCoalescence+;
 #pragma link C++ class AliAnalysisTaskSimpleCoalescenceHelium3+;
 #pragma link C++ class AliAnalysisTaskSimpleCoalescenceDeuteronInJets+;
-
+/// * Antineutron
+#pragma link C++ class AliAnalysisTaskAntineutron+;
 
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
