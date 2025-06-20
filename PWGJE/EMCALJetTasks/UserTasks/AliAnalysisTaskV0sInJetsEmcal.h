@@ -24,6 +24,7 @@ class AliClusterContainer;
 
 class AliEventPoolManager;
 class AliEventCuts;
+#include "AliESDtrackCuts.h"
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -45,6 +46,7 @@ public:
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;}
   void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
+  void SetCentralityEstimator(TString CentEstimator){fCentEstimator = CentEstimator;};
   void SetUseIonutCut(Bool_t val = kTRUE) {fbUseIonutCut = val;}
 
   // mixed events
@@ -101,6 +103,9 @@ public:
   void SetCutChi2PerTPCCluster(Double_t val = 2.5) {fdCutChi2PerTPCCluster = val;}
   void SetCutITSTOFtracks(Int_t val = 1) {fdCutITSTOFtracks = val;}
   void SetCutTPCsignalNCut(Int_t val = 50) {fdTPCsignalNCut = val;}
+  void SetCutGeo(Bool_t val = 1) {fbGeoCut = val;}
+  void SetCutDeadZoneWidth(Float_t val = 3.) {fDeadZoneWidth = val;}
+  void SetCutNcrNclLength(Float_t val = 130.) {fNcrNclLength = val;}
 
 
   Bool_t IsSelectedForAnalysis();
@@ -176,6 +181,7 @@ protected:
   void ExecOnce();
   Bool_t FillHistograms();
   Bool_t Run();
+  virtual Bool_t IsEventSelected();  // override EMCal base method
 
 private:
   AliAODEvent* fAODIn; //! Input AOD event
@@ -201,7 +207,7 @@ private:
   Bool_t fbIsPbPb; // switch: Pb+Pb / p+p collisions
   Bool_t fbMCAnalysis; // switch: simulated / real data
   TString fsGeneratorName; // pattern for selecting only V0s from a specific MC generator
-
+  TString fCentEstimator;  //Centrality estimator
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
@@ -237,6 +243,11 @@ private:
   Double_t fdCutChi2PerTPCCluster; //(2.5) maximum daughters Chi2 per TPC Cluster 
   Int_t fdCutITSTOFtracks; //(1)  minimum number of tracks with ITS refit or hit in TOF
   Int_t fdTPCsignalNCut; //(50) minimum number of points in TPC (track length)
+  Bool_t fbGeoCut; //1.
+  AliESDtrackCuts fESDTrackCuts;
+  Float_t fDeadZoneWidth;                              //
+  Float_t fNcrNclLength;                               //
+
   // V0 candidate
   Bool_t fbOnFly; // (0) on-the-fly (yes) or offline (no) reconstructed
   Double_t fdCutCPAKMin; // (0.998) min cosine of the pointing angle, K0S
