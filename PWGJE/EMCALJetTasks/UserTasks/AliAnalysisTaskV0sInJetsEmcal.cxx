@@ -118,6 +118,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fbIsPbPb(0),
   fbMCAnalysis(0),
   fsGeneratorName(""),
+  fCentEstimator("V0M"),
 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
@@ -151,6 +152,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutChi2PerTPCCluster(0), 
   fdCutITSTOFtracks(0),
   fdTPCsignalNCut(0),
+  fbGeoCut(0), 
+  fDeadZoneWidth(3.),
+  fNcrNclLength(130.),
   fbOnFly(0),
   fdCutCPAKMin(0),
   fdCutCPALMin(0),
@@ -655,6 +659,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fbIsPbPb(0),
   fbMCAnalysis(0),
   fsGeneratorName(""),
+  fCentEstimator("V0M"),
 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
@@ -688,6 +693,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutChi2PerTPCCluster(0), 
   fdCutITSTOFtracks(0),
   fdTPCsignalNCut(0),
+  fbGeoCut(0),
+  fDeadZoneWidth(3.),
+  fNcrNclLength(130.),
   fbOnFly(0),
   fdCutCPAKMin(0),
   fdCutCPALMin(0),
@@ -2301,6 +2309,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fEventCuts.fUseVariablesCorrelationCuts = true;
   }
 
+  //geometrical cut Setup
+  fESDTrackCuts.SetCutGeoNcrNcl(fDeadZoneWidth, fNcrNclLength, 1.5, 0.85, 0.7);
+
   for(Int_t i = 0; i < fOutputListStd->GetEntries(); ++i)
   {
     TH1* h1 = dynamic_cast<TH1*>(fOutputListStd->At(i));
@@ -2444,7 +2455,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     printf("MC generator: %s\n", fsGeneratorName.Length() ? fsGeneratorName.Data() : "any");
   if(fbIsPbPb) {
     printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
-    printf("centrality estimator: %s\n", fbUseMultiplicity ? "AliMultSelection" : "AliCentrality");
+    printf("centrality estimator: %s\n", fCentEstimator.Data());
   }
   //if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
   //if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
@@ -2461,6 +2472,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutChi2PerTPCCluster > 0.) printf("maximum daughters Chi2 per TPC Cluster: %g\n", fdCutChi2PerTPCCluster);
   if(fdCutITSTOFtracks > 0.) printf("minimum number of tracks with ITS refit or hit in TOF: %d\n", fdCutITSTOFtracks);
   if(fdTPCsignalNCut > 0.) printf("minimum number of points in TPC (track length): %d\n", fdTPCsignalNCut);
+  if(fbGeoCut > 0.) printf("GeoCut is on: fESDTrackCuts.SetCutGeoNcrNcl(%d, %d, 1.5, 0.85, 0.7)",   fDeadZoneWidth, fNcrNclLength);
   if(fdCutPtDaughterMin > 0.) printf("min pt of daughter tracks [GeV/c]: %g\n", fdCutPtDaughterMin);
   if(fdCutDCAToPrimVtxMin > 0.) printf("min DCA of daughters to the prim vtx [cm]: %g\n", fdCutDCAToPrimVtxMin);
   if(fdCutDCADaughtersMax > 0.) printf("max DCA between daughters [sigma of TPC tracking]: %g\n", fdCutDCADaughtersMax);
@@ -2531,6 +2543,12 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   printf("=======================================================\n");
 }
 
+Bool_t AliAnalysisTaskV0sInJetsEmcal::IsEventSelected()
+{
+    // Override base class logic: let all events pass
+    return kTRUE;
+}
+
 Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
 {
 // Run analysis code here, if needed. It will be executed before FillHistograms().
@@ -2595,7 +2613,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     AliWarning("AliMultSelection object not found!");
     return kFALSE;
   }
-  fdCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+  fdCentrality = MultSelection->GetMultiplicityPercentile(fCentEstimator);
   Int_t iEvSelCode = MultSelection->GetEvSelCode(); // Set to 0 if event is good
       
   if(iEvSelCode != 0)
@@ -2659,7 +2677,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   }
   fh1EventCounterCut->Fill(8); // selected events (centrality OK)
   fh1EventCounterCutCent[iCentIndex]->Fill(8);
-
 
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
@@ -2769,7 +2786,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dCPACascadeMin = fdCutCPACascadeMin;// 0.97; // min cosine of the pointing angle of the cascade
   Double_t dCPACascadeV0Min = fdCutCPACascadeV0Min;// 0.97; // min cosine of the pointing angle of the V0 in the cascade   
   Double_t dCascadeRadiusDecayMin  = fdCutCascadeRadiusDecayMin; // 0.6 [cm] min radial distance of the decay vertex of the cascade
-
  
   Double_t dCTauXi = 4.917; // [cm] c tau of Xi
   Double_t dCTauOmega = 2.463 ; // [cm] c tau of Omega
@@ -2780,7 +2796,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Int_t iPdgCodeKaon = 321;
   Int_t iPdgCodeXi = 3312;       //Int_t iPdgCodeXiPlus = -3312;
   Int_t iPdgCodeOmega = 3334;    //Int_t iPdgCodeOmegaPlus = -3334;
-  //------------------------------------------------------------------------------------------ 
+
   
   Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
   Double_t dRadiusExcludeCone = 2 * fdDistanceV0JetMax; // radius of cones around jets excluded for V0 outside jets
@@ -2971,6 +2987,184 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         }
         else // there are no accepted jets
           fh2PtJetPtTrigger[iCentIndex]->Fill(0., 0.);
+      }
+    }
+  }
+
+  // Spectra of generated particles
+  if(fbMCAnalysis) {
+    for(Int_t iPartMC = 0; iPartMC < iNTracksMC; iPartMC++) {
+      // Get MC particle
+      AliAODMCParticle* particleMC = (AliAODMCParticle*)arrayMC->At(iPartMC);
+      if(!particleMC)
+        continue;
+
+      //Particles from out ot bunch pile up rejection: 
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
+        continue; 
+      if(!particleMC->IsPhysicalPrimary())
+        continue;
+  
+      // Select only particles from a specific generator
+      if(!IsFromGoodGenerator(iPartMC))
+        continue;
+
+      // Get identity of MC particle
+      Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
+
+      Double_t dPtV0Gen = particleMC->Pt();
+      Double_t dRapV0Gen = particleMC->Y();
+      Double_t dEtaV0Gen = particleMC->Eta();
+
+      // V0 pseudorapidity cut
+      if(fdCutEtaV0Max > 0.) {
+        if(bPrintCuts) printf("Gen: Applying cut: V0 |eta|: < %g\n", fdCutEtaV0Max);
+        if((TMath::Abs(dEtaV0Gen) > fdCutEtaV0Max))
+          continue;
+      }
+      // V0 rapidity cut
+      if(fdCutRapV0Max > 0.) {
+        if(bPrintCuts) printf("Gen: Applying cut: V0 |y|: < %g\n", fdCutRapV0Max);
+        if((TMath::Abs(dRapV0Gen) > fdCutRapV0Max))
+          continue;
+      }
+
+      // Fill Xi spectrum (3322 - Xi0, 3312 - Xi-)
+      if(iPdgCodeParticleMC == 3312)
+        fh1V0XiPtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
+      else if(iPdgCodeParticleMC == -3312) 
+        fh1V0AXiPtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
+      else if(iPdgCodeParticleMC == 3322)
+        fh1V0Xi0PtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
+      else if(iPdgCodeParticleMC == -3322)
+        fh1V0AXi0PtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
+
+      // Skip not interesting particles
+      if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeXi) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeOmega))
+        continue;
+
+      // Check identity of the MC V0 particle
+      // Is MC V0 particle K0S?
+      Bool_t bV0MCIsK0s = (iPdgCodeParticleMC == iPdgCodeK0s);
+      // Is MC V0 particle Lambda?
+      Bool_t bV0MCIsLambda = (iPdgCodeParticleMC == +iPdgCodeLambda);
+      // Is MC V0 particle anti-Lambda?
+      Bool_t bV0MCIsALambda = (iPdgCodeParticleMC == -iPdgCodeLambda);
+      // Check identity of the MC  Cascade particle
+      // Is MC  Cascade particle XiMinus?
+      Bool_t bCascadeMCIsXiMinus = (iPdgCodeParticleMC == +iPdgCodeXi);
+      // Is MC  Cascade particleXiPlus?
+      Bool_t bCascadeMCIsXiPlus = (iPdgCodeParticleMC == -iPdgCodeXi);
+      // Is MC  Cascade particle OmegaMinus?
+      Bool_t bCascadeMCIsOmegaMinus = (iPdgCodeParticleMC == +iPdgCodeOmega);
+      // Is MC  Cascade particle OmegaPlus?
+      Bool_t bCascadeMCIsOmegaPlus = (iPdgCodeParticleMC == -iPdgCodeOmega);
+
+      // Get the distance between the production point of the MC V0 particle and the primary vertex
+      /*Double_t dx = dPrimVtxMCX - particleMC->Xv();
+      Double_t dy = dPrimVtxMCY - particleMC->Yv();
+      Double_t dz = dPrimVtxMCZ - particleMC->Zv();
+      Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
+      Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
+      // Select only primary-like MC V0 particles
+      if(!bV0MCIsPrimaryDist)
+        continue;
+      */
+
+      // Check whether the MC V0 particle is in a MC jet
+      AliAODJet* jetMC = 0;
+      Bool_t bIsMCV0InJet = kFALSE;
+      if(iNJetSel) {
+        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for gen V0 in %d MC jets", iNJetSel));
+        for(Int_t iJet = 0; iJet < iNJetSel; iJet++) {
+          jetMC = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
+          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if gen V0 in MC jet %d", iJet));
+          if(IsParticleInCone(particleMC, jetMC, fdDistanceV0JetMax)) {// If good jet in event, find out whether V0 is in that jet
+            if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("gen V0 found in MC jet %d", iJet));
+            bIsMCV0InJet = kTRUE;
+            break;
+          }
+        }
+      }
+      // K0s
+      // if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
+      if(bV0MCIsK0s) {// well reconstructed candidates
+        fh1V0K0sPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2V0K0sCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2V0K0sEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2V0K0sInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaKInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3V0K0sInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaKInGen);
+        }
+      }
+      // Lambda
+      // if (bV0MCIsLambda && bV0MCIsPrimaryLambda) // well reconstructed candidates
+      if(bV0MCIsLambda) {// well reconstructed candidates
+        fh1V0LambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2V0LambdaCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2V0LambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2V0LambdaInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaLInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3V0LambdaInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaLInGen);
+        }
+      }
+      // anti-Lambda
+      // if (bV0MCIsALambda && bV0MCIsPrimaryALambda) // well reconstructed candidates
+      if(bV0MCIsALambda) {// well reconstructed candidates
+        fh1V0ALambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2V0ALambdaCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2V0ALambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2V0ALambdaInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaALInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3V0ALambdaInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaALInGen);
+        }
+      }
+      // XiMinus
+      if(bCascadeMCIsXiMinus) {// well reconstructed candidates
+        fh1CascadeXiMinusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2CascadeXiMinusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2CascadeXiMinusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2CascadeXiMinusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaXiMinusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3CascadeXiMinusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaXiMinusInGen);
+        }
+      }
+      // XiPlus
+      if(bCascadeMCIsXiPlus) {// well reconstructed candidates
+        fh1CascadeXiPlusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2CascadeXiPlusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2CascadeXiPlusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2CascadeXiPlusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaXiPlusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3CascadeXiPlusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaXiPlusInGen);
+        }
+      }
+      // OmegaMinus
+      if(bCascadeMCIsOmegaMinus) {// well reconstructed candidates
+        fh1CascadeOmegaMinusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2CascadeOmegaMinusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2CascadeOmegaMinusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2CascadeOmegaMinusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaOmegaMinusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3CascadeOmegaMinusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaOmegaMinusInGen);
+        }
+      }
+      // OmegaPlus
+      if(bCascadeMCIsOmegaPlus) {// well reconstructed candidates
+        fh1CascadeOmegaPlusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2CascadeOmegaPlusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
+        fh2CascadeOmegaPlusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet) {
+          fh2CascadeOmegaPlusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaOmegaPlusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3CascadeOmegaPlusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaOmegaPlusInGen);
+        }
       }
     }
   }
@@ -3218,11 +3412,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(iV0ITSTOFtracks < fdCutITSTOFtracks - 0.1)
         continue;
     }
+
     if(fdTPCsignalNCut > 0. ) {
       if((trackPos->GetTPCsignalN()<fdTPCsignalNCut && trackNeg->GetTPCsignalN()<fdTPCsignalNCut))
         continue;
     }
-    
+
+    if(fbGeoCut > 0.) {
+      if (!fESDTrackCuts.AcceptVTrack(trackPos) || !fESDTrackCuts.AcceptVTrack(trackNeg))
+        continue; 
+    }  
 
         
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
@@ -3964,188 +4163,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1V0CandPerEventCentLambda[iCentIndex]->Fill(iNV0CandLambda);
   fh1V0CandPerEventCentALambda[iCentIndex]->Fill(iNV0CandALambda);
 
-  // Spectra of generated particles
-  if(fbMCAnalysis) {
-    for(Int_t iPartMC = 0; iPartMC < iNTracksMC; iPartMC++) {
-      // Get MC particle
-      AliAODMCParticle* particleMC = (AliAODMCParticle*)arrayMC->At(iPartMC);
-      if(!particleMC)
-        continue;
-
-      //check if particle comes from the reconstructed event???  
-
-      //Particles from out ot bunch pile up rejection: 
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
-        continue; 
-      if(!particleMC->IsPhysicalPrimary())
-        continue;
-  
-      // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iPartMC))
-        continue;
-
-      // Get identity of MC particle
-      Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
-
-      Double_t dPtV0Gen = particleMC->Pt();
-      Double_t dRapV0Gen = particleMC->Y();
-      Double_t dEtaV0Gen = particleMC->Eta();
-
-      // V0 pseudorapidity cut
-      if(fdCutEtaV0Max > 0.) {
-        if(bPrintCuts) printf("Gen: Applying cut: V0 |eta|: < %g\n", fdCutEtaV0Max);
-        if((TMath::Abs(dEtaV0Gen) > fdCutEtaV0Max))
-          continue;
-      }
-      // V0 rapidity cut
-      if(fdCutRapV0Max > 0.) {
-        if(bPrintCuts) printf("Gen: Applying cut: V0 |y|: < %g\n", fdCutRapV0Max);
-        if((TMath::Abs(dRapV0Gen) > fdCutRapV0Max))
-          continue;
-      }
-
-      // Fill Xi spectrum (3322 - Xi0, 3312 - Xi-)
-      if(iPdgCodeParticleMC == 3312)
-        fh1V0XiPtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
-      else if(iPdgCodeParticleMC == -3312) 
-        fh1V0AXiPtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
-      else if(iPdgCodeParticleMC == 3322)
-        fh1V0Xi0PtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
-      else if(iPdgCodeParticleMC == -3322)
-        fh1V0AXi0PtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
-
-      // Skip not interesting particles
-      if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeXi) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeOmega))
-        continue;
-
-      // Check identity of the MC V0 particle
-      // Is MC V0 particle K0S?
-      Bool_t bV0MCIsK0s = (iPdgCodeParticleMC == iPdgCodeK0s);
-      // Is MC V0 particle Lambda?
-      Bool_t bV0MCIsLambda = (iPdgCodeParticleMC == +iPdgCodeLambda);
-      // Is MC V0 particle anti-Lambda?
-      Bool_t bV0MCIsALambda = (iPdgCodeParticleMC == -iPdgCodeLambda);
-      // Check identity of the MC  Cascade particle
-      // Is MC  Cascade particle XiMinus?
-      Bool_t bCascadeMCIsXiMinus = (iPdgCodeParticleMC == +iPdgCodeXi);
-      // Is MC  Cascade particleXiPlus?
-      Bool_t bCascadeMCIsXiPlus = (iPdgCodeParticleMC == -iPdgCodeXi);
-      // Is MC  Cascade particle OmegaMinus?
-      Bool_t bCascadeMCIsOmegaMinus = (iPdgCodeParticleMC == +iPdgCodeOmega);
-      // Is MC  Cascade particle OmegaPlus?
-      Bool_t bCascadeMCIsOmegaPlus = (iPdgCodeParticleMC == -iPdgCodeOmega);
-
-      // Get the distance between the production point of the MC V0 particle and the primary vertex
-      /*Double_t dx = dPrimVtxMCX - particleMC->Xv();
-      Double_t dy = dPrimVtxMCY - particleMC->Yv();
-      Double_t dz = dPrimVtxMCZ - particleMC->Zv();
-      Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
-      Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
-      // Select only primary-like MC V0 particles
-      if(!bV0MCIsPrimaryDist)
-        continue;
-      */
-
-      // Check whether the MC V0 particle is in a MC jet
-      AliAODJet* jetMC = 0;
-      Bool_t bIsMCV0InJet = kFALSE;
-      if(iNJetSel) {
-        if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Searching for gen V0 in %d MC jets", iNJetSel));
-        for(Int_t iJet = 0; iJet < iNJetSel; iJet++) {
-          jetMC = (AliAODJet*)arrayJetSel->At(iJet); // load a jet in the list
-          if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Checking if gen V0 in MC jet %d", iJet));
-          if(IsParticleInCone(particleMC, jetMC, fdDistanceV0JetMax)) {// If good jet in event, find out whether V0 is in that jet
-            if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("gen V0 found in MC jet %d", iJet));
-            bIsMCV0InJet = kTRUE;
-            break;
-          }
-        }
-      }
-
-      // K0s
-      // if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
-      if(bV0MCIsK0s) {// well reconstructed candidates
-        fh1V0K0sPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2V0K0sCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2V0K0sEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2V0K0sInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaKInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3V0K0sInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaKInGen);
-        }
-      }
-      // Lambda
-      // if (bV0MCIsLambda && bV0MCIsPrimaryLambda) // well reconstructed candidates
-      if(bV0MCIsLambda) {// well reconstructed candidates
-        fh1V0LambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2V0LambdaCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2V0LambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2V0LambdaInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaLInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3V0LambdaInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaLInGen);
-        }
-      }
-      // anti-Lambda
-      // if (bV0MCIsALambda && bV0MCIsPrimaryALambda) // well reconstructed candidates
-      if(bV0MCIsALambda) {// well reconstructed candidates
-        fh1V0ALambdaPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2V0ALambdaCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2V0ALambdaEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2V0ALambdaInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaALInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3V0ALambdaInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaALInGen);
-        }
-      }
-      // XiMinus
-      if(bCascadeMCIsXiMinus) {// well reconstructed candidates
-        fh1CascadeXiMinusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2CascadeXiMinusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2CascadeXiMinusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2CascadeXiMinusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaXiMinusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3CascadeXiMinusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaXiMinusInGen);
-        }
-      }
-      // XiPlus
-      if(bCascadeMCIsXiPlus) {// well reconstructed candidates
-        fh1CascadeXiPlusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2CascadeXiPlusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2CascadeXiPlusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2CascadeXiPlusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaXiPlusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3CascadeXiPlusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaXiPlusInGen);
-        }
-      }
-      // OmegaMinus
-      if(bCascadeMCIsOmegaMinus) {// well reconstructed candidates
-        fh1CascadeOmegaMinusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2CascadeOmegaMinusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2CascadeOmegaMinusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2CascadeOmegaMinusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaOmegaMinusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3CascadeOmegaMinusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaOmegaMinusInGen);
-        }
-      }
-      // OmegaPlus
-      if(bCascadeMCIsOmegaPlus) {// well reconstructed candidates
-        fh1CascadeOmegaPlusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
-        fh2CascadeOmegaPlusCentMCGen[iCentIndex]->Fill(dPtV0Gen, fdCentrality);
-        fh2CascadeOmegaPlusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
-        if(bIsMCV0InJet) {
-          fh2CascadeOmegaPlusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
-          Double_t valueEtaOmegaPlusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
-          fh3CascadeOmegaPlusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaOmegaPlusInGen);
-        }
-      }
-    }
-  }
-
-
   //Loop over  Cascade candidates
   //------------------------------------------------------------------------------------------
 
@@ -4407,6 +4424,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if((trackPos->GetTPCsignalN()<fdTPCsignalNCut && trackNeg->GetTPCsignalN()<fdTPCsignalNCut && trackBach->GetTPCsignalN()<fdTPCsignalNCut))
         continue;
     }
+
+    if(fbGeoCut > 0.) {
+      if (!fESDTrackCuts.AcceptVTrack(trackPos) || !fESDTrackCuts.AcceptVTrack(trackNeg) ||  !fESDTrackCuts.AcceptVTrack(trackBach))
+        continue; 
+    }  
 
     FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     iCutIndex++; 
