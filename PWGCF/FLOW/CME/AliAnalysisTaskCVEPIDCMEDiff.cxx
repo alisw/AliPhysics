@@ -72,7 +72,7 @@ ClassImp(AliAnalysisTaskCVEPIDCMEDiff);
 namespace {
 constexpr float LAMBDAMASS = 1.115683;
 constexpr float MASSCUT    = 0.02;
-constexpr int MASSBIN      = 30;
+constexpr int MASSBIN      = 60;
 constexpr float INTGBIN    = 0.5;
 
 static const std::array<TString, 125> runNumList18q{
