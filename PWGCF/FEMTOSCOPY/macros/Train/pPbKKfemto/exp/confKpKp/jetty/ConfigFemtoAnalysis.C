@@ -41,14 +41,14 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   const char *sKK[2] = {"KpKp", "KmKm"};//CF names
   const int zar[2]={+1,-1};
 
-  const double S_T_MIMA[2]={0.0,1.0};//all events
-  //const double S_T_MIMA[2]={0.0,0.3};//jetty events
+  //const double S_T_MIMA[2]={0.0,1.0};//all events
+  const double S_T_MIMA[2]={0.0,0.3};//jetty events
   //const double S_T_MIMA[2]={0.7,1.0};//sperical events
   const double DCA[2] = {0.135,0.130};//xy,z in mm
 
   const Bool_t cf_kT = kTRUE;//CF for a few k_T bins
-  const Int_t  cKt=2;
-  double ktrng[cKt+1] = {0.2, 0.5, 1.5};//orig 0-0.5,0.5-1.0
+  const Int_t  cKt=3;
+  double ktrng[cKt+1] = {0.2, 0.5, 1.0, 1.5};//orig 0-0.5,0.5-1.0
 
   int run3d = -1/*1*/;
   int runshlcms = 0;
@@ -102,10 +102,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     ix = m+zz*3;//ichg*3+imult;???
 
       mixi[ix] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[m], multbins[m+1]);
-      mixi[ix]->SetNumEventsToMix(3);
+      mixi[ix]->SetNumEventsToMix(5);
       mixi[ix]->SetMinSizePartCollection(1);
       mixi[ix]->SetVerboseMode(kTRUE/*kFALSE*/);
-	
 	
       bcut[ix] = new AliFemtoSphericityEventCut();//bcut[ix] = new AliFemtoBasicEventCut();//spher: 
       bcut[ix]->SetEventMult(0,10000);
