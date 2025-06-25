@@ -53,7 +53,8 @@ endif()
 find_library(KFPARTICLE_LIBRARY KFParticle
              PATHS "${KFPARTICLE}/lib" NO_DEFAULT_PATH)
 find_path(KFPARTICLE_INCLUDE_DIR KFParticle.h
-          PATHS "${KFPARTICLE}/include" NO_DEFAULT_PATH)
+          PATH_SUFFIXES "include" "include/KFParticle"
+          HINTS "${KFPARTICLE}" NO_DEFAULT_PATH)
 
 find_package_handle_standard_args(KFParticle DEFAULT_MSG
                                   KFPARTICLE_LIBRARY KFPARTICLE_INCLUDE_DIR)
