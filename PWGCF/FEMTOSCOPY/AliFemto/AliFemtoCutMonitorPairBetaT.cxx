@@ -31,8 +31,8 @@ AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT():
   fHistBetaT = new TH1D("BetaT", "BetaT distribution", fBinsBetaT, 0.0, 1.0);
   fHistBetaTpT1 = new TH2D("histBetaT1pT","BetaT vs pT for part 1", 20, 0.0, 1.0, 245, 0.0, 5.0);
   fHistBetaTpT2 = new TH2D("histBetaT2pT","BetaT vs pT for part 2", 20, 0.0, 1.0, 245, 0.0, 5.0);
-  fHistBetaTpairpT = new TH2D("HistBetaTpairpT","BetaT vs pair-pT", 20, 0.0, 1.0, 245, 0.0, 5.0);
-  fHistBetaTpairmT = new TH2D("histBetaTpairmT","BetaT vs pair-mT", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fHistBetaTPairpT = new TH2D("HistBetaTPairpT","BetaT vs pair-pT", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fHistBetaTPairmT = new TH2D("histBetaTPairmT","BetaT vs pair-mT", 20, 0.0, 1.0, 245, 0.0, 5.0);
   fMassPart1 = 0.13957018;
   fMassPart2 = 0.13957018;
 }
@@ -68,8 +68,8 @@ AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT(const char *aName, cons
   fHistBetaT = new TH1D(name, "BetaT distribution", fBinsBetaT, 0.0, 1.0);
   fHistBetaTpT1 = new TH2D(name1, "BetaT vs pT for part 1", 20, 0.0, 1.0, 245, 0.0, 5.0);
   fHistBetaTpT2 = new TH2D(name2, "BetaT vs pT for part 2", 20, 0.0, 1.0, 245, 0.0, 5.0);
-  fHistBetaTpairpT = new TH2D(name3,"BetaT vs pair-pT", 20, 0.0, 1.0, 245, 0.0, 5.0);
-  fHistBetaTpairmT = new TH2D(name4,"BetaT vs pair-mT", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fHistBetaTPairpT = new TH2D(name3,"BetaT vs pair-pT", 20, 0.0, 1.0, 245, 0.0, 5.0);
+  fHistBetaTPairmT = new TH2D(name4,"BetaT vs pair-mT", 20, 0.0, 1.0, 245, 0.0, 5.0);
   
 }
 
@@ -92,8 +92,8 @@ AliFemtoCutMonitorPairBetaT::AliFemtoCutMonitorPairBetaT(const AliFemtoCutMonito
   fHistBetaT = new TH1D(*c.fHistBetaT);
   fHistBetaTpT1 = new TH2D(*c.fHistBetaTpT1);
   fHistBetaTpT2 = new TH2D(*c.fHistBetaTpT2);
-  fHistBetaTpairpT = new TH2D(*c.fHistBetaTpairpT);
-  fHistBetaTpairmT = new TH2D(*c.fHistBetaTpairmT);  
+  fHistBetaTPairpT = new TH2D(*c.fHistBetaTPairpT);
+  fHistBetaTPairmT = new TH2D(*c.fHistBetaTPairmT);  
 }
 
 AliFemtoCutMonitorPairBetaT::~AliFemtoCutMonitorPairBetaT() {
@@ -101,8 +101,8 @@ AliFemtoCutMonitorPairBetaT::~AliFemtoCutMonitorPairBetaT() {
   delete fHistBetaT;
   delete fHistBetaTpT1;
   delete fHistBetaTpT2;
-  delete fHistBetaTpairpT;
-  delete fHistBetaTpairmT;
+  delete fHistBetaTPairpT;
+  delete fHistBetaTPairmT;
 }
 
 AliFemtoCutMonitorPairBetaT& AliFemtoCutMonitorPairBetaT::operator=(const AliFemtoCutMonitorPairBetaT& c) {
@@ -116,8 +116,8 @@ AliFemtoCutMonitorPairBetaT& AliFemtoCutMonitorPairBetaT::operator=(const AliFem
   fHistBetaT = new TH1D(*c.fHistBetaT);
   fHistBetaTpT1 = new TH2D(*c.fHistBetaTpT1);
   fHistBetaTpT2 = new TH2D(*c.fHistBetaTpT2);
-  fHistBetaTpairpT = new TH2D(*c.fHistBetaTpairpT);
-  fHistBetaTpairmT = new TH2D(*c.fHistBetaTpairmT);  
+  fHistBetaTPairpT = new TH2D(*c.fHistBetaTPairpT);
+  fHistBetaTPairmT = new TH2D(*c.fHistBetaTPairmT);  
   fBinsBetaT = c.fBinsBetaT;
   fMinBetaT = c.fMinBetaT;
   fMaxBetaT = c.fMaxBetaT;
@@ -163,8 +163,8 @@ void AliFemtoCutMonitorPairBetaT::Fill(const AliFemtoPair* aPair) {
   fHistBetaT->Fill(betaT);
   fHistBetaTpT1->Fill(betaT,TMath::Sqrt(px1*px1 + py1*py1));
   fHistBetaTpT2->Fill(betaT,TMath::Sqrt(px2*px2 + py2*py2));
-  fHistBetaTpairpT->Fill(betaT, pTpair);
-  fHistBetaTpairmT->Fill(betaT, mTpair);  
+  fHistBetaTPairpT->Fill(betaT, pTpair);
+  fHistBetaTPairmT->Fill(betaT, mTpair);  
 }
 
 void AliFemtoCutMonitorPairBetaT::Write() {
@@ -172,8 +172,8 @@ void AliFemtoCutMonitorPairBetaT::Write() {
   fHistBetaT->Write();
   fHistBetaTpT1->Write();
   fHistBetaTpT2->Write();
-  fHistBetaTpairpT->Write();
-  fHistBetaTpairmT->Write();  
+  fHistBetaTPairpT->Write();
+  fHistBetaTPairmT->Write();  
 }
 
 TList *AliFemtoCutMonitorPairBetaT::GetOutputList() {
@@ -181,7 +181,7 @@ TList *AliFemtoCutMonitorPairBetaT::GetOutputList() {
   tOutputList->Add(fHistBetaT);
   tOutputList->Add(fHistBetaTpT1);
   tOutputList->Add(fHistBetaTpT2);
-  tOutputList->Add(fHistBetaTpairpT);
-  tOutputList->Add(fHistBetaTpairmT);
+  tOutputList->Add(fHistBetaTPairpT);
+  tOutputList->Add(fHistBetaTPairmT);
   return tOutputList;
 }
