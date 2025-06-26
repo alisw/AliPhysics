@@ -423,10 +423,17 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects() {
                                 MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
   fQAList->Add(fHist3LambdaCentPtMass);
 
+  fHist3LambdaCentPtMassWeighted = new TH3D("fHist3LambdaCentPtMassWeighted", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10,
+                                MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
+  fQAList->Add(fHist3LambdaCentPtMassWeighted);
+
   fHist3AntiLambdaCentPtMass = new TH3D("fHist3AntiLambdaCentPtMass", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10,
                                 MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
   fQAList->Add(fHist3AntiLambdaCentPtMass);
 
+  fHist3AntiLambdaCentPtMassWeighted = new TH3D("fHist3AntiLambdaCentPtMassWeighted", ";Centrality;Pt;Mass", 8, 0, 80, 20, 0, 10,
+                                MASSBIN, LAMBDAMASS - MASSCUT, LAMBDAMASS + MASSCUT);
+  fQAList->Add(fHist3AntiLambdaCentPtMassWeighted);
 
   // Plane
   fProfile2DQxCentVz[0] = new TProfile2D("fProfile2DQxCentVz_bfRC", ";Centrality;VzBin;Qx", 70, 0, 70, 3, 0, 3);
@@ -1066,6 +1073,13 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s() {
       float nue_weight = GetPIDNUECor(code, pt);
       if (nue_weight > 0.f) weight *= nue_weight;
     }
+
+    if (code == 3122) {
+      fHist3LambdaCentPtMassWeighted->Fill(fCent, pt, mass, weight);
+    } else {
+      fHist3AntiLambdaCentPtMassWeighted->Fill(fCent, pt, mass, weight);
+    }
+
     //vecParticleV0 [pt,eta,phi,id,pdgcode,pidweight, mass, id_daughter_1, id_daughter_2]
     vecParticleV0.emplace_back(std::array<float, 9>{pt, eta, phi, (float)id, (float)code, weight, mass, (float)id_daughter_1, (float)id_daughter_2});
   } // loop V0 end
