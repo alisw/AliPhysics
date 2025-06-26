@@ -37,6 +37,8 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
                                                        Double_t MinEoPcut = 0.9,
                                                        Double_t MaxEoPcut = 1.3,
                                                        Double_t M20cut = 0.35,
+                                                       Double_t MinM02cut = 0.01,
+                                                       Double_t MaxM02cut = 2.00,
                                                        Double_t MinPtTPC = 0.5,
                                                        Double_t MaxPtTPC = 4.,
                                                        Double_t MinPtEMCal = 4.,
@@ -92,6 +94,8 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
     task->SetMinEoPcut(MinEoPcut);
     task->SetMaxEoPcut(MaxEoPcut);
     task->SetM20cut(M20cut);
+    task->SetMinM02cut(MinM02cut);
+    task->SetMaxM02cut(MaxM02cut);
     task->SetMinPtTPC(MinPtTPC);
     task->SetMaxPtTPC(MaxPtTPC);
     task->SetMinPtEMCal(MinPtEMCal);
