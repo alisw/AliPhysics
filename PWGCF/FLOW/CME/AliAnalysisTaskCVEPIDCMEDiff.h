@@ -335,6 +335,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TH1D* fHistLambdaCPA{nullptr};                     //!<!
   TH1D* fHistLambdaDecayLength{nullptr};             //!<!
   TH3D* fHist3LambdaCentPtMass{nullptr};             //!<!
+  TH3D* fHist3LambdaCentPtMassWeighted{nullptr};     //!<!
   TH2D* fHist2LambdaMassPtY{nullptr};                //!<!
   TH1D* fHistAntiLambdaPt{nullptr};                  //!<!
   TH1D* fHistAntiLambdaEta{nullptr};                 //!<!
@@ -345,6 +346,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE {
   TH1D* fHistAntiLambdaCPA{nullptr};                 //!<!
   TH1D* fHistAntiLambdaDecayLength{nullptr};         //!<!
   TH3D* fHist3AntiLambdaCentPtMass{nullptr};         //!<!
+  TH3D* fHist3AntiLambdaCentPtMassWeighted{nullptr}; //!<!
   TH2D* fHist2AntiLambdaMassPtY{nullptr};            //!<!
 
   std::array<TProfile2D*, 2> fProfile2DQxCentVz{nullptr}; //!<!
