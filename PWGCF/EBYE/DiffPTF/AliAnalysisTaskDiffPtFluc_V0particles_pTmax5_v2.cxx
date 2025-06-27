@@ -651,7 +651,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserCreateOutputObjects() 
   //Lambda or Anti-lambda
   for(int i=0; i<8; i++)
     {
-      fProfLambda_fA_MnPtB_vs_Minv_Pt[i] = new TProfile2D(Form("fProfLambda_fA_MnPtB_vs_Minv_Pt%d",i),"X:M_inv, Y:Pt",200,1.095,1.135,20,fPtBin);
+      fProfLambda_fA_MnPtB_vs_Minv_Pt[i] = new TProfile2D(Form("fProfLambda_fA_MnPtB_vs_Minv_Pt%d",i),"X:M_inv, Y:Pt",160,1.095,1.135,20,fPtBin);
       fProfLambda_fA_vs_Minv_Pt[i] = new TProfile2D(Form("fProfLambda_fA_vs_Minv_Pt%d",i),"X:M_inv, Y:Pt",160,1.095,1.135,20,fPtBin);
       fHis2DLambda_Minv_Pt[i] = new TH2D(Form("fHis2DLambda_Minv_Pt%d",i), "X:M_inv, Y:Pt",160,1.095,1.135,20,fPtBin);
       fOutputList->Add(fProfLambda_fA_MnPtB_vs_Minv_Pt[i]);
@@ -1241,14 +1241,14 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
   //++++++++++++++++++++++++++++++++++++++++++++
 
   if(N_sumK0s_etaLess0>0 && N_sum_etaLess0>0 && N_sum_etaGreaterEtamin>0) {
-    MnPtA_K0s->Fill(centBin, pT_sum_etaLess0/N_sum_etaLess0);
-    MnPtB_K0s->Fill(centBin, pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin);
-    MnPtAB_K0s->Fill(centBin, ((pT_sum_etaLess0/N_sum_etaLess0)*(pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)));
+    MnPtA_K0s->Fill(lV0M, pT_sum_etaLess0/N_sum_etaLess0);
+    MnPtB_K0s->Fill(lV0M, pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin);
+    MnPtAB_K0s->Fill(lV0M, ((pT_sum_etaLess0/N_sum_etaLess0)*(pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)));
   }
   if (N_sumLambda_etaLess0>0 && N_sum_etaLess0>0 && N_sum_etaGreaterEtamin>0) {
-    MnPtA_Lambda->Fill(centBin, pT_sum_etaLess0/N_sum_etaLess0);
-    MnPtB_Lambda->Fill(centBin, pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin);
-    MnPtAB_Lambda->Fill(centBin, ((pT_sum_etaLess0/N_sum_etaLess0)*(pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)));
+    MnPtA_Lambda->Fill(lV0M, pT_sum_etaLess0/N_sum_etaLess0);
+    MnPtB_Lambda->Fill(lV0M, pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin);
+    MnPtAB_Lambda->Fill(lV0M, ((pT_sum_etaLess0/N_sum_etaLess0)*(pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)));
   }
   //++++++++++++++++++++++++++++++++++++++++++++
   
