@@ -388,6 +388,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fClusterETag(0),
   fClusterEProbe(0),
   fCellEProbe(0),
+  fInitializedFillV0MMultCorrMC(false),
+  fDoFillV0MMultCorrMC(false),
+  fnTracksV0M(0),
   fEventPlaneAngle(-100),
   fRandom(0),
   fnCuts(0),
@@ -757,6 +760,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fClusterETag(0),
   fClusterEProbe(0),
   fCellEProbe(0),
+  fInitializedFillV0MMultCorrMC(false),
+  fDoFillV0MMultCorrMC(false),
+  fnTracksV0M(0),
   fEventPlaneAngle(-100),
   fRandom(0),
   fnCuts(0),
@@ -3612,6 +3618,17 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
         }
       }
     }
+    
+    // Prepare to fill the V0M resolution study histogram in the EventCuts
+    if(fIsMC > 0 && !fDoLightOutput){
+      if(!fInitializedFillV0MMultCorrMC){
+        fInitializedFillV0MMultCorrMC = true;
+        double range[2];
+        ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentralityRange(range);
+        fDoFillV0MMultCorrMC = (range[0] == range[1]) ? false : true;
+        ((AliConvEventCuts*)fEventCutArray->At(fiCut))->InitV0MultCorrMC(fIsMC > 1);
+      }
+    }
 
     if(fIsMC> 0){
     if(fInputEvent->IsA()==AliESDEvent::Class())
@@ -3646,6 +3663,12 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     if(fIsMC> 0){
       fVectorDoubleCountTrueClusterGammas.clear();
       FillMultipleCountHistoAndClear(fMapMultipleCountTrueClusterGammas,fHistoMultipleCountTrueClusterGamma[iCut]);
+    }
+    if(fIsMC > 0){
+      if(fDoFillV0MMultCorrMC){
+        ((AliConvEventCuts*)fEventCutArray->At(fiCut))->FillV0MResolHist(fInputEvent, fnTracksV0M, fWeightJetJetMC);
+        fnTracksV0M = 0;
+      }
     }
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching()) fGammaCandidates->Clear();
     fClusterCandidates->Clear(); // delete cluster candidates
@@ -4749,6 +4772,11 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles(Int_t isCurrentEventSelecte
     if(isCurrentEventSelected == 0){
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistParticleAbundanceMC(fInputEvent, particle, fWeightJetJetMC);
     }
+
+    if(fDoFillV0MMultCorrMC){
+      FillPartV0MMC(particle);
+    }
+
 
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if (isPrimary){
@@ -7574,5 +7602,30 @@ void AliAnalysisTaskGammaCalo::DoClusterMergingStudiesAOD(AliVCluster* clus,vect
 
       labelvect.push_back(tmpLabel);
     } // end of label loop
+  }
+}
+
+//__________________________________________________________________________
+void AliAnalysisTaskGammaCalo::FillPartV0MMC(AliAODMCParticle *particle){
+  if(particle->Charge() == 0) return;
+  if(particle->P() < 0.15) return;
+  
+  int indexDaughter = particle->GetDaughterFirst();
+  if(indexDaughter>0){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    AliAODMCParticle* daughterPart = (AliAODMCParticle*) fAODMCTrackArray->At(indexDaughter);
+    if(daughterPart){
+      double SecVtxZ = daughterPart->Zv();
+      if(particle->Eta() > 0 && std::abs(SecVtxZ) < 329){
+        return;
+      } else if (particle->Eta() < 0 && std::abs(SecVtxZ) < 88){
+        return;
+      }
+    }
+  }
+  if(particle->Eta() > 2.8 && particle->Eta() < 5.1){
+    fnTracksV0M++;
+  } else if(particle->Eta() > -3.7 && particle->Eta() < -1.7){
+    fnTracksV0M++;
   }
 }

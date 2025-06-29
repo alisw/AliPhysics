@@ -5109,7 +5109,7 @@ void AddTask_GammaConvCalo_pp(
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
-    analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+    analysisCuts[i]->SetFillCutHistograms("", enableQAPhotonTask > 0 ? true : false);
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
