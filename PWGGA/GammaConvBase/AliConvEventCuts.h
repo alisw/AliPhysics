@@ -754,6 +754,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                   TClonesArray *aodmcArray,
                                                   Bool_t isConversion );
 
+      // V0M resolution studies
+      void FillV0MResolHist(AliVEvent* event, const int nPartV0M, const double weight);
+      void InitV0MultCorrMC(bool callSumw2);
+
     protected:
       TList*                      fHistograms;                            ///<
       TList*                      fHeaderList;                            ///<
@@ -900,6 +904,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1D*                       hReweightMultMC;                        ///< histogram input for reweighting Pi0
       phosTriggerType             fPHOSTrigger;                           // Kind of PHOS trigger: L0,L1
 
+
+      // V0M resolution studies
+      TH2F*                       fHistoV0MMultCorrMC;                    ///< V0M multiplicity vs. number of true tracks in V0M acceptance
+
       // new pt weights data members
       bool                           fUseGetWeightForMesonNew; 
       std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects;          ///<  map of meson pdg code to PtWeightsBundle
@@ -914,7 +922,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,99)
+      ClassDef(AliConvEventCuts,100)
       /// \endcond
 };
 

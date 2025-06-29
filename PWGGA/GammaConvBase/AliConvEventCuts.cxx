@@ -223,6 +223,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
   fPHOSTrigger(kPHOSAny),
+  fHistoV0MMultCorrMC(nullptr),
   fUseGetWeightForMesonNew(kTRUE),
   fMapPtWeightsAccessObjects(),
   fMapPtWeightsIsFilledAndSane(kFALSE),
@@ -380,6 +381,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hReweightMultData(ref.hReweightMultData),
   hReweightMultMC(ref.hReweightMultMC),
   fPHOSTrigger(kPHOSAny),
+  fHistoV0MMultCorrMC(ref.fHistoV0MMultCorrMC),
   fUseGetWeightForMesonNew(ref.fUseGetWeightForMesonNew),
   fMapPtWeightsAccessObjects(ref.fMapPtWeightsAccessObjects),
   fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane),
@@ -705,7 +707,19 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
 
   }
+
   TH1::AddDirectory(kTRUE);
+}
+
+///________________________________________________________________________
+void AliConvEventCuts::InitV0MultCorrMC(bool callSumw2){
+  if(!fDoLightOutput && fCentralityMin != fCentralityMax){
+    fHistoV0MMultCorrMC = new TH2F("V0MMultVsV0MTracksMC","Mult est. with V0M vs. number of tracks with p > 0.15 in V0 acceptance", 101, -0.5, 100.5, 400, 0, 800);
+    fHistoV0MMultCorrMC->GetXaxis()->SetTitle("V0M multiplicity");
+    fHistoV0MMultCorrMC->GetYaxis()->SetTitle("V0M #it{N}_{particles}");
+    if(callSumw2) fHistoV0MMultCorrMC->Sumw2();
+    fHistograms->Add(fHistoV0MMultCorrMC);
+  }
 }
 
 ///________________________________________________________________________
@@ -9928,4 +9942,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kUnset;
   }
   return;
+}
+
+
+void AliConvEventCuts::FillV0MResolHist(AliVEvent* event, const int nPartV0M, const double weight){
+  if(!fHistoV0MMultCorrMC) return;
+  fHistoV0MMultCorrMC->Fill(GetCentrality(event), nPartV0M, weight);
 }
