@@ -148,7 +148,6 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutDCADaughtersMax(0),
   fdCutEtaDaughterMax(0),
   fdCutNSigmadEdxMax(0),
-  fdPtProtonPIDMax(0),
   fdCutChi2PerTPCCluster(0), 
   fdCutITSTOFtracks(0),
   fdTPCsignalNCut(0),
@@ -214,7 +213,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCascadeV0RadiusDecayMin(1.2),
   fdCutCascadeV0RadiusDecayMax(100.),
   fdCutV0MassDiff(0.005),
-  
+  fdCutNSigmadEdxMaxCasc(4.),
+
   fh1CascadeCandPerEvent(0)
 //------------------------------------------
 {
@@ -689,7 +689,6 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutDCADaughtersMax(0),
   fdCutEtaDaughterMax(0),
   fdCutNSigmadEdxMax(0),
-  fdPtProtonPIDMax(0),
   fdCutChi2PerTPCCluster(0), 
   fdCutITSTOFtracks(0),
   fdTPCsignalNCut(0),
@@ -755,6 +754,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCascadeV0RadiusDecayMin(1.2),
   fdCutCascadeV0RadiusDecayMax(100.),
   fdCutV0MassDiff(0.005),
+  fdCutNSigmadEdxMaxCasc(4.),
   
   
   fh1CascadeCandPerEvent(0)
@@ -2472,14 +2472,12 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutChi2PerTPCCluster > 0.) printf("maximum daughters Chi2 per TPC Cluster: %g\n", fdCutChi2PerTPCCluster);
   if(fdCutITSTOFtracks > 0.) printf("minimum number of tracks with ITS refit or hit in TOF: %d\n", fdCutITSTOFtracks);
   if(fdTPCsignalNCut > 0.) printf("minimum number of points in TPC (track length): %d\n", fdTPCsignalNCut);
-  if(fbGeoCut > 0.) printf("GeoCut is on: fESDTrackCuts.SetCutGeoNcrNcl(%d, %d, 1.5, 0.85, 0.7)",   fDeadZoneWidth, fNcrNclLength);
+  if(fbGeoCut > 0.) printf("GeoCut is on: fESDTrackCuts.SetCutGeoNcrNcl(%g, %g, 1.5, 0.85, 0.7)\n",   fDeadZoneWidth, fNcrNclLength);
   if(fdCutPtDaughterMin > 0.) printf("min pt of daughter tracks [GeV/c]: %g\n", fdCutPtDaughterMin);
   if(fdCutDCAToPrimVtxMin > 0.) printf("min DCA of daughters to the prim vtx [cm]: %g\n", fdCutDCAToPrimVtxMin);
   if(fdCutDCADaughtersMax > 0.) printf("max DCA between daughters [sigma of TPC tracking]: %g\n", fdCutDCADaughtersMax);
   if(fdCutEtaDaughterMax > 0.) printf("max |eta| of daughter tracks: %g\n", fdCutEtaDaughterMax);
-  if(fdCutNSigmadEdxMax > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax); //&& (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.)))
-  //if(fdCutNSigmadEdxMax > 0. && fbIsPbPb && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
-  printf("V0 reconstruction method: %s\n", fbOnFly ? "on-the-fly" : "offline");
+  if(fdCutNSigmadEdxMax > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax); 
   if(fdCutCPAKMin > 0.) printf("min CPA, K0S: %g\n", fdCutCPAKMin);
   if(fdCutCPALMin > 0.) printf("min CPA, (A)Lambda: %g\n", fdCutCPALMin);
   if(fdCutRadiusDecayMin > 0. && fdCutRadiusDecayMax > 0.) printf("R of the decay vertex [cm]: %g-%g\n", fdCutRadiusDecayMin, fdCutRadiusDecayMax);
@@ -2507,7 +2505,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutCascadeV0RadiusDecayMin > 0.) printf( "min V0 from cascade decay radius: %g\n", fdCutCascadeV0RadiusDecayMin);
   if(fdCutCascadeV0RadiusDecayMax > 0.) printf( "min V0 from cascade decay radius: %g\n", fdCutCascadeV0RadiusDecayMax);
   if(fdCutV0MassDiff > 0.) printf("Max difference of v0 daughter mass from the PDG Lambda mass value: %g\n", fdCutV0MassDiff);
-
+  if( fdCutNSigmadEdxMaxCasc > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx] of cascade: %g\n",  fdCutNSigmadEdxMaxCasc);
 
   printf("-------------------------------------------------------\nJet analysis:\n");
   printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
@@ -2622,7 +2620,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1EventCounterCut->Fill(5); // n events after multiplicity sel
   // PID Response Task object
   AliPIDResponse* fPIDResponse = 0;
-  if(fdCutNSigmadEdxMax > 0.) {//} && (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.))) {
+  if(fdCutNSigmadEdxMax > 0. || fdCutNSigmadEdxMaxCasc > 0.) {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
     fPIDResponse = inputHandler->GetPIDResponse();
@@ -3242,6 +3240,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Bool_t bOnFlyStatus = v0->GetOnFlyStatus(); // online (on fly) reconstructed vs offline reconstructed
     const AliAODTrack* trackPos = (AliAODTrack*)v0->GetDaughter(0); // positive daughter track
     const AliAODTrack* trackNeg = (AliAODTrack*)v0->GetDaughter(1); // negative daughter track
+    if (!trackPos || !trackNeg)
+      continue; 
     Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track calculated as if primary, != v0->PtProng(0)
     Double_t dPtDaughterNeg = trackNeg->Pt(); // != v0->PtProng(1)
     Double_t dNRowsPos = trackPos->GetTPCClusterInfo(2, 1); // crossed TPC pad rows of a daughter track
@@ -3271,9 +3271,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dLOverP = dDecLen / v0->P(); // L/p
     Double_t dROverPt = dDecLen2D / dPtV0; // R/pT
     Double_t dMLOverPK0s = dMassPDGK0s * dLOverP; // m*L/p = c*(proper lifetime)
-    // Double_t dMLOverPLambda = dMassPDGLambda*dLOverP; // m*L/p
+    Double_t dMLOverPLambda = dMassPDGLambda*dLOverP; // m*L/p
     Double_t dMROverPtK0s = dMassPDGK0s * dROverPt; // m*R/pT
-    Double_t dMROverPtLambda = dMassPDGLambda * dROverPt; // m*R/pT
+    //Double_t dMROverPtLambda = dMassPDGLambda * dROverPt; // m*R/pT
     Double_t dNSigmaPosPion   = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackPos, AliPID::kPion)) : 0.); // difference between measured and expected signal of the dE/dx in the TPC
     Double_t dNSigmaPosProton = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackPos, AliPID::kProton)) : 0.);
     Double_t dNSigmaNegPion   = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackNeg, AliPID::kPion)) : 0.);
@@ -3311,7 +3311,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh2CutEtaK0s[0]->Fill(dMassV0K0s, dEtaDaughterPos);
       fh2CutEtaK0s[0]->Fill(dMassV0K0s, dEtaDaughterNeg);
       fh2CutRapK0s[0]->Fill(dMassV0K0s, dRapK0s);
-      fh2CutCTauK0s[0]->Fill(dMassV0K0s, dMROverPtK0s / dCTauK0s);
+      fh2CutCTauK0s[0]->Fill(dMassV0K0s, dMLOverPK0s / dCTauK0s);
       fh2CutPIDPosK0s[0]->Fill(dMassV0K0s, dNSigmaPosPion);
       fh2CutPIDNegK0s[0]->Fill(dMassV0K0s, dNSigmaNegPion);
     }
@@ -3323,7 +3323,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh2CutEtaLambda[0]->Fill(dMassV0Lambda, dEtaDaughterPos);
       fh2CutEtaLambda[0]->Fill(dMassV0Lambda, dEtaDaughterNeg);
       fh2CutRapLambda[0]->Fill(dMassV0Lambda, dRapLambda);
-      fh2CutCTauLambda[0]->Fill(dMassV0Lambda, dMROverPtLambda / dCTauLambda);
+      fh2CutCTauLambda[0]->Fill(dMassV0Lambda, dMLOverPLambda / dCTauLambda);
       fh2CutPIDPosLambda[0]->Fill(dMassV0Lambda, dNSigmaPosProton);
       fh2CutPIDNegLambda[0]->Fill(dMassV0Lambda, dNSigmaNegPion);
     }
@@ -3525,12 +3525,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Lifetime cut
     if(fdCutNTauKMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Proper lifetime < %g (K)\n", fdCutNTauKMax);
-      if(dMROverPtK0s > fdCutNTauKMax * dCTauK0s)
+      if(dMLOverPK0s > fdCutNTauKMax * dCTauK0s)
         bIsCandidateK0s = kFALSE;
     }
     if(fdCutNTauLMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Proper lifetime < %g (L, AL)\n", fdCutNTauLMax);
-      if(dMROverPtLambda > fdCutNTauLMax * dCTauLambda) {
+      if(dMLOverPLambda > fdCutNTauLMax * dCTauLambda) {
         bIsCandidateLambda = kFALSE;
         bIsCandidateALambda = kFALSE;
       }
@@ -3542,14 +3542,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // 12
     // Daughter PID
     if(fdCutNSigmadEdxMax > 0.) {
-      /*if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
-        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
-        if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
-          bIsCandidateLambda = kFALSE;
-        if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
-          bIsCandidateALambda = kFALSE;
-      }*/
-      //else {// p-p
       if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
       if(dNSigmaPosPion > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // pi+, pi-
         bIsCandidateK0s = kFALSE;
@@ -3557,7 +3549,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         bIsCandidateLambda = kFALSE;
       if(dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) // p-, pi+
         bIsCandidateALambda = kFALSE;
-      //}
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     }
     iCutIndex++;
@@ -3704,7 +3695,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh2CutEtaK0s[1]->Fill(dMassV0K0s, dEtaDaughterPos);
       fh2CutEtaK0s[1]->Fill(dMassV0K0s, dEtaDaughterNeg);
       fh2CutRapK0s[1]->Fill(dMassV0K0s, dRapK0s);
-      fh2CutCTauK0s[1]->Fill(dMassV0K0s, dMROverPtK0s / dCTauK0s);
+      fh2CutCTauK0s[1]->Fill(dMassV0K0s, dMLOverPK0s / dCTauK0s);
       fh2CutPIDPosK0s[1]->Fill(dMassV0K0s, dNSigmaPosPion);
       fh2CutPIDNegK0s[1]->Fill(dMassV0K0s, dNSigmaNegPion);
     }
@@ -3716,7 +3707,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh2CutEtaLambda[1]->Fill(dMassV0Lambda, dEtaDaughterPos);
       fh2CutEtaLambda[1]->Fill(dMassV0Lambda, dEtaDaughterNeg);
       fh2CutRapLambda[1]->Fill(dMassV0Lambda, dRapLambda);
-      fh2CutCTauLambda[1]->Fill(dMassV0Lambda, dMROverPtLambda / dCTauLambda);
+      fh2CutCTauLambda[1]->Fill(dMassV0Lambda, dMLOverPLambda / dCTauLambda);
       fh2CutPIDPosLambda[1]->Fill(dMassV0Lambda, dNSigmaPosProton);
       fh2CutPIDNegLambda[1]->Fill(dMassV0Lambda, dNSigmaNegPion);
     }
@@ -4234,7 +4225,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     } 
         
     // Retrieving all relevant properties of the Cascade candidate
-    Bool_t bOnFlyStatus = Cascade->GetOnFlyStatus(); // online (on fly) reconstructed vs offline reconstructed 
+    //Bool_t bOnFlyStatus = Cascade->GetOnFlyStatus(); // online (on fly) reconstructed vs offline reconstructed 
 
     //Cascade vertex position 
     Double_t dXiVtxPos[3]; // Xi vertex position {x,y,z}
@@ -4251,6 +4242,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     const AliAODTrack* trackBach = (AliAODTrack*)Cascade->GetDecayVertexXi()->GetDaughter(0); // bachelor daughter track    
     const AliAODTrack* trackPos  = (AliAODTrack*)Cascade->GetDaughter(0); // positive daughter track
     const AliAODTrack* trackNeg  = (AliAODTrack*)Cascade->GetDaughter(1); // negative daughter track  
+
+    if (!trackPos || ! trackNeg || !trackBach)
+      continue; 
 
     Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track
     Double_t dPtDaughterNeg = trackNeg->Pt();
@@ -4285,13 +4279,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dXiDecayPath[3];
     for(Int_t iPos = 0; iPos < 3; iPos++)
       dXiDecayPath[iPos] = dXiVtxPos[iPos] - dPrimVtxPos[iPos]; // vector of the Xi path      
-    // Double_t dXiDecLen = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1] + dXiDecayPath[2] * dXiDecayPath[2]); // path length L
-    Double_t dXiDecLen2D = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1]); // transverse path length R
-    // Double_t dLOverP = dXiDecLen / Cascade->P(); // L/p
-    Double_t dROverPt = dXiDecLen2D / dPtCascade; // R/pT  
-    // Double_t dMLOverPXi = dMassPDGXiMinus * dLOverP; // m*L/p = c*(proper lifetime)
-    Double_t dMROverPtXi = dMassPDGXiMinus * dROverPt; // m*R/pT
-    Double_t dMROverPtOmega = dMassPDGOmegaMinus * dROverPt; // m*R/pT
+    Double_t dXiDecLen = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1] + dXiDecayPath[2] * dXiDecayPath[2]); // path length L
+    //Double_t dXiDecLen2D = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1]); // transverse path length R
+    Double_t dLOverP = dXiDecLen / TMath::Sqrt(Cascade->Ptot2Xi()); // L/p
+    //Double_t dROverPt = dXiDecLen2D / dPtCascade; // R/pT  
+    Double_t dMLOverPXi = dMassPDGXiMinus * dLOverP; // m*L/p = c*(proper lifetime)
+    Double_t dMLOverPOmega = dMassPDGOmegaMinus * dLOverP; // m*L/p = c*(proper lifetime)
+    //Double_t dMROverPtXi = dMassPDGXiMinus * dROverPt; // m*R/pT
+    //Double_t dMROverPtOmega = dMassPDGOmegaMinus * dROverPt; // m*R/pT
 
     Double_t dNSigmaPosPion   = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackPos, AliPID::kPion)) : 0.); // difference between measured and expected signal of the dE/dx in the TPC
     Double_t dNSigmaPosProton = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackPos, AliPID::kProton)) : 0.);
@@ -4336,14 +4331,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Start of global cuts
     // 2'
     // Reconstruction method
-    if(bPrintCuts) printf("Rec: Applying cut: Reconstruction method: on-the-fly? %s\n", (fbOnFly ? "yes" : "no"));
-    if(bOnFlyStatus != fbOnFly)
-      continue;
+    //if(bPrintCuts) printf("Rec: Applying cut: Reconstruction method: on-the-fly? %s\n", (fbOnFly ? "yes" : "no"));
+    //if(bOnFlyStatus != fbOnFly)
+    //  continue;
     FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     iCutIndex++;
     // 3'
     // Tracks TPC OK
-    if(bPrintCuts) printf("Rec: Applying cut: Correct charge of daughters\n");
+    /*if(bPrintCuts) printf("Rec: Applying cut: Correct charge of daughters\n");
     if(!trackNeg || !trackPos)
       continue;
     if(trackNeg->Charge() == trackPos->Charge())  // daughters have different charge?
@@ -4352,7 +4347,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       continue;
     if(trackPos->Charge() != 1)  // daughters have expected charge?
       continue;
-      
+    */
+
     if(fbTPCRefit) {
       if(bPrintCuts) printf("Rec: Applying cut: TPC refit\n");
       if(!trackNeg->IsOn(AliAODTrack::kTPCrefit)) // TPC refit is ON?
@@ -4547,11 +4543,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Lifetime cut
     if(fdCutNTauXMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Xi Proper lifetime: < %f\n", fdCutNTauXMax);
-      if(dMROverPtXi > fdCutNTauXMax * dCTauXi) {
+      if(dMLOverPXi > fdCutNTauXMax * dCTauXi) {
         bIsCandidateXiMinus = kFALSE;
         bIsCandidateXiPlus  = kFALSE;
       }
-      if(dMROverPtOmega > fdCutNTauXMax * dCTauOmega) {
+      if(dMLOverPOmega > fdCutNTauXMax * dCTauOmega) {
         bIsCandidateOmegaMinus = kFALSE;
         bIsCandidateOmegaPlus  = kFALSE;
       }
@@ -4561,26 +4557,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
  
     // 17'
     // Daughter PID
-    if(fdCutNSigmadEdxMax > 0.) {
-     /* if(fbIsPbPb && fdPtProtonPIDMax > 0.) {// Pb-Pb
-        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
-        if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
-          bIsCandidateXiMinus = kFALSE;
-        if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
-          bIsCandidateXiPlus = kFALSE;
-      }
-      else {// p-p*/
-      
-      if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
-      if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
+    if(fdCutNSigmadEdxMaxCasc > 0.) {
+      if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMaxCasc);
+      if(dNSigmaBachPion > fdCutNSigmadEdxMaxCasc || dNSigmaPosProton > fdCutNSigmadEdxMaxCasc || dNSigmaNegPion > fdCutNSigmadEdxMaxCasc) // p+, pi-
         bIsCandidateXiMinus = kFALSE;
-      if(dNSigmaBachPion > fdCutNSigmadEdxMax || dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) //p-, pi+
+      if(dNSigmaBachPion > fdCutNSigmadEdxMaxCasc || dNSigmaNegProton > fdCutNSigmadEdxMaxCasc || dNSigmaPosPion > fdCutNSigmadEdxMaxCasc) //p-, pi+
         bIsCandidateXiPlus= kFALSE;
-      if(dNSigmaBachKaon > fdCutNSigmadEdxMax || dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
+      if(dNSigmaBachKaon > fdCutNSigmadEdxMaxCasc || dNSigmaPosProton > fdCutNSigmadEdxMaxCasc || dNSigmaNegPion > fdCutNSigmadEdxMaxCasc) // p+, pi-
         bIsCandidateOmegaMinus = kFALSE;
-      if(dNSigmaBachKaon > fdCutNSigmadEdxMax || dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) //p-, pi+
+      if(dNSigmaBachKaon > fdCutNSigmadEdxMaxCasc || dNSigmaNegProton > fdCutNSigmadEdxMaxCasc || dNSigmaPosPion > fdCutNSigmadEdxMaxCasc) //p-, pi+
         bIsCandidateOmegaPlus= kFALSE;
-      //}   
       FillCascadeCandidates(dMassCascadeXi, dMassCascadeOmega, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCutIndex, iCentIndex);
     }
     iCutIndex++;         

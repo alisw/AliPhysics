@@ -86,7 +86,6 @@ public:
   void SetCutDCADaughtersMax(Double_t val = 1.) {fdCutDCADaughtersMax = val;}
   void SetCutEtaDaughterMax(Double_t val = 0.8) {fdCutEtaDaughterMax = val;}
   void SetCutNSigmadEdxMax(Double_t val = 3.) {fdCutNSigmadEdxMax = val;}
-  void SetPtProtonPIDMax(Double_t val = 1.) {fdPtProtonPIDMax = val;}
   void SetOnFly(Bool_t val = 0) {fbOnFly = val;}
   void SetCutCPAKMin(Double_t val = 0.998) {fdCutCPAKMin = val;}
   void SetCutCPALMin(Double_t val = 0.998) {fdCutCPALMin = val;}
@@ -164,6 +163,7 @@ public:
   void SetCutCascadeV0RadiusDecayMax(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMax = val;}
   void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
   void SetCutV0MassDiff(Double_t val = 0.005) {fdCutV0MassDiff = val;}
+  void SetCutNSigmadEdxMaxCasc(Double_t val = 4.) {fdCutNSigmadEdxMaxCasc = val;}
   
   // axis: Xi invariant mass
   static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
@@ -239,7 +239,6 @@ private:
   Double_t fdCutDCADaughtersMax; // (1.) [sigma of TPC tracking] max DCA between daughters
   Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
-  Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut in Pb-Pb
   Double_t fdCutChi2PerTPCCluster; //(2.5) maximum daughters Chi2 per TPC Cluster 
   Int_t fdCutITSTOFtracks; //(1)  minimum number of tracks with ITS refit or hit in TOF
   Int_t fdTPCsignalNCut; //(50) minimum number of points in TPC (track length)
@@ -559,6 +558,7 @@ private:
 
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
   Double_t fdCutV0MassDiff; //(0.005) [GeV] V0 daughter mass difference from Lambda mass
+  Double_t fdCutNSigmadEdxMaxCasc; //(4.0)
  
   static const Int_t fgkiNCategCascade = 22; // number of Cascade selection steps  
   //Histograms 
