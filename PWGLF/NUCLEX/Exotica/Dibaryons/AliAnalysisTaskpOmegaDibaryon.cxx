@@ -1540,8 +1540,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     }
 
     if(!(IsQualityTrack(track))) continue;
-    if(dca < 0.05)               continue;
-    if(dca > 3)                  continue;
+    //if(dca < 0.05)               continue;
+    //if(dca > 3)                  continue;
     
     // Xi
     if(isLambdadecayProton){ 
@@ -1582,8 +1582,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     if(ftrkID_daughter1 < 0) ftrkID_daughter1 =-ftrkID_daughter1-1;
     exProtonTrack->CopyFromVTrack(ProtonTrack);
     KFProtonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exProtonTrack, AliPID::ParticleMass(AliPID::kProton),-1);  
-    if((Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-    if((Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
     
     for(Int_t j=0; j<ndpp; j++){
 
@@ -1596,8 +1596,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       exPionTrack->CopyFromVTrack(PionTrack);
       KFPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exPionTrack, AliPID::ParticleMass(AliPID::kPion),1);  
       
-      if((Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-      if((Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
 
       KFParticleDibaryon KFSubMother;
       KFSubMother.ActivateWarnings();
@@ -1627,7 +1627,7 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       fDCADaugter = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
       //if(fDCADaugter > 1.5)       continue;
       DCAtoPrimVtx  = (Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex);
-      //if(KFSubMother.Chi2() > 10) dcontinue;
+      //if(KFSubMother.Chi2() > 10) continue;
       //if(DCAtoPrimVtx < 0.2) continue;
       
       //cos(PA) 
@@ -1666,10 +1666,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	KFBachPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kPion),1); 
 	KFBachKaonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kKaon),1); 
 	
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
 	
 	KFParticleDibaryon KFMother;
 	KFParticleDibaryon KFMother_Omega;
@@ -1756,8 +1756,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	if(fDCADaugter > 1.5)      continue;
 	//if(DecLength_Xi < 0.8)     continue;
 	//if(DecLength_Xi > 200)     continue;
-	if(fPA_Xi < 0.8)           continue;
-	if(DCAdauXY_Xi > 2.0)      continue;
+	if(fPA_Xi < 0.9)           continue;
+	if(DCAdauXY_Xi > 1.5)      continue;
 	
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fInvMassXi_Casc_KF")) ->Fill(lorentzsum_Xi->M());
 	if(TMath::Abs(lorentzsum_Xi->M() - TDatabasePDG::Instance()->GetParticle(3334)->Mass()) < 0.00907){
@@ -1773,9 +1773,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_omegap       = vertex->GetZ();
 	  fcentrality_omegap    = centralityV0M;
 	  //=== Daughter track
-	  fdca_daughter1_omegap   = (Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex);
-	  fdca_daughter2_omegap   = (Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex);
-	  fdca_daughter3_omegap   = (Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex);
+	  fdca_daughter1_omegap   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter2_omegap   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter3_omegap   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_omegap = ftrkID_daughter1;	
 	  ftrkID_daughter2_omegap = ftrkID_daughter2;
 	  ftrkID_daughter3_omegap = ftrkID_daughter3;
@@ -1823,9 +1823,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_sidebandp       = vertex->GetZ();
 	  fcentrality_sidebandp    = centralityV0M;
           //=== Daughter track
-          fdca_daughter1_sidebandp   = (Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex);
-          fdca_daughter2_sidebandp   = (Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex);
-          fdca_daughter3_sidebandp   = (Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex);
+          fdca_daughter1_sidebandp   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter2_sidebandp   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter3_sidebandp   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_sidebandp = ftrkID_daughter1;	
 	  ftrkID_daughter2_sidebandp = ftrkID_daughter2;
 	  ftrkID_daughter3_sidebandp = ftrkID_daughter3;
@@ -1884,8 +1884,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     if(ftrkID_daughter1 < 0) ftrkID_daughter1 =-ftrkID_daughter1-1;
     exProtonTrack->CopyFromVTrack(ProtonTrack);
     KFProtonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exProtonTrack, AliPID::ParticleMass(AliPID::kProton),1);  
-    if((Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-    if((Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;    
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;    
 
     for(Int_t j=0; j<ndnp; j++){
 
@@ -1897,10 +1897,12 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       if(ftrkID_daughter2 < 0) ftrkID_daughter2 =-ftrkID_daughter2-1;
       exPionTrack->CopyFromVTrack(PionTrack);
       KFPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exPionTrack, AliPID::ParticleMass(AliPID::kPion),-1);  
-      if((Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-      if((Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;      
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;      
 
       KFParticleDibaryon KFSubMother;
+      KFSubMother.ActivateWarnings();
+
       KFSubMother.AddDaughter(KFProtonTrack);
       if(!KFSubMother.CheckDaughter(KFPionTrack)) continue;
       KFSubMother.AddDaughter(KFPionTrack);
@@ -1965,10 +1967,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	exBachKaonTrack->CopyFromVTrack(BachNPionTrack);
 	KFBachPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kPion),-1); 
 	KFBachKaonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kKaon),-1); 
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;      
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex) > 3.)   continue;      	
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;      
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;      	
 
 	KFParticleDibaryon KFMother;
 	KFParticleDibaryon KFMother_Omega;
@@ -2057,8 +2059,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	if(fDCADaugter > 1.5)      continue;
 	//if(DecLength_Xi < 0.8)     continue;
 	//if(DecLength_Xi > 200)     continue;
-	if(fPA_Xi < 0.8)           continue;
-	if(DCAdauXY_Xi > 2.0)      continue;
+	if(fPA_Xi < 0.9)           continue;
+	if(DCAdauXY_Xi > 1.5)      continue;
 	
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fInvMassXi_Casc_KF")) ->Fill(lorentzsum_Xi->M());
 	if(TMath::Abs(lorentzsum_Xi->M() - TDatabasePDG::Instance()->GetParticle(3334)->Mass()) < 0.00907){
@@ -2073,9 +2075,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_omegam       = vertex->GetZ();
 	  fcentrality_omegam    = centralityV0M;
 	  //=== Daughter track
-	  fdca_daughter1_omegam   = (Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex);
-	  fdca_daughter2_omegam   = (Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex);
-	  fdca_daughter3_omegam   = (Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex);
+	  fdca_daughter1_omegam   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter2_omegam   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter3_omegam   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_omegam = ftrkID_daughter1;	
 	  ftrkID_daughter2_omegam = ftrkID_daughter2;
 	  ftrkID_daughter3_omegam = ftrkID_daughter3;
@@ -2123,9 +2125,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_sidebandm       = vertex->GetZ();
 	  fcentrality_sidebandm    = centralityV0M;
           //=== Daughter track
-          fdca_daughter1_sidebandm   = (Float_t)KFProtonTrack.GetDistanceFromVertexXY(primKFVertex);
-          fdca_daughter2_sidebandm   = (Float_t)KFPionTrack.GetDistanceFromVertexXY(primKFVertex);
-          fdca_daughter3_sidebandm   = (Float_t)KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex);
+          fdca_daughter1_sidebandm   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter2_sidebandm   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter3_sidebandm   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_sidebandm = ftrkID_daughter1;	
 	  ftrkID_daughter2_sidebandm = ftrkID_daughter2;
 	  ftrkID_daughter3_sidebandm = ftrkID_daughter3;
