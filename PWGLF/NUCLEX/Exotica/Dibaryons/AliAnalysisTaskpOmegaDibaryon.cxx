@@ -1540,8 +1540,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     }
 
     if(!(IsQualityTrack(track))) continue;
-    //if(dca < 0.05)               continue;
-    //if(dca > 3)                  continue;
+    if(dca < 0.05)               continue;
+    if(dca > 3)                  continue;
     
     // Xi
     if(isLambdadecayProton){ 
@@ -1582,8 +1582,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     if(ftrkID_daughter1 < 0) ftrkID_daughter1 =-ftrkID_daughter1-1;
     exProtonTrack->CopyFromVTrack(ProtonTrack);
     KFProtonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exProtonTrack, AliPID::ParticleMass(AliPID::kProton),-1);  
-    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
     
     for(Int_t j=0; j<ndpp; j++){
 
@@ -1596,8 +1596,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       exPionTrack->CopyFromVTrack(PionTrack);
       KFPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exPionTrack, AliPID::ParticleMass(AliPID::kPion),1);  
       
-      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
 
       KFParticleDibaryon KFSubMother;
       KFSubMother.ActivateWarnings();
@@ -1666,10 +1666,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	KFBachPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kPion),1); 
 	KFBachKaonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kKaon),1); 
 	
-	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
-	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
 	
 	KFParticleDibaryon KFMother;
 	KFParticleDibaryon KFMother_Omega;
@@ -1884,8 +1884,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     if(ftrkID_daughter1 < 0) ftrkID_daughter1 =-ftrkID_daughter1-1;
     exProtonTrack->CopyFromVTrack(ProtonTrack);
     KFProtonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exProtonTrack, AliPID::ParticleMass(AliPID::kProton),1);  
-    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;    
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;    
 
     for(Int_t j=0; j<ndnp; j++){
 
@@ -1897,8 +1897,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       if(ftrkID_daughter2 < 0) ftrkID_daughter2 =-ftrkID_daughter2-1;
       exPionTrack->CopyFromVTrack(PionTrack);
       KFPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exPionTrack, AliPID::ParticleMass(AliPID::kPion),-1);  
-      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-      if(TMath::Abs(KFPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;      
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;      
 
       KFParticleDibaryon KFSubMother;
       KFSubMother.ActivateWarnings();
@@ -1967,10 +1967,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	exBachKaonTrack->CopyFromVTrack(BachNPionTrack);
 	KFBachPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kPion),-1); 
 	KFBachKaonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kKaon),-1); 
-	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;      
-	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) < 0.05) continue;
-	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertex(primKFVertex)) > 3.)   continue;      	
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;      
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;      	
 
 	KFParticleDibaryon KFMother;
 	KFParticleDibaryon KFMother_Omega;
