@@ -120,7 +120,7 @@ class KFParticleBase2 : public KFParticle {
   float GetDStoPointBz( float B, const float xyz[3], float dsdr[6], const float* param) const
   { 
 
-    //cout<<"GetDStoPointBz[0]"<<endl;
+    cout<<"GetDStoPointBz[0]"<<endl;
 
     const float& x  = param[0];
     const float& y  = param[1];
@@ -154,35 +154,35 @@ class KFParticleBase2 : public KFParticle {
     bool mask = ( fabs(bq)<LocalSmall );
     if(mask && p2>1.e-4f)
       {
-	//cout<<"GetDStoPointBz[3-1]"<<endl;
+	cout<<"GetDStoPointBz[3-1]"<<endl;
 	dS = (a + dz*pz)/p2;  
-	//cout<<"GetDStoPointBz[3-2]"<<endl;
+	cout<<"GetDStoPointBz[3-2]"<<endl;
 	dsdr[0] = -px/p2;
-	//cout<<"[1]"<<endl;
+	cout<<"[1]"<<endl;
 	dsdr[1] = -py/p2;
-	//cout<<"[2]"<<endl;
+	cout<<"[2]"<<endl;
 	dsdr[2] = -pz/p2;
-	//cout<<"[3]"<<endl;
-	//cout<<"dz = "<<dz;
+	cout<<"[3]"<<endl;
+	cout<<"dz = "<<dz;
 	dsdr[3] = (dx*p2 - 2.f* px *(a + dz *pz))/(p2*p2);
-	//cout<<"[4]"<<endl;
+	cout<<"[4]"<<endl;
 	dsdr[4] = (dy*p2 - 2.f* py *(a + dz *pz))/(p2*p2);
-	//cout<<"[5]"<<endl;
+	cout<<"[5]"<<endl;
 	dsdr[5] = (dz*p2 - 2.f* pz *(a + dz *pz))/(p2*p2);
-	//cout<<"GetDStoPointBz[3-3]"<<endl;
+	cout<<"GetDStoPointBz[3-3]"<<endl;
       }
     if(mask)
       { 
-	//cout<<"GetDStoPointBz[3-3]"<<endl;
+	cout<<"GetDStoPointBz[3-3]"<<endl;
 	return dS;
       }
 
-    //cout<<"GetDStoPointBz[4]"<<endl;    
+    cout<<"GetDStoPointBz[4]"<<endl;    
     dS = atan2( abq, pt2 + bq*(dy*px -dx*py) )/bq; 
     float bs= bq*dS; 
     float s = sin(bs), c = cos(bs);
     
-    //cout<<"GetDStoPointBz[5]"<<endl;
+    cout<<"GetDStoPointBz[5]"<<endl;
 
     if(fabs(bq) < LocalSmall)
       bq = LocalSmall;
@@ -199,7 +199,7 @@ class KFParticleBase2 : public KFParticle {
     if(fabs(cCoeff) > 1.e-8f)
       sz = (dS*pz - dz)*pz / cCoeff;
     
-    //cout<<"GetDStoPointBz[6]"<<endl;
+    cout<<"GetDStoPointBz[6]"<<endl;
 
     float dcdr[6] = {0.f};
     dcdr[0] = -bq*py*c - bbq*s*bq*dsdr[0] + px*bq*s - abq*c*bq*dsdr[0];
@@ -208,7 +208,7 @@ class KFParticleBase2 : public KFParticle {
     dcdr[4] = ( bq*dx-2*py)*c - bbq*s*bq*dsdr[4] - dy*bq*s - abq*c*bq*dsdr[4];
     dcdr[5] = -2*pz;
 
-    //cout<<"GetDStoPointBz[7]"<<endl;
+    cout<<"GetDStoPointBz[7]"<<endl;
 
     for(int iP=0; iP<6; iP++)
       dsdr[iP] += pz*pz/cCoeff*dsdr[iP] - sz/cCoeff*dcdr[iP];
@@ -220,7 +220,7 @@ class KFParticleBase2 : public KFParticle {
     bs= bq*dS;
     s = sin(bs), c = cos(bs);
     
-    //cout<<"GetDStoPointBz[8]"<<endl;
+    cout<<"GetDStoPointBz[8]"<<endl;
 
     float sB, cB;
     const float kOvSqr6 = 1.f/sqrt(float(6.f));
@@ -236,7 +236,7 @@ class KFParticleBase2 : public KFParticle {
 	cB = .5f*sB*bs;
       }
     
-    //cout<<"GetDStoPointBz[9]"<<endl;
+    cout<<"GetDStoPointBz[9]"<<endl;
 
     float p[5];
     p[0] = x + sB*px + cB*py;
@@ -252,7 +252,7 @@ class KFParticleBase2 : public KFParticle {
     abq = bq*a;
     
     dS += atan2( abq, p2 + bq*(dy*p[3] -dx*p[4]) )/bq;
-    //cout<<"GetDStoPointBz[10]"<<endl;
+    cout<<"GetDStoPointBz[10]"<<endl;
  
     return dS;
   }
@@ -583,15 +583,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                             
   Double_t fcpa_lambda_omegam;
+  Double_t fpcaxy_lambda_omegam;
   Double_t fpca_lambda_omegam;
   Double_t fdeclength_lambda_omegam;
   Float_t  fchi2_lambda_omegam;
   Double_t fmass_lamdba_omegam;
+  Double_t fdcatoPVxy_lambda_omegam;
   Double_t fdcatoPV_lambda_omegam;
   Double_t fpt_lambda_omegam;
 
   //Omega                                                                                  
   Double_t fcpa_omega_omegam;
+  Double_t fpcaxy_omega_omegam;
   Double_t fpca_omega_omegam;
   Double_t fdeclength_omega_omegam;
   Float_t  fchi2_omega_omegam;
@@ -602,6 +605,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_omegam;
   Double_t feta_omega_omegam;
   Double_t fphi_omega_omegam;
+  Double_t fdcatoPVxy_omega_omegam;
+  Double_t fdcatoPV_omega_omegam;
+  Double_t fct_omega_omegam;
   Double_t fpx_omega_omegam_mc;
   Double_t fpy_omega_omegam_mc;
   Double_t fpz_omega_omegam_mc;
@@ -623,15 +629,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                             
   Double_t fcpa_lambda_omegap;
+  Double_t fpcaxy_lambda_omegap;
   Double_t fpca_lambda_omegap;
   Double_t fdeclength_lambda_omegap;
   Float_t  fchi2_lambda_omegap;
   Double_t fmass_lamdba_omegap;
+  Double_t fdcatoPVxy_lambda_omegap;
   Double_t fdcatoPV_lambda_omegap;
   Double_t fpt_lambda_omegap;
 
   //Omega                                                                                  
   Double_t fcpa_omega_omegap;
+  Double_t fpcaxy_omega_omegap;
   Double_t fpca_omega_omegap;
   Double_t fdeclength_omega_omegap;
   Float_t  fchi2_omega_omegap;
@@ -642,6 +651,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_omegap;
   Double_t feta_omega_omegap;
   Double_t fphi_omega_omegap;
+  Double_t fdcatoPVxy_omega_omegap;
+  Double_t fdcatoPV_omega_omegap;
+  Double_t fct_omega_omegap;
   Double_t fpx_omega_omegap_mc;
   Double_t fpy_omega_omegap_mc;
   Double_t fpz_omega_omegap_mc;
@@ -663,15 +675,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                                                           
   Double_t fcpa_lambda_sidebandm;
+  Double_t fpcaxy_lambda_sidebandm;
   Double_t fpca_lambda_sidebandm;
   Double_t fdeclength_lambda_sidebandm;
   Float_t  fchi2_lambda_sidebandm;
   Double_t fmass_lamdba_sidebandm;
+  Double_t fdcatoPVxy_lambda_sidebandm;
   Double_t fdcatoPV_lambda_sidebandm;
   Double_t fpt_lambda_sidebandm;
 
   //Omega                                                                                                               
   Double_t fcpa_omega_sidebandm;
+  Double_t fpcaxy_omega_sidebandm;
   Double_t fpca_omega_sidebandm;
   Double_t fdeclength_omega_sidebandm;
   Float_t  fchi2_omega_sidebandm;
@@ -682,6 +697,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_sidebandm;
   Double_t feta_omega_sidebandm;
   Double_t fphi_omega_sidebandm;
+  Double_t fdcatoPVxy_omega_sidebandm;
+  Double_t fdcatoPV_omega_sidebandm;
+  Double_t fct_omega_sidebandm;
   Double_t fpx_omega_sidebandm_mc;
   Double_t fpy_omega_sidebandm_mc;
   Double_t fpz_omega_sidebandm_mc;
@@ -703,15 +721,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                                                           
   Double_t fcpa_lambda_sidebandp;
+  Double_t fpcaxy_lambda_sidebandp;
   Double_t fpca_lambda_sidebandp;
   Double_t fdeclength_lambda_sidebandp;
   Float_t  fchi2_lambda_sidebandp;
   Double_t fmass_lamdba_sidebandp;
+  Double_t fdcatoPVxy_lambda_sidebandp;
   Double_t fdcatoPV_lambda_sidebandp;
   Double_t fpt_lambda_sidebandp;
 
   //Omega                                                                                                               
   Double_t fcpa_omega_sidebandp;
+  Double_t fpcaxy_omega_sidebandp;
   Double_t fpca_omega_sidebandp;
   Double_t fdeclength_omega_sidebandp;
   Float_t  fchi2_omega_sidebandp;
@@ -722,6 +743,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_sidebandp;
   Double_t feta_omega_sidebandp;
   Double_t fphi_omega_sidebandp;
+  Double_t fdcatoPVxy_omega_sidebandp;
+  Double_t fdcatoPV_omega_sidebandp;
+  Double_t fct_omega_sidebandp;
   Double_t fpx_omega_sidebandp_mc;
   Double_t fpy_omega_sidebandp_mc;
   Double_t fpz_omega_sidebandp_mc;
