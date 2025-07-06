@@ -1387,7 +1387,7 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtPassCut"))->Fill(0.5);
 
   nevt ++;
-  cout<<"nevt = "<<nevt<<endl;
+  //cout<<"nevt = "<<nevt<<endl;
 
   centralityV0M = -1.;
   centralityCL0 = -1.;
@@ -3133,7 +3133,7 @@ Double_t AliAnalysisTaskpOmegaDibaryon::GetTOFSignal(AliAODTrack& trackHe, Doubl
   length = trackHe.GetIntegratedLength();
   time0 = fPIDResponse->GetTOFResponse().GetStartTime(trackHe.P());
   time = trackHe.GetTOFsignal() - time0;
-  cout<<"time = "<<time<<endl;
+  //cout<<"time = "<<time<<endl;
   if (time > 0 && length > 0) {
     beta = length / (2.99792457999999984e-02 * time);
     if(beta < 1){
