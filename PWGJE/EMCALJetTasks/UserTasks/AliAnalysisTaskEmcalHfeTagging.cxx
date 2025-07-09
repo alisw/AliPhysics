@@ -180,16 +180,30 @@ fEtaTrueElec(0x0),
 fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
+fnEovPelecEMCalcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
+fnM20backg(0x0),
+fnM02backg(0x0),
 fnEovPbackg(0x0),
+fnEovPbackgEMCalcut(0x0),
 fnClsE(0x0),
 fnM20(0x0),
 fnM02(0x0),
 fnClsTime(0x0),
 fnM20TrueElec(0x0),
 fnM02TrueElec(0x0),
+fnShowerShapeTrueElec(0x0),
+fnEovPTrueElecnocut(0x0),
+fnEovPTrueElecTPCcut(0x0),
+fnEovPTrueElecEMCalcut(0x0),
+fnEovPTrueElecTPCEMCalcut(0x0),
 fnM20TrueBkg(0x0),
 fnM02TrueBkg(0x0),
+fnShowerShapeTrueBkg(0x0),
+fnEovPTrueBkgnocut(0x0),
+fnEovPTrueBkgTPCcut(0x0),
+fnEovPTrueBkgEMCalcut(0x0),
+fnEovPTrueBkgTPCEMCalcut(0x0),
 fAngULS(0x0),
 fAngLS(0x0),
 fAngChargPart(0x0),
@@ -406,16 +420,30 @@ fEtaTrueElec(0x0),
 fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
+fnEovPelecEMCalcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
+fnM20backg(0x0),
+fnM02backg(0x0),
 fnEovPbackg(0x0),
+fnEovPbackgEMCalcut(0x0),
 fnClsE(0x0),
 fnM20(0x0),
 fnM02(0x0),
 fnClsTime(0x0),
 fnM20TrueElec(0x0),
 fnM02TrueElec(0x0),
+fnShowerShapeTrueElec(0x0),
+fnEovPTrueElecnocut(0x0),
+fnEovPTrueElecTPCcut(0x0),
+fnEovPTrueElecEMCalcut(0x0),
+fnEovPTrueElecTPCEMCalcut(0x0),
 fnM20TrueBkg(0x0),
 fnM02TrueBkg(0x0),
+fnShowerShapeTrueBkg(0x0),
+fnEovPTrueBkgnocut(0x0),
+fnEovPTrueBkgTPCcut(0x0),
+fnEovPTrueBkgEMCalcut(0x0),
+fnEovPTrueBkgTPCEMCalcut(0x0),
 fAngULS(0x0),
 fAngLS(0x0),
 fAngChargPart(0x0),
@@ -830,6 +858,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnEovPelecTPCcut = new TH2F("fnEovPelecTPCcut", "fnEovPelecTPCcut", 100, 0, 100, 40,0,2);
     fOutput->Add(fnEovPelecTPCcut);
     
+	fnEovPelecEMCalcut = new TH2F("fnEovPelecEMCalcut", "fnEovPelecEMCalcut", 100, 0, 100, 40, 0, 2);
+    fOutput->Add(fnEovPelecEMCalcut);
+    
     fnEovPelecTPCEMCalcut = new TH2F("fnEovPelecTPCEMCalcut", "fnEovPelecTPCEMCalcut", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPelecTPCEMCalcut);
     
@@ -838,8 +869,17 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fnEovPelecTPCsscut[i]);
     }
     
+	fnM20backg = new TH2F("fnM20backg", "fnM20backg", 50, 0.5, 50, 100, 0, 2);
+    fOutput->Add(fnM20backg);
+	
+	fnM02backg = new TH2F("fnM02backg", "fnM02backg", 50, 0.5, 50, 100, 0, 2);
+    fOutput->Add(fnM02backg);
+    
     fnEovPbackg = new TH2F("fnEovPbackg", "fnEovPbackg", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPbackg);
+    
+	fnEovPbackgEMCalcut = new TH2F("fnEovPbackgEMCalcut", "fnEovPbackgEMCalcut", 100, 0, 100, 40, 0, 2);
+    fOutput->Add(fnEovPbackgEMCalcut);
     
     fnClsE = new TH2F("fnClsE", "fnClsE", 100, 0, 100, 100, 0,100);
     fOutput->Add(fnClsE);
@@ -859,11 +899,41 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	fnM02TrueElec = new TH2F("fnM02TrueElec", "fnM02TrueElec", 50, 0.5, 50.5, 100, 0.01, 2.01);
     fOutput->Add(fnM02TrueElec);
 	
+	fnShowerShapeTrueElec = new TH3F("fnShowerShapeTrueElec", "fnShowerShapeTrueElec", 50, 0.5, 50.5, 50, 0.01, 2.01, 50, 0.01, 2.01);
+    fOutput->Add(fnShowerShapeTrueElec);
+	
+	fnEovPTrueElecnocut = new TH2F("fnEovPTrueElecnocut", "fnEovPTrueElecnocut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecnocut);
+	
+	fnEovPTrueElecTPCcut = new TH2F("fnEovPTrueElecTPCcut", "fnEovPTrueElecTPCcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecTPCcut);
+	
+	fnEovPTrueElecEMCalcut = new TH2F("fnEovPTrueElecEMCalcut", "fnEovPTrueElecEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecEMCalcut);
+    
+	fnEovPTrueElecTPCEMCalcut = new TH2F("fnEovPTrueElecTPCEMCalcut", "fnEovPTrueElecTPCEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecTPCEMCalcut);
+	
 	fnM20TrueBkg = new TH2F("fnM20TrueBkg", "fnM20TrueBkg", 50, 0.5, 50.5, 100, 0.01, 2.01);
     fOutput->Add(fnM20TrueBkg);
 	
 	fnM02TrueBkg = new TH2F("fnM02TrueBkg", "fnM02TrueBkg", 50, 0.5, 50.5, 100, 0.01, 2.01);
     fOutput->Add(fnM02TrueBkg);
+	
+	fnShowerShapeTrueBkg = new TH3F("fnShowerShapeTrueBkg", "fnShowerShapeTrueBkg", 50, 0.5, 50.5, 50, 0.01, 2.01, 50, 0.01, 2.01);
+    fOutput->Add(fnShowerShapeTrueBkg);
+	
+	fnEovPTrueBkgnocut = new TH2F("fnEovPTrueBkgnocut", "fnEovPTrueBkgnocut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgnocut);
+
+	fnEovPTrueBkgTPCcut = new TH2F("fnEovPTrueBkgTPCcut", "fnEovPTrueBkgTPCcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgTPCcut);
+	
+	fnEovPTrueBkgEMCalcut = new TH2F("fnEovPTrueBkgEMCalcut", "fnEovPTrueBkgEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgEMCalcut);
+
+	fnEovPTrueBkgTPCEMCalcut = new TH2F("fnEovPTrueBkgTPCEMCalcut", "fnEovPTrueBkgTPCEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgTPCEMCalcut);
     
     fAngULS = new TH2F("fAngULS", "fAngULS", 5, bin_JetPt, 8, bin_g);
     fOutput->Add(fAngULS);
@@ -1693,9 +1763,11 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             fnEovPelecNoTPCcut->Fill(pt,EovP);
             
             
-            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3) fnEovPelecTPCcut->Fill(pt,EovP);
+            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3) fnEovPelecTPCcut->Fill(pt,EovP);
             
-            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut){
+			if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) fnEovPelecEMCalcut -> Fill(pt, EovP);
+            
+            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut){
                 fnEovPelecTPCEMCalcut->Fill(pt,EovP);
                 
                 for (Int_t l=0;l<5;l++){// pt jet range
@@ -1703,7 +1775,16 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                 }
             }
             
-            if (TMath::Abs(fTPCnSigma) > fSigmTPCcutExcElec) fnEovPbackg->Fill(pt,EovP);
+			// Not electrons
+            if (TMath::Abs(fTPCnSigma) > fSigmTPCcutExcElec) { 
+				fnM20backg -> Fill(pt, m20);
+				fnM02backg -> Fill(pt, m02);
+				fnEovPbackg -> Fill(pt, EovP);
+
+				// Also consider not electrons with same shower shape cut as electron selection
+				if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) fnEovPbackgEMCalcut -> Fill(pt, EovP);
+			}
+
             fnClsE->Fill(pt,clsE);
             fnM20->Fill(pt,m20);
             fnM02->Fill(pt,m02);
@@ -1940,9 +2021,37 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
 							if (partPDG == 11) {
 								fnM20TrueElec -> Fill(pt, m20);
 								fnM02TrueElec -> Fill(pt, m02);
+								fnShowerShapeTrueElec -> Fill(pt, m20, m02);
+								fnEovPTrueElecnocut -> Fill(pt, EovP); 
+                            	
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3) {
+									fnEovPTrueElecTPCcut -> Fill(pt, EovP); 
+								}
+								
+								if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueElecEMCalcut -> Fill(pt, EovP); 
+								}
+
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueElecTPCEMCalcut -> Fill(pt, EovP); 
+								}
                         	} else {
 								fnM20TrueBkg -> Fill(pt, m20);
 								fnM02TrueBkg -> Fill(pt, m02);
+								fnShowerShapeTrueBkg -> Fill(pt, m20, m02);
+								fnEovPTrueBkgnocut -> Fill(pt, EovP); 
+								
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3) {
+									fnEovPTrueBkgTPCcut -> Fill(pt, EovP); 
+								}
+								
+								if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueBkgEMCalcut -> Fill(pt, EovP); 
+								}
+
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueBkgTPCEMCalcut -> Fill(pt, EovP); 
+								}
 							}
 						}
                         
