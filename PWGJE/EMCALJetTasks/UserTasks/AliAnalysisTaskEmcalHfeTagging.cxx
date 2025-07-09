@@ -1824,14 +1824,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nRecIE=0, nHFE=0, nPE=0, nPairs=0, iDecay = 0, nDmeson = 0, nBmeson = 0, nElecFromB = 0, nElecFromD = 0, nElecFromDfromB = 0, nQuark = 0, nGluon = 0, nBeauty = 0, nCharm = 0;
 	Int_t nIEptmin = 0, nHFEptmin = 0, nPEptmin = 0;
-    Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
+    Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., phi = -99., pte=0.;
     
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
     Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
-    Bool_t isFromLMdecay=kFALSE;
     Bool_t passTrackCut = kFALSE;
     
     Double_t jetPt = jet->Pt();
@@ -1865,11 +1864,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             
             passTrackCut = kFALSE;
             isFromHFdecay=kFALSE;
-            isFromLMdecay=kFALSE;
             
             p = track->P();
             pt = track->Pt();
-            eta = track->Eta();
             phi = track->Phi();
             
             fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
@@ -1984,7 +1981,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         
                         GetWeightAndDecay(fMCparticle,iDecay,MCweight);
                         isFromHFdecay = IsFromHFdecay(fMCparticle);
-                        isFromLMdecay = IsFromLMdecay(fMCparticle);
                         
                         if (partPDG == 11){
                             nIE++;
@@ -2250,36 +2246,27 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         if (!passAssoTrackCut) continue;
         
         // tagged particle
-        Double_t p=-9.,pt=-9.,eta =-9.,phi=-9.;
+        Double_t pt = -9;
         Int_t charge = 0;
         
         pt = track->Pt();
-        p = track->P();
-        phi = track->Phi();
-        eta = track->Eta();
         charge = track->Charge();
         
         
         // associated particle variables
-        Double_t pAsso=-9.,ptAsso=-9.,etaAsso =-9.,fITSnSigmaAsso=-9.,fTPCnSigmaAsso=-9.,phiAsso=-9.;
+        Double_t fTPCnSigmaAsso=-9.;
         Int_t chargeAsso = 0;
         
-        ptAsso = trackAsso->Pt();
-        pAsso = trackAsso->P();
-        phiAsso = trackAsso->Phi();
-        etaAsso = trackAsso->Eta();
         chargeAsso = trackAsso->Charge();
         
-        
         // looser PID cuts
-        fITSnSigmaAsso = fpidResponse->NumberOfSigmasITS(trackAsso, AliPID::kElectron);
         fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         
         if(TMath::Abs(fTPCnSigmaAsso)>3.) continue;
         
         // invariant mass
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-        Double_t openingAngle = -999., mass=999., width = -999;
+        Double_t mass=999.;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
@@ -2297,12 +2284,6 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
         
 		if (TMath::Abs(chi2recg) > 3.) continue;
-        
-        /* openingAngle = ge1.GetAngle(ge2); */
-        //if(openingAngle > fOpeningAngleCut) continue;
-        
-        Int_t MassCorrect=-9;
-        MassCorrect = recg.GetMass(mass,width);
         
         for (Int_t l=0;l<5;l++){// pt jet range
             if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && fFlagULS) fInvmassULS[l]->Fill(pt,mass);
