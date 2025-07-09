@@ -3910,6 +3910,13 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2445){ // EMCAL+DCAL NLM = 1-100, EG1, NL , std TM, swapping back.
     cuts.AddCutCalo("r008h113","411790109fe309v0000","0s631031000000d0"); // EG1  NL 21 + TB dir. gamma
 
+  // std cuts wih INEL>0 condition and mult selection in 10% steps
+  } else if (trainConfig == 2446){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("n0a15113","411790109fe309v0000","0s631031000000d0"); // INT7 NL 21 + TB dir. gamma
+  } else if (trainConfig == 2447){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
+    cuts.AddCutCalo("n0a8i113","411790109fe309v0000","0s631031000000d0"); // EG2  NL 21 + TB dir. gamma
+  } else if (trainConfig == 2448){ // EMCAL+DCAL NLM = 1-100, EG1, NL , std TM, swapping back.
+    cuts.AddCutCalo("n0a8h113","411790109fe309v0000","0s631031000000d0"); // EG1  NL 21 + TB dir. gamma
 
     // configs for trigger studies (mostly without mult selection)
   } else if (trainConfig == 2450){  // min bias trigger in mult slices

@@ -536,7 +536,7 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
         //printf("\t Check ieta %d, iphi %d\n",ietai,iphii);
 
         // Avoid same cell
-        if ( iphii==0 && ietai == 0) continue;
+        if ( iphii == iphi && ietai == ieta) continue;
 
         // Avoid cells out of SM
         if (  ietai < 0 || ietai >= AliEMCALGeoParams::fgkEMCALCols ||

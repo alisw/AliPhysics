@@ -24,6 +24,7 @@ class AliClusterContainer;
 
 class AliEventPoolManager;
 class AliEventCuts;
+#include "AliESDtrackCuts.h"
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -45,6 +46,7 @@ public:
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;}
   void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
+  void SetCentralityEstimator(TString CentEstimator){fCentEstimator = CentEstimator;};
   void SetUseIonutCut(Bool_t val = kTRUE) {fbUseIonutCut = val;}
 
   // mixed events
@@ -84,7 +86,6 @@ public:
   void SetCutDCADaughtersMax(Double_t val = 1.) {fdCutDCADaughtersMax = val;}
   void SetCutEtaDaughterMax(Double_t val = 0.8) {fdCutEtaDaughterMax = val;}
   void SetCutNSigmadEdxMax(Double_t val = 3.) {fdCutNSigmadEdxMax = val;}
-  void SetPtProtonPIDMax(Double_t val = 1.) {fdPtProtonPIDMax = val;}
   void SetOnFly(Bool_t val = 0) {fbOnFly = val;}
   void SetCutCPAKMin(Double_t val = 0.998) {fdCutCPAKMin = val;}
   void SetCutCPALMin(Double_t val = 0.998) {fdCutCPALMin = val;}
@@ -101,6 +102,9 @@ public:
   void SetCutChi2PerTPCCluster(Double_t val = 2.5) {fdCutChi2PerTPCCluster = val;}
   void SetCutITSTOFtracks(Int_t val = 1) {fdCutITSTOFtracks = val;}
   void SetCutTPCsignalNCut(Int_t val = 50) {fdTPCsignalNCut = val;}
+  void SetCutGeo(Bool_t val = 1) {fbGeoCut = val;}
+  void SetCutDeadZoneWidth(Float_t val = 3.) {fDeadZoneWidth = val;}
+  void SetCutNcrNclLength(Float_t val = 130.) {fNcrNclLength = val;}
 
 
   Bool_t IsSelectedForAnalysis();
@@ -159,6 +163,7 @@ public:
   void SetCutCascadeV0RadiusDecayMax(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMax = val;}
   void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
   void SetCutV0MassDiff(Double_t val = 0.005) {fdCutV0MassDiff = val;}
+  void SetCutNSigmadEdxMaxCasc(Double_t val = 4.) {fdCutNSigmadEdxMaxCasc = val;}
   
   // axis: Xi invariant mass
   static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
@@ -176,6 +181,7 @@ protected:
   void ExecOnce();
   Bool_t FillHistograms();
   Bool_t Run();
+  virtual Bool_t IsEventSelected();  // override EMCal base method
 
 private:
   AliAODEvent* fAODIn; //! Input AOD event
@@ -201,7 +207,7 @@ private:
   Bool_t fbIsPbPb; // switch: Pb+Pb / p+p collisions
   Bool_t fbMCAnalysis; // switch: simulated / real data
   TString fsGeneratorName; // pattern for selecting only V0s from a specific MC generator
-
+  TString fCentEstimator;  //Centrality estimator
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
@@ -233,10 +239,14 @@ private:
   Double_t fdCutDCADaughtersMax; // (1.) [sigma of TPC tracking] max DCA between daughters
   Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
-  Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut in Pb-Pb
   Double_t fdCutChi2PerTPCCluster; //(2.5) maximum daughters Chi2 per TPC Cluster 
   Int_t fdCutITSTOFtracks; //(1)  minimum number of tracks with ITS refit or hit in TOF
   Int_t fdTPCsignalNCut; //(50) minimum number of points in TPC (track length)
+  Bool_t fbGeoCut; //1.
+  AliESDtrackCuts fESDTrackCuts;
+  Float_t fDeadZoneWidth;                              //
+  Float_t fNcrNclLength;                               //
+
   // V0 candidate
   Bool_t fbOnFly; // (0) on-the-fly (yes) or offline (no) reconstructed
   Double_t fdCutCPAKMin; // (0.998) min cosine of the pointing angle, K0S
@@ -349,6 +359,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1V0K0sPtMCGen[fgkiNBinsCent]; //! pt spectrum of all generated K0s in event
+  TH2D* fh2V0K0sCentMCGen[fgkiNBinsCent];  //! centrality of all generated K0s in event
   TH2D* fh2V0K0sPtMassMCRec[fgkiNBinsCent]; //! pt-mass spectrum of successfully reconstructed K0s in event
   TH1D* fh1V0K0sPtMCRecFalse[fgkiNBinsCent]; //! pt spectrum of false reconstructed K0s in event
   // inclusive eta-pT efficiency
@@ -400,6 +411,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1V0LambdaPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2V0LambdaCentMCGen[fgkiNBinsCent];  //! 
   TH2D* fh2V0LambdaPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1V0LambdaPtMCRecFalse[fgkiNBinsCent]; //!
   // inclusive eta-pT efficiency
@@ -424,8 +436,8 @@ private:
   THnSparse* fhnV0LambdaInclMCFromXi0[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
-  TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
-  TH1D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
 
   // ALambda
   TH1D* fh1V0CounterCentALambda[fgkiNBinsCent]; //! number of ALambda candidates after various cuts
@@ -459,6 +471,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2V0ALambdaCentMCGen[fgkiNBinsCent];  //! 
   TH2D* fh2V0ALambdaPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1V0ALambdaPtMCRecFalse[fgkiNBinsCent]; //!
   // inclusive eta-pT efficiency
@@ -483,8 +496,8 @@ private:
   THnSparse* fhnV0ALambdaInclMCFromAXi0[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
-  TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
-  TH1D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
 
   TH2D* fh2QAV0PhiPtK0sPeak[fgkiNQAIndeces]; //! K0S candidate in peak: azimuth; pt
   TH2D* fh2QAV0PhiPtLambdaPeak[fgkiNQAIndeces]; //! Lambda candidate in peak: azimuth; pt
@@ -545,6 +558,7 @@ private:
 
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
   Double_t fdCutV0MassDiff; //(0.005) [GeV] V0 daughter mass difference from Lambda mass
+  Double_t fdCutNSigmadEdxMaxCasc; //(4.0)
  
   static const Int_t fgkiNCategCascade = 22; // number of Cascade selection steps  
   //Histograms 
@@ -588,6 +602,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeXiMinusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiMinusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeXiMinusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeXiMinusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeXiMinusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -642,6 +657,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeXiPlusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiPlusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeXiPlusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeXiPlusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeXiPlusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -708,6 +724,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeOmegaMinusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeOmegaMinusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeOmegaMinusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeOmegaMinusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeOmegaMinusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -759,6 +776,7 @@ private:
   // MC histograms
   // inclusive
   TH1D* fh1CascadeOmegaPlusPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeOmegaPlusCentMCGen[fgkiNBinsCent];  //! 
   TH1D* fh1CascadeOmegaPlusPtMCRec[fgkiNBinsCent]; //!
   TH2D* fh2CascadeOmegaPlusPtMassMCRec[fgkiNBinsCent]; //!
   TH1D* fh1CascadeOmegaPlusPtMCRecFalse[fgkiNBinsCent]; //!
@@ -792,7 +810,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 30) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 31) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

@@ -3,7 +3,7 @@
 AliAnalysisTaskpOmegaDibaryon *AddTaskpOmegaDibaryon(
 		const TString taskname = "MSDibaryons",
 		//const UInt_t trigger = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,	
-		const UInt_t trigger = AliVEvent::kSemiCentral,
+		const UInt_t trigger = AliVEvent::kCentral,
 		//const UInt_t trigger = AliVEvent::kCentral,	
 		const TString estimator = "V0M",
 		const Float_t cenmin = 0,

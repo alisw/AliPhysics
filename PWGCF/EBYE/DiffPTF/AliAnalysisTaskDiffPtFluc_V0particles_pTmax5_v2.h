@@ -17,9 +17,11 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
+#include "TProfile2D.h"
 #include "TTree.h"
 #include "AliEventCuts.h"
 #include "TExMap.h"
+
 
 class TList;
 class TTree;
@@ -329,6 +331,16 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   TH1D *fEffPionMinus[9];
   TH1D *fEffKaonMinus[9];
   TH1D *fEffProtonMinus[9];
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++
+  //NEW addition 
+  TProfile2D *fProfK0s_fA_MnPtB_vs_Minv_Pt[8];
+  TProfile2D *fProfK0s_fA_vs_Minv_Pt[8];
+  TH2D *fHis2DK0s_Minv_Pt[8];
+  TProfile2D *fProfLambda_fA_MnPtB_vs_Minv_Pt[8];
+  TProfile2D *fProfLambda_fA_vs_Minv_Pt[8];
+  TH2D *fHis2DLambda_Minv_Pt[8];
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++
   
   //Track QA histograms
   TH1D *hist_beforeCut_DCAxy;
@@ -387,7 +399,16 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   TH3D *f3DhistMassK0s_vs_Pt_beforeMasscut_Cent;
   TH3D *f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent;
   TH3D *f3DhistMassK0s_vs_Pt_afterMasscut_Cent;
-  
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++
+  //New addition
+  TProfile *MnPtA_K0s;
+  TProfile *MnPtB_K0s;
+  TProfile *MnPtAB_K0s;
+  TProfile *MnPtA_Lambda;
+  TProfile *MnPtB_Lambda;
+  TProfile *MnPtAB_Lambda;
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++
  
   Double_t fVertexZMax;
   Int_t fFBNo;
@@ -435,6 +456,7 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Double_t fPIDbayesKaon;
   Double_t fPIDbayesProton;
   Double_t fPtMax;
+  Double_t fCentBin[9] = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0};
   
   TExMap *fGlobalTracksAOD; //! global tracks in AOD for FB128 **Ante**
 

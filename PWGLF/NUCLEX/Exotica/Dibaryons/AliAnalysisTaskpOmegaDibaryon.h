@@ -583,15 +583,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                             
   Double_t fcpa_lambda_omegam;
+  Double_t fpcaxy_lambda_omegam;
   Double_t fpca_lambda_omegam;
   Double_t fdeclength_lambda_omegam;
   Float_t  fchi2_lambda_omegam;
   Double_t fmass_lamdba_omegam;
+  Double_t fdcatoPVxy_lambda_omegam;
   Double_t fdcatoPV_lambda_omegam;
   Double_t fpt_lambda_omegam;
 
   //Omega                                                                                  
   Double_t fcpa_omega_omegam;
+  Double_t fpcaxy_omega_omegam;
   Double_t fpca_omega_omegam;
   Double_t fdeclength_omega_omegam;
   Float_t  fchi2_omega_omegam;
@@ -602,6 +605,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_omegam;
   Double_t feta_omega_omegam;
   Double_t fphi_omega_omegam;
+  Double_t fdcatoPVxy_omega_omegam;
+  Double_t fdcatoPV_omega_omegam;
+  Double_t fct_omega_omegam;
   Double_t fpx_omega_omegam_mc;
   Double_t fpy_omega_omegam_mc;
   Double_t fpz_omega_omegam_mc;
@@ -623,15 +629,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                             
   Double_t fcpa_lambda_omegap;
+  Double_t fpcaxy_lambda_omegap;
   Double_t fpca_lambda_omegap;
   Double_t fdeclength_lambda_omegap;
   Float_t  fchi2_lambda_omegap;
   Double_t fmass_lamdba_omegap;
+  Double_t fdcatoPVxy_lambda_omegap;
   Double_t fdcatoPV_lambda_omegap;
   Double_t fpt_lambda_omegap;
 
   //Omega                                                                                  
   Double_t fcpa_omega_omegap;
+  Double_t fpcaxy_omega_omegap;
   Double_t fpca_omega_omegap;
   Double_t fdeclength_omega_omegap;
   Float_t  fchi2_omega_omegap;
@@ -642,6 +651,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_omegap;
   Double_t feta_omega_omegap;
   Double_t fphi_omega_omegap;
+  Double_t fdcatoPVxy_omega_omegap;
+  Double_t fdcatoPV_omega_omegap;
+  Double_t fct_omega_omegap;
   Double_t fpx_omega_omegap_mc;
   Double_t fpy_omega_omegap_mc;
   Double_t fpz_omega_omegap_mc;
@@ -663,15 +675,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                                                           
   Double_t fcpa_lambda_sidebandm;
+  Double_t fpcaxy_lambda_sidebandm;
   Double_t fpca_lambda_sidebandm;
   Double_t fdeclength_lambda_sidebandm;
   Float_t  fchi2_lambda_sidebandm;
   Double_t fmass_lamdba_sidebandm;
+  Double_t fdcatoPVxy_lambda_sidebandm;
   Double_t fdcatoPV_lambda_sidebandm;
   Double_t fpt_lambda_sidebandm;
 
   //Omega                                                                                                               
   Double_t fcpa_omega_sidebandm;
+  Double_t fpcaxy_omega_sidebandm;
   Double_t fpca_omega_sidebandm;
   Double_t fdeclength_omega_sidebandm;
   Float_t  fchi2_omega_sidebandm;
@@ -682,6 +697,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_sidebandm;
   Double_t feta_omega_sidebandm;
   Double_t fphi_omega_sidebandm;
+  Double_t fdcatoPVxy_omega_sidebandm;
+  Double_t fdcatoPV_omega_sidebandm;
+  Double_t fct_omega_sidebandm;
   Double_t fpx_omega_sidebandm_mc;
   Double_t fpy_omega_sidebandm_mc;
   Double_t fpz_omega_sidebandm_mc;
@@ -703,15 +721,18 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
 
   //Lambda                                                                                                           
   Double_t fcpa_lambda_sidebandp;
+  Double_t fpcaxy_lambda_sidebandp;
   Double_t fpca_lambda_sidebandp;
   Double_t fdeclength_lambda_sidebandp;
   Float_t  fchi2_lambda_sidebandp;
   Double_t fmass_lamdba_sidebandp;
+  Double_t fdcatoPVxy_lambda_sidebandp;
   Double_t fdcatoPV_lambda_sidebandp;
   Double_t fpt_lambda_sidebandp;
 
   //Omega                                                                                                               
   Double_t fcpa_omega_sidebandp;
+  Double_t fpcaxy_omega_sidebandp;
   Double_t fpca_omega_sidebandp;
   Double_t fdeclength_omega_sidebandp;
   Float_t  fchi2_omega_sidebandp;
@@ -722,6 +743,9 @@ class AliAnalysisTaskpOmegaDibaryon : public AliAnalysisTaskSE {
   Double_t fpt_omega_sidebandp;
   Double_t feta_omega_sidebandp;
   Double_t fphi_omega_sidebandp;
+  Double_t fdcatoPVxy_omega_sidebandp;
+  Double_t fdcatoPV_omega_sidebandp;
+  Double_t fct_omega_sidebandp;
   Double_t fpx_omega_sidebandp_mc;
   Double_t fpy_omega_sidebandp_mc;
   Double_t fpz_omega_sidebandp_mc;

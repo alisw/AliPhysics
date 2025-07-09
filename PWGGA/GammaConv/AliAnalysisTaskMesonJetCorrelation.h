@@ -568,7 +568,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoMCMesonPtNoVertex;          //! vector of histos mesons which are in events that have no vertex
   std::vector<TH1F*> fHistoMCMesonPt;                  //! vector of histos meson pt
   std::vector<TH1F*> fHistoInclusiveMCMesonPt;         //! vector of histos meson pt for in+outside
-  std::vector<TH2F*> fHistoMCMesonPtVsEta;             //! vector of histos meson pt vs. rapidity
+  std::vector<TH2F*> fHistoMCMesonPtVsEta;             //! vector of histos meson pt vs. pseudorapidity
+  std::vector<TH2F*> fHistoMCMesonPtVsRap;             //! vector of histos meson pt vs. rapidity
   std::vector<TH1F*> fHistoMCMesonWOEvtWeightPt;       //! vector of histos meson pt without event weights
   std::vector<TH1F*> fHistoMCMesonInAccPt;             //! vector of histos mesons in acceptance
   std::vector<TH1F*> fHistoMCMesonInAccPtNotTriggered; //! vector of histos mesons in acceptance which are in events that are not triggered
@@ -633,7 +634,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 31);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 32);
 };
 
 #endif

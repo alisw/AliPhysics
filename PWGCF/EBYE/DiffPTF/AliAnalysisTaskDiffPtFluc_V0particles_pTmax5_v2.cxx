@@ -61,6 +61,7 @@
 #include "TList.h"
 #include "TH1D.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "TFile.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
@@ -177,6 +178,12 @@ AliAnalysisTaskSE(),
   f3DhistMassK0s_vs_Pt_beforeMasscut_Cent(0),
   f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent(0),
   f3DhistMassK0s_vs_Pt_afterMasscut_Cent(0),
+  MnPtA_K0s(0),
+  MnPtB_K0s(0),
+  MnPtAB_K0s(0),
+  MnPtA_Lambda(0),
+  MnPtB_Lambda(0),
+  MnPtAB_Lambda(0),
   fVertexZMax(0),
   fFBNo(0),
   fChi2TPC(0),
@@ -233,6 +240,16 @@ AliAnalysisTaskSE(),
       fEffPionMinus[i] = NULL;
       fEffKaonPlus[i] = NULL;
       fEffKaonMinus[i] = NULL;
+    }
+  for(int i=0; i<8; i++)
+    {
+      fProfK0s_fA_MnPtB_vs_Minv_Pt[i] = NULL;
+      fProfK0s_fA_vs_Minv_Pt[i] = NULL;
+      fHis2DK0s_Minv_Pt[i] = NULL;
+
+      fProfLambda_fA_MnPtB_vs_Minv_Pt[i] = NULL;
+      fProfLambda_fA_vs_Minv_Pt[i] = NULL;
+      fHis2DLambda_Minv_Pt[i] = NULL;
     }
   for(int i=0; i<20; i++)
     {
@@ -343,6 +360,12 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0par
   f3DhistMassK0s_vs_Pt_beforeMasscut_Cent(0),
   f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent(0),
   f3DhistMassK0s_vs_Pt_afterMasscut_Cent(0),
+  MnPtA_K0s(0),
+  MnPtB_K0s(0),
+  MnPtAB_K0s(0),
+  MnPtA_Lambda(0),
+  MnPtB_Lambda(0),
+  MnPtAB_Lambda(0),
   fVertexZMax(0),
   fFBNo(0),
   fChi2TPC(0),
@@ -399,6 +422,16 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0par
       fEffPionMinus[i] = NULL;
       fEffKaonPlus[i] = NULL;
       fEffKaonMinus[i] = NULL;
+    }
+  for(int i=0; i<8; i++)
+    {
+      fProfK0s_fA_MnPtB_vs_Minv_Pt[i] = NULL;
+      fProfK0s_fA_vs_Minv_Pt[i] = NULL;
+      fHis2DK0s_Minv_Pt[i] = NULL;
+
+      fProfLambda_fA_MnPtB_vs_Minv_Pt[i] = NULL;
+      fProfLambda_fA_vs_Minv_Pt[i] = NULL;
+      fHis2DLambda_Minv_Pt[i] = NULL;
     }
   for(int i=0; i<20; i++)
     {
@@ -602,6 +635,48 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserCreateOutputObjects() 
   fOutputList->Add(f3DhistMassK0s_vs_Pt_afterMasscut_Cent);
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  const Int_t nPtBins=20;
+  Double_t fPtBin[nPtBins + 1] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,5.0,6.0,8.0,10.0};
+  //K0s
+  for(int i=0; i<8; i++)
+    {
+      fProfK0s_fA_MnPtB_vs_Minv_Pt[i] = new TProfile2D(Form("fProfK0s_fA_MnPtB_vs_Minv_Pt%d",i),"X:M_inv, Y:Pt",200,0.4,0.6,20,fPtBin);
+      fProfK0s_fA_vs_Minv_Pt[i] = new TProfile2D(Form("fProfK0s_fA_vs_Minv_Pt%d",i), "X:M_inv, Y:Pt",200,0.4,0.6,20,fPtBin);
+      fHis2DK0s_Minv_Pt[i] = new TH2D(Form("fHis2DK0s_Minv_Pt%d",i), "X:M_inv, Y:Pt",200,0.4,0.6,20,fPtBin);
+      fOutputList->Add(fProfK0s_fA_MnPtB_vs_Minv_Pt[i]);
+      fOutputList->Add(fProfK0s_fA_vs_Minv_Pt[i]);
+      fOutputList->Add(fHis2DK0s_Minv_Pt[i]);
+    }
+  
+  //Lambda or Anti-lambda
+  for(int i=0; i<8; i++)
+    {
+      fProfLambda_fA_MnPtB_vs_Minv_Pt[i] = new TProfile2D(Form("fProfLambda_fA_MnPtB_vs_Minv_Pt%d",i),"X:M_inv, Y:Pt",160,1.095,1.135,20,fPtBin);
+      fProfLambda_fA_vs_Minv_Pt[i] = new TProfile2D(Form("fProfLambda_fA_vs_Minv_Pt%d",i),"X:M_inv, Y:Pt",160,1.095,1.135,20,fPtBin);
+      fHis2DLambda_Minv_Pt[i] = new TH2D(Form("fHis2DLambda_Minv_Pt%d",i), "X:M_inv, Y:Pt",160,1.095,1.135,20,fPtBin);
+      fOutputList->Add(fProfLambda_fA_MnPtB_vs_Minv_Pt[i]);
+      fOutputList->Add(fProfLambda_fA_vs_Minv_Pt[i]);
+      fOutputList->Add(fHis2DLambda_Minv_Pt[i]);
+    }
+
+  // Define bin edges for variable bin widths
+  const Int_t nBins = 8;
+  Double_t fCentBin[nBins + 1] = {0, 5, 10, 20, 30, 40, 50, 60, 70};
+
+  MnPtA_K0s = new TProfile("MnPtA_K0s","MnPtA_K0s", 8, fCentBin);
+  MnPtB_K0s = new TProfile("MnPtB_K0s","MnPtB_K0s", 8, fCentBin);
+  MnPtAB_K0s = new TProfile("MnPtAB_K0s","MnPtAB_K0s", 8, fCentBin);
+  MnPtA_Lambda = new TProfile("MnPtA_Lambda","MnPtA_Lambda", 8, fCentBin);
+  MnPtB_Lambda = new TProfile("MnPtB_Lambda","MnPtB_Lambda", 8, fCentBin);
+  MnPtAB_Lambda = new TProfile("MnPtAB_Lambda","MnPtAB_Lambda", 8, fCentBin);
+  fOutputList->Add(MnPtA_K0s);
+  fOutputList->Add(MnPtB_K0s);
+  fOutputList->Add(MnPtAB_K0s);
+  fOutputList->Add(MnPtA_Lambda);
+  fOutputList->Add(MnPtB_Lambda);
+  fOutputList->Add(MnPtAB_Lambda);
+
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //fTreeEvent: Analysis tree
     
   //TTree object to store variables
@@ -657,6 +732,26 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
       else if (fCentralityEstimator_flag == 3)
 	lV0M = MultSelection->GetMultiplicityPercentile("CL2");
     }
+
+  Int_t centBin = 0;
+  if (lV0M > 0.0 && lV0M <= 5.0)
+    centBin = 0;
+  else if (lV0M > 5.0 && lV0M <= 10.0)
+    centBin = 1;
+  else if (lV0M > 10.0 && lV0M <= 20.0)
+    centBin = 2;
+  else if (lV0M > 20.0 && lV0M <= 30.0)
+    centBin = 3;
+  else if (lV0M > 30.0 && lV0M <= 40.0)
+    centBin = 4;
+  else if (lV0M > 40.0 && lV0M <= 50.0)
+    centBin = 5;
+  else if (lV0M > 50.0 && lV0M <= 60.0)
+    centBin = 6;
+  else if (lV0M > 60.0 && lV0M <= 70.0)
+    centBin = 7;
+  
+    
 
   AliAODVertex *vertex = (AliAODVertex*) fAODevent->GetPrimaryVertex();
 
@@ -881,7 +976,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
     }      
   //end reconstructed track loop
 
-
+  
   TH1D *fPt_profile_Lambda = new TH1D("fPt_profile_Lambda","fPt_profile_Lambda", 20, binsarray);
   TH1D *fPt_profile_K0s = new TH1D("fPt_profile_K0s","fPt_profile_K0s", 20, binsarray);
   Double_t N_sumLambda_etaLess0 = 0.0;
@@ -895,10 +990,12 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
   Double_t BinContK0s = 0;
   Int_t ptBinNoLambda = 0;
   Double_t BinContLambda = 0;
+
+  
   
   //++++++++++++++++++++++++++++++++++++++++++++
+  //cout<<"First V0 track loop --------------->>"<<endl;
   //loop on reconstructed V0 tracks
-    
   for (Int_t iV0 = 0; iV0 < fAODevent->GetNumberOfV0s(); iV0++)
     {
       //Get reconstructed V0
@@ -951,6 +1048,13 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
       if(TMath::Abs(fV0_Eta) > 0.8) continue;
       if(fV0_Pt < 0.2) continue;
       if(fV0_Pt > fPtMax) continue;
+
+      if(IsLambda)
+	f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent->Fill(v0->Pt(),v0->MassLambda(),lV0M);
+      if(IsAntiLambda)
+	f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent->Fill(v0->Pt(),v0->MassAntiLambda(),lV0M);
+      if(IsK0s)
+	f3DhistMassK0s_vs_Pt_afterMasscut_Cent->Fill(v0->Pt(),v0->MassK0Short(),lV0M);
       
 
       //if Efficiency correction not required
@@ -984,6 +1088,9 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
 	      N_V0_sum_etaGreaterEtamin += 1.0;
 	    }
 	}
+
+      
+      
 
       //if Efficiency correction required
       if(fEffCorrectionFlag == 1)
@@ -1027,12 +1134,124 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
 	      N_V0_sum_etaGreaterEtamin += 1.0;
 	    }
 	}
+    }//end first V0 loop
+
+  //Start of second V0 loop
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //cout<<"Second V0 track loop --------------->>"<<endl;
+  for (Int_t iV0 = 0; iV0 < fAODevent->GetNumberOfV0s(); iV0++)
+    {
+      //Get reconstructed V0
+      AliAODv0 *v0 = fAODevent->GetV0(iV0);
+      if (!v0) continue;
+
+      //Get Decay daughters
+      AliAODTrack *pTrack=(AliAODTrack *)v0->GetDaughter(0); //0->Positive Daughter
+      AliAODTrack *nTrack=(AliAODTrack *)v0->GetDaughter(1); //1->Negative Daughter
+      if (!pTrack || !nTrack) {
+	continue;
+      }
+	
+      //Track Quality Cuts
+      if (!PassedTrackQualityCuts(pTrack)) continue;
+      if (!PassedTrackQualityCuts(nTrack)) continue;
+
+      /*
+      //Track pile up cuts
+      if (!PassedSingleParticlePileUpCuts(pTrack)) continue;
+      if (!PassedSingleParticlePileUpCuts(nTrack)) continue;
+      */
+	
+      //Check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
+      Int_t flag_ITSorTOF=0;
+      flag_ITSorTOF += CheckFlagITSHitOrTOFhit(pTrack, lMagField);
+      flag_ITSorTOF += CheckFlagITSHitOrTOFhit(nTrack, lMagField);
+      if(flag_ITSorTOF == 0) continue;
+	
+
+      //DCA cuts of daughter tracks to the PV
+      if(!PassedDaughterTrackDCAtoVertexSelectionCutsV0(v0)) continue;
+
+      //V0 topological cuts
+      Bool_t flag_TopoLambda = PassedV0SelectionTopologicalCutsForLambda(v0);
+      Bool_t flag_TopoK0s = PassedV0SelectionTopologicalCutsForK0s(v0);
+      if(!flag_TopoLambda && !flag_TopoK0s) continue;
+
+      //Final selection cuts for Lambda, AntiLambda, K0s
+      Bool_t IsLambda = IsLambdaCandidate (v0, pTrack, nTrack, fLambdaDaughtersPIDcut, lV0M, fLambdaMassCut);
+      Bool_t IsAntiLambda = IsAntiLambdaCandidate (v0, pTrack, nTrack, fLambdaDaughtersPIDcut, lV0M, fLambdaMassCut);
+      Bool_t IsK0s = IsK0sCandidate (v0, pTrack, nTrack, fK0sDaughtersPIDcut, lV0M, fK0sMassCut);
+
+
+      //Pt and Eta of V0 particles
+      Double_t fV0_Pt = v0->Pt();
+      Double_t fV0_Eta = v0->PseudoRapV0();
+
+      //Kinematic cuts on pT and Eta of V0
+      if(TMath::Abs(fV0_Eta) > 0.8) continue;
+      if(fV0_Pt < 0.2) continue;
+      if(fV0_Pt > fPtMax) continue;
+  
+      
+      if (N_sumLambda_etaLess0>0 && N_sum_etaLess0>0 && N_sum_etaGreaterEtamin>0) {
+
+	if (lV0M > 0.0 && lV0M <= 70.0) {
+   
+	  if(fV0_Eta < fEtaLeftCut) {
+
+	    if(flag_TopoLambda && IsLambda) {
+
+	      fProfLambda_fA_MnPtB_vs_Minv_Pt[centBin]->Fill(v0->MassLambda(), fV0_Pt, (pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)*(1.0/N_sumLambda_etaLess0));
+	    
+	      fProfLambda_fA_vs_Minv_Pt[centBin]->Fill(v0->MassLambda(), fV0_Pt, (1.0/N_sumLambda_etaLess0));
+	      fHis2DLambda_Minv_Pt[centBin]->Fill(v0->MassLambda(), fV0_Pt);
+	    }
+
+	    if(flag_TopoLambda && IsAntiLambda) {
+
+	      fProfLambda_fA_MnPtB_vs_Minv_Pt[centBin]->Fill(v0->MassAntiLambda(), fV0_Pt, (pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)*(1.0/N_sumLambda_etaLess0));
+	    
+	      fProfLambda_fA_vs_Minv_Pt[centBin]->Fill(v0->MassAntiLambda(), fV0_Pt, (1.0/N_sumLambda_etaLess0));
+	      fHis2DLambda_Minv_Pt[centBin]->Fill(v0->MassAntiLambda(), fV0_Pt);
+	    }
+	  }
+	}
+      }
+
+      if(N_sumK0s_etaLess0>0 && N_sum_etaLess0>0 && N_sum_etaGreaterEtamin>0) {
+
+	if (lV0M > 0.0 && lV0M <= 70.0) {
+   
+	  if(fV0_Eta < fEtaLeftCut) {
+
+	    if(flag_TopoK0s && IsK0s) {
+
+	      fProfK0s_fA_MnPtB_vs_Minv_Pt[centBin]->Fill(v0->MassK0Short(), fV0_Pt, (pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)*(1.0/N_sumK0s_etaLess0));
+	    
+	      fProfK0s_fA_vs_Minv_Pt[centBin]->Fill(v0->MassK0Short(), fV0_Pt, (1.0/N_sumK0s_etaLess0));
+	      fHis2DK0s_Minv_Pt[centBin]->Fill(v0->MassK0Short(), fV0_Pt);
+	    }
+	  }
+	}
+      }
+
 	
     }//end of v0 tracks loop
 
   //++++++++++++++++++++++++++++++++++++++++++++
-    
-    
+
+  if(N_sumK0s_etaLess0>0 && N_sum_etaLess0>0 && N_sum_etaGreaterEtamin>0) {
+    MnPtA_K0s->Fill(lV0M, pT_sum_etaLess0/N_sum_etaLess0);
+    MnPtB_K0s->Fill(lV0M, pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin);
+    MnPtAB_K0s->Fill(lV0M, ((pT_sum_etaLess0/N_sum_etaLess0)*(pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)));
+  }
+  if (N_sumLambda_etaLess0>0 && N_sum_etaLess0>0 && N_sum_etaGreaterEtamin>0) {
+    MnPtA_Lambda->Fill(lV0M, pT_sum_etaLess0/N_sum_etaLess0);
+    MnPtB_Lambda->Fill(lV0M, pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin);
+    MnPtAB_Lambda->Fill(lV0M, ((pT_sum_etaLess0/N_sum_etaLess0)*(pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin)));
+  }
+  //++++++++++++++++++++++++++++++++++++++++++++
+  
   //Lambda
   hNumberOfLambdaEtaLess0->Fill(N_sumLambda_etaLess0);
   //K0s
@@ -2099,16 +2318,16 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsLambdaCandidate (AliAO
     return kFALSE;
   
   //Fill histogram before masscut
-  f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassLambda(),centrality);
+  //f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassLambda(),centrality);
 
   //Mass of V0 selection
   Double_t massV0Lambda = V0->MassLambda();
   Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     
-  if (massV0Lambda <= massLambda_PDG-LambdaMassCut) return kFALSE;
-  if (massV0Lambda >= massLambda_PDG+LambdaMassCut) return kFALSE;
-
-  f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent->Fill(V0->Pt(),V0->MassAntiLambda(),centrality);
+  // if (massV0Lambda <= massLambda_PDG-LambdaMassCut) return kFALSE;
+  // if (massV0Lambda >= massLambda_PDG+LambdaMassCut) return kFALSE;
+  if (massV0Lambda <= 1.095) return kFALSE;
+  if (massV0Lambda >= 1.135) return kFALSE;
   
   return kTRUE;
 }
@@ -2146,18 +2365,18 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsAntiLambdaCandidate (A
     return kFALSE;
       
   //Fill histogram before masscut
-  f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassAntiLambda(),centrality);
+  //f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassAntiLambda(),centrality);
     
 
   //Mass of V0 selection
   Double_t massV0AntiLambda = V0->MassAntiLambda();
   Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     
-  if (massV0AntiLambda <= massLambda_PDG-LambdaMassCut) return kFALSE;
-  if (massV0AntiLambda >= massLambda_PDG+LambdaMassCut) return kFALSE;
+  // if (massV0AntiLambda <= massLambda_PDG-LambdaMassCut) return kFALSE;
+  // if (massV0AntiLambda >= massLambda_PDG+LambdaMassCut) return kFALSE;
+  if (massV0AntiLambda <= 1.095) return kFALSE;
+  if (massV0AntiLambda >= 1.135) return kFALSE;
 
-  f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent->Fill(V0->Pt(),V0->MassAntiLambda(),centrality);
-  
   return kTRUE;
 }
 
@@ -2199,12 +2418,12 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsK0sCandidate (AliAODv0
   if(TMath::Abs(V0->RapK0Short()) > 0.5)
     return kFALSE;
     
-  f3DhistMassK0s_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
+  //f3DhistMassK0s_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
 
-  if (massK0s <= massK0s_PDG-K0sMassCut) return kFALSE;
-  if (massK0s >= massK0s_PDG+K0sMassCut) return kFALSE;
-
-  f3DhistMassK0s_vs_Pt_afterMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
+  // if (massK0s <= massK0s_PDG-K0sMassCut) return kFALSE;
+  // if (massK0s >= massK0s_PDG+K0sMassCut) return kFALSE;
+  if (massK0s <= 0.4) return kFALSE;
+  if (massK0s >= 0.6) return kFALSE;
 
   return kTRUE;
 }

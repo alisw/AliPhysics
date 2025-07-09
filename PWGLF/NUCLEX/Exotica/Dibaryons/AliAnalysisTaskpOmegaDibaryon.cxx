@@ -265,14 +265,17 @@ centralityMain(-99),
   ftrkID_daughter3_omegam(-99),
 //Lambda                                                                                                             
   fcpa_lambda_omegam(-99),
+  fpcaxy_lambda_omegam(-99),
   fpca_lambda_omegam(-99),
   fdeclength_lambda_omegam(-99),
   fchi2_lambda_omegam(-99),
   fmass_lamdba_omegam(-99),
+  fdcatoPVxy_lambda_omegam(-99),
   fdcatoPV_lambda_omegam(-99),
   fpt_lambda_omegam(-99),
 //Omega                                                                                                                 
   fcpa_omega_omegam(-99),
+  fpcaxy_omega_omegam(-99),
   fpca_omega_omegam(-99),
   fdeclength_omega_omegam(-99),
   fchi2_omega_omegam(-99),
@@ -283,6 +286,9 @@ centralityMain(-99),
   fpt_omega_omegam(-99),
   feta_omega_omegam(-99),
   fphi_omega_omegam(-99),
+  fdcatoPVxy_omega_omegam(-99),
+  fdcatoPV_omega_omegam(-99),
+  fct_omega_omegam(-99),
   fpx_omega_omegam_mc(-99),
   fpy_omega_omegam_mc(-99),
   fpz_omega_omegam_mc(-99),
@@ -301,14 +307,17 @@ centralityMain(-99),
   ftrkID_daughter3_omegap(-99),
 //Lambda                                                                                                             
   fcpa_lambda_omegap(-99),
+  fpcaxy_lambda_omegap(-99),
   fpca_lambda_omegap(-99),
   fdeclength_lambda_omegap(-99),
   fchi2_lambda_omegap(-99),
   fmass_lamdba_omegap(-99),
+  fdcatoPVxy_lambda_omegap(-99),
   fdcatoPV_lambda_omegap(-99),
   fpt_lambda_omegap(-99),
 //Omega                                                                                                                 
   fcpa_omega_omegap(-99),
+  fpcaxy_omega_omegap(-99),
   fpca_omega_omegap(-99),
   fdeclength_omega_omegap(-99),
   fchi2_omega_omegap(-99),
@@ -319,6 +328,9 @@ centralityMain(-99),
   fpt_omega_omegap(-99),
   feta_omega_omegap(-99),
   fphi_omega_omegap(-99),
+  fdcatoPVxy_omega_omegap(-99),
+  fdcatoPV_omega_omegap(-99),
+  fct_omega_omegap(-99),
   fpx_omega_omegap_mc(-99),
   fpy_omega_omegap_mc(-99),
   fpz_omega_omegap_mc(-99),
@@ -337,14 +349,17 @@ centralityMain(-99),
   ftrkID_daughter3_sidebandm(-99),
 //Lambda                                                                                                   
   fcpa_lambda_sidebandm(-99),
+  fpcaxy_lambda_sidebandm(-99),
   fpca_lambda_sidebandm(-99),
   fdeclength_lambda_sidebandm(-99),
   fchi2_lambda_sidebandm(-99),
   fmass_lamdba_sidebandm(-99),
+  fdcatoPVxy_lambda_sidebandm(-99),
   fdcatoPV_lambda_sidebandm(-99),
   fpt_lambda_sidebandm(-99),
 //Omega
   fcpa_omega_sidebandm(-99),
+  fpcaxy_omega_sidebandm(-99),
   fpca_omega_sidebandm(-99),
   fdeclength_omega_sidebandm(-99),
   fchi2_omega_sidebandm(-99),
@@ -355,6 +370,9 @@ centralityMain(-99),
   fpt_omega_sidebandm(-99),
   feta_omega_sidebandm(-99),
   fphi_omega_sidebandm(-99),
+  fdcatoPVxy_omega_sidebandm(-99),
+  fdcatoPV_omega_sidebandm(-99),
+  fct_omega_sidebandm(-99),
   fpx_omega_sidebandm_mc(-99),
   fpy_omega_sidebandm_mc(-99),
   fpz_omega_sidebandm_mc(-99),
@@ -373,14 +391,17 @@ centralityMain(-99),
   ftrkID_daughter3_sidebandp(-99),
 //Lambda
   fcpa_lambda_sidebandp(-99),
+  fpcaxy_lambda_sidebandp(-99),
   fpca_lambda_sidebandp(-99),
   fdeclength_lambda_sidebandp(-99),
   fchi2_lambda_sidebandp(-99),
   fmass_lamdba_sidebandp(-99),
+  fdcatoPVxy_lambda_sidebandp(-99),
   fdcatoPV_lambda_sidebandp(-99),
   fpt_lambda_sidebandp(-99),
 //Omega 
   fcpa_omega_sidebandp(-99),
+  fpcaxy_omega_sidebandp(-99),
   fpca_omega_sidebandp(-99),
   fdeclength_omega_sidebandp(-99),
   fchi2_omega_sidebandp(-99),
@@ -391,6 +412,9 @@ centralityMain(-99),
   fpt_omega_sidebandp(-99),
   feta_omega_sidebandp(-99),
   fphi_omega_sidebandp(-99),
+  fdcatoPVxy_omega_sidebandp(-99),
+  fdcatoPV_omega_sidebandp(-99),
+  fct_omega_sidebandp(-99),
   fpx_omega_sidebandp_mc(-99),
   fpy_omega_sidebandp_mc(-99),
   fpz_omega_sidebandp_mc(-99),
@@ -672,14 +696,17 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   ftrkID_daughter3_omegam(-99),
 //Lambda                                                                                                             
   fcpa_lambda_omegam(-99),
+  fpcaxy_lambda_omegam(-99),
   fpca_lambda_omegam(-99),
   fdeclength_lambda_omegam(-99),
   fchi2_lambda_omegam(-99),
   fmass_lamdba_omegam(-99),
+  fdcatoPVxy_lambda_omegam(-99),
   fdcatoPV_lambda_omegam(-99),
   fpt_lambda_omegam(-99),
 //Omega                                                                                                                 
   fcpa_omega_omegam(-99),
+  fpcaxy_omega_omegam(-99),
   fpca_omega_omegam(-99),
   fdeclength_omega_omegam(-99),
   fchi2_omega_omegam(-99),
@@ -690,6 +717,9 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   fpt_omega_omegam(-99),
   feta_omega_omegam(-99),
   fphi_omega_omegam(-99),
+  fdcatoPVxy_omega_omegam(-99),
+  fdcatoPV_omega_omegam(-99),
+  fct_omega_omegam(-99),
   fpx_omega_omegam_mc(-99),
   fpy_omega_omegam_mc(-99),
   fpz_omega_omegam_mc(-99),
@@ -708,14 +738,17 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   ftrkID_daughter3_omegap(-99),
 //Lambda                                                                                                             
   fcpa_lambda_omegap(-99),
+  fpcaxy_lambda_omegap(-99),
   fpca_lambda_omegap(-99),
   fdeclength_lambda_omegap(-99),
   fchi2_lambda_omegap(-99),
   fmass_lamdba_omegap(-99),
+  fdcatoPVxy_lambda_omegap(-99),
   fdcatoPV_lambda_omegap(-99),
   fpt_lambda_omegap(-99),
 //Omega                                                                                                                 
   fcpa_omega_omegap(-99),
+  fpcaxy_omega_omegap(-99),
   fpca_omega_omegap(-99),
   fdeclength_omega_omegap(-99),
   fchi2_omega_omegap(-99),
@@ -726,6 +759,9 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   fpt_omega_omegap(-99),
   feta_omega_omegap(-99),
   fphi_omega_omegap(-99),
+  fdcatoPVxy_omega_omegap(-99),
+  fdcatoPV_omega_omegap(-99),
+  fct_omega_omegap(-99),
   fpx_omega_omegap_mc(-99),
   fpy_omega_omegap_mc(-99),
   fpz_omega_omegap_mc(-99),
@@ -744,14 +780,17 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   ftrkID_daughter3_sidebandm(-99),
 //Lambda
   fcpa_lambda_sidebandm(-99),
+  fpcaxy_lambda_sidebandm(-99),
   fpca_lambda_sidebandm(-99),
   fdeclength_lambda_sidebandm(-99),
   fchi2_lambda_sidebandm(-99),
   fmass_lamdba_sidebandm(-99),
+  fdcatoPVxy_lambda_sidebandm(-99),
   fdcatoPV_lambda_sidebandm(-99),
   fpt_lambda_sidebandm(-99),
 //Omega 
   fcpa_omega_sidebandm(-99),
+  fpcaxy_omega_sidebandm(-99),
   fpca_omega_sidebandm(-99),
   fdeclength_omega_sidebandm(-99),
   fchi2_omega_sidebandm(-99),
@@ -762,6 +801,9 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   fpt_omega_sidebandm(-99),
   feta_omega_sidebandm(-99),
   fphi_omega_sidebandm(-99),
+  fdcatoPVxy_omega_sidebandm(-99),
+  fdcatoPV_omega_sidebandm(-99),
+  fct_omega_sidebandm(-99),
   fpx_omega_sidebandm_mc(-99),
   fpy_omega_sidebandm_mc(-99),
   fpz_omega_sidebandm_mc(-99),
@@ -780,14 +822,17 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   ftrkID_daughter3_sidebandp(-99),
 //Lambda
   fcpa_lambda_sidebandp(-99),
+  fpcaxy_lambda_sidebandp(-99),
   fpca_lambda_sidebandp(-99),
   fdeclength_lambda_sidebandp(-99),
   fchi2_lambda_sidebandp(-99),
   fmass_lamdba_sidebandp(-99),
+  fdcatoPVxy_lambda_sidebandp(-99),
   fdcatoPV_lambda_sidebandp(-99),
   fpt_lambda_sidebandp(-99),
 //Omega 
   fcpa_omega_sidebandp(-99),
+  fpcaxy_omega_sidebandp(-99),
   fpca_omega_sidebandp(-99),
   fdeclength_omega_sidebandp(-99),
   fchi2_omega_sidebandp(-99),
@@ -798,6 +843,9 @@ AliAnalysisTaskpOmegaDibaryon::AliAnalysisTaskpOmegaDibaryon(const char *name) :
   fpt_omega_sidebandp(-99),
   feta_omega_sidebandp(-99),
   fphi_omega_sidebandp(-99),
+  fdcatoPVxy_omega_sidebandp(-99),
+  fdcatoPV_omega_sidebandp(-99),
+  fct_omega_sidebandp(-99),
   fpx_omega_sidebandp_mc(-99),
   fpy_omega_sidebandp_mc(-99),
   fpz_omega_sidebandp_mc(-99),
@@ -1042,15 +1090,18 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
 
   //Lambda  
   fTree_omegam->Branch("fcpa_lambda", &fcpa_lambda_omegam, "fcpa_lambda/D");
+  fTree_omegam->Branch("fpcaxy_lambda", &fpcaxy_lambda_omegam, "fpcaxy_lambda/D");
   fTree_omegam->Branch("fpca_lambda", &fpca_lambda_omegam, "fpca_lambda/D");
   fTree_omegam->Branch("fdeclength_lambda", &fdeclength_lambda_omegam, "fdeclength_lambda/D");
   fTree_omegam->Branch("fchi2_lambda", &fchi2_lambda_omegam, "fchi2_lambda/F");
   fTree_omegam->Branch("fmass_lamdba", &fmass_lamdba_omegam, "fmass_lamdba/D");
+  fTree_omegam->Branch("fdcatoPVxy_lambda", &fdcatoPVxy_lambda_omegam, "fdcatoPVxy_lambda/D");
   fTree_omegam->Branch("fdcatoPV_lambda", &fdcatoPV_lambda_omegam, "fdcatoPV_lambda/D");
   fTree_omegam->Branch("fpt_lambda", &fpt_lambda_omegam, "fpt_lambda/D");
 
   //Omega  
   fTree_omegam->Branch("fcpa_omega", &fcpa_omega_omegam, "fcpa_omega/D");
+  fTree_omegam->Branch("fpcaxy_omega", &fpcaxy_omega_omegam, "fpcaxy_omega/D");
   fTree_omegam->Branch("fpca_omega", &fpca_omega_omegam, "fpca_omega/D");
   fTree_omegam->Branch("fdeclength_omega", &fdeclength_omega_omegam, "fdeclength_omega/D");
   fTree_omegam->Branch("fchi2_omega", &fchi2_omega_omegam, "fchi2_omega/F");
@@ -1061,6 +1112,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
   fTree_omegam->Branch("fpt_omega", &fpt_omega_omegam, "fpt_omega/D");
   fTree_omegam->Branch("feta_omega", &feta_omega_omegam, "feta_omega/D");
   fTree_omegam->Branch("fphi_omega", &fphi_omega_omegam, "fphi_omega/D");
+  fTree_omegam->Branch("fdcatoPVxy_omega", &fdcatoPVxy_omega_omegam, "fdcatoPVxy_omega/D");
+  fTree_omegam->Branch("fdcatoPV_omega", &fdcatoPV_omega_omegam, "fdcatoPV_omega/D");
+  fTree_omegam->Branch("fct_omega", &fct_omega_omegam, "fct_omega/D");
   fTree_omegam->Branch("fpx_omega_mc", &fpx_omega_omegam_mc, "fpx_omega_mc/D");
   fTree_omegam->Branch("fpy_omega_mc", &fpy_omega_omegam_mc, "fpy_omega_mc/D"); 
   fTree_omegam->Branch("fpz_omega_mc", &fpz_omega_omegam_mc, "fpz_omega_mc/D");
@@ -1082,15 +1136,18 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
 
   //Lambda  
   fTree_omegap->Branch("fcpa_lambda", &fcpa_lambda_omegap, "fcpa_lambda/D");
+  fTree_omegap->Branch("fpcaxy_lambda", &fpcaxy_lambda_omegap, "fpcaxy_lambda/D");
   fTree_omegap->Branch("fpca_lambda", &fpca_lambda_omegap, "fpca_lambda/D");
   fTree_omegap->Branch("fdeclength_lambda", &fdeclength_lambda_omegap, "fdeclength_lambda/D");
   fTree_omegap->Branch("fchi2_lambda", &fchi2_lambda_omegap, "fchi2_lambda/F");
   fTree_omegap->Branch("fmass_lamdba", &fmass_lamdba_omegap, "fmass_lamdba/D");
+  fTree_omegap->Branch("fdcatoPVxy_lambda", &fdcatoPVxy_lambda_omegap, "fdcatoPVxy_lambda/D");
   fTree_omegap->Branch("fdcatoPV_lambda", &fdcatoPV_lambda_omegap, "fdcatoPV_lambda/D");
   fTree_omegap->Branch("fpt_lambda", &fpt_lambda_omegap, "fpt_lambda/D");
 
   //Omega  
   fTree_omegap->Branch("fcpa_omega", &fcpa_omega_omegap, "fcpa_omega/D");
+  fTree_omegap->Branch("fpcaxy_omega", &fpcaxy_omega_omegap, "fpcaxy_omega/D");
   fTree_omegap->Branch("fpca_omega", &fpca_omega_omegap, "fpca_omega/D");
   fTree_omegap->Branch("fdeclength_omega", &fdeclength_omega_omegap, "fdeclength_omega/D");
   fTree_omegap->Branch("fchi2_omega", &fchi2_omega_omegap, "fchi2_omega/F");
@@ -1101,6 +1158,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
   fTree_omegap->Branch("fpt_omega", &fpt_omega_omegap, "fpt_omega/D");
   fTree_omegap->Branch("feta_omega", &feta_omega_omegap, "feta_omega/D");
   fTree_omegap->Branch("fphi_omega", &fphi_omega_omegap, "fphi_omega/D");
+  fTree_omegap->Branch("fdcatoPVxy_omega", &fdcatoPVxy_omega_omegap, "fdcatoPVxy_omega/D");
+  fTree_omegap->Branch("fdcatoPV_omega", &fdcatoPV_omega_omegap, "fdcatoPV_omega/D");
+  fTree_omegap->Branch("fct_omega", &fct_omega_omegap, "fct_omega/D");
   fTree_omegap->Branch("fpx_omega_mc", &fpx_omega_omegap_mc, "fpx_omega_mc/D");
   fTree_omegap->Branch("fpy_omega_mc", &fpy_omega_omegap_mc, "fpy_omega_mc/D");
   fTree_omegap->Branch("fpz_omega_mc", &fpz_omega_omegap_mc, "fpz_omega_mc/D"); 
@@ -1122,15 +1182,18 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
 
   //Lambda  
   fTree_sidebandm->Branch("fcpa_lambda", &fcpa_lambda_sidebandm, "fcpa_lambda/D");
+  fTree_sidebandm->Branch("fpcaxy_lambda", &fpcaxy_lambda_sidebandm, "fpcaxy_lambda/D");
   fTree_sidebandm->Branch("fpca_lambda", &fpca_lambda_sidebandm, "fpca_lambda/D");
   fTree_sidebandm->Branch("fdeclength_lambda", &fdeclength_lambda_sidebandm, "fdeclength_lambda/D");
   fTree_sidebandm->Branch("fchi2_lambda", &fchi2_lambda_sidebandm, "fchi2_lambda/F");
   fTree_sidebandm->Branch("fmass_lamdba", &fmass_lamdba_sidebandm, "fmass_lamdba/D");
+  fTree_sidebandm->Branch("fdcatoPVxy_lambda", &fdcatoPVxy_lambda_sidebandm, "fdcatoPVxy_lambda/D");
   fTree_sidebandm->Branch("fdcatoPV_lambda", &fdcatoPV_lambda_sidebandm, "fdcatoPV_lambda/D");
   fTree_sidebandm->Branch("fpt_lambda", &fpt_lambda_sidebandm, "fpt_lambda/D");
 
   //Omega  
   fTree_sidebandm->Branch("fcpa_omega", &fcpa_omega_sidebandm, "fcpa_omega/D");
+  fTree_sidebandm->Branch("fpcaxy_omega", &fpcaxy_omega_sidebandm, "fpcaxy_omega/D");
   fTree_sidebandm->Branch("fpca_omega", &fpca_omega_sidebandm, "fpca_omega/D");
   fTree_sidebandm->Branch("fdeclength_omega", &fdeclength_omega_sidebandm, "fdeclength_omega/D");
   fTree_sidebandm->Branch("fchi2_omega", &fchi2_omega_sidebandm, "fchi2_omega/F");
@@ -1141,6 +1204,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
   fTree_sidebandm->Branch("fpt_omega", &fpt_omega_sidebandm, "fpt_omega/D");  
   fTree_sidebandm->Branch("feta_omega", &feta_omega_sidebandm, "feta_omega/D");  
   fTree_sidebandm->Branch("fphi_omega", &fphi_omega_sidebandm, "fphi_omega/D");  
+  fTree_sidebandm->Branch("fdcatoPVxy_omega", &fdcatoPVxy_omega_sidebandm, "fdcatoPVxy_omega/D");
+  fTree_sidebandm->Branch("fdcatoPV_omega", &fdcatoPV_omega_sidebandm, "fdcatoPV_omega/D");
+  fTree_sidebandm->Branch("fct_omega", &fct_omega_sidebandm, "fct_omega/D");
   fTree_sidebandm->Branch("fpx_omega_mc", &fpx_omega_sidebandm_mc, "fpx_omega_mc/D");
   fTree_sidebandm->Branch("fpy_omega_mc", &fpy_omega_sidebandm_mc, "fpy_omega_mc/D");
   fTree_sidebandm->Branch("fpz_omega_mc", &fpz_omega_sidebandm_mc, "fpz_omega_mc/D");
@@ -1162,15 +1228,18 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
 
   //Lambda  
   fTree_sidebandp->Branch("fcpa_lambda", &fcpa_lambda_sidebandp, "fcpa_lambda/D");
+  fTree_sidebandp->Branch("fpcaxy_lambda", &fpcaxy_lambda_sidebandp, "fpcaxy_lambda/D");
   fTree_sidebandp->Branch("fpca_lambda", &fpca_lambda_sidebandp, "fpca_lambda/D");
   fTree_sidebandp->Branch("fdeclength_lambda", &fdeclength_lambda_sidebandp, "fdeclength_lambda/D");
   fTree_sidebandp->Branch("fchi2_lambda", &fchi2_lambda_sidebandp, "fchi2_lambda/F");
   fTree_sidebandp->Branch("fmass_lamdba", &fmass_lamdba_sidebandp, "fmass_lamdba/D");
+  fTree_sidebandp->Branch("fdcatoPVxy_lambda", &fdcatoPVxy_lambda_sidebandp, "fdcatoPVxy_lambda/D");
   fTree_sidebandp->Branch("fdcatoPV_lambda", &fdcatoPV_lambda_sidebandp, "fdcatoPV_lambda/D");
   fTree_sidebandp->Branch("fpt_lambda", &fpt_lambda_sidebandp, "fpt_lambda/D");
 
   //Omega  
   fTree_sidebandp->Branch("fcpa_omega", &fcpa_omega_sidebandp, "fcpa_omega/D");
+  fTree_sidebandp->Branch("fpcaxy_omega", &fpcaxy_omega_sidebandp, "fpcaxy_omega/D");
   fTree_sidebandp->Branch("fpca_omega", &fpca_omega_sidebandp, "fpca_omega/D");
   fTree_sidebandp->Branch("fdeclength_omega", &fdeclength_omega_sidebandp, "fdeclength_omega/D");
   fTree_sidebandp->Branch("fchi2_omega", &fchi2_omega_sidebandp, "fchi2_omega/F");
@@ -1180,7 +1249,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserCreateOutputObjects()
   fTree_sidebandp->Branch("fpz_omega", &fpz_omega_sidebandp, "fpz_omega/D");  
   fTree_sidebandp->Branch("fpt_omega", &fpt_omega_sidebandp, "fpt_omega/D");  
   fTree_sidebandp->Branch("feta_omega", &feta_omega_sidebandp, "feta_omega/D");  
-  fTree_sidebandp->Branch("fphi_omega", &fphi_omega_sidebandp, "fphi_omega/D");  
+  fTree_sidebandp->Branch("fphi_omega", &fphi_omega_sidebandp, "fphi_omega/D");
+  fTree_sidebandp->Branch("fdcatoPVxy_omega", &fdcatoPVxy_omega_sidebandp, "fdcatoPVxy_omega/D");    
+  fTree_sidebandp->Branch("fdcatoPV_omega", &fdcatoPV_omega_sidebandp, "fdcatoPV_omega/D");    
+  fTree_sidebandp->Branch("fct_omega", &fct_omega_sidebandp, "fct_omega/D");
   fTree_sidebandp->Branch("fpx_omega_mc", &fpx_omega_sidebandp_mc, "fpx_omega_mc/D");
   fTree_sidebandp->Branch("fpy_omega_mc", &fpy_omega_sidebandp_mc, "fpy_omega_mc/D");
   fTree_sidebandp->Branch("fpz_omega_mc", &fpz_omega_sidebandp_mc, "fpz_omega_mc/D"); 
@@ -1315,7 +1387,7 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   dynamic_cast<TH1F*>(fOutputList->FindObject("fEvtPassCut"))->Fill(0.5);
 
   nevt ++;
-  cout<<"nevt = "<<nevt<<endl;
+  //cout<<"nevt = "<<nevt<<endl;
 
   centralityV0M = -1.;
   centralityCL0 = -1.;
@@ -1510,8 +1582,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     if(ftrkID_daughter1 < 0) ftrkID_daughter1 =-ftrkID_daughter1-1;
     exProtonTrack->CopyFromVTrack(ProtonTrack);
     KFProtonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exProtonTrack, AliPID::ParticleMass(AliPID::kProton),-1);  
-    if((Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-    if((Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
     
     for(Int_t j=0; j<ndpp; j++){
 
@@ -1524,8 +1596,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       exPionTrack->CopyFromVTrack(PionTrack);
       KFPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exPionTrack, AliPID::ParticleMass(AliPID::kPion),1);  
       
-      if((Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-      if((Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
 
       KFParticleDibaryon KFSubMother;
       KFSubMother.ActivateWarnings();
@@ -1551,10 +1623,11 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       
       fDcaSecDaughterProton  = TMath::Abs(exProtonTrack->GetD(SecVertexKF[0], SecVertexKF[1], kMagF));
       fDcaSecDaughterPion    = TMath::Abs(exPionTrack->GetD(SecVertexKF[0], SecVertexKF[1], kMagF));
-      fDCADaugter = fDcaSecDaughterProton + fDcaSecDaughterPion;
-      if(fDCADaugter > 1.5)       continue;
-      if(KFSubMother.Chi2() > 10) continue;
-      DCAtoPrimVtx  = (Float_t)KFSubMother.GetDistanceFromVertex(primKFVertex);
+      //fDCADaugter = fDcaSecDaughterProton + fDcaSecDaughterPion;
+      fDCADaugter = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
+      //if(fDCADaugter > 1.5)       continue;
+      DCAtoPrimVtx  = (Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex);
+      //if(KFSubMother.Chi2() > 10) continue;
       //if(DCAtoPrimVtx < 0.2) continue;
       
       //cos(PA) 
@@ -1593,10 +1666,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	KFBachPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kPion),1); 
 	KFBachKaonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kKaon),1); 
 	
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;
 	
 	KFParticleDibaryon KFMother;
 	KFParticleDibaryon KFMother_Omega;
@@ -1680,10 +1753,11 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fDCAdau_Casc_KF")) ->Fill(DCAdau_Xi);
 	//dynamic_cast<TH1F*>(fOutputList->FindObject("fDCADaug_Casc_KF")) ->Fill(fDCADaugter);
 	
-	if(DecLength_Xi < 0.8)     continue;
-	if(DecLength_Xi > 200)     continue;
-	if(fPA_Xi < 0.8)          continue;
-	if(DCAdau_Xi > 1.5)        continue;
+	if(fDCADaugter > 1.5)      continue;
+	//if(DecLength_Xi < 0.8)     continue;
+	//if(DecLength_Xi > 200)     continue;
+	if(fPA_Xi < 0.9)           continue;
+	if(DCAdauXY_Xi > 1.5)      continue;
 	
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fInvMassXi_Casc_KF")) ->Fill(lorentzsum_Xi->M());
 	if(TMath::Abs(lorentzsum_Xi->M() - TDatabasePDG::Instance()->GetParticle(3334)->Mass()) < 0.00907){
@@ -1699,25 +1773,28 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_omegap       = vertex->GetZ();
 	  fcentrality_omegap    = centralityV0M;
 	  //=== Daughter track
-	  fdca_daughter1_omegap   = (Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex);
-	  fdca_daughter2_omegap   = (Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex);
-	  fdca_daughter3_omegap   = (Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex);
+	  fdca_daughter1_omegap   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter2_omegap   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter3_omegap   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_omegap = ftrkID_daughter1;	
 	  ftrkID_daughter2_omegap = ftrkID_daughter2;
 	  ftrkID_daughter3_omegap = ftrkID_daughter3;
 
 	  //=== Lambda
 	  fcpa_lambda_omegap       = fPA;
-	  fpca_lambda_omegap       = fDCADaugter;
+	  fpcaxy_lambda_omegap     = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
+	  fpca_lambda_omegap       = KFProtonTrack.GetDistanceFromParticle(KFPionTrack);
 	  fdeclength_lambda_omegap = DecLength;
 	  fchi2_lambda_omegap      = KFSubMother.Chi2();
 	  fmass_lamdba_omegap      = lorentzsum->M();
-	  fdcatoPV_lambda_omegap   = DCAtoPrimVtx;
+	  fdcatoPVxy_lambda_omegap = fabs((Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex));
+	  fdcatoPV_lambda_omegap   = fabs((Float_t)KFSubMother.GetDistanceFromVertex(primKFVertex));
 	  fpt_lambda_omegap        = lorentzsum->Pt();
 	  
 	  //=== Omega
 	  fcpa_omega_omegap       = fPA_Xi;
-	  fpca_omega_omegap       = DCAdau_Xi;
+	  fpcaxy_omega_omegap     = KFBachPionTrack.GetDistanceFromParticleXY(KFSubMother);
+	  fpca_omega_omegap       = KFBachPionTrack.GetDistanceFromParticle(KFSubMother);
 	  fdeclength_omega_omegap = DecLength_Xi;
 	  fchi2_omega_omegap      = KFMother.Chi2();
 	  fmass_omega_omegap      = lorentzsum_Xi->M();
@@ -1727,6 +1804,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fpt_omega_omegap        = lorentzsum_Xi->Pt();
 	  feta_omega_omegap       = lorentzsum_Xi->Eta();
 	  fphi_omega_omegap       = lorentzsum_Xi->Phi();
+	  fdcatoPVxy_omega_omegap = fabs((Float_t)KFMother.GetDistanceFromVertexXY(primKFVertex));
+	  fdcatoPV_omega_omegap   = fabs((Float_t)KFMother.GetDistanceFromVertex(primKFVertex));
+	  fct_omega_omegap        = (lorentzsum_Xi->M() * TMath::Sqrt(TMath::Power(dd_Xi[0], 2) + TMath::Power(dd_Xi[1], 2) + TMath::Power(dd_Xi[2], 2))) / lorentzsum_Xi->P();
 	  fpx_omega_omegap_mc     = -99;
 	  fpy_omega_omegap_mc     = -99;
 	  fpz_omega_omegap_mc     = -99;
@@ -1743,25 +1823,28 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_sidebandp       = vertex->GetZ();
 	  fcentrality_sidebandp    = centralityV0M;
           //=== Daughter track
-          fdca_daughter1_sidebandp   = (Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex);
-          fdca_daughter2_sidebandp   = (Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex);
-          fdca_daughter3_sidebandp   = (Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex);
+          fdca_daughter1_sidebandp   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter2_sidebandp   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter3_sidebandp   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_sidebandp = ftrkID_daughter1;	
 	  ftrkID_daughter2_sidebandp = ftrkID_daughter2;
 	  ftrkID_daughter3_sidebandp = ftrkID_daughter3;
 
           //=== Lambda
           fcpa_lambda_sidebandp       = fPA;
-          fpca_lambda_sidebandp       = fDCADaugter;
+          fpcaxy_lambda_sidebandp     = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
+          fpca_lambda_sidebandp       = KFProtonTrack.GetDistanceFromParticle(KFPionTrack);
           fdeclength_lambda_sidebandp = DecLength;
           fchi2_lambda_sidebandp      = KFSubMother.Chi2();
           fmass_lamdba_sidebandp      = lorentzsum->M();
-          fdcatoPV_lambda_sidebandp   = DCAtoPrimVtx;
+          fdcatoPVxy_lambda_sidebandp = fabs((Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex));
+          fdcatoPV_lambda_sidebandp   = fabs((Float_t)KFSubMother.GetDistanceFromVertex(primKFVertex));
 	  fpt_lambda_sidebandp        = lorentzsum->Pt();
 
           //=== Omega
           fcpa_omega_sidebandp       = fPA_Xi;
-          fpca_omega_sidebandp       = DCAdau_Xi;
+          fpcaxy_omega_sidebandp     = KFBachPionTrack.GetDistanceFromParticleXY(KFSubMother);
+          fpca_omega_sidebandp       = KFBachPionTrack.GetDistanceFromParticle(KFSubMother);
           fdeclength_omega_sidebandp = DecLength_Xi;
           fchi2_omega_sidebandp      = KFMother.Chi2();
           fmass_omega_sidebandp      = lorentzsum_Xi->M();
@@ -1771,6 +1854,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fpt_omega_sidebandp        = lorentzsum_Xi->Pt();
 	  feta_omega_sidebandp       = lorentzsum_Xi->Eta();
 	  fphi_omega_sidebandp       = lorentzsum_Xi->Phi();
+	  fdcatoPVxy_omega_sidebandp = fabs((Float_t)KFMother.GetDistanceFromVertexXY(primKFVertex));
+	  fdcatoPV_omega_sidebandp   = fabs((Float_t)KFMother.GetDistanceFromVertex(primKFVertex));
+	  fct_omega_sidebandp        = (lorentzsum_Xi->M() * TMath::Sqrt(TMath::Power(dd_Xi[0], 2) + TMath::Power(dd_Xi[1], 2) + TMath::Power(dd_Xi[2], 2))) / lorentzsum_Xi->P();
 	  fpx_omega_sidebandp_mc     = -99;
 	  fpy_omega_sidebandp_mc     = -99;
 	  fpz_omega_sidebandp_mc     = -99;
@@ -1798,8 +1884,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
     if(ftrkID_daughter1 < 0) ftrkID_daughter1 =-ftrkID_daughter1-1;
     exProtonTrack->CopyFromVTrack(ProtonTrack);
     KFProtonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exProtonTrack, AliPID::ParticleMass(AliPID::kProton),1);  
-    if((Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-    if((Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;    
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+    if(TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;    
 
     for(Int_t j=0; j<ndnp; j++){
 
@@ -1811,10 +1897,12 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       if(ftrkID_daughter2 < 0) ftrkID_daughter2 =-ftrkID_daughter2-1;
       exPionTrack->CopyFromVTrack(PionTrack);
       KFPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exPionTrack, AliPID::ParticleMass(AliPID::kPion),-1);  
-      if((Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-      if((Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;      
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+      if(TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;      
 
       KFParticleDibaryon KFSubMother;
+      KFSubMother.ActivateWarnings();
+
       KFSubMother.AddDaughter(KFProtonTrack);
       if(!KFSubMother.CheckDaughter(KFPionTrack)) continue;
       KFSubMother.AddDaughter(KFPionTrack);
@@ -1836,10 +1924,11 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
       
       fDcaSecDaughterProton  = TMath::Abs(exProtonTrack->GetD(SecVertexKF[0], SecVertexKF[1], kMagF));
       fDcaSecDaughterPion    = TMath::Abs(exPionTrack->GetD(SecVertexKF[0], SecVertexKF[1], kMagF));
-      fDCADaugter = fDcaSecDaughterProton + fDcaSecDaughterPion;
-      if(fDCADaugter > 1.5)       continue;
-      if(KFSubMother.Chi2() > 10) continue;
-      DCAtoPrimVtx  = (Float_t)KFSubMother.GetDistanceFromVertex(primKFVertex);      
+      //fDCADaugter = fDcaSecDaughterProton + fDcaSecDaughterPion;
+      fDCADaugter = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
+      //if(fDCADaugter > 1.5)       continue;
+      DCAtoPrimVtx  = (Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex);      
+      //if(KFSubMother.Chi2() > 10) continue;
       //if(DCAtoPrimVtx < 0.2) continue;
       
       //cos(PA) 
@@ -1878,10 +1967,10 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	exBachKaonTrack->CopyFromVTrack(BachNPionTrack);
 	KFBachPionTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kPion),-1); 
 	KFBachKaonTrack = AliAnalysisTaskpOmegaDibaryon::CreateKFParticle(*exBachPionTrack, AliPID::ParticleMass(AliPID::kKaon),-1); 
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;      
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertex(primKFVertex) < 0.05) continue;
-	if((Float_t)KFBachKaonTrack.GetDistanceFromVertex(primKFVertex) > 3.)   continue;      	
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;      
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) < 0.05) continue;
+	if(TMath::Abs(KFBachKaonTrack.GetDistanceFromVertexXY(primKFVertex)) > 3.)   continue;      	
 
 	KFParticleDibaryon KFMother;
 	KFParticleDibaryon KFMother_Omega;
@@ -1967,10 +2056,11 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fDCAdau_Casc_KF")) ->Fill(DCAdau_Xi);
 	//dynamic_cast<TH1F*>(fOutputList->FindObject("fDCADaug_Casc_KF")) ->Fill(fDCADaugter);
 	
-	if(DecLength_Xi < 0.8)     continue;
-	if(DecLength_Xi > 200)     continue;
-	if(fPA_Xi < 0.8)          continue;
-	if(DCAdau_Xi > 1.5)        continue;
+	if(fDCADaugter > 1.5)      continue;
+	//if(DecLength_Xi < 0.8)     continue;
+	//if(DecLength_Xi > 200)     continue;
+	if(fPA_Xi < 0.9)           continue;
+	if(DCAdauXY_Xi > 1.5)      continue;
 	
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fInvMassXi_Casc_KF")) ->Fill(lorentzsum_Xi->M());
 	if(TMath::Abs(lorentzsum_Xi->M() - TDatabasePDG::Instance()->GetParticle(3334)->Mass()) < 0.00907){
@@ -1985,25 +2075,28 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_omegam       = vertex->GetZ();
 	  fcentrality_omegam    = centralityV0M;
 	  //=== Daughter track
-	  fdca_daughter1_omegam   = (Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex);
-	  fdca_daughter2_omegam   = (Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex);
-	  fdca_daughter3_omegam   = (Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex);
+	  fdca_daughter1_omegam   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter2_omegam   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+	  fdca_daughter3_omegam   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_omegam = ftrkID_daughter1;	
 	  ftrkID_daughter2_omegam = ftrkID_daughter2;
 	  ftrkID_daughter3_omegam = ftrkID_daughter3;
 
 	  //=== Lambda
 	  fcpa_lambda_omegam       = fPA;
-	  fpca_lambda_omegam       = fDCADaugter;
+	  fpcaxy_lambda_omegam     = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
+	  fpca_lambda_omegam       = KFProtonTrack.GetDistanceFromParticle(KFPionTrack);
 	  fdeclength_lambda_omegam = DecLength;
 	  fchi2_lambda_omegam      = KFSubMother.Chi2();
 	  fmass_lamdba_omegam      = lorentzsum->M();
-	  fdcatoPV_lambda_omegam   = DCAtoPrimVtx;
+	  fdcatoPVxy_lambda_omegam = fabs((Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex));
+	  fdcatoPV_lambda_omegam   = fabs((Float_t)KFSubMother.GetDistanceFromVertex(primKFVertex));
 	  fpt_lambda_omegam        = lorentzsum->Pt();
 	  
 	  //=== Omega
 	  fcpa_omega_omegam       = fPA_Xi;
-	  fpca_omega_omegam       = DCAdau_Xi;
+	  fpcaxy_omega_omegam     = KFBachPionTrack.GetDistanceFromParticleXY(KFSubMother);
+	  fpca_omega_omegam       = KFBachPionTrack.GetDistanceFromParticle(KFSubMother);
 	  fdeclength_omega_omegam = DecLength_Xi;
 	  fchi2_omega_omegam      = KFMother.Chi2();
 	  fmass_omega_omegam      = lorentzsum_Xi->M();
@@ -2013,6 +2106,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fpt_omega_omegam        = lorentzsum_Xi->Pt();
 	  feta_omega_omegam       = lorentzsum_Xi->Eta();
 	  fphi_omega_omegam       = lorentzsum_Xi->Phi();
+	  fdcatoPVxy_omega_omegam = fabs((Float_t)KFMother.GetDistanceFromVertexXY(primKFVertex));
+	  fdcatoPV_omega_omegam   = fabs((Float_t)KFMother.GetDistanceFromVertex(primKFVertex));
+	  fct_omega_omegam        = (lorentzsum_Xi->M() * TMath::Sqrt(TMath::Power(dd_Xi[0], 2) + TMath::Power(dd_Xi[1], 2) + TMath::Power(dd_Xi[2], 2))) / lorentzsum_Xi->P();
 	  fpx_omega_omegam_mc     = -99;
 	  fpy_omega_omegam_mc     = -99;
 	  fpz_omega_omegam_mc     = -99;
@@ -2029,25 +2125,28 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fzvertex_sidebandm       = vertex->GetZ();
 	  fcentrality_sidebandm    = centralityV0M;
           //=== Daughter track
-          fdca_daughter1_sidebandm   = (Float_t)KFProtonTrack.GetDistanceFromVertex(primKFVertex);
-          fdca_daughter2_sidebandm   = (Float_t)KFPionTrack.GetDistanceFromVertex(primKFVertex);
-          fdca_daughter3_sidebandm   = (Float_t)KFBachPionTrack.GetDistanceFromVertex(primKFVertex);
+          fdca_daughter1_sidebandm   = TMath::Abs(KFProtonTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter2_sidebandm   = TMath::Abs(KFPionTrack.GetDistanceFromVertexXY(primKFVertex));
+          fdca_daughter3_sidebandm   = TMath::Abs(KFBachPionTrack.GetDistanceFromVertexXY(primKFVertex));
 	  ftrkID_daughter1_sidebandm = ftrkID_daughter1;	
 	  ftrkID_daughter2_sidebandm = ftrkID_daughter2;
 	  ftrkID_daughter3_sidebandm = ftrkID_daughter3;
 
           //=== Lambda
           fcpa_lambda_sidebandm       = fPA;
-          fpca_lambda_sidebandm       = fDCADaugter;
+          fpcaxy_lambda_sidebandm     = KFProtonTrack.GetDistanceFromParticleXY(KFPionTrack);
+          fpca_lambda_sidebandm       = KFProtonTrack.GetDistanceFromParticle(KFPionTrack);
           fdeclength_lambda_sidebandm = DecLength;
           fchi2_lambda_sidebandm      = KFSubMother.Chi2();
           fmass_lamdba_sidebandm      = lorentzsum->M();
-          fdcatoPV_lambda_sidebandm   = DCAtoPrimVtx;
+          fdcatoPVxy_lambda_sidebandm = fabs((Float_t)KFSubMother.GetDistanceFromVertexXY(primKFVertex));
+          fdcatoPV_lambda_sidebandm   = fabs((Float_t)KFSubMother.GetDistanceFromVertex(primKFVertex));
 	  fpt_lambda_sidebandm        = lorentzsum->Pt();
 
           //=== Omega
           fcpa_omega_sidebandm       = fPA_Xi;
-          fpca_omega_sidebandm       = DCAdau_Xi;
+          fpcaxy_omega_sidebandm     = KFBachPionTrack.GetDistanceFromParticleXY(KFSubMother);
+          fpca_omega_sidebandm       = KFBachPionTrack.GetDistanceFromParticle(KFSubMother);
           fdeclength_omega_sidebandm = DecLength_Xi;
           fchi2_omega_sidebandm      = KFMother.Chi2();
           fmass_omega_sidebandm      = lorentzsum_Xi->M();
@@ -2057,6 +2156,9 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
 	  fpt_omega_sidebandm        = lorentzsum_Xi->Pt();
 	  feta_omega_sidebandm       = lorentzsum_Xi->Eta();
 	  fphi_omega_sidebandm       = lorentzsum_Xi->Phi();
+	  fdcatoPVxy_omega_sidebandm = fabs((Float_t)KFMother.GetDistanceFromVertexXY(primKFVertex));
+	  fdcatoPV_omega_sidebandm   = fabs((Float_t)KFMother.GetDistanceFromVertex(primKFVertex));
+	  fct_omega_sidebandm        = (lorentzsum_Xi->M() * TMath::Sqrt(TMath::Power(dd_Xi[0], 2) + TMath::Power(dd_Xi[1], 2) + TMath::Power(dd_Xi[2], 2))) / lorentzsum_Xi->P();
 	  fpx_omega_sidebandm_mc     = -99;
 	  fpy_omega_sidebandm_mc     = -99;
 	  fpz_omega_sidebandm_mc     = -99;
@@ -3031,7 +3133,7 @@ Double_t AliAnalysisTaskpOmegaDibaryon::GetTOFSignal(AliAODTrack& trackHe, Doubl
   length = trackHe.GetIntegratedLength();
   time0 = fPIDResponse->GetTOFResponse().GetStartTime(trackHe.P());
   time = trackHe.GetTOFsignal() - time0;
-  cout<<"time = "<<time<<endl;
+  //cout<<"time = "<<time<<endl;
   if (time > 0 && length > 0) {
     beta = length / (2.99792457999999984e-02 * time);
     if(beta < 1){

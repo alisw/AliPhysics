@@ -149,6 +149,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void DoClusterMergingStudies(AliVCluster* clus, vector<clusterLabel> &labelvect);
     void DoClusterMergingStudiesAOD(AliVCluster* clus, vector<clusterLabel> &labelvect);
 
+    void FillPartV0MMC(AliAODMCParticle *particle);
+
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
@@ -494,6 +496,11 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterEProbe;                                       //! cluster E of probe photon
     Float_t               fCellEProbe;                                          //! leading cell E of tagged photon
 
+    // V0M resolution studies
+    bool                  fInitializedFillV0MMultCorrMC;                        // flag to check if the V0M resolution studies have eben initialized
+    bool                  fDoFillV0MMultCorrMC;                                 // flag to check if V0M resolution studies should be performed
+    int                   fnTracksV0M;                                          //! counter for the number of tracks in the V0M
+
     // additional variables
     Double_t              fEventPlaneAngle;                                     // EventPlaneAngle
     TRandom3              fRandom;                                              // random
@@ -539,7 +546,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 98);
+    ClassDef(AliAnalysisTaskGammaCalo, 99);
 };
 
 #endif
