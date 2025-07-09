@@ -101,6 +101,8 @@ public:
     void SetMinEoPcut(Double_t d)                             { fMinEoPcut = d;}
     void SetMaxEoPcut(Double_t d)                             { fMaxEoPcut = d;}
     void SetM20cut(Double_t d)                                { fM20cut = d;}
+    void SetMinM02cut(Double_t d)                             { fMinM02cut = d;}
+    void SetMaxM02cut(Double_t d)                             { fMaxM02cut = d;}
     void SetMinPtTPC(Double_t d)                              { fMinPtTPC = d;}
     void SetMaxPtTPC(Double_t d)                              { fMaxPtTPC = d;}
     void SetMinPtEMCal(Double_t d)                            { fMinPtEMCal = d;}
@@ -190,6 +192,8 @@ protected:
     Double_t                            fMinEoPcut;              // minimum value of the E/p cut
     Double_t                            fMaxEoPcut;              // maximum value of the E/p cut
     Double_t                            fM20cut;                 // maximum value of the M20 cut
+    Double_t                            fMinM02cut;                 // minimum value of the M02 cut
+    Double_t                            fMaxM02cut;                 // maximum value of the M02 cut
     Double_t                            fMinPtTPC;               // minimum pt for the TPC analysis
     Double_t                            fMaxPtTPC;               // maximum pt for the TPC analysis
     Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
@@ -276,13 +280,31 @@ protected:
     TH2F                                *fEtaPhiTrueElec;
     TH2F                                *fnEovPelecNoTPCcut;
     TH2F                                *fnEovPelecTPCcut;
+    TH2F                                *fnEovPelecEMCalcut;
     TH2F                                *fnEovPelecTPCEMCalcut;
     TH2F                                *fnEovPelecTPCsscut[5];
+    TH2F                                *fnM20backg;
+    TH2F                                *fnM02backg;
     TH2F                                *fnEovPbackg;
+    TH2F                                *fnEovPbackgEMCalcut;
     TH2F                                *fnClsE;
     TH2F                                *fnM20;
     TH2F                                *fnM02;
     TH2F                                *fnClsTime;
+    TH2F                                *fnM20TrueElec;
+    TH2F                                *fnM02TrueElec;
+    TH3F                                *fnShowerShapeTrueElec;
+    TH2F                                *fnEovPTrueElecnocut;
+    TH2F                                *fnEovPTrueElecTPCcut;
+    TH2F                                *fnEovPTrueElecEMCalcut;
+    TH2F                                *fnEovPTrueElecTPCEMCalcut;
+    TH2F                                *fnM20TrueBkg;
+    TH2F                                *fnM02TrueBkg;
+    TH3F                                *fnShowerShapeTrueBkg;
+    TH2F                                *fnEovPTrueBkgnocut;
+    TH2F                                *fnEovPTrueBkgTPCcut;
+    TH2F                                *fnEovPTrueBkgEMCalcut;
+    TH2F                                *fnEovPTrueBkgTPCEMCalcut;
     TH2F                                *fAngULS;
     TH2F                                *fAngLS;
     TH2F                                *fAngChargPart;

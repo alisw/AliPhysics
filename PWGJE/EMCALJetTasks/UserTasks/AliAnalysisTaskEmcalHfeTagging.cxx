@@ -110,6 +110,8 @@ fEtaCut(0.7),
 fMinEoPcut(0.9),
 fMaxEoPcut(1.3),
 fM20cut(0.35),
+fMinM02cut(0.01),
+fMaxM02cut(2.00),
 fMinPtTPC(0.5),
 fMaxPtTPC(4.),
 fMinPtEMCal(4.),
@@ -178,12 +180,30 @@ fEtaTrueElec(0x0),
 fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
+fnEovPelecEMCalcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
+fnM20backg(0x0),
+fnM02backg(0x0),
 fnEovPbackg(0x0),
+fnEovPbackgEMCalcut(0x0),
 fnClsE(0x0),
 fnM20(0x0),
 fnM02(0x0),
 fnClsTime(0x0),
+fnM20TrueElec(0x0),
+fnM02TrueElec(0x0),
+fnShowerShapeTrueElec(0x0),
+fnEovPTrueElecnocut(0x0),
+fnEovPTrueElecTPCcut(0x0),
+fnEovPTrueElecEMCalcut(0x0),
+fnEovPTrueElecTPCEMCalcut(0x0),
+fnM20TrueBkg(0x0),
+fnM02TrueBkg(0x0),
+fnShowerShapeTrueBkg(0x0),
+fnEovPTrueBkgnocut(0x0),
+fnEovPTrueBkgTPCcut(0x0),
+fnEovPTrueBkgEMCalcut(0x0),
+fnEovPTrueBkgTPCEMCalcut(0x0),
 fAngULS(0x0),
 fAngLS(0x0),
 fAngChargPart(0x0),
@@ -330,6 +350,8 @@ fEtaCut(0.7),
 fMinEoPcut(0.9),
 fMaxEoPcut(1.3),
 fM20cut(0.35),
+fMinM02cut(0.01),
+fMaxM02cut(2.00),
 fMinPtTPC(0.5),
 fMaxPtTPC(4.),
 fMinPtEMCal(4.),
@@ -398,12 +420,30 @@ fEtaTrueElec(0x0),
 fEtaPhiTrueElec(0x0),
 fnEovPelecNoTPCcut(0x0),
 fnEovPelecTPCcut(0x0),
+fnEovPelecEMCalcut(0x0),
 fnEovPelecTPCEMCalcut(0x0),
+fnM20backg(0x0),
+fnM02backg(0x0),
 fnEovPbackg(0x0),
+fnEovPbackgEMCalcut(0x0),
 fnClsE(0x0),
 fnM20(0x0),
 fnM02(0x0),
 fnClsTime(0x0),
+fnM20TrueElec(0x0),
+fnM02TrueElec(0x0),
+fnShowerShapeTrueElec(0x0),
+fnEovPTrueElecnocut(0x0),
+fnEovPTrueElecTPCcut(0x0),
+fnEovPTrueElecEMCalcut(0x0),
+fnEovPTrueElecTPCEMCalcut(0x0),
+fnM20TrueBkg(0x0),
+fnM02TrueBkg(0x0),
+fnShowerShapeTrueBkg(0x0),
+fnEovPTrueBkgnocut(0x0),
+fnEovPTrueBkgTPCcut(0x0),
+fnEovPTrueBkgEMCalcut(0x0),
+fnEovPTrueBkgTPCEMCalcut(0x0),
 fAngULS(0x0),
 fAngLS(0x0),
 fAngChargPart(0x0),
@@ -818,6 +858,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnEovPelecTPCcut = new TH2F("fnEovPelecTPCcut", "fnEovPelecTPCcut", 100, 0, 100, 40,0,2);
     fOutput->Add(fnEovPelecTPCcut);
     
+	fnEovPelecEMCalcut = new TH2F("fnEovPelecEMCalcut", "fnEovPelecEMCalcut", 100, 0, 100, 40, 0, 2);
+    fOutput->Add(fnEovPelecEMCalcut);
+    
     fnEovPelecTPCEMCalcut = new TH2F("fnEovPelecTPCEMCalcut", "fnEovPelecTPCEMCalcut", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPelecTPCEMCalcut);
     
@@ -826,8 +869,17 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fnEovPelecTPCsscut[i]);
     }
     
+	fnM20backg = new TH2F("fnM20backg", "fnM20backg", 50, 0.5, 50, 100, 0, 2);
+    fOutput->Add(fnM20backg);
+	
+	fnM02backg = new TH2F("fnM02backg", "fnM02backg", 50, 0.5, 50, 100, 0, 2);
+    fOutput->Add(fnM02backg);
+    
     fnEovPbackg = new TH2F("fnEovPbackg", "fnEovPbackg", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPbackg);
+    
+	fnEovPbackgEMCalcut = new TH2F("fnEovPbackgEMCalcut", "fnEovPbackgEMCalcut", 100, 0, 100, 40, 0, 2);
+    fOutput->Add(fnEovPbackgEMCalcut);
     
     fnClsE = new TH2F("fnClsE", "fnClsE", 100, 0, 100, 100, 0,100);
     fOutput->Add(fnClsE);
@@ -840,6 +892,48 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fnClsTime = new TH2F("fnClsTime", "fnClsTime", 100, 0, 100, 100, -200,200);
     fOutput->Add(fnClsTime);
+    
+	fnM20TrueElec = new TH2F("fnM20TrueElec", "fnM20TrueElec", 50, 0.5, 50.5, 100, 0.01, 2.01);
+    fOutput->Add(fnM20TrueElec);
+	
+	fnM02TrueElec = new TH2F("fnM02TrueElec", "fnM02TrueElec", 50, 0.5, 50.5, 100, 0.01, 2.01);
+    fOutput->Add(fnM02TrueElec);
+	
+	fnShowerShapeTrueElec = new TH3F("fnShowerShapeTrueElec", "fnShowerShapeTrueElec", 50, 0.5, 50.5, 50, 0.01, 2.01, 50, 0.01, 2.01);
+    fOutput->Add(fnShowerShapeTrueElec);
+	
+	fnEovPTrueElecnocut = new TH2F("fnEovPTrueElecnocut", "fnEovPTrueElecnocut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecnocut);
+	
+	fnEovPTrueElecTPCcut = new TH2F("fnEovPTrueElecTPCcut", "fnEovPTrueElecTPCcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecTPCcut);
+	
+	fnEovPTrueElecEMCalcut = new TH2F("fnEovPTrueElecEMCalcut", "fnEovPTrueElecEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecEMCalcut);
+    
+	fnEovPTrueElecTPCEMCalcut = new TH2F("fnEovPTrueElecTPCEMCalcut", "fnEovPTrueElecTPCEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueElecTPCEMCalcut);
+	
+	fnM20TrueBkg = new TH2F("fnM20TrueBkg", "fnM20TrueBkg", 50, 0.5, 50.5, 100, 0.01, 2.01);
+    fOutput->Add(fnM20TrueBkg);
+	
+	fnM02TrueBkg = new TH2F("fnM02TrueBkg", "fnM02TrueBkg", 50, 0.5, 50.5, 100, 0.01, 2.01);
+    fOutput->Add(fnM02TrueBkg);
+	
+	fnShowerShapeTrueBkg = new TH3F("fnShowerShapeTrueBkg", "fnShowerShapeTrueBkg", 50, 0.5, 50.5, 50, 0.01, 2.01, 50, 0.01, 2.01);
+    fOutput->Add(fnShowerShapeTrueBkg);
+	
+	fnEovPTrueBkgnocut = new TH2F("fnEovPTrueBkgnocut", "fnEovPTrueBkgnocut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgnocut);
+
+	fnEovPTrueBkgTPCcut = new TH2F("fnEovPTrueBkgTPCcut", "fnEovPTrueBkgTPCcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgTPCcut);
+	
+	fnEovPTrueBkgEMCalcut = new TH2F("fnEovPTrueBkgEMCalcut", "fnEovPTrueBkgEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgEMCalcut);
+
+	fnEovPTrueBkgTPCEMCalcut = new TH2F("fnEovPTrueBkgTPCEMCalcut", "fnEovPTrueBkgTPCEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+    fOutput->Add(fnEovPTrueBkgTPCEMCalcut);
     
     fAngULS = new TH2F("fAngULS", "fAngULS", 5, bin_JetPt, 8, bin_g);
     fOutput->Add(fAngULS);
@@ -1465,44 +1559,43 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             AliVParticle* vp1 = nullptr;
 			AliAODMCParticle* mcparticle = nullptr, *mcmother = nullptr;
-            Int_t pdgCode = 0, pdgMother = 0, motherIndex = -1;
+            Int_t trackLabel = 0, pdgCode = 0, pdgMother = 0, motherIndex = -1;
             Int_t elecCounter = 0;
             Double_t ptTrueHFE = -1.;
             
             if(fMCarray){
-                GetNumberOfTrueElectrons(jetbase, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC, ptTrueHFE);
+                GetNumberOfTrueElectrons(jetbase, 0, nMotherKink, listofmotherkink, nTrueElectronsMC, nTrueHFElecMC, ptTrueHFE);
                
-				if (jetContPartLevel) {
-					/* partCont = jetContPartLevel -> GetParticleContainer(); */
-                	for(UInt_t i = 0; i < jetbase -> GetNumberOfTracks(); i++) {
-                        /* vp1 = static_cast<AliVParticle*>(jetbase->TrackAt(i, jetContPartLevel->GetParticleContainer()->GetArray())); */
-                        vp1 = jetbase -> Track(i);
-                        
-                        if (!vp1){
-                            Printf("AliVParticle associated to constituent not found");
-                            continue;
-                        }
-                        	
-				        /* mcparticle = static_cast<AliAODMCParticle*>(fMCarr  ay -> At(vp1 -> GetLabel())); */
-						mcparticle = static_cast<AliAODMCParticle*>(jetContPartLevel -> GetParticleContainer() -> GetParticle(vp1 -> GetLabel())); 
-                        if (!mcparticle) continue;
+                for(UInt_t i = 0; i < jetbase -> GetNumberOfTracks(); i++) {
+                    vp1 = jetbase -> Track(i);
+                    
+                    if (!vp1){
+                        Printf("AliVParticle associated to constituent not found");
+                        continue;
+                    }
 
-				        pdgCode = mcparticle -> PdgCode();
-                        
-                        if (TMath::Abs(pdgCode)==11) {
-				        	elecCounter++;
+					trackLabel = vp1 -> GetLabel();
+					if (trackLabel < 0) continue;
+                    	
+					mcparticle = static_cast<AliAODMCParticle*>(fMCarray->At(trackLabel)); 
+                    if (!mcparticle) continue;
 
-				        	if (nTrueElectronsMC == 1) {
-				        		motherIndex = mcparticle -> GetMother();
-				        		mcmother = static_cast<AliAODMCParticle*>(fMCarray -> At(motherIndex));
+				    pdgCode = mcparticle -> PdgCode();
+                    
+                    if (TMath::Abs(pdgCode)==11) {
+				    	elecCounter++;
 
-				        		if (mcmother) pdgMother = mcmother -> PdgCode();
-				        	}
-				        }
+				    	if (nTrueElectronsMC == 1) {
+				    		motherIndex = mcparticle -> GetMother();
+				    		mcmother = static_cast<AliAODMCParticle*>(fMCarray -> At(motherIndex));
+
+				    		if (mcmother) pdgMother = mcmother -> PdgCode();
+				    	}
 				    }
-                }
+				}
 
                 if (elecCounter==1) fPtGenJet->Fill(jetbase->Pt());
+				
             }
             
             fShapesVar[13] = ptTrueHFE;
@@ -1670,9 +1763,11 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             fnEovPelecNoTPCcut->Fill(pt,EovP);
             
             
-            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3) fnEovPelecTPCcut->Fill(pt,EovP);
+            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3) fnEovPelecTPCcut->Fill(pt,EovP);
             
-            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut){
+			if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) fnEovPelecEMCalcut -> Fill(pt, EovP);
+            
+            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut){
                 fnEovPelecTPCEMCalcut->Fill(pt,EovP);
                 
                 for (Int_t l=0;l<5;l++){// pt jet range
@@ -1680,13 +1775,22 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                 }
             }
             
-            if (TMath::Abs(fTPCnSigma) > fSigmTPCcutExcElec) fnEovPbackg->Fill(pt,EovP);
+			// Not electrons
+            if (TMath::Abs(fTPCnSigma) > fSigmTPCcutExcElec) { 
+				fnM20backg -> Fill(pt, m20);
+				fnM02backg -> Fill(pt, m02);
+				fnEovPbackg -> Fill(pt, EovP);
+
+				// Also consider not electrons with same shower shape cut as electron selection
+				if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) fnEovPbackgEMCalcut -> Fill(pt, EovP);
+			}
+
             fnClsE->Fill(pt,clsE);
             fnM20->Fill(pt,m20);
             fnM02->Fill(pt,m02);
             fnClsTime->Fill(pt,clsTime);
             
-            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal){
+            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal){
                 fPhiRecElecEMCal->Fill(pt,phi);
                 fEtaRecElecEMCal->Fill(pt,eta);
                 fEtaPhiRecElecEMCal->Fill(phi,eta);
@@ -1720,14 +1824,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nRecIE=0, nHFE=0, nPE=0, nPairs=0, iDecay = 0, nDmeson = 0, nBmeson = 0, nElecFromB = 0, nElecFromD = 0, nElecFromDfromB = 0, nQuark = 0, nGluon = 0, nBeauty = 0, nCharm = 0;
 	Int_t nIEptmin = 0, nHFEptmin = 0, nPEptmin = 0;
-    Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
+    Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., phi = -99., pte=0.;
     
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
     Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
-    Bool_t isFromLMdecay=kFALSE;
     Bool_t passTrackCut = kFALSE;
     
     Double_t jetPt = jet->Pt();
@@ -1761,11 +1864,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             
             passTrackCut = kFALSE;
             isFromHFdecay=kFALSE;
-            isFromLMdecay=kFALSE;
             
             p = track->P();
             pt = track->Pt();
-            eta = track->Eta();
             phi = track->Phi();
             
             fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
@@ -1777,7 +1878,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             
             // Electron ID with EMCal
             
-            Double_t EovP = -9., clsE = -9., m20 = -9.;
+            Double_t EovP = -9., clsE = -9., m20 = -9., m02 = -9.;
             
             Double_t emcphimim = 1.39;
             Double_t emcphimax = 3.265;
@@ -1795,6 +1896,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                 if(cluster && cluster->IsEMCAL() && phi > emcphimim && phi < emcphimax){
                     clsE = cluster->GetNonLinCorrEnergy();
                     m20 = cluster->GetM20();
+                    m02 = cluster->GetM02();
                 }
             }
             
@@ -1879,8 +1981,6 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         
                         GetWeightAndDecay(fMCparticle,iDecay,MCweight);
                         isFromHFdecay = IsFromHFdecay(fMCparticle);
-                        isFromLMdecay = IsFromLMdecay(fMCparticle);
-                        
                         
                         if (partPDG == 11){
                             nIE++;
@@ -1894,7 +1994,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             	if (isFromHFdecay) nHFEptmin++;
                             	if (iDecay>0 && iDecay<7) nPEptmin++;
 							}
-                        }
+						}
+
                         
                         if ((partPDG==11) && isFromHFdecay && nHFE<2){
                             fptTrueHFEeffTPCTOF[0]->Fill(pt);
@@ -1910,6 +2011,45 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         // track cuts
                         passTrackCut = InclElecTrackCuts(pVtx,track,nMother,listMother);
                         if (!passTrackCut) continue;
+
+						// EMCal shower shape studies
+						if (m20 > 0.001 and m02 > 0.001) { // Ignore cluster with close to 0 axis lengths
+							if (partPDG == 11) {
+								fnM20TrueElec -> Fill(pt, m20);
+								fnM02TrueElec -> Fill(pt, m02);
+								fnShowerShapeTrueElec -> Fill(pt, m20, m02);
+								fnEovPTrueElecnocut -> Fill(pt, EovP); 
+                            	
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3) {
+									fnEovPTrueElecTPCcut -> Fill(pt, EovP); 
+								}
+								
+								if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueElecEMCalcut -> Fill(pt, EovP); 
+								}
+
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueElecTPCEMCalcut -> Fill(pt, EovP); 
+								}
+                        	} else {
+								fnM20TrueBkg -> Fill(pt, m20);
+								fnM02TrueBkg -> Fill(pt, m02);
+								fnShowerShapeTrueBkg -> Fill(pt, m20, m02);
+								fnEovPTrueBkgnocut -> Fill(pt, EovP); 
+								
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3) {
+									fnEovPTrueBkgTPCcut -> Fill(pt, EovP); 
+								}
+								
+								if (m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueBkgEMCalcut -> Fill(pt, EovP); 
+								}
+
+								if (fTPCnSigma > fSigmaTPCcutHighPt && fTPCnSigma < 3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut) {
+									fnEovPTrueBkgTPCEMCalcut -> Fill(pt, EovP); 
+								}
+							}
+						}
                         
                         if ((partPDG==11) && isFromHFdecay  && nHFE<2){
                             fptTrueHFEeffTPCTOF[1]->Fill(pt);
@@ -1928,13 +2068,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             }
                             
                             
-                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut)
+                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut)
                                 fptTrueHFEeffEMCal[2]->Fill(pt);
                             
                             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut)
                                 fptTrueHFEeffEMCal[3]->Fill(pt);
                             
-                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut){
+                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut){
                                 
                                 fptTrueHFEeffEMCal[4]->Fill(pt);
                                 fptTrueHFEeffEMCalang[1]->Fill(pt,jet->Pt(),GetJetAngularity(jet,0));
@@ -1974,7 +2114,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         
                         //EMCal
                         if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut &&
-                            m20 > 0.01 && m20 < fM20cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal && nRecIE <2){
+                            m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut && pt>=fMinPtEMCal && pt<fMaxPtEMCal && nRecIE <2){
                             nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,iDecay,MCweight);
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
@@ -2106,36 +2246,27 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         if (!passAssoTrackCut) continue;
         
         // tagged particle
-        Double_t p=-9.,pt=-9.,eta =-9.,phi=-9.;
+        Double_t pt = -9;
         Int_t charge = 0;
         
         pt = track->Pt();
-        p = track->P();
-        phi = track->Phi();
-        eta = track->Eta();
         charge = track->Charge();
         
         
         // associated particle variables
-        Double_t pAsso=-9.,ptAsso=-9.,etaAsso =-9.,fITSnSigmaAsso=-9.,fTPCnSigmaAsso=-9.,phiAsso=-9.;
+        Double_t fTPCnSigmaAsso=-9.;
         Int_t chargeAsso = 0;
         
-        ptAsso = trackAsso->Pt();
-        pAsso = trackAsso->P();
-        phiAsso = trackAsso->Phi();
-        etaAsso = trackAsso->Eta();
         chargeAsso = trackAsso->Charge();
         
-        
         // looser PID cuts
-        fITSnSigmaAsso = fpidResponse->NumberOfSigmasITS(trackAsso, AliPID::kElectron);
         fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         
         if(TMath::Abs(fTPCnSigmaAsso)>3.) continue;
         
         // invariant mass
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-        Double_t openingAngle = -999., mass=999., width = -999;
+        Double_t mass=999.;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
@@ -2153,12 +2284,6 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
         
 		if (TMath::Abs(chi2recg) > 3.) continue;
-        
-        /* openingAngle = ge1.GetAngle(ge2); */
-        //if(openingAngle > fOpeningAngleCut) continue;
-        
-        Int_t MassCorrect=-9;
-        MassCorrect = recg.GetMass(mass,width);
         
         for (Int_t l=0;l<5;l++){// pt jet range
             if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && fFlagULS) fInvmassULS[l]->Fill(pt,mass);
