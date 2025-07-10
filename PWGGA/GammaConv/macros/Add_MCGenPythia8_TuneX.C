@@ -16,7 +16,7 @@ AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760.,
                                         Int_t kProcess      = 0, 
                                         Double_t ptHardMin  = 0, 
                                         Double_t ptHardMax  = 1.,
-                                        Bool_t longlived    = kFALSE,
+                                        Bool_t longlived    = kTRUE,
                                         TString specialTune = ""
 
                                     ) {
@@ -238,7 +238,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         return nullptr;
     }
     
-    (AliPythia8::Instance())->SetDecayLonglived();
+    (AliPythia8::Instance())->SetDecayLonglived(longlived);
 
     return gener;
 }
