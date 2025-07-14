@@ -49,6 +49,7 @@ namespace PWGJE
      * Default constructor.
      */
     AliAnalysisTaskEmcalJetHdEdxCorrelations::AliAnalysisTaskEmcalJetHdEdxCorrelations() : AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHdEdxCorrelations", kFALSE),
+											   fqnVectorReader(0),
                                                                                            fYAMLConfig(),
                                                                                            fConfigurationInitialized(false),
                                                                                            fTrackBias(5),
@@ -59,7 +60,6 @@ namespace PWGJE
                                                                                            fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
                                                                                            fDisableFastPartition(kFALSE),
                                                                                            fRandom(0),
-                                                                                           fqnVectorReader(0),
                                                                                            fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kLHC18qr),
                                                                                            fArtificialTrackInefficiency(1.0),
                                                                                            fNoMixedEventJESCorrection(kFALSE),
@@ -69,7 +69,6 @@ namespace PWGJE
                                                                                            fMinSharedMomentumFraction(0.),
                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                            fMaxMatchedJetDistance(-1),
-                                                                                           fEPCorrectionTree(nullptr),
                                                                                            fHistManager(),
                                                                                            fHistJetHTrackPt(nullptr),
                                                                                            fHistEPAngle(nullptr),
@@ -77,7 +76,12 @@ namespace PWGJE
                                                                                            fHistJetHEtaPhi(nullptr),
                                                                                            fhnMixedEvents(nullptr),
                                                                                            fhnJH(nullptr),
-                                                                                           fhnTrigger(nullptr)
+                                                                                           fhnTrigger(nullptr),
+											   hShiftCoeff(nullptr), hShiftEvents(nullptr),
+											   previousrunnumber(-1),
+											   fMakeShiftCorrectionCalibHists(kFALSE),
+											   fDoShiftCorrection(kFALSE),
+											   fEPshiftHistoList(nullptr)
     {
       // Default Constructor
       InitializeArraysToZero();
@@ -87,6 +91,7 @@ namespace PWGJE
      * Standard constructor
      */
     AliAnalysisTaskEmcalJetHdEdxCorrelations::AliAnalysisTaskEmcalJetHdEdxCorrelations(const char *name) : AliAnalysisTaskEmcalJet(name, kTRUE),
+													   fqnVectorReader(0),
                                                                                                            fYAMLConfig(),
                                                                                                            fConfigurationInitialized(false),
                                                                                                            fTrackBias(5),
@@ -97,7 +102,6 @@ namespace PWGJE
                                                                                                            fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
                                                                                                            fDisableFastPartition(kFALSE),
                                                                                                            fRandom(0),
-                                                                                                           fqnVectorReader(0),
                                                                                                            fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kLHC18qr),
                                                                                                            fArtificialTrackInefficiency(1.0),
                                                                                                            fNoMixedEventJESCorrection(kFALSE),
@@ -107,7 +111,6 @@ namespace PWGJE
                                                                                                            fMinSharedMomentumFraction(0.),
                                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                                            fMaxMatchedJetDistance(-1),
-                                                                                                           fEPCorrectionTree(nullptr),
                                                                                                            fHistManager(name),
                                                                                                            fHistJetHTrackPt(nullptr),
                                                                                                            fHistEPAngle(nullptr),
@@ -115,7 +118,12 @@ namespace PWGJE
                                                                                                            fHistJetHEtaPhi(nullptr),
                                                                                                            fhnMixedEvents(nullptr),
                                                                                                            fhnJH(nullptr),
-                                                                                                           fhnTrigger(nullptr)
+                                                                                                           fhnTrigger(nullptr),
+													   hShiftCoeff(nullptr), hShiftEvents(nullptr),
+													   previousrunnumber(-1),
+													   fMakeShiftCorrectionCalibHists(kFALSE),
+													   fDoShiftCorrection(kFALSE),
+													   fEPshiftHistoList(nullptr)
     {
       // Constructor
       InitializeArraysToZero();
@@ -216,7 +224,7 @@ namespace PWGJE
     void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateHistograms(){
 
       fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
-      fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib", 100, -TMath::Pi(), 3. * TMath::Pi());
+      fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib", 50, 0, TMath::Pi());
       fHistJetEtaPhi = new TH2F("fHistJetEtaPhi", "Jet eta-phi", 900, -1.8, 1.8, 720, -3.2, 3.2);
       fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi", "Jet-Hadron deta-dphi", 900, -1.8, 1.8, 720, -1.6, 4.8);
 
@@ -825,12 +833,12 @@ namespace PWGJE
         } // GetQnVectorReader
         EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
         // At this point we need to apply the flattening to the EP angle
-        // This is done by getting the flattening  coefficients from epAngleCorrections.yaml
-        // and applying them to the EP angle
-        // The formula for the correction to the n=2 event plane is:
-        // EP_angle_corrected = EP_angle + 1/2*(2*(-sin_average)*cos(2*EP_angle) + 2*(cos_average)*sin(2*EP_angle)+(-sin_average)*cos(4*EP_angle)+(-cos_average)*sin(4*EP_angle))
-        flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
+	
+	Double_t flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);	
         fHistEPAngle->Fill(flattenedEPangle);
+
+	if(fMakeShiftCorrectionCalibHists)
+	  return kTRUE; // do not continue to process the event, just go to the next one
       }
 
       AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
@@ -1695,78 +1703,107 @@ namespace PWGJE
       return kTRUE;
     }
 
-  Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
-      // Read the TTree from the ROOT file
+    Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
+      if(fMakeShiftCorrectionCalibHists)
+	{
+	  if(fRunNumber != previousrunnumber)
+	    {
+	      hShiftCoeff = (TH2D*)fOutput->FindObject(Form("hShiftCoeff_run%i",fRunNumber));
+	      hShiftEvents = (TH1I*)fOutput->FindObject(Form("hShiftEvents_run%i",fRunNumber));
+	      if((!hShiftCoeff) || (!hShiftEvents))
+		{
+		  hShiftCoeff = new TH2D(Form("hShiftCoeff_run%i",fRunNumber),Form("hShiftCoeff_run%i",fRunNumber),10,0,100,6,0.5,6.5);
+		  fOutput->Add(hShiftCoeff);
+		  hShiftEvents = new TH1I(Form("hShiftEvents_run%i",fRunNumber),Form("hShiftEvents_run%i",fRunNumber),10,0,100);
+		  fOutput->Add(hShiftEvents);
+		}
+	    }
+	  hShiftCoeff->Fill(fCent,1,TMath::Cos(2.*uncorrectedAngle));
+	  hShiftCoeff->Fill(fCent,2,TMath::Sin(2.*uncorrectedAngle));
+	  hShiftCoeff->Fill(fCent,3,TMath::Cos(4.*uncorrectedAngle));
+	  hShiftCoeff->Fill(fCent,4,TMath::Sin(4.*uncorrectedAngle));
+	  hShiftCoeff->Fill(fCent,5,TMath::Cos(6.*uncorrectedAngle));
+	  hShiftCoeff->Fill(fCent,6,TMath::Sin(6.*uncorrectedAngle));
+	  hShiftEvents->Fill(fCent);
+	  previousrunnumber = fRunNumber;
+	  return uncorrectedAngle;
+	}
+
+      if(!fDoShiftCorrection) return uncorrectedAngle;
+      if(!fEPshiftHistoList) return uncorrectedAngle;
+
+      if(fRunNumber != previousrunnumber)
+	{
+	  hShiftCoeff = (TH2D*)fEPshiftHistoList->FindObject(Form("hShiftCoeff_run%i",fRunNumber));
+	  hShiftEvents = (TH1I*)fEPshiftHistoList->FindObject(Form("hShiftEvents_run%i",fRunNumber));
+	}
       
-      TString centrality_string=TString("");
-      if(fCent<10)
-      {
-        centrality_string = TString("0_10");
+      if((!hShiftCoeff) || (!hShiftEvents)){
+	AliWarningStream() << "Warning! Cannot find event plane shift calibration for run " << fRunNumber << "!\n";
+	return uncorrectedAngle;
       }
-      else if(fCent<20)
-      {
-        centrality_string = TString("10_20");
-      }
-      else if(fCent<30)
-      {
-        centrality_string = TString("20_30");
-      }
-      else if(fCent<40)
-      {
-        centrality_string = TString("30_40");
-      }
-      else if(fCent<50)
-      {
-        centrality_string = TString("40_50");
-      }
-      else if(fCent<60)
-      {
-        centrality_string = TString("50_60");
-      }
-      else if(fCent<70)
-      {
-        centrality_string = TString("60_70");
-      }
-      else if(fCent<80)
-      {
-        centrality_string = TString("70_80");
-      }
-      else if(fCent<90)
-      {
-        centrality_string = TString("80_90");
-      }
-      else
-      {
-        centrality_string = TString("90_100");
-      }
+
+      Double_t avCos2Psi = 0;
+      Double_t avSin2Psi = 0;
+      Double_t avCos4Psi = 0;
+      Double_t avSin4Psi = 0;
+      Double_t avCos6Psi = 0;
+      Double_t avSin6Psi = 0;
       
+      Int_t centbin = hShiftEvents->GetXaxis()->FindBin(fCent);
+      avCos2Psi = hShiftCoeff->GetBinContent(centbin,1)/hShiftEvents->GetBinContent(centbin);
+      avSin2Psi = hShiftCoeff->GetBinContent(centbin,2)/hShiftEvents->GetBinContent(centbin);
+      avCos4Psi = hShiftCoeff->GetBinContent(centbin,3)/hShiftEvents->GetBinContent(centbin);
+      avSin4Psi = hShiftCoeff->GetBinContent(centbin,4)/hShiftEvents->GetBinContent(centbin);
+      avCos6Psi = hShiftCoeff->GetBinContent(centbin,5)/hShiftEvents->GetBinContent(centbin);
+      avSin6Psi = hShiftCoeff->GetBinContent(centbin,6)/hShiftEvents->GetBinContent(centbin);
 
-      if (fEPCorrectionTree)
-      {
-        // Declare variables to hold the data
-        Double_t cos_ave_i1_v0c = 0;
-        Double_t cos_ave_i2_v0c = 0;
-        Double_t sin_ave_i1_v0c = 0;
-        Double_t sin_ave_i2_v0c = 0;
+      previousrunnumber = fRunNumber;
+      
+      Double_t correctedAngle = uncorrectedAngle
+	                        + avCos2Psi*TMath::Sin(2.*uncorrectedAngle) - avSin2Psi*TMath::Cos(2.*uncorrectedAngle)
+	                        + (avCos4Psi*TMath::Sin(4.*uncorrectedAngle) - avSin4Psi*TMath::Cos(4.*uncorrectedAngle))/2.
+	                        + (avCos6Psi*TMath::Sin(6.*uncorrectedAngle) - avSin6Psi*TMath::Cos(6.*uncorrectedAngle))/3.;
 
-        // Set branch addresses to access the data
-        fEPCorrectionTree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
-        fEPCorrectionTree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
-        fEPCorrectionTree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
-        fEPCorrectionTree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
+      if(correctedAngle < 0) correctedAngle += TMath::Pi();
+      if(correctedAngle > TMath::Pi()) correctedAngle -= TMath::Pi();
 
-        // Loop over the entries and retrieve the values
-        fEPCorrectionTree->GetEntry(0);
-        Double_t flatEPangle = uncorrectedAngle +1/2*(2*(-sin_ave_i1_v0c*TMath::Cos(2*uncorrectedAngle) + cos_ave_i1_v0c*TMath::Sin(2*uncorrectedAngle)) + (-sin_ave_i2_v0c*TMath::Cos(4*uncorrectedAngle) + cos_ave_i2_v0c*TMath::Sin(4*uncorrectedAngle)));
-        return flatEPangle;
-        }
-        else
-        {
-          std::cerr << "Failed to read TTree from the ROOT file." << std::endl;
-          return uncorrectedAngle;
-        }
-  }
+      return correctedAngle;
+    }
 
+    // EPCorrectionsFileSetter
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::OpenEPcorrectionsFile(const char* filename) {
+      //Check if filename contains alien:// and connect to TGrid if it does
+      TString *filenameStr = new TString(filename);
+      if (filenameStr->Contains("alien://")) {
+	TGrid::Connect("alien://");
+      }
+      TFile *fEPcorrectionFile = TFile::Open(filename);
+      if (!fEPcorrectionFile) 
+	AliError(Form("Could not open file %s", filename));
+      fEPshiftHistoList = new TList();
+      fEPshiftHistoList->SetOwner(kTRUE);
+      TIter next(fEPcorrectionFile->GetListOfKeys());
+      TKey *key;
+      while ( (key = (TKey*)next()) )
+	{
+	  TString histoname = key->GetName();
+	  if(histoname.BeginsWith("hShiftCoeff"))
+	    {
+	      TH2D* hShiftCoeffTemp = (TH2D*)((TH2D*)fEPcorrectionFile->Get(histoname.Data()))->Clone();
+	      hShiftCoeffTemp->SetDirectory(0);
+	      fEPshiftHistoList->Add(hShiftCoeffTemp);
+	    }
+	  if(histoname.BeginsWith("hShiftEvents"))
+	    {
+	      TH1I* hShiftEventsTemp = (TH1I*)((TH1I*)fEPcorrectionFile->Get(histoname.Data()))->Clone();
+	      hShiftEventsTemp->SetDirectory(0);
+	      fEPshiftHistoList->Add(hShiftEventsTemp);
+	    }
+	}
+      fEPcorrectionFile->Close();
+    }
+    
     /**
      * AddTask for the jet-hadron task. We benefit for actually having compiled code, as opposed to
      * struggling with CINT.
@@ -1792,6 +1829,8 @@ namespace PWGJE
         const Bool_t JESCorrection,
         const char *JESCorrectionFilename,
         const char *JESCorrectionHistName,
+	Bool_t makeEPcorrectionsFile,
+	Bool_t doEPshiftCorrection,
         const char *epCorrectionsFilename,
         const char *suffix)
     {
@@ -1862,11 +1901,13 @@ namespace PWGJE
           AliErrorClass("Failed to successfully retrieve and initialize the JES correction! Task initialization continuing without JES correction (can be set manually later).");
         }
       }
-
-      TString *epCorrectionsFilenameTstr = new TString(epCorrectionsFilename);
-
-      correlationTask->SetEPcorrectionsTree(epCorrectionsFilenameTstr);
-
+    
+      // shift correction calibration
+      correlationTask->SetMakeShiftCorrectionCalibHists(makeEPcorrectionsFile);
+      correlationTask->SetDoEPShiftCorrection(doEPshiftCorrection);
+      if(doEPshiftCorrection)
+	correlationTask->OpenEPcorrectionsFile(epCorrectionsFilename);
+      
       //-------------------------------------------------------
       // Final settings, pass to manager and set the containers
       //-------------------------------------------------------
@@ -1882,7 +1923,7 @@ namespace PWGJE
 
       return correlationTask;
     }
-
+    
     /**
      * Call after the AddTask to setup the standard Jet-h configuration.
      *
