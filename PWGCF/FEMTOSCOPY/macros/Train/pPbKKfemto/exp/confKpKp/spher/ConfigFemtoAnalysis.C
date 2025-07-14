@@ -47,8 +47,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   const double DCA[2] = {0.135,0.130};//xy,z in mm
 
   const Bool_t cf_kT = kTRUE;//CF for a few k_T bins
-  const Int_t  cKt=3;
-  double ktrng[cKt+1] = {0.2, 0.5, 1.0, 1.5};//orig 0-0.5,0.5-1.0
+  const Int_t  cKt=2;
+  //double ktrng[cKt+1] = {0.2, 0.5, 1.0, 1.5};//orig 0.2-0.5,0.5-1.0
+  double ktrng[cKt+1] = {0.15, 0.5, 1.2};//like Lyuda's
 
   int run3d = -1/*1*/;
   int runshlcms = 0;
