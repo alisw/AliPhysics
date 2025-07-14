@@ -13,13 +13,15 @@ PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxCorrelations *AddTaskEmcalJetH
     UInt_t trigEvent = AliVEvent::kAny,
     UInt_t mixEvent = AliVEvent::kAny,
     // Options
-    const Bool_t lessSparseAxes = 0,
-    const Bool_t widerTrackBin = 0,
+    const Bool_t lessSparseAxes = kFALSE,
+    const Bool_t widerTrackBin = kFALSE,
     // Corrections
     const Bool_t embeddingCorrection = kFALSE,
     const char *embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
     const char *embeddingCorrectionHistName = "embeddingCorrection",
-    const char *epCorrectionsFilename = "alien:///alice/cern.ch/user/p/psteffan/epCorrections.root",
+    Bool_t makeEPcorrectionsFile = kFALSE,
+    Bool_t doEPshiftCorrection = kFALSE,
+    const char *epCorrectionsFilename = "",
     const char *suffix = "biased")
 {
   PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxCorrelations *task = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxCorrelations::AddTaskEmcalJetHdEdxCorrelations(
@@ -33,6 +35,8 @@ PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxCorrelations *AddTaskEmcalJetH
       embeddingCorrection,
       embeddingCorrectionFilename,
       embeddingCorrectionHistName,
+      makeEPcorrectionsFile,
+      doEPshiftCorrection,
       epCorrectionsFilename,
           suffix);
   return task;
