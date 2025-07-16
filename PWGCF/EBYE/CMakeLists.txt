@@ -156,6 +156,7 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5.cxx
+  DiffPTF/AliAnalysisTask_v02pT.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_HalfPhi.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.cxx
