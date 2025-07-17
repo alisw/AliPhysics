@@ -282,8 +282,10 @@ class AliAnalysisTask_v02pT : public AliAnalysisTaskSE {
   TH2D *f2Dhist_afterCut_TPCdEdx_proton;
   TH2D *f2Dhist_afterCut_TOFtime_proton;
 
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  //analysis profiles
+  //analysis central profiles----------------------->
+  
   TProfile *hProfile_X_real;
   TProfile *hProfile_X_imag;
   TProfile *hProfile_Y_real;
@@ -322,7 +324,50 @@ class AliAnalysisTask_v02pT : public AliAnalysisTaskSE {
   TProfile2D *hProfile2D_XYZ_imag_kaons;
   TProfile2D *hProfile2D_XYZ_real_protons;
   TProfile2D *hProfile2D_XYZ_imag_protons;
- 
+
+  //analysis error profiles----------------------->
+  
+  TProfile *hSubProfile_X_real[10];
+  TProfile *hSubProfile_X_imag[10];
+  TProfile *hSubProfile_Y_real[10];
+  TProfile *hSubProfile_Y_imag[10];
+  TProfile *hSubProfile_XY_real[10];
+  TProfile *hSubProfile_XY_imag[10];
+
+  TProfile2D *hSubProfile2D_Z_hadrons[10];
+  TProfile2D *hSubProfile2D_Z_pions[10];
+  TProfile2D *hSubProfile2D_Z_kaons[10];
+  TProfile2D *hSubProfile2D_Z_protons[10];
+
+  TProfile2D *hSubProfile2D_YZ_real_hadrons[10];
+  TProfile2D *hSubProfile2D_YZ_imag_hadrons[10];
+  TProfile2D *hSubProfile2D_YZ_real_pions[10];
+  TProfile2D *hSubProfile2D_YZ_imag_pions[10];
+  TProfile2D *hSubProfile2D_YZ_real_kaons[10];
+  TProfile2D *hSubProfile2D_YZ_imag_kaons[10];
+  TProfile2D *hSubProfile2D_YZ_real_protons[10];
+  TProfile2D *hSubProfile2D_YZ_imag_protons[10];
+
+  TProfile2D *hSubProfile2D_XZ_real_hadrons[10];
+  TProfile2D *hSubProfile2D_XZ_imag_hadrons[10];
+  TProfile2D *hSubProfile2D_XZ_real_pions[10];
+  TProfile2D *hSubProfile2D_XZ_imag_pions[10];
+  TProfile2D *hSubProfile2D_XZ_real_kaons[10];
+  TProfile2D *hSubProfile2D_XZ_imag_kaons[10];
+  TProfile2D *hSubProfile2D_XZ_real_protons[10];
+  TProfile2D *hSubProfile2D_XZ_imag_protons[10];
+
+  TProfile2D *hSubProfile2D_XYZ_real_hadrons[10];
+  TProfile2D *hSubProfile2D_XYZ_imag_hadrons[10];
+  TProfile2D *hSubProfile2D_XYZ_real_pions[10];
+  TProfile2D *hSubProfile2D_XYZ_imag_pions[10];
+  TProfile2D *hSubProfile2D_XYZ_real_kaons[10];
+  TProfile2D *hSubProfile2D_XYZ_imag_kaons[10];
+  TProfile2D *hSubProfile2D_XYZ_real_protons[10];
+  TProfile2D *hSubProfile2D_XYZ_imag_protons[10];
+
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
   Double_t fVertexZMax;
   Int_t fFBNo;
   Double_t fChi2TPC;

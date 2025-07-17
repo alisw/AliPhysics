@@ -238,6 +238,45 @@ AliAnalysisTask_v02pT::AliAnalysisTask_v02pT():
       fEffKaonPlus[i] = NULL;
       fEffKaonMinus[i] = NULL;
     }
+
+  for(int i=0; i<10; i++)
+    {
+      hSubProfile_X_real[i] = NULL;
+      hSubProfile_X_imag[i] = NULL;
+      hSubProfile_Y_real[i] = NULL;
+      hSubProfile_Y_imag[i] = NULL;
+      hSubProfile_XY_real[i] = NULL;
+      hSubProfile_XY_imag[i] = NULL;
+      hSubProfile2D_Z_hadrons[i] = NULL;
+      hSubProfile2D_Z_pions[i] = NULL;
+      hSubProfile2D_Z_kaons[i] = NULL;
+      hSubProfile2D_Z_protons[i] = NULL;
+      hSubProfile2D_YZ_real_hadrons[i] = NULL;
+      hSubProfile2D_YZ_imag_hadrons[i] = NULL;
+      hSubProfile2D_YZ_real_pions[i] = NULL;
+      hSubProfile2D_YZ_imag_pions[i] = NULL;
+      hSubProfile2D_YZ_real_kaons[i] = NULL;
+      hSubProfile2D_YZ_imag_kaons[i] = NULL;
+      hSubProfile2D_YZ_real_protons[i] = NULL;
+      hSubProfile2D_YZ_imag_protons[i] = NULL;
+      hSubProfile2D_XZ_real_hadrons[i] = NULL;
+      hSubProfile2D_XZ_imag_hadrons[i] = NULL;
+      hSubProfile2D_XZ_real_pions[i] = NULL;
+      hSubProfile2D_XZ_imag_pions[i] = NULL;
+      hSubProfile2D_XZ_real_kaons[i] = NULL;
+      hSubProfile2D_XZ_imag_kaons[i] = NULL;
+      hSubProfile2D_XZ_real_protons[i] = NULL;
+      hSubProfile2D_XZ_imag_protons[i] = NULL;
+      hSubProfile2D_XYZ_real_hadrons[i] = NULL;
+      hSubProfile2D_XYZ_imag_hadrons[i] = NULL;
+      hSubProfile2D_XYZ_real_pions[i] = NULL;
+      hSubProfile2D_XYZ_imag_pions[i] = NULL;
+      hSubProfile2D_XYZ_real_kaons[i] = NULL;
+      hSubProfile2D_XYZ_imag_kaons[i] = NULL;
+      hSubProfile2D_XYZ_real_protons[i] = NULL;
+      hSubProfile2D_XYZ_imag_protons[i] = NULL;
+    }
+  
    for(int i=0; i<20; i++)
     {
       fPt_no_hadron[i] = 0;
@@ -415,7 +454,46 @@ AliAnalysisTask_v02pT::AliAnalysisTask_v02pT(const char *name):
       fEffKaonPlus[i] = NULL;
       fEffKaonMinus[i] = NULL;
     }
-   for(int i=0; i<20; i++)
+
+  for(int i=0; i<10; i++)
+    {
+      hSubProfile_X_real[i] = NULL;
+      hSubProfile_X_imag[i] = NULL;
+      hSubProfile_Y_real[i] = NULL;
+      hSubProfile_Y_imag[i] = NULL;
+      hSubProfile_XY_real[i] = NULL;
+      hSubProfile_XY_imag[i] = NULL;
+      hSubProfile2D_Z_hadrons[i] = NULL;
+      hSubProfile2D_Z_pions[i] = NULL;
+      hSubProfile2D_Z_kaons[i] = NULL;
+      hSubProfile2D_Z_protons[i] = NULL;
+      hSubProfile2D_YZ_real_hadrons[i] = NULL;
+      hSubProfile2D_YZ_imag_hadrons[i] = NULL;
+      hSubProfile2D_YZ_real_pions[i] = NULL;
+      hSubProfile2D_YZ_imag_pions[i] = NULL;
+      hSubProfile2D_YZ_real_kaons[i] = NULL;
+      hSubProfile2D_YZ_imag_kaons[i] = NULL;
+      hSubProfile2D_YZ_real_protons[i] = NULL;
+      hSubProfile2D_YZ_imag_protons[i] = NULL;
+      hSubProfile2D_XZ_real_hadrons[i] = NULL;
+      hSubProfile2D_XZ_imag_hadrons[i] = NULL;
+      hSubProfile2D_XZ_real_pions[i] = NULL;
+      hSubProfile2D_XZ_imag_pions[i] = NULL;
+      hSubProfile2D_XZ_real_kaons[i] = NULL;
+      hSubProfile2D_XZ_imag_kaons[i] = NULL;
+      hSubProfile2D_XZ_real_protons[i] = NULL;
+      hSubProfile2D_XZ_imag_protons[i] = NULL;
+      hSubProfile2D_XYZ_real_hadrons[i] = NULL;
+      hSubProfile2D_XYZ_imag_hadrons[i] = NULL;
+      hSubProfile2D_XYZ_real_pions[i] = NULL;
+      hSubProfile2D_XYZ_imag_pions[i] = NULL;
+      hSubProfile2D_XYZ_real_kaons[i] = NULL;
+      hSubProfile2D_XYZ_imag_kaons[i] = NULL;
+      hSubProfile2D_XYZ_real_protons[i] = NULL;
+      hSubProfile2D_XYZ_imag_protons[i] = NULL;
+    }
+  
+  for(int i=0; i<20; i++)
     {
       fPt_no_hadron[i] = 0;
       fPt_no_pion[i] = 0;
@@ -612,7 +690,8 @@ void AliAnalysisTask_v02pT::UserCreateOutputObjects()  {
     //Analysis profiles
     double centbining[11] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90};
     double ptbining[21] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,5.0,6.0,8.0,10.0};
-    
+
+    //central-val analysis profiles
     hProfile_X_real = new TProfile("hProfile_X_real", "hProfile_X_real", 10, centbining);
     hProfile_X_imag = new TProfile("hProfile_X_imag", "hProfile_X_imag", 10, centbining);
     hProfile_Y_real = new TProfile("hProfile_Y_real", "hProfile_Y_real", 10, centbining);
@@ -652,6 +731,50 @@ void AliAnalysisTask_v02pT::UserCreateOutputObjects()  {
     hProfile2D_XYZ_real_protons = new TProfile2D("hProfile2D_XYZ_real_protons", "hProfile2D_XYZ_real_protons", 10, centbining, 20, ptbining);
     hProfile2D_XYZ_imag_protons = new TProfile2D("hProfile2D_XYZ_imag_protons", "hProfile2D_XYZ_imag_protons", 10, centbining, 20, ptbining);
 
+    //error-estimation analysis profiles
+
+    for(int i=0; i<10; i++) {
+
+      hSubProfile_X_real[i] = new TProfile(Form("hSubProfile_X_real%d",i), Form("hSubProfile_X_real%d",i), 10, centbining);
+      hSubProfile_X_imag[i] = new TProfile(Form("hSubProfile_X_imag%d",i), Form("hSubProfile_X_imag%d",i), 10, centbining);
+      hSubProfile_Y_real[i] = new TProfile(Form("hSubProfile_Y_real%d",i), Form("hSubProfile_Y_real%d",i), 10, centbining);
+      hSubProfile_Y_imag[i] = new TProfile(Form("hSubProfile_Y_imag%d",i), Form("hSubProfile_Y_imag%d",i), 10, centbining);
+      hSubProfile_XY_real[i] = new TProfile(Form("hSubProfile_XY_real%d",i), Form("hSubProfile_XY_real%d",i), 10, centbining);
+      hSubProfile_XY_imag[i] = new TProfile(Form("hSubProfile_XY_imag%d",i), Form("hSubProfile_XY_imag%d",i), 10, centbining);
+
+      hSubProfile2D_Z_hadrons[i] = new TProfile2D(Form("hSubProfile2D_Z_hadrons%d",i), Form("hSubProfile2D_Z_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_Z_pions[i] = new TProfile2D(Form("hSubProfile2D_Z_pions%d",i), Form("hSubProfile2D_Z_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_Z_kaons[i] = new TProfile2D(Form("hSubProfile2D_Z_kaons%d",i), Form("hSubProfile2D_Z_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_Z_protons[i] = new TProfile2D(Form("hSubProfile2D_Z_protons%d",i), Form("hSubProfile2D_Z_protons%d",i), 10, centbining, 20, ptbining);
+
+      hSubProfile2D_YZ_real_hadrons[i] = new TProfile2D(Form("hSubProfile2D_YZ_real_hadrons%d",i), Form("hSubProfile2D_YZ_real_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_imag_hadrons[i] = new TProfile2D(Form("hSubProfile2D_YZ_imag_hadrons%d",i), Form("hSubProfile2D_YZ_imag_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_real_pions[i] = new TProfile2D(Form("hSubProfile2D_YZ_real_pions%d",i), Form("hSubProfile2D_YZ_real_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_imag_pions[i] = new TProfile2D(Form("hSubProfile2D_YZ_imag_pions%d",i), Form("hSubProfile2D_YZ_imag_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_real_kaons[i] = new TProfile2D(Form("hSubProfile2D_YZ_real_kaons%d",i), Form("hSubProfile2D_YZ_real_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_imag_kaons[i] = new TProfile2D(Form("hSubProfile2D_YZ_imag_kaons%d",i), Form("hSubProfile2D_YZ_imag_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_real_protons[i] = new TProfile2D(Form("hSubProfile2D_YZ_real_protons%d",i), Form("hSubProfile2D_YZ_real_protons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_YZ_imag_protons[i] = new TProfile2D(Form("hSubProfile2D_YZ_imag_protons%d",i), Form("hSubProfile2D_YZ_imag_protons%d",i), 10, centbining, 20, ptbining);
+
+      hSubProfile2D_XZ_real_hadrons[i] = new TProfile2D(Form("hSubProfile2D_XZ_real_hadrons%d",i), Form("hSubProfile2D_XZ_real_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_imag_hadrons[i] = new TProfile2D(Form("hSubProfile2D_XZ_imag_hadrons%d",i), Form("hSubProfile2D_XZ_imag_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_real_pions[i] = new TProfile2D(Form("hSubProfile2D_XZ_real_pions%d",i), Form("hSubProfile2D_XZ_real_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_imag_pions[i] = new TProfile2D(Form("hSubProfile2D_XZ_imag_pions%d",i), Form("hSubProfile2D_XZ_imag_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_real_kaons[i] = new TProfile2D(Form("hSubProfile2D_XZ_real_kaons%d",i), Form("hSubProfile2D_XZ_real_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_imag_kaons[i] = new TProfile2D(Form("hSubProfile2D_XZ_imag_kaons%d",i), Form("hSubProfile2D_XZ_imag_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_real_protons[i] = new TProfile2D(Form("hSubProfile2D_XZ_real_protons%d",i), Form("hSubProfile2D_XZ_real_protons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XZ_imag_protons[i] = new TProfile2D(Form("hSubProfile2D_XZ_imag_protons%d",i), Form("hSubProfile2D_XZ_imag_protons%d",i), 10, centbining, 20, ptbining);
+
+      hSubProfile2D_XYZ_real_hadrons[i] = new TProfile2D(Form("hSubProfile2D_XYZ_real_hadrons%d",i), Form("hSubProfile2D_XYZ_real_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_imag_hadrons[i] = new TProfile2D(Form("hSubProfile2D_XYZ_imag_hadrons%d",i), Form("hSubProfile2D_XYZ_imag_hadrons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_real_pions[i] = new TProfile2D(Form("hSubProfile2D_XYZ_real_pions%d",i), Form("hSubProfile2D_XYZ_real_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_imag_pions[i] = new TProfile2D(Form("hSubProfile2D_XYZ_imag_pions%d",i), Form("hSubProfile2D_XYZ_imag_pions%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_real_kaons[i] = new TProfile2D(Form("hSubProfile2D_XYZ_real_kaons%d",i), Form("hSubProfile2D_XYZ_real_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_imag_kaons[i] = new TProfile2D(Form("hSubProfile2D_XYZ_imag_kaons%d",i), Form("hSubProfile2D_XYZ_imag_kaons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_real_protons[i] = new TProfile2D(Form("hSubProfile2D_XYZ_real_protons%d",i), Form("hSubProfile2D_XYZ_real_protons%d",i), 10, centbining, 20, ptbining);
+      hSubProfile2D_XYZ_imag_protons[i] = new TProfile2D(Form("hSubProfile2D_XYZ_imag_protons%d",i), Form("hSubProfile2D_XYZ_imag_protons%d",i), 10, centbining, 20, ptbining);
+    }
+    
     fOutputList->Add(hProfile_X_real);
     fOutputList->Add(hProfile_X_imag);
     fOutputList->Add(hProfile_Y_real);
@@ -686,7 +809,44 @@ void AliAnalysisTask_v02pT::UserCreateOutputObjects()  {
     fOutputList->Add(hProfile2D_XYZ_imag_kaons);
     fOutputList->Add(hProfile2D_XYZ_real_protons);
     fOutputList->Add(hProfile2D_XYZ_imag_protons);
-  
+
+    for(int i=0; i<10; i++) {
+
+      fOutputList->Add(hSubProfile_X_real[i]);
+      fOutputList->Add(hSubProfile_X_imag[i]);
+      fOutputList->Add(hSubProfile_Y_real[i]);
+      fOutputList->Add(hSubProfile_Y_imag[i]);
+      fOutputList->Add(hSubProfile_XY_real[i]);
+      fOutputList->Add(hSubProfile_XY_imag[i]);
+      fOutputList->Add(hSubProfile2D_Z_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_Z_pions[i]);
+      fOutputList->Add(hSubProfile2D_Z_kaons[i]);
+      fOutputList->Add(hSubProfile2D_Z_protons[i]);
+      fOutputList->Add(hSubProfile2D_YZ_real_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_YZ_imag_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_YZ_real_pions[i]);
+      fOutputList->Add(hSubProfile2D_YZ_imag_pions[i]);
+      fOutputList->Add(hSubProfile2D_YZ_real_kaons[i]);
+      fOutputList->Add(hSubProfile2D_YZ_imag_kaons[i]);
+      fOutputList->Add(hSubProfile2D_YZ_real_protons[i]);
+      fOutputList->Add(hSubProfile2D_YZ_imag_protons[i]);
+      fOutputList->Add(hSubProfile2D_XZ_real_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_XZ_imag_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_XZ_real_pions[i]);
+      fOutputList->Add(hSubProfile2D_XZ_imag_pions[i]);
+      fOutputList->Add(hSubProfile2D_XZ_real_kaons[i]);
+      fOutputList->Add(hSubProfile2D_XZ_imag_kaons[i]);
+      fOutputList->Add(hSubProfile2D_XZ_real_protons[i]);
+      fOutputList->Add(hSubProfile2D_XZ_imag_protons[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_real_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_imag_hadrons[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_real_pions[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_imag_pions[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_real_kaons[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_imag_kaons[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_real_protons[i]);
+      fOutputList->Add(hSubProfile2D_XYZ_imag_protons[i]);
+    }
 
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1311,6 +1471,10 @@ void AliAnalysisTask_v02pT::UserExec(Option_t *)  {
     
     //fTreeEvent->Fill();
 
+    TRandom3 randGen(0); // Seed = 0 uses machine clock
+    int sampleNum = randGen.Integer(10); // Generates integer in [0, 10)
+
+
     if (N_sum_etaLess0 > 0 && N_sum_etaGreaterEtamin > 0) {
       TComplex QX_vector = TComplex(QcosGapL_21, QsinGapL_21);
       TComplex QY1_vector = TComplex(QcosGapR_21, QsinGapR_21);
@@ -1319,32 +1483,42 @@ void AliAnalysisTask_v02pT::UserExec(Option_t *)  {
 
       double X_cos = QX_vector.Re()/N_sum_etaLess0;
       hProfile_X_real->Fill(lV0M, X_cos);
+      hSubProfile_X_real[sampleNum]->Fill(lV0M, X_cos);
       double X_sin = QX_vector.Im()/N_sum_etaLess0;
       hProfile_X_imag->Fill(lV0M, X_sin);
-
+      hSubProfile_X_imag[sampleNum]->Fill(lV0M, X_sin);
+       
       double Y_cos = QY_vector.Re()/N_sum_etaGreaterEtamin;
       hProfile_Y_real->Fill(lV0M, Y_cos);
+      hSubProfile_Y_real[sampleNum]->Fill(lV0M, Y_cos);
       double Y_sin = QY_vector.Im()/N_sum_etaGreaterEtamin;
       hProfile_Y_imag->Fill(lV0M, Y_sin);
+      hSubProfile_Y_imag[sampleNum]->Fill(lV0M, Y_sin);
 
       double XY_cos = QXY_vector.Re()/(N_sum_etaLess0*N_sum_etaGreaterEtamin);
       hProfile_XY_real->Fill(lV0M, XY_cos);
+      hSubProfile_XY_real[sampleNum]->Fill(lV0M, XY_cos);
       double XY_sin = QXY_vector.Im()/(N_sum_etaLess0*N_sum_etaGreaterEtamin);
       hProfile_XY_imag->Fill(lV0M, XY_sin);
+      hSubProfile_XY_imag[sampleNum]->Fill(lV0M, XY_sin);
 
       for(int i=0; i<20; i++) {
 
 	double Z_hadrons = (fPt_profile->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_Z_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1), Z_hadrons);
+	hSubProfile2D_Z_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1), Z_hadrons);
 
 	double Z_pions = (fPt_profile_pion->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_Z_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1), Z_pions);
+	hSubProfile2D_Z_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1), Z_pions);
 
 	double Z_kaons = (fPt_profile_kaon->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_Z_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1), Z_kaons);
+	hSubProfile2D_Z_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1), Z_kaons);
 
 	double Z_protons = (fPt_profile_proton->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_Z_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1), Z_protons);
+	hSubProfile2D_Z_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1), Z_protons);
       }
 
       for(int i=0; i<20; i++) {
@@ -1352,53 +1526,69 @@ void AliAnalysisTask_v02pT::UserExec(Option_t *)  {
 	//hadrons
 	double YZ_cos_hadrons = (QY_vector.Re()/N_sum_etaGreaterEtamin) * (fPt_profile->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_real_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1), YZ_cos_hadrons);
+	hSubProfile2D_YZ_real_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1), YZ_cos_hadrons);
 	double YZ_sin_hadrons = (QY_vector.Im()/N_sum_etaGreaterEtamin) * (fPt_profile->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_imag_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1), YZ_sin_hadrons);
+	hSubProfile2D_YZ_imag_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1), YZ_sin_hadrons);
 
 	//pions
 	double YZ_cos_pions = (QY_vector.Re()/N_sum_etaGreaterEtamin) * (fPt_profile_pion->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_real_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1), YZ_cos_pions);
+	hSubProfile2D_YZ_real_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1), YZ_cos_pions);
 	double YZ_sin_pions = (QY_vector.Im()/N_sum_etaGreaterEtamin) * (fPt_profile_pion->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_imag_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1), YZ_sin_pions);
+	hSubProfile2D_YZ_imag_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1), YZ_sin_pions);
 
 	//kaons
 	double YZ_cos_kaons = (QY_vector.Re()/N_sum_etaGreaterEtamin) * (fPt_profile_kaon->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_real_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1), YZ_cos_kaons);
+	hSubProfile2D_YZ_real_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1), YZ_cos_kaons);
 	double YZ_sin_kaons = (QY_vector.Im()/N_sum_etaGreaterEtamin) * (fPt_profile_kaon->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_imag_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1), YZ_sin_kaons);
+	hSubProfile2D_YZ_imag_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1), YZ_sin_kaons);
 
 	//protons
 	double YZ_cos_protons = (QY_vector.Re()/N_sum_etaGreaterEtamin) * (fPt_profile_proton->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_real_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1), YZ_cos_protons);
+	hSubProfile2D_YZ_real_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1), YZ_cos_protons);
 	double YZ_sin_protons = (QY_vector.Im()/N_sum_etaGreaterEtamin) * (fPt_profile_proton->GetBinContent(i+1)/N_sum_etaLess0);
 	hProfile2D_YZ_imag_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1), YZ_sin_protons);
+	hSubProfile2D_YZ_imag_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1), YZ_sin_protons);
       }
 
       for(int i=0; i<20; i++) {
 
 	//hadrons
 	double XZ_cos_hadrons = ((fPt_profile->GetBinContent(i+1)*QX_vector.Re()) - fPt_profile_cos->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile->GetBinContent(i+1));
-	hProfile2D_XZ_real_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XZ_cos_hadrons); 
+	hProfile2D_XZ_real_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XZ_cos_hadrons);
+	hSubProfile2D_XZ_real_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XZ_cos_hadrons); 
 	double XZ_sin_hadrons = ((fPt_profile->GetBinContent(i+1)*QX_vector.Im()) - fPt_profile_sin->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile->GetBinContent(i+1));
 	hProfile2D_XZ_imag_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XZ_sin_hadrons);
+	hSubProfile2D_XZ_imag_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XZ_sin_hadrons);
 
 	//pions
 	double XZ_cos_pions = ((fPt_profile_pion->GetBinContent(i+1)*QX_vector.Re()) - fPt_profile_pion_cos->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile_pion->GetBinContent(i+1));
-	hProfile2D_XZ_real_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XZ_cos_pions); 
+	hProfile2D_XZ_real_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XZ_cos_pions);
+	hSubProfile2D_XZ_real_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XZ_cos_pions); 
 	double XZ_sin_pions = ((fPt_profile_pion->GetBinContent(i+1)*QX_vector.Im()) - fPt_profile_pion_sin->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile_pion->GetBinContent(i+1));
 	hProfile2D_XZ_imag_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XZ_sin_pions);
+	hSubProfile2D_XZ_imag_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XZ_sin_pions);
 
 	//kaons
 	double XZ_cos_kaons = ((fPt_profile_kaon->GetBinContent(i+1)*QX_vector.Re()) - fPt_profile_kaon_cos->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile_kaon->GetBinContent(i+1));
-	hProfile2D_XZ_real_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XZ_cos_kaons); 
+	hProfile2D_XZ_real_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XZ_cos_kaons);
+	hSubProfile2D_XZ_real_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XZ_cos_kaons); 
 	double XZ_sin_kaons = ((fPt_profile_kaon->GetBinContent(i+1)*QX_vector.Im()) - fPt_profile_kaon_sin->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile_kaon->GetBinContent(i+1));
 	hProfile2D_XZ_imag_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XZ_sin_kaons);
+	hSubProfile2D_XZ_imag_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XZ_sin_kaons);
 
 	//protons
 	double XZ_cos_protons = ((fPt_profile_proton->GetBinContent(i+1)*QX_vector.Re()) - fPt_profile_proton_cos->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile_proton->GetBinContent(i+1));
-	hProfile2D_XZ_real_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XZ_cos_protons); 
+	hProfile2D_XZ_real_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XZ_cos_protons);
+	hSubProfile2D_XZ_real_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XZ_cos_protons); 
 	double XZ_sin_protons = ((fPt_profile_proton->GetBinContent(i+1)*QX_vector.Im()) - fPt_profile_proton_sin->GetBinContent(i+1))/(TMath::Power(N_sum_etaLess0,2.0)-fPt_profile_proton->GetBinContent(i+1));
 	hProfile2D_XZ_imag_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XZ_sin_protons);
+	hSubProfile2D_XZ_imag_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XZ_sin_protons);
 
 	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1406,34 +1596,41 @@ void AliAnalysisTask_v02pT::UserExec(Option_t *)  {
 	TComplex QXZ_vector_hadrons = TComplex(XZ_cos_hadrons, XZ_sin_hadrons);
 	TComplex QXYZ_vector_hadrons = QXZ_vector_hadrons*QY_vector;
 	double XYZ_cos_hadrons = QXYZ_vector_hadrons.Re()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_real_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XYZ_cos_hadrons); 
+	hProfile2D_XYZ_real_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XYZ_cos_hadrons);
+	hSubProfile2D_XYZ_real_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XYZ_cos_hadrons); 
 	double XYZ_sin_hadrons = QXYZ_vector_hadrons.Im()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_imag_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XYZ_sin_hadrons); 
+	hProfile2D_XYZ_imag_hadrons->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XYZ_sin_hadrons);
+	hSubProfile2D_XYZ_imag_hadrons[sampleNum]->Fill(lV0M, fPt_profile->GetBinCenter(i+1),  XYZ_sin_hadrons); 
 
 	//pions
 	TComplex QXZ_vector_pions = TComplex(XZ_cos_pions, XZ_sin_pions);
 	TComplex QXYZ_vector_pions = QXZ_vector_pions*QY_vector;
 	double XYZ_cos_pions = QXYZ_vector_pions.Re()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_real_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XYZ_cos_pions); 
+	hProfile2D_XYZ_real_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XYZ_cos_pions);
+	hSubProfile2D_XYZ_real_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XYZ_cos_pions); 
 	double XYZ_sin_pions = QXYZ_vector_pions.Im()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_imag_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XYZ_sin_hadrons); 
+	hProfile2D_XYZ_imag_pions->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XYZ_sin_hadrons);
+	hSubProfile2D_XYZ_imag_pions[sampleNum]->Fill(lV0M, fPt_profile_pion->GetBinCenter(i+1),  XYZ_sin_hadrons); 
 
 	//kaons
 	TComplex QXZ_vector_kaons = TComplex(XZ_cos_kaons, XZ_sin_kaons);
 	TComplex QXYZ_vector_kaons = QXZ_vector_kaons*QY_vector;
 	double XYZ_cos_kaons = QXYZ_vector_kaons.Re()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_real_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XYZ_cos_kaons); 
+	hProfile2D_XYZ_real_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XYZ_cos_kaons);
+	hSubProfile2D_XYZ_real_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XYZ_cos_kaons); 
 	double XYZ_sin_kaons = QXYZ_vector_kaons.Im()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_imag_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XYZ_sin_hadrons); 
+	hProfile2D_XYZ_imag_kaons->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XYZ_sin_hadrons);
+	hSubProfile2D_XYZ_imag_kaons[sampleNum]->Fill(lV0M, fPt_profile_kaon->GetBinCenter(i+1),  XYZ_sin_hadrons); 
 
 	//protons
 	TComplex QXZ_vector_protons = TComplex(XZ_cos_protons, XZ_sin_protons);
 	TComplex QXYZ_vector_protons = QXZ_vector_protons*QY_vector;
 	double XYZ_cos_protons = QXYZ_vector_protons.Re()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_real_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XYZ_cos_protons); 
+	hProfile2D_XYZ_real_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XYZ_cos_protons);
+	hSubProfile2D_XYZ_real_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XYZ_cos_protons); 
 	double XYZ_sin_protons = QXYZ_vector_protons.Im()/N_sum_etaGreaterEtamin;
-	hProfile2D_XYZ_imag_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XYZ_sin_hadrons); 
-
+	hProfile2D_XYZ_imag_protons->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XYZ_sin_hadrons);
+	hSubProfile2D_XYZ_imag_protons[sampleNum]->Fill(lV0M, fPt_profile_proton->GetBinCenter(i+1),  XYZ_sin_hadrons); 
       }
     }
     
