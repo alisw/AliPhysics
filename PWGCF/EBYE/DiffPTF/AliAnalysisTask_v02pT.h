@@ -36,6 +36,7 @@ class TH1D;
 class TH2D;
 class TH3D;
 class TProfile;
+class TProfile2D;
 class AliPIDResponse;
 class AliPIDCombined;
 class AliMultSelection;
@@ -280,7 +281,47 @@ class AliAnalysisTask_v02pT : public AliAnalysisTaskSE {
   TH2D *f2Dhist_afterCut_TOFtime_kaon;
   TH2D *f2Dhist_afterCut_TPCdEdx_proton;
   TH2D *f2Dhist_afterCut_TOFtime_proton;
-  
+
+
+  //analysis profiles
+  TProfile *hProfile_X_real;
+  TProfile *hProfile_X_imag;
+  TProfile *hProfile_Y_real;
+  TProfile *hProfile_Y_imag;
+  TProfile *hProfile_XY_real;
+  TProfile *hProfile_XY_imag;
+
+  TProfile2D *hProfile2D_Z_hadrons;
+  TProfile2D *hProfile2D_Z_pions;
+  TProfile2D *hProfile2D_Z_kaons;
+  TProfile2D *hProfile2D_Z_protons;
+
+  TProfile2D *hProfile2D_YZ_real_hadrons;
+  TProfile2D *hProfile2D_YZ_imag_hadrons;
+  TProfile2D *hProfile2D_YZ_real_pions;
+  TProfile2D *hProfile2D_YZ_imag_pions;
+  TProfile2D *hProfile2D_YZ_real_kaons;
+  TProfile2D *hProfile2D_YZ_imag_kaons;
+  TProfile2D *hProfile2D_YZ_real_protons;
+  TProfile2D *hProfile2D_YZ_imag_protons;
+
+  TProfile2D *hProfile2D_XZ_real_hadrons;
+  TProfile2D *hProfile2D_XZ_imag_hadrons;
+  TProfile2D *hProfile2D_XZ_real_pions;
+  TProfile2D *hProfile2D_XZ_imag_pions;
+  TProfile2D *hProfile2D_XZ_real_kaons;
+  TProfile2D *hProfile2D_XZ_imag_kaons;
+  TProfile2D *hProfile2D_XZ_real_protons;
+  TProfile2D *hProfile2D_XZ_imag_protons;
+
+  TProfile2D *hProfile2D_XYZ_real_hadrons;
+  TProfile2D *hProfile2D_XYZ_imag_hadrons;
+  TProfile2D *hProfile2D_XYZ_real_pions;
+  TProfile2D *hProfile2D_XYZ_imag_pions;
+  TProfile2D *hProfile2D_XYZ_real_kaons;
+  TProfile2D *hProfile2D_XYZ_imag_kaons;
+  TProfile2D *hProfile2D_XYZ_real_protons;
+  TProfile2D *hProfile2D_XYZ_imag_protons;
  
   Double_t fVertexZMax;
   Int_t fFBNo;
