@@ -28,8 +28,8 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
 
     {
 
-    for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
-	  for(Int_t chg=0;chg<2;chg++){
+      for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+	for(Int_t chg=0;chg<2;chg++){
 	  fGeneratedMCPrimaries[i][chg] = NULL;
 	  fMCPrimariesThatAreReconstructed[i][chg] = NULL;
 	  fGeneratedMCPrimaries4D[i][chg] = NULL;
@@ -49,33 +49,60 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
       }
     }*/
 
-  AliAnalysisTaskEffK0ss(TString name, int pidMethod=3, int filterbit=128); // default constructor
+AliAnalysisTaskEffK0ss(TString name,
+                       int pidMethod,
+                       int filterbit,
+                       Double_t nsigmaDaught,
+                       Double_t cosPA,
+                       Double_t window,
+                       Double_t dcaDaughtersMax,
+                       Double_t dcaPVMin,
+                       Bool_t electronRejection,
+                       Double_t nsigmaErej,
+		               Double_t minDCApos, 
+		               Double_t minDCAneg,
+		               Double_t maxctau, 
+		               Double_t minV0rad,
+		               Bool_t ownDCA, 
+		               Float_t dcaxy, 
+		               Float_t dcaz
+);
   virtual ~AliAnalysisTaskEffK0ss(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
   //void Terminate(Option_t *option);
-  AliEventCuts   *fEventCuts;
-  void SetFB(Int_t fb);
+
+  void SetFB(int fb);
   void SetPidMethod(PidMethod method);
   void SetPidMethod(int method);
   int GetPidMethod();
   void SetMultMethod(EstEventMult method);
   void SetAliEventCuts(Bool_t ec);
   void SetIfXiAnalysis(Bool_t xi);
-  void SetV0PileUpRemoval(Bool_t v0PileUpRemoval){ fV0PileUpRemoval =v0PileUpRemoval; }
-  void SetTrackPileUpRemoval(Bool_t TrackPileUpRemoval){fTrackPileUpRemoval = TrackPileUpRemoval;}
+  void SetIfTrackPileUp(Bool_t ifTrackPlp);
+  void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
   void AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC);
-  Bool_t IsElectronAM(float nsigmaTPCe);
+  void SetNsigmaDaughters(Double_t nsigmaDaught);
+  void SetMinCosPointingAngle(Double_t cosPA);
+  void SetInvMassWindow(Double_t window);
+  void SetMaxDCADaughters(Double_t dcaDaughtersMax);
+  void SetMinDCAToPrimVtx(Double_t dcaPVMin);
+  void SetElectronRejection(Bool_t electronRejection);
+  void SetNsigmaElectronRejection(Double_t nsigmaErej);
+  void SetMinDcaPosToPrimVertex(Double_t minDCApos);
+  void SetMinDcaNegToPrimVertex(Double_t minDCAneg);
+  void SetMaxCTauK0s(Double_t maxctau);
+  void SetMinV0Radius(Double_t minV0rad);
+  void SetUseDCAcuts(Bool_t ownDCA);
+  void SetUseDCAcutsxy(Float_t dcaxy);
+  void SetUseDCAcutsz(Float_t dcaz);
 
-  void SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
-  void SetnsigmaErejection(Double_t nsigmaErej) {fnsigmaErej = nsigmaErej; }
-  void SetElectronRejection(Bool_t ElectronReject) {fElectronReject = ElectronReject;}
-  void SetVertexCut(Double_t pvzvalue) {fPVzCut = pvzvalue;}
+  bool IsElectronAM(float nsigmaTPCe, float nsigmaTPCPi, float nsigmaTPCK, float nsigmaTPCP);
+  bool IsElectronAM1(float nsigmaTPCe);
 
  private:
   AliAnalysisTaskEffK0ss(const AliAnalysisTaskEffK0ss &); // copy constructor
   AliAnalysisTaskEffK0ss &operator=(const AliAnalysisTaskEffK0ss &); // operator=
-  TList *fHistoList; // histo list
   //AliAODEvent *aodEvent;
   AliCentrality *centrality;
   //AliAODTrack *fTpcTracks;
@@ -83,19 +110,10 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
   //AliAODVertex    *vtxSPD;
   //AliAODMCParticle *MCtrk;
   //AliESDtrackCuts *fTrackCuts; // ESD track cuts
-  
+  TList *fHistoList; // histo list
   //TClonesArray *arrayMC;
-
-  Double_t        fCentMin;
-  Double_t        fCentMax;
-  Double_t        fnsigmaErej;
-  Bool_t          fElectronReject;
-  Bool_t          fIfAliEventCuts;
-  Int_t           fFB;
-  Double_t        fPVzCut;
-  PidMethod    fPidMethod; //PID method
-
   TH1F *fHistEv[4];
+
   TH1F *fHistQA[11];
   TH1F *fHistP[4];
   TH2F *fHistQA2D[5];
@@ -163,8 +181,6 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
   TH2D *fRecPtK0sMC;
   TH2D *fTruePtAntiK0sMC;
   TH2D *fRecPtAntiK0sMC;
-  TH2F *fPIDKch;          
-  TH2F *fPIDKeCut;
 
 
   //********************Xi*******************
@@ -187,10 +203,15 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
   TH1D *fCutsXim;
   TH1D *fCutsXip;
   TObjArray *recoParticleArrayXi;
+  TH2F* fPIDKch;      // PID histogram for Kaons
+  TH2F* fPIDKeCut;    // PID histogram for Kaons with electron rejection
 
   //******************************************
 
   double fDCAtoPrimVtx;
+  Bool_t fIfAliEventCuts;
+  int    fFB;
+  PidMethod    fPidMethod; //PID method
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   Bool_t fIfXiAnalysis;
 
@@ -198,11 +219,32 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
 
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
-  //AliEventCuts   *fEventCuts;
+  AliEventCuts   *fEventCuts;
   ClassDef(AliAnalysisTaskEffK0ss, 0);
   Bool_t fTrackPileUpRemoval;
   Bool_t fV0PileUpRemoval;
-  
+
+  Double_t fNsigmaDaughters;
+  Double_t fMinCosPointingAngle;
+  Double_t fInvMassWindow;
+  Double_t fMaxDcaV0Daughters;
+  Double_t fMinDCAToPrimVtx;
+  Bool_t   fElectronReject;
+  Double_t fNsigmaElectronRejection;
+
+  Double_t fMinDcaPosToPrimVertex;
+  Double_t fMinDcaNegToPrimVertex;
+  Double_t fMaxCTauK0s;
+  Double_t fMinV0Radius;
+
+  Bool_t   fUseDcaCuts;
+  Float_t  fDcaXYCut;
+  Float_t  fDcaZCut;
+
+  // ---- Other settings mentioned in the constructor ----
+  Int_t    fCentMin;
+  Int_t    fCentMax;
+  Double_t fPVzCut;
 
 };
 

@@ -69,14 +69,112 @@ void AliAnalysisTaskEffK0ss::SetPidMethod(int method)
   }
 
 }
+void AliAnalysisTaskEffK0ss::SetNsigmaDaughters(Double_t nsigmaDaught)
+{
+  fNsigmaDaughters = nsigmaDaught;
+}
 
+void AliAnalysisTaskEffK0ss::SetMinCosPointingAngle(Double_t cosPA)
+{
+  fMinCosPointingAngle = cosPA;
+}
+
+void AliAnalysisTaskEffK0ss::SetInvMassWindow(Double_t window)
+{
+  fInvMassWindow = window;
+}
+
+void AliAnalysisTaskEffK0ss::SetMaxDCADaughters(Double_t dcaDaughtersMax)
+{
+  fMaxDcaV0Daughters = dcaDaughtersMax;
+}
+
+void AliAnalysisTaskEffK0ss::SetMinDCAToPrimVtx(Double_t dcaPVMin)
+{
+  fMinDCAToPrimVtx = dcaPVMin;
+}
+
+void AliAnalysisTaskEffK0ss::SetElectronRejection(Bool_t electronRejection)
+{
+  fElectronReject = electronRejection;
+}
+
+void AliAnalysisTaskEffK0ss::SetNsigmaElectronRejection(Double_t nsigmaErej)
+{
+  fNsigmaElectronRejection = nsigmaErej;
+}
+
+void AliAnalysisTaskEffK0ss::SetMinDcaPosToPrimVertex(Double_t minDCApos)
+{
+  fMinDcaPosToPrimVertex = minDCApos;
+}
+
+void AliAnalysisTaskEffK0ss::SetMinDcaNegToPrimVertex(Double_t minDCAneg)
+{
+  fMinDcaNegToPrimVertex = minDCAneg;
+}
+
+void AliAnalysisTaskEffK0ss::SetMaxCTauK0s(Double_t maxctau)
+{
+ fMaxCTauK0s = maxctau;
+}
+
+
+void AliAnalysisTaskEffK0ss::SetMinV0Radius(Double_t minV0rad)
+{
+  fMinV0Radius = minV0rad;
+}
+
+void AliAnalysisTaskEffK0ss::SetUseDCAcuts(Bool_t ownDCA)
+{
+ fUseDcaCuts = ownDCA;
+}
+
+
+void AliAnalysisTaskEffK0ss::SetUseDCAcutsxy(Float_t dcaxy)
+{
+ fDcaXYCut = dcaxy;
+}
+
+void AliAnalysisTaskEffK0ss::SetUseDCAcutsz(Float_t dcaz)
+{
+ fDcaZCut = dcaz;
+}
 
 //_______________________________________________________
 AliAnalysisTaskEffK0ss::AliAnalysisTaskEffK0ss() :
-  AliAnalysisTaskSE("name"), centrality(0), fHistoList(0),  fMassInvK0sPass(0), fMassInvK0sFail(0), fMassInvK0s(0), fMassInvK0sAfterCuts(0), fMassInvK0sPt(0), fEtaK0s(0),fPtK0s(0), fCutsK0s(0), fTruePtK0sMC(0), fRecPtK0sMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kTRUE), fFB(128), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kV0M), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE),
-  fCentMin(0), fCentMax(10), fnsigmaErej(3), fPIDKch(0), fPIDKeCut(0), fElectronReject(kTRUE), fPVzCut(10)
-{
+  AliAnalysisTaskSE("name"), centrality(0), fHistoList(0), fMassInvK0sPass(0), fMassInvK0sFail(0), fMassInvK0s(0), fMassInvK0sAfterCuts(0),
+fMassInvK0sPt(0), fEtaK0s(0), fPtK0s(0), fCutsK0s(0), fTruePtK0sMC(0), fRecPtK0sMC(0), fDCAtoPrimVtx(0),
+fIfAliEventCuts(kTRUE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kV0M),
+fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE),
 
+// --- New configurable V0 and track cuts ---
+fUseDcaCuts(kFALSE), 
+fDcaXYCut(0.3),
+fDcaZCut(1),
+
+fMaxDcaV0Daughters(1.0),
+fMinDcaPosToPrimVertex(0.1),
+fMinDcaNegToPrimVertex(0.1),
+fMaxCTauK0s(4.0 * 2.68),
+fMinV0Radius(5.0),
+
+// --- Existing V0 cut settings ---
+fNsigmaDaughters(5.0),
+fMinCosPointingAngle(0.998),
+fInvMassWindow(0.015),
+fMinDCAToPrimVtx(0.1),
+fElectronReject(kTRUE),
+fNsigmaElectronRejection(3.0),
+
+// --- Centrality and PID ---
+fCentMin(0),
+fCentMax(100),
+fPIDKch(0),
+fPIDKeCut(0),
+fPVzCut(10)
+
+{
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
     for(Int_t chg=0;chg<2;chg++){
       fGeneratedMCPrimaries[i][chg] = NULL;
@@ -120,9 +218,53 @@ AliAnalysisTaskEffK0ss::AliAnalysisTaskEffK0ss() :
 
 //_______________________________________________________
 
-AliAnalysisTaskEffK0ss::AliAnalysisTaskEffK0ss(TString name, int pidMethod, int filterbit) :
-  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvK0sPass(0), fMassInvK0sFail(0), fMassInvK0s(0), fMassInvK0sAfterCuts(0), fMassInvK0sPt(0), fEtaK0s(0),fPtK0s(0), fCutsK0s(0), fTruePtK0sMC(0), fRecPtK0sMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kTRUE), fFB(128), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kV0M), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE),
-  fCentMin(0), fCentMax(10), fnsigmaErej(3), fPIDKch(0), fPIDKeCut(0), fElectronReject(kTRUE), fPVzCut(10)
+AliAnalysisTaskEffK0ss::AliAnalysisTaskEffK0ss(TString name,
+                       int pidMethod,
+                       int filterbit,
+                       Double_t nsigmaDaught,
+                       Double_t cosPA,
+                       Double_t window,
+                       Double_t dcaDaughtersMax,
+                       Double_t dcaPVMin,
+                       Bool_t electronRejection,
+                       Double_t nsigmaErej,
+		               Double_t minDCApos, 
+		               Double_t minDCAneg,
+		               Double_t maxctau, 
+		               Double_t minV0rad,
+		               Bool_t ownDCA, 
+		               Float_t dcaxy, 
+		               Float_t dcaz) : AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fMassInvK0sPass(0), fMassInvK0sFail(0), fMassInvK0s(0), fMassInvK0sAfterCuts(0),
+fMassInvK0sPt(0), fEtaK0s(0), fPtK0s(0), fCutsK0s(0), fTruePtK0sMC(0), fRecPtK0sMC(0), fDCAtoPrimVtx(0),
+fIfAliEventCuts(kTRUE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kV0M),
+fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE),
+
+// --- New configurable V0 and track cuts ---
+fUseDcaCuts(kFALSE), 
+fDcaXYCut(0.1),
+fDcaZCut(0.2),
+
+fMaxDcaV0Daughters(1.0),
+fMinDcaPosToPrimVertex(0.1),
+fMinDcaNegToPrimVertex(0.1),
+fMaxCTauK0s(4.0 * 2.68),
+fMinV0Radius(5.0),
+
+// --- Existing V0 cut settings ---
+fNsigmaDaughters(5.0),
+fMinCosPointingAngle(0.998),
+fInvMassWindow(0.015),
+fMinDCAToPrimVtx(0.1),
+fElectronReject(kTRUE),
+fNsigmaElectronRejection(3.0),
+
+// --- Centrality and PID ---
+fCentMin(0),
+fCentMax(100),
+fPIDKch(0),
+fPIDKeCut(0),
+fPVzCut(10)
+
 {
 
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
@@ -556,7 +698,7 @@ void AliAnalysisTaskEffK0ss::UserCreateOutputObjects()
      for(Int_t j = 0 ; j<PARTTYPES; j++){
        for(int chg=0;chg<2;chg++){
          fHistoList->Add(fHistQAPID[i][j][chg]);
-	       fHistoList->Add(fHistQAPIDFail[i][j][chg]);
+	 fHistoList->Add(fHistQAPIDFail[i][j][chg]);
 	}
       }
     }
@@ -778,21 +920,27 @@ bool IsProtonNSigma3AM(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFt
 }
 
 
-bool IsElectronASM(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+
+bool AliAnalysisTaskEffK0ss::IsElectronAM(float nsigmaTPCe, float nsigmaTPCPi, float nsigmaTPCK, float nsigmaTPCP)
 {
-  if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
-    return true;
-  else
+    if (TMath::Abs(nsigmaTPCe) < fNsigmaElectronRejection &&
+        TMath::Abs(nsigmaTPCPi) > fNsigmaElectronRejection &&
+        TMath::Abs(nsigmaTPCK) > fNsigmaElectronRejection &&
+        TMath::Abs(nsigmaTPCP) > fNsigmaElectronRejection)
+    {
+        return true;
+    }
     return false;
 }
 
-Bool_t AliAnalysisTaskEffK0ss::IsElectronAM(float nsigmaTPCe)
+bool AliAnalysisTaskEffK0ss::IsElectronAM1(float nsigmaTPCe)
 {
-  if(TMath::Abs(nsigmaTPCe)< fnsigmaErej  )
-    return true;
-  else
-    return false;
+    if (TMath::Abs(nsigmaTPCe) < fNsigmaElectronRejection)
+        return true;
+    else
+        return false;
 }
+
 
 //_______________________________________________________
 
@@ -803,7 +951,7 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
 
   /***Get Event****/
 
-  //cout <<" fnsigma for e rejection is" << fnsigmaErej << endl;
+
   
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aodEvent) return;
@@ -1120,7 +1268,10 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
       DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
     }
 
-    
+    if (fUseDcaCuts) {
+      if (TMath::Abs(DCAXY) > fDcaXYCut) continue;
+      if (TMath::Abs(DCAZ) > fDcaZCut) continue;
+  }
 
     AliAODTrack* aodtrackpid;
 
@@ -1136,9 +1287,9 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
     double nSigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     double nSigmaTPCe = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
 
-  if (fElectronReject){
-      if(IsElectronAM(nSigmaTPCe)) continue;
-  }
+ 
+    if (fElectronReject && IsElectronAM1(nSigmaTPCe)) continue;
+
     fHistQA[10]->Fill(7);
 
     fHistQA[1]->Fill(track->GetTPCClusterInfo(2,1));
@@ -1201,12 +1352,49 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
     bool isKaonNsigma = 0;
     bool isProtonNsigma  = 0;
 
-    
+     if(fPidMethod==kNSigma){
+    //******** With double counting *******************
+      isPionNsigma = (IsPionNSigmaAM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      isKaonNsigma = (IsKaonNSigmaAM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      isProtonNsigma = (IsProtonNSigmaAM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    }
+    else if(fPidMethod==kNSigmaNoDoubleCounting){
+      //******** Without double counting *******************
+      double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
+
+      if(track->Pt()<0.5){
+       nSigmaPIDPi = abs(nSigmaTPCPi);
+       nSigmaPIDK  = abs(nSigmaTPCK);
+       nSigmaPIDP  = abs(nSigmaTPCP);
+      }
+      else{
+       nSigmaPIDPi = TMath::Hypot(nSigmaTPCPi,nSigmaTOFPi);
+       nSigmaPIDK= TMath::Hypot(nSigmaTPCK,nSigmaTOFK);
+       nSigmaPIDP= TMath::Hypot(nSigmaTPCP,nSigmaTOFP);
+      }
+
+      if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
+       isPionNsigma = (IsPionNSigmaAM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      }
+      else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
+       isKaonNsigma = (IsKaonNSigmaAM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      }
+      else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
+       isProtonNsigma = (IsProtonNSigmaAM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      }
+    }
+    else if(fPidMethod==kExclusivePID){
+      //******** Exclusive PID ********************
+      isPionNsigma = (IsPionNSigmaAM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaAM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaAM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigmaAM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaAM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaAM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigmaAM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaAM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaAM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    }
+    else if(fPidMethod==kExclusivePIDDiffRejection){
       //******** Exclusive PID, different rejection  ********************
       isPionNsigma = (IsPionNSigmaAM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3AM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3AM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       isKaonNsigma = (!IsPionNSigma3AM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaAM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3AM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       isProtonNsigma = (!IsPionNSigma3AM(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3AM(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaAM(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-    
+    }
     if (isPionNsigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][1][charge]->Fill(tPt,tTofSig-pidTime[2]);//pion
@@ -1228,7 +1416,7 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
       fHistQAPID[3][2][charge]->Fill(tPt,nSigmaTPCK);
       fHistQAPID[4][2][charge]->Fill(nSigmaTPCK,nSigmaTOFK);
     }
-    else{
+    else {
       fHistQAPIDFail[0][2][charge]->Fill(tPt,tdEdx);
       fHistQAPIDFail[1][2][charge]->Fill(tPt,tTofSig-pidTime[3]);//kaon
       fHistQAPIDFail[2][2][charge]->Fill(tPt,nSigmaTOFK);
@@ -1249,44 +1437,49 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
       fHistQAPIDFail[3][3][charge]->Fill(tPt,nSigmaTPCP);
       fHistQAPIDFail[4][3][charge]->Fill(nSigmaTPCP,nSigmaTOFP);
     }
-    
     fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Eta(), track->Pt());//Fills hist. for all reconstructed particles after cuts
-    
-    if(!arrayMC){
+ 
+   if(!arrayMC){
       continue;
     }
     //get coresponding MC particle 
     Int_t label = TMath::Abs(track->GetLabel());
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(label);
-    if (!MCtrk) continue;
 
    //getting no. of tracks for each particle species after all the cuts:
 
     //********* PID - pions ********
-    if (isPionNsigma){
-      if (track->Pt() > 0.10 || track->Pt() < 10)
+     if (isPionNsigma){
+      if(track->Eta() < -0.8 || track->Eta() > 0.8) continue; 
+      if (track->Pt() > 0.2 && track->Pt() < 2.5)
         fReconstructedAfterCuts[PARTTYPES*fcent+1][charge]->Fill(track->Eta(), track->Pt());
       if (!MCtrk) continue;
-        recoParticleArray[1].Add(MCtrk);
-    }
-    //Fills for all identified pions found after cuts (reconstructed) - numerator for Efficiency
+      recoParticleArray[1].Add(MCtrk);
+     }
+     //Fills for all identified pions found after cuts (reconstructed) - numerator for Efficiency
 
-    //********* PID - kaons ********
-    if (isKaonNsigma){
-      if (track->Pt() > 0.10 || track->Pt() < 10)
-        fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
-      if (!MCtrk) continue;
-        recoParticleArray[2].Add(MCtrk);
-    }
-       //Fills for all identified kaons found after cuts (reconstructed) - numerator for Efficiency
+     //********* PID - kaons ********
+     if (isKaonNsigma){
+       if(track->Eta() < -0.7 || track->Eta() > 0.7) continue; 
+       if (track->Pt() > 0.5 && track->Pt() < 2.5)
+         fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
+       if (!MCtrk) continue;
+       recoParticleArray[2].Add(MCtrk);
+     }
+     //Fills for all identified kaons found after cuts (reconstructed) - numerator for Efficiency
 
     //********* PID - protons ********
-    // if (isProtonNsigma){
-    //   if (track->Pt() > 0.10 || track->Pt() < 10)
-    //     fReconstructedAfterCuts[PARTTYPES*fcent+3][charge]->Fill(track->Eta(), track->Pt());
-    //   if (!MCtrk) continue;
-    //     recoParticleArray[3].Add(MCtrk);
-    // }
+     if (isProtonNsigma){
+       if(track->Eta() < -0.5 || track->Eta() > 0.5) continue;
+       if (track->Pt() > 0.5 && track->Pt() < 2.5)
+         fReconstructedAfterCuts[PARTTYPES*fcent+3][charge]->Fill(track->Eta(), track->Pt());
+       if (!MCtrk) continue;
+       recoParticleArray[3].Add(MCtrk);
+     }
+
+     //Fills for all identified protos found after cuts (reconstructed) - numerator for Efficiency
+     //******************************
+
     
     if (!MCtrk) continue;
     if(MCtrk->Charge()==0){std::cout<<"!!!"<<std::endl; continue;} // skip neutral tracks
@@ -1425,7 +1618,7 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
 
     double cospa = aodv0->CosPointingAngle(fV1K0s);
     //cout << "cos pointing angle is" << cospa << endl;
-    if (aodv0->CosPointingAngle(fV1K0s) < 0.998) continue;
+    if (aodv0->CosPointingAngle(fV1K0s) < fMinCosPointingAngle) continue;
     
     fCutsK0s->Fill(cutK0s++);
 
@@ -1435,104 +1628,70 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
     if (!daughterTrackNeg) continue;
     //if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue; //and have different charge
 
-    fCutsK0s->Fill(cutK0s++);
-    
-    if(aodv0->Pt() < 0.10 || aodv0->Pt() > 10) continue;
-    fCutsK0s->Fill(cutK0s++);
+fCutsK0s->Fill(cutK0s++);
 
+if(aodv0->Pt() < 0.10 || aodv0->Pt() > 10) continue;
+fCutsK0s->Fill(cutK0s++);
 
-    if(TMath::Abs(aodv0->Eta()) > 0.8) continue;
-    fCutsK0s->Fill(cutK0s++);
+if(TMath::Abs(aodv0->Eta()) > 0.8) continue;
+fCutsK0s->Fill(cutK0s++);
 
+if(aodv0->GetOnFlyStatus() == kTRUE) continue;
+fCutsK0s->Fill(cutK0s++);
 
-    if(aodv0->GetOnFlyStatus() == kTRUE) continue;
-    fCutsK0s->Fill(cutK0s++);
+if(TMath::Abs(aodv0->DcaV0Daughters()) > fMaxDcaV0Daughters) continue;  // ✅ replaced
+fCutsK0s->Fill(cutK0s++);
 
+if(TMath::Abs(aodv0->DcaPosToPrimVertex()) < fMinDcaPosToPrimVertex) continue;  // ✅ replaced
+fCutsK0s->Fill(cutK0s++);
 
-    if(TMath::Abs(aodv0->DcaV0Daughters()) > 1.0) continue;
-    fCutsK0s->Fill(cutK0s++);
+if(TMath::Abs(aodv0->DcaNegToPrimVertex()) < fMinDcaNegToPrimVertex) continue;  // ✅ replaced
+fCutsK0s->Fill(cutK0s++);
 
+// Optional: check V0 to PV DCA
+// if(TMath::Abs(aodv0->DcaV0ToPrimVertex()) > 0.1) continue;
+// fCutsK0s->Fill(cutK0s++);
 
-    if(TMath::Abs(aodv0->DcaPosToPrimVertex()) < 0.1) continue;
-    fCutsK0s->Fill(cutK0s++);
+Double_t decayL = aodv0->DecayLength(fV1K0s);
+Double_t dcav0PV = TMath::Abs(aodv0->DcaV0ToPrimVertex());
+Double_t cTau = decayL * aodv0->MassK0Short() / aodv0->P();
+if(cTau > fMaxCTauK0s) continue; 
+fCutsK0s->Fill(cutK0s++);
 
+Double_t radius = aodv0->RadiusV0();
+if (radius < fMinV0Radius) { 
+    AliDebugClass(2, "Failed fiducial volume");
+    continue;
+}
 
-    if(TMath::Abs(aodv0->DcaNegToPrimVertex()) < 0.1) continue;
-    fCutsK0s->Fill(cutK0s++);
+Double_t armpt = aodv0->PtArmV0();
+Double_t alpha = aodv0->AlphaV0();
+fHistQA2D[3]->Fill(alpha, armpt);
+if (armpt <= 0.2*fabs(alpha)) continue;
+fHistQA2D[4]->Fill(alpha, armpt);
 
-    //if(TMath::Abs(aodv0->DcaV0ToPrimVertex()) > 0.1) continue;
-    //fCutsK0s->Fill(cutK0s++);
-   
-    Double_t decayL = aodv0->DecayLength(fV1K0s);
-    //out << "decay length is" << decayL << endl;
-    Double_t dcav0PV = TMath::Abs(aodv0->DcaV0ToPrimVertex());
-    //cout << "dca from V0 to PV is" << dcav0PV << endl;
+AliAODTrack *trackpos = (AliAODTrack*)aodv0->GetDaughter(0);
+AliAODTrack *trackneg = (AliAODTrack*)aodv0->GetDaughter(1);
+if((!trackpos) || (!trackneg)) continue;
+fCutsK0s->Fill(cutK0s++);
 
-    Double_t cTau = 0;
-    Double_t cutcTauK0s = 4*2.68;
-    cTau = decayL*(aodv0->MassK0Short())/(aodv0->P()); // proper lifetime
-    //cout << "decay time  is" << cTau << endl;
-    if( cTau > cutcTauK0s) continue;
-    fCutsK0s->Fill(cutK0s++);
+if(TMath::Abs(trackpos->Eta()) > 0.8) continue;
+if(TMath::Abs(trackneg->Eta()) > 0.8) continue;
+if(trackpos->GetTPCNcls() < 70) continue;
+if(trackneg->GetTPCNcls() < 70) continue;
 
-    Double_t radius = aodv0->RadiusV0();
-    	if ( radius < 5) {
-    	AliDebugClass(2, "Failed fiducial volume");
-    	continue;
-    }
+if(!(trackpos->GetStatus() & (AliESDtrack::kTPCrefit))) continue;
+if(!(trackneg->GetStatus() & (AliESDtrack::kTPCrefit))) continue;
+fCutsK0s->Fill(cutK0s++);
 
-    Double_t armpt = aodv0->PtArmV0();
-    Double_t alpha = aodv0->AlphaV0();
-    fHistQA2D[3]->Fill(alpha,armpt);
-    if (armpt <= 0.2*fabs(alpha)) continue; // armenteros podolanski cut
-    fHistQA2D[4]->Fill(alpha,armpt);
-    int negid = aodv0->GetNegID();
-    int posid = aodv0->GetPosID();
+// PID cuts
+double nSigmaTPCPiPos = fAODpidUtil->NumberOfSigmasTPC(trackpos, AliPID::kPion);
+double nSigmaTPCPiNeg = fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kPion);
 
-    AliAODTrack *trackpos = (AliAODTrack*)aodv0->GetDaughter(0);
-    AliAODTrack *trackneg = (AliAODTrack*)aodv0->GetDaughter(1);
+bool isPionNsigmaPos = TMath::Abs(nSigmaTPCPiPos) < fNsigmaDaughters; 
+bool isPionNsigmaNeg = TMath::Abs(nSigmaTPCPiNeg) < fNsigmaDaughters; 
 
-    if((!trackpos) || (!trackneg)) continue;
-    fCutsK0s->Fill(cutK0s++);
-
-    if(TMath::Abs(trackpos->Eta()) > 0.8) continue;
-    if(TMath::Abs(trackneg->Eta()) > 0.8) continue;
-    if(trackpos->GetTPCNcls() < 70) continue;
-    if(trackneg->GetTPCNcls() < 70) continue;
-    //if(trackpos->Chi2perNDF() < 0.8) continue;
-    //if(trackneg->Chi2perNDF() < 0.8) continue;
-
-    if(!(trackpos->GetStatus() & (AliESDtrack::kTPCrefit))) continue;
-    if(!(trackneg->GetStatus() & (AliESDtrack::kTPCrefit))) continue;
-    fCutsK0s->Fill(cutK0s++);
-
-    // fMassInvK0sPass->Fill(aodv0->MassK0Short());
-    // fPtK0s->Fill(aodv0->Pt());
-    // fEtaK0s->Fill(TMath::Abs(aodv0->Eta())); 
-    
-    double nSigmaTPCPiPos = fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kPion);
-    double nSigmaTPCPiNeg = fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kPion);
-
-    //TOF time
-    float tdEdxPos = trackpos->GetTPCsignal();
-    float tTofSigPos = trackpos->GetTOFsignal();
-    double pidTimePos[5]; trackpos->GetIntegratedTimes(pidTimePos);
-
-    float tdEdxNeg = trackneg->GetTPCsignal();
-    float tTofSigNeg = trackneg->GetTOFsignal();
-    double pidTimeNeg[5]; trackneg->GetIntegratedTimes(pidTimeNeg);
-
-    Float_t probMisPos = 1.0;
-    Float_t probMisNeg = 1.0;
-
-    double nSigmaTOFPiPos = 0;
-    double nSigmaTOFPiNeg = 0;
-
-    bool isPionNsigmaPos = 0;
-    bool isPionNsigmaNeg = 0;
-
-    isPionNsigmaPos = IsPionNSigmaV0TPC5AM(trackpos->Pt(),nSigmaTPCPiPos,0);
-    isPionNsigmaNeg = IsPionNSigmaV0TPC5AM(trackneg->Pt(),nSigmaTPCPiNeg,0);
+if (!isPionNsigmaPos || !isPionNsigmaNeg) continue;
 
      //bool K0s = false;
 
@@ -1545,7 +1704,7 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
       //if(trackneg->Pt() < 0.10 || trackneg->Pt() > 10) continue; //pion minus
       //fCutsK0s->Fill(cutK0s++);
       fMassInvK0sAfterCuts->Fill(aodv0->MassK0Short());
-      if(aodv0->MassK0Short() < 0.48 || aodv0->MassK0Short() > 0.51) continue;
+      if (TMath::Abs(MassK0Short - 0.497) > fInvMassWindow) continue;
 
       // if(aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
         fCutsK0s->Fill(cutK0s++);
