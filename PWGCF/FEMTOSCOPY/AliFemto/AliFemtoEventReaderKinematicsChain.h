@@ -23,6 +23,8 @@
 #include <list>
 #include <AliGenEventHeader.h>
 
+
+
 class AliFemtoEvent;
 
 class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader 
@@ -78,7 +80,10 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   bool           fRemoveWeakDecaysInMC; //for AMPT models some weak decays have to be removed by hand, since IsPhysicslPrimary does not catch them
   bool           fDiscardStatusCodeFlag;
   int            fDiscardStatusCode;
-
+  double         fImpactParameterMC;
+  double         fgetCentrality;
+  double         getGeneratorCentrality();
+  std::map<double,double> centralitymap;
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
 #ifdef __ROOT__

@@ -62,7 +62,10 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fIsMisalignment(false),
   fRemoveWeakDecaysInMC(false),
   fDiscardStatusCodeFlag(false),
-  fDiscardStatusCode(0)
+  fDiscardStatusCode(0),
+  fImpactParameterMC(-1.0),
+  fgetCentrality(10000)
+
 {
   //constructor with 0 parameters , look at default settings
 }
@@ -86,7 +89,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fIsMisalignment(false),
   fRemoveWeakDecaysInMC(false),
   fDiscardStatusCodeFlag(false),
-  fDiscardStatusCode(0)
+  fDiscardStatusCode(0),
+  fImpactParameterMC(-1.0),
+  fgetCentrality(10000)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -104,7 +109,8 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fRemoveWeakDecaysInMC = aReader.fRemoveWeakDecaysInMC;
   fDiscardStatusCodeFlag = aReader.fDiscardStatusCodeFlag;
   fDiscardStatusCode = aReader.fDiscardStatusCode;
-  
+  fImpactParameterMC = aReader.fImpactParameterMC;
+  fgetCentrality = aReader.fgetCentrality;
 }
 //__________________
 AliFemtoEventReaderKinematicsChain::~AliFemtoEventReaderKinematicsChain()
@@ -136,6 +142,8 @@ AliFemtoEventReaderKinematicsChain& AliFemtoEventReaderKinematicsChain::operator
   fRemoveWeakDecaysInMC = aReader.fRemoveWeakDecaysInMC;
   fDiscardStatusCodeFlag = aReader.fDiscardStatusCodeFlag;
   fDiscardStatusCode = aReader.fDiscardStatusCode;
+  fImpactParameterMC = aReader.fImpactParameterMC;
+  fgetCentrality = aReader.fgetCentrality;
   return *this;
 }
 //__________________
@@ -179,6 +187,10 @@ void AliFemtoEventReaderKinematicsChain::ReadPrimariesSecWeakMaterialV0(bool pri
   fReadPrimariesSecWeakMaterialV0 = primaries;
 }
 
+double AliFemtoEventReaderKinematicsChain::getGeneratorCentrality()
+{
+  return fgetCentrality;
+}
 
 //__________________
 AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
@@ -491,12 +503,21 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
     }
 
+
+
+   // previous code ... centrality not well estimated ???
   if(fEstEventMult == kImpactParameter){
     AliGenEventHeader* eventHeader = 0;
     AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (fGenHeader);
-    if (cocktailHeader)
-      eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
-    else
+    TList *ltgen = (TList*)cocktailHeader->GetHeaders();
+    if (ltgen){
+      for (auto&& obj : *ltgen) {
+      TString genName = obj->GetName();
+        if (genName.Contains("Hijing") || genName.Contains("AMPT") || genName.Contains("DPMJET")) {
+          eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+        }
+      }      
+    } else
       eventHeader = dynamic_cast<AliGenEventHeader *> (fGenHeader);
 
     if (!eventHeader)
@@ -514,10 +535,23 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	std::cout<<"Asking for MC_b centrality, but event header has no collision geometry information"<<std::endl;
       }
       
-    tNormMult = 100 * collGeometry->ImpactParameter();
-    //cout<<"Impact: "<<collGeometry->ImpactParameter()<<endl;
+    double impactParam = collGeometry->ImpactParameter();
+    fImpactParameterMC = impactParam; // if you store it elsewhere
+    
+    
+    double cent = getGeneratorCentrality();
+    
+    vector<double> b;
+    for (auto const& element : centralitymap) b.push_back(element.first);
+    vector<double>::iterator it = upper_bound(b.begin(),b.end(),fImpactParameterMC);
+    cent = (fImpactParameterMC<0)?-1.0:(centralitymap[b[it-b.begin()]]+centralitymap[b[it-b.begin()-1]])/2.0;
+    
+    if (cent < 0) {
+      std::cout << "Invalid centrality computed from impact parameter: " << impactParam << std::endl;
+      return 0;
+    }
+    tNormMult = cent;
   }
-
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
   if (fEstEventMult == kGlobalCount)
@@ -593,7 +627,6 @@ void AliFemtoEventReaderKinematicsChain::SetGenEventHeader(AliGenEventHeader *aG
   // You must provide the address where it can be found
   fGenHeader = aGenHeader;
 }
-
 //__________________
 void AliFemtoEventReaderKinematicsChain::SetRotateToEventPlane(short dorotate)
 {
