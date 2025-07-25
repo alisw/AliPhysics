@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskEffK0ss *AddTaskEffK0s(TString containerName="femtolist",int method=3, int filterbit=128 double nsigmaDaught=5, double cosPA=0.998, double window=0.15, double dcaDaughtersMax=1.0, double dcaPVMin =0.1, bool electronRejection = kTRUE, double nsigmaErej=3.0, double minDCApos =0.1, double minDCAneg=0.1, double maxctau=4,  double minV0rad=5, bool ownDCA=kTRUE,  float dcaxy=0.3,  float dcaz=1)
+AliAnalysisTaskEffK0ss *AddTaskEffK0s(TString containerName="femtolist",int method=3, int filterbit=128, double nsigmaDaught=5, double cosPA=0.998, double window=0.015, double dcaDaughtersMax=1.0, double dcaPVMin =0.1, bool electronRejection = kTRUE, double nsigmaErej=3.0, double minDCApos =0.1, double minDCAneg=0.1, double maxctau=4,  double minV0rad=5, bool ownDCA=kTRUE,  float dcaxy=0.3,  float dcaz=1)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,9 +41,23 @@ AliAnalysisTaskEffK0ss *AddTaskEffK0s(TString containerName="femtolist",int meth
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskEffK0ss *taskEffK0s = new AliAnalysisTaskEffK0ss("EffTaskK0s",method,filterbit);
+  AliAnalysisTaskEffK0ss *taskEffK0s = new AliAnalysisTaskEffK0ss("EffTaskK0s", method, filterbit, nsigmaDaught, cosPA, window, dcaDaughtersMax, dcaPVMin, electronRejection, nsigmaErej, minDCApos, minDCAneg, maxctau, minV0rad, ownDCA, dcaxy, dcaz);
   taskEffK0s->SetPidMethod(method);
   taskEffK0s->SetFB(filterbit);
+  taskEffK0s->SetNsigmaDaughters(nsigmaDaught);
+  taskEffK0s->SetMinCosPointingAngle(cosPA);
+  taskEffK0s->SetInvMassWindow(window);
+  taskEffK0s->SetMaxDCADaughters(dcaDaughtersMax);
+  taskEffK0s->SetMinDCAToPrimVtx(dcaPVMin);
+  taskEffK0s->SetElectronRejection(electronRejection);
+  taskEffK0s->SetNsigmaElectronRejection(nsigmaErej);
+  taskEffK0s->SetMinDcaPosToPrimVertex(minDCApos);
+  taskEffK0s->SetMinDcaNegToPrimVertex(minDCAneg);
+  taskEffK0s->SetMaxCTauK0s(maxctau);
+  taskEffK0s->SetMinV0Radius(minV0rad);
+  taskEffK0s->SetUseDCAcuts(ownDCA);
+  taskEffK0s->SetUseDCAcutsxy(dcaxy);
+  taskEffK0s->SetUseDCAcutsz(dcaz);
   mgr->AddTask(taskEffK0s);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
