@@ -112,7 +112,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // Helper functions
   void MakeBinning();
   void CallSumw2ForLists(TList* l);
-  int GetParticleIndex(int pdgcode);
+  int GetParticleIndex(const int pdgcode, const int motherpdg) const;
 
   // Setters
   void SetIsMC(int isMC) { fIsMC = isMC; }
@@ -220,6 +220,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   }
   void InitializePartAbundanceWeighting();
   void SetDoTrackingEff(bool tmp) {fDoTrackingStudies = tmp;}
+  void SetDoAddV0ToJet(bool tmp) { fAddV0ToJets = tmp; }
 
  protected:
   //-------------------------------
@@ -305,6 +306,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDoCutOnEnergyAsymm;                             // flag to cut on energy asymmetry between true and rec. jets. Values are provided by JetReader
   bool fDoProcessOnlyJets;                              // flag to only process the jets and not the pi0s
   int fJetErrCounter;                                   // counter for number of error mesages of previous jet events
+  bool fAddV0ToJets;                                    // flag to enable the addition of V0s to the jet. This is only for experimental studies. These should be added in the jet finder!
   //-------------------------------
   // conversions
   //-------------------------------
@@ -499,6 +501,10 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoEnergyFracNonMeasClus;     //! vector of histos with energy fraction of non-measurable particles for clusters
   std::vector<TH3F*> fHistoClusterAbundanceMC;        //! vector of histos with number of clusters for different leading particles
 
+  std::vector<TH2F*> hJetEtaDiffWithV0;               //! vector of histos with difference in eta between original and V0 included jets
+  std::vector<TH2F*> hJetPhiDiffWithV0;               //! vector of histos with difference in phi between original and V0 included jets
+  std::vector<TH2F*> hJetPtDiffWithV0;                //! vector of histos with difference in pt between original and V0 included jets
+
 
   //-------------------------------
   // True meson histograms
@@ -634,7 +640,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 32);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 33);
 };
 
 #endif
