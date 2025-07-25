@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskEffK0ss *AddTaskEffK0s(TString containerName="femtolist",int method=3, int filterbit=128)
+AliAnalysisTaskEffK0ss *AddTaskEffK0s(TString containerName="femtolist",int method=3, int filterbit=128 double nsigmaDaught=5, double cosPA=0.998, double window=0.15, double dcaDaughtersMax=1.0, double dcaPVMin =0.1, bool electronRejection = kTRUE, double nsigmaErej=3.0, double minDCApos =0.1, double minDCAneg=0.1, double maxctau=4,  double minV0rad=5, bool ownDCA=kTRUE,  float dcaxy=0.3,  float dcaz=1)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
