@@ -241,6 +241,8 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              hJetEtaDiffWithV0({}),
                                                                              hJetPhiDiffWithV0({}),
                                                                              hJetPtDiffWithV0({}),
+                                                                             hV0Pt({}),
+                                                                             fHistoArmenterosV0({}),
                                                                              // true meson histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -556,6 +558,8 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            hJetEtaDiffWithV0({}),
                                                                                            hJetPhiDiffWithV0({}),
                                                                                            hJetPtDiffWithV0({}),
+                                                                                           hV0Pt({}),
+                                                                                           fHistoArmenterosV0({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -1019,6 +1023,10 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     hJetEtaDiffWithV0.resize(fnCuts);
     hJetPhiDiffWithV0.resize(fnCuts);
     hJetPtDiffWithV0.resize(fnCuts);
+    hV0Pt.resize(fnCuts);
+    if(!fDoLightOutput){
+      fHistoArmenterosV0.resize(fnCuts);
+    }
   }
 
   if (fIsConv && fFillDCATree) {
@@ -2000,6 +2008,14 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       hJetPtDiffWithV0[iCut]->SetXTitle("p_{T, org}/p_{T, mod}");
       hJetPtDiffWithV0[iCut]->SetYTitle("p_{T, rec} (GeV/c)");
       fJetList[iCut]->Add(hJetPtDiffWithV0[iCut]);
+
+      hV0Pt[iCut] = new TH1D("V0Pt", "V0Pt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+      hV0Pt[iCut]->SetXTitle("p_{T, V0} (GeV/c)");
+      fJetList[iCut]->Add(hV0Pt[iCut]);
+      if(!fDoLightOutput){
+        fHistoArmenterosV0[iCut]=new TH2F("ArmenterosV0", "ArmenterosV0",200,-1,1,120,0,0.3);
+        fJetList[iCut]->Add(fHistoArmenterosV0[iCut]);
+      }
     }
 
     if (fUseCentralEventSelection) {
@@ -2300,6 +2316,19 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
   fVectorJetNch = fConvJetReader->GetVectorJetNtracks();
   fVectorJetNclus = fConvJetReader->GetVectorJetNclus();
 
+    if(fVectorJetPt.size() > 0 ){
+      if(fJetPtPrevEvt == fVectorJetPt[0]){
+        if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events jet is the same as this event.... skipping this event  %f", fVectorJetPt[0]) << endl;
+        if(fJetErrCounter == 100) cout << "Too many errors about --The last events jet is the same as this event-- Disabeling error messages from now on" << endl;
+        fJetErrCounter++;
+        return false;
+      } else {
+        fJetPtPrevEvt = fVectorJetPt[0];
+      }
+    } else {
+      fJetPtPrevEvt = 0.;
+    }
+    
   if(fAddV0ToJets){
     std::vector<bool> vecIsJetMod(fVectorJetPt.size(), false);
     AliAODEvent* aodEvt = static_cast<AliAODEvent*>(fInputEvent);
@@ -2309,10 +2338,13 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
       AliAODv0 *v0 = aodEvt->GetV0(iV0);
       if (!v0) continue;
       // loose, hardcoded cuts for tests
-      if(v0->GetOnFlyStatus() != 0) continue;
+      if(v0->GetOnFlyStatus() != 1) continue;
       if(v0->DcaV0ToPrimVertex() > 5.) continue;
       if(v0->Chi2V0() > 200.) continue;
-
+      hV0Pt[fiCut]->Fill(v0->Pt(), fWeightJetJetMC);
+      if(!fDoLightOutput){
+        fHistoArmenterosV0[fiCut]->Fill(v0->AlphaV0(),v0->PtArmV0(), fWeightJetJetMC);
+      }
       
       double RJetPi0Cand = 0;
       int matchedJet = -1;
@@ -2356,19 +2388,6 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
     if (phi > 2 * TMath::Pi()) {
       phi -= TMath::Pi();
     }
-  }
-
-  if(fVectorJetPt.size() > 0 ){
-    if(fJetPtPrevEvt == fVectorJetPt[0]){
-      if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events jet is the same as this event.... skipping this event  %f", fVectorJetPt[0]) << endl;
-      if(fJetErrCounter == 100) cout << "Too many errors about --The last events jet is the same as this event-- Disabeling error messages from now on" << endl;
-      fJetErrCounter++;
-      return false;
-    } else {
-      fJetPtPrevEvt = fVectorJetPt[0];
-    }
-  } else {
-    fJetPtPrevEvt = 0.;
   }
 
   if (fIsMC > 0) {

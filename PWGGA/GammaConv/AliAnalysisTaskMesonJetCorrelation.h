@@ -504,7 +504,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> hJetEtaDiffWithV0;               //! vector of histos with difference in eta between original and V0 included jets
   std::vector<TH2F*> hJetPhiDiffWithV0;               //! vector of histos with difference in phi between original and V0 included jets
   std::vector<TH2F*> hJetPtDiffWithV0;                //! vector of histos with difference in pt between original and V0 included jets
-
+  std::vector<TH1D*> hV0Pt;                           //! vector of histos with V0Pt that is added to the jet energy
+  std::vector<TH2F*> fHistoArmenterosV0;              //! vector of histos with Armenteros-Podolanski plot for V0s added to jet
 
   //-------------------------------
   // True meson histograms
@@ -640,7 +641,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 33);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 34);
 };
 
 #endif
