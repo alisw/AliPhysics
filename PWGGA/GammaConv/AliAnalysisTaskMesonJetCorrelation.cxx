@@ -242,7 +242,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              hJetPhiDiffWithV0({}),
                                                                              hJetPtDiffWithV0({}),
                                                                              hV0Pt({}),
+                                                                             hV0LegsPt({}),
                                                                              fHistoArmenterosV0({}),
+                                                                             fHistoV0DaughterResol({}),
                                                                              // true meson histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -559,7 +561,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            hJetPhiDiffWithV0({}),
                                                                                            hJetPtDiffWithV0({}),
                                                                                            hV0Pt({}),
+                                                                                           hV0LegsPt({}),
                                                                                            fHistoArmenterosV0({}),
+                                                                                           fHistoV0DaughterResol({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -1024,8 +1028,10 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     hJetPhiDiffWithV0.resize(fnCuts);
     hJetPtDiffWithV0.resize(fnCuts);
     hV0Pt.resize(fnCuts);
+    hV0LegsPt.resize(fnCuts);
     if(!fDoLightOutput){
       fHistoArmenterosV0.resize(fnCuts);
+      fHistoV0DaughterResol.resize(fnCuts);
     }
   }
 
@@ -2012,9 +2018,17 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       hV0Pt[iCut] = new TH1D("V0Pt", "V0Pt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
       hV0Pt[iCut]->SetXTitle("p_{T, V0} (GeV/c)");
       fJetList[iCut]->Add(hV0Pt[iCut]);
+
+      hV0LegsPt[iCut] = new TH1D("V0LegPt", "V0LegPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+      hV0LegsPt[iCut]->SetXTitle("p_{T, V0, leg} (GeV/c)");
+      fJetList[iCut]->Add(hV0LegsPt[iCut]);
+
       if(!fDoLightOutput){
         fHistoArmenterosV0[iCut]=new TH2F("ArmenterosV0", "ArmenterosV0",200,-1,1,120,0,0.3);
         fJetList[iCut]->Add(fHistoArmenterosV0[iCut]);
+
+        fHistoV0DaughterResol[iCut]=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+        fJetList[iCut]->Add(fHistoV0DaughterResol[iCut]);
       }
     }
 
@@ -2316,43 +2330,107 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
   fVectorJetNch = fConvJetReader->GetVectorJetNtracks();
   fVectorJetNclus = fConvJetReader->GetVectorJetNclus();
 
-    if(fVectorJetPt.size() > 0 ){
-      if(fJetPtPrevEvt == fVectorJetPt[0]){
-        if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events jet is the same as this event.... skipping this event  %f", fVectorJetPt[0]) << endl;
-        if(fJetErrCounter == 100) cout << "Too many errors about --The last events jet is the same as this event-- Disabeling error messages from now on" << endl;
+  if(fVectorJetPt.size() > 0 ){
+    if(fJetPtPrevEvt == fVectorJetPt[0]){
+      if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events jet is the same as this event.... skipping this event  %f", fVectorJetPt[0]) << endl;
+      if(fJetErrCounter == 100) cout << "Too many errors about --The last events jet is the same as this event-- Disabeling error messages from now on" << endl;
+      fJetErrCounter++;
+      return false;
+    } else {
+      fJetPtPrevEvt = fVectorJetPt[0];
+    }
+  } else {
+    fJetPtPrevEvt = 0.;
+  }
+
+  if (fIsMC > 0) {
+    if (!fAODMCTrackArray)
+      fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    fConvJetReader->FindPartonsJet(fAODMCTrackArray);
+
+    fTrueVectorJetPx = fConvJetReader->GetTrueVectorJetPx();
+    fTrueVectorJetPy = fConvJetReader->GetTrueVectorJetPy();
+    fTrueVectorJetPz = fConvJetReader->GetTrueVectorJetPz();
+    fTrueVectorJetPt = fConvJetReader->GetTrueVectorJetPt();
+    fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+    fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+    fTrueVectorJetNPart = fConvJetReader->GetTrueVectorJetNPart();
+    fTrueVectorJetPartonID = fConvJetReader->GetTrueVectorJetParton();
+    fTrueVectorJetPartonPt = fConvJetReader->GetTrueVectorJetPartonPt();
+    fTrueVectorJetPartonPx = fConvJetReader->GetTrueVectorJetPartonPx();
+    fTrueVectorJetPartonPy = fConvJetReader->GetTrueVectorJetPartonPy();
+    fTrueVectorJetPartonPz = fConvJetReader->GetTrueVectorJetPartonPz();
+
+    if(fTrueVectorJetPt.size() > 0 ){
+      if(fTrueJetPtPrevEvt == fTrueVectorJetPt[0]){
+        if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events true jet is the same as this event.... skipping this event  %f", fTrueVectorJetPt[0]) << endl;
+        if(fJetErrCounter == 100) cout << "Too many errors about --The last events true jet is the same as this event-- Disabeling error messages from now on" << endl;
         fJetErrCounter++;
         return false;
       } else {
-        fJetPtPrevEvt = fVectorJetPt[0];
+        fTrueJetPtPrevEvt = fTrueVectorJetPt[0];
       }
     } else {
-      fJetPtPrevEvt = 0.;
+      fTrueJetPtPrevEvt = 0.;
     }
+  }
     
   if(fAddV0ToJets){
     std::vector<bool> vecIsJetMod(fVectorJetPt.size(), false);
     AliAODEvent* aodEvt = static_cast<AliAODEvent*>(fInputEvent);
     const int nV0s = aodEvt->GetNumberOfV0s();
+    std::vector<bool> vecTrackAdded(aodEvt->GetNumberOfTracks(), false);
     for (int iV0 = 0; iV0 < nV0s; iV0++)
     { // This is the begining of the V0 loop
       AliAODv0 *v0 = aodEvt->GetV0(iV0);
       if (!v0) continue;
       // loose, hardcoded cuts for tests
-      if(v0->GetOnFlyStatus() != 1) continue;
-      if(v0->DcaV0ToPrimVertex() > 5.) continue;
-      if(v0->Chi2V0() > 200.) continue;
+      // if(v0->GetOnFlyStatus()) continue;
+      if(v0->RadiusV0() > 1.) continue;
+      if(std::abs(v0->AlphaV0()) > 0.85) continue;
+
       hV0Pt[fiCut]->Fill(v0->Pt(), fWeightJetJetMC);
       if(!fDoLightOutput){
         fHistoArmenterosV0[fiCut]->Fill(v0->AlphaV0(),v0->PtArmV0(), fWeightJetJetMC);
       }
-      
+
       double RJetPi0Cand = 0;
       int matchedJet = -1;
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), v0->Eta(), v0->Phi(), matchedJet, RJetPi0Cand)) {
-        fVectorJetPx[matchedJet]+=v0->Px();
-        fVectorJetPy[matchedJet]+=v0->Py();
-        fVectorJetPz[matchedJet]+=v0->Pz();
-        vecIsJetMod[matchedJet] = true;
+        for(const auto & sign : {0, 1} ){
+          const AliAODTrack *v0DaughterTr=(AliAODTrack *)v0->GetDaughter(sign);
+          int daughterID = v0DaughterTr->GetID();
+          if(daughterID >= 0 && !vecTrackAdded[daughterID]){
+            vecTrackAdded[daughterID] = true;
+
+            // hybrid tracks are already counted
+            if(v0DaughterTr->IsHybridGlobalConstrainedGlobal()){
+              continue;
+            }
+            // Quality criteria for tracks
+            if (!v0DaughterTr->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
+            float nCrossedRowsTPC = v0DaughterTr->GetTPCClusterInfo(2,1); 
+            const int daugNClsTPC = 70;
+            if (nCrossedRowsTPC<daugNClsTPC) return kFALSE;
+
+            if(fIsMC){
+              if(!fDoLightOutput){
+                int labelTr = v0DaughterTr->GetLabel();
+                if(labelTr > 0){
+                  AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelTr));
+                  fHistoV0DaughterResol[fiCut]->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), fWeightJetJetMC);
+                }
+              }
+            }
+            if(v0DaughterTr->Pt() > 100) continue; // most likely wrongly reconstructed! Resoluion is very poor above that
+
+            hV0LegsPt[fiCut]->Fill(v0DaughterTr->Pt(), fWeightJetJetMC);
+            fVectorJetPx[matchedJet]+=v0DaughterTr->Px();
+            fVectorJetPy[matchedJet]+=v0DaughterTr->Py();
+            fVectorJetPz[matchedJet]+=v0DaughterTr->Pz();
+            vecIsJetMod[matchedJet] = true;
+          }
+        }
       }
     } 
     auto vectorJetEtaOrg = fConvJetReader->GetVectorJetEta();
@@ -2391,37 +2469,6 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
   }
 
   if (fIsMC > 0) {
-    if (!fAODMCTrackArray)
-      fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    fConvJetReader->FindPartonsJet(fAODMCTrackArray);
-
-    fTrueVectorJetPx = fConvJetReader->GetTrueVectorJetPx();
-    fTrueVectorJetPy = fConvJetReader->GetTrueVectorJetPy();
-    fTrueVectorJetPz = fConvJetReader->GetTrueVectorJetPz();
-    fTrueVectorJetPt = fConvJetReader->GetTrueVectorJetPt();
-    fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
-    fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
-    fTrueVectorJetNPart = fConvJetReader->GetTrueVectorJetNPart();
-    fTrueVectorJetPartonID = fConvJetReader->GetTrueVectorJetParton();
-    fTrueVectorJetPartonPt = fConvJetReader->GetTrueVectorJetPartonPt();
-    fTrueVectorJetPartonPx = fConvJetReader->GetTrueVectorJetPartonPx();
-    fTrueVectorJetPartonPy = fConvJetReader->GetTrueVectorJetPartonPy();
-    fTrueVectorJetPartonPz = fConvJetReader->GetTrueVectorJetPartonPz();
-
-    if(fTrueVectorJetPt.size() > 0 ){
-      if(fTrueJetPtPrevEvt == fTrueVectorJetPt[0]){
-        if(fJetErrCounter < 100) cout << Form("Something bad happened! The last events true jet is the same as this event.... skipping this event  %f", fTrueVectorJetPt[0]) << endl;
-        if(fJetErrCounter == 100) cout << "Too many errors about --The last events true jet is the same as this event-- Disabeling error messages from now on" << endl;
-        fJetErrCounter++;
-        return false;
-      } else {
-        fTrueJetPtPrevEvt = fTrueVectorJetPt[0];
-      }
-    } else {
-      fTrueJetPtPrevEvt = 0.;
-    }
-
-
     // Calculate jet weights for true jets according to particle weighting
     // weight the response matrix according to abundancies of particles in data
     // only particles with momentum fraction of more than fMinFracMomForWeight are considered
@@ -2998,12 +3045,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     fEventPlaneAngle = 0.0;
   }
 
-  // Jets need to be initialized before the ProcessMCParticles because they are needed in ProcessAODMCParticles
-  if (fLocalDebugFlag) {
-    printf("InitJets\n");
-  }
-  if(!InitJets()) return;
-
+  bool initJets = false;
   for (int iCut = 0; iCut < fnCuts; iCut++) {
     fiCut = iCut;
     bool isRunningEMCALrelAna = false;
@@ -3050,6 +3092,15 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       if (!fAliEventCuts.AcceptEvent(fInputEvent)) {
         continue;
       }
+    }
+
+    if(!initJets){
+      initJets = true;
+      // Jets need to be initialized before the ProcessMCParticles because they are needed in ProcessAODMCParticles
+      if (fLocalDebugFlag) {
+        printf("InitJets\n");
+      }
+      if(!InitJets()) return;
     }
 
     // reset double counting vector
