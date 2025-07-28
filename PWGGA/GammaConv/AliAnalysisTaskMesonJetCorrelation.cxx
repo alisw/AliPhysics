@@ -2379,7 +2379,7 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
     std::vector<bool> vecIsJetMod(fVectorJetPt.size(), false);
     AliAODEvent* aodEvt = static_cast<AliAODEvent*>(fInputEvent);
     const int nV0s = aodEvt->GetNumberOfV0s();
-    std::vector<bool> vecTrackAdded(aodEvt->GetNumberOfTracks(), false);
+    std::vector<bool> vecTrackAdded(aodEvt->GetNumberOfTracks()*2, false); // *2 as sometimes the track IDs can be larger than the total number of tracks
     for (int iV0 = 0; iV0 < nV0s; iV0++)
     { // This is the begining of the V0 loop
       AliAODv0 *v0 = aodEvt->GetV0(iV0);
@@ -2400,6 +2400,10 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
         for(const auto & sign : {0, 1} ){
           const AliAODTrack *v0DaughterTr=(AliAODTrack *)v0->GetDaughter(sign);
           int daughterID = v0DaughterTr->GetID();
+          // In some rare cases, the track ID is larger than the total number of tracks
+          if(daughterID >= vecTrackAdded.size()){
+            vecTrackAdded.resize(daughterID + 1, false);
+          }
           if(daughterID >= 0 && !vecTrackAdded[daughterID]){
             vecTrackAdded[daughterID] = true;
 
