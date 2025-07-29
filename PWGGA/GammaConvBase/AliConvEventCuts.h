@@ -358,6 +358,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18l6c2,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in DCal/PHOS acc.
         kLHC17HERJJ,          //! Herwig JJ MC anchored to LHC17
 
+        //13 TeV LHC2017 GJ
+        kLHC18l6a1,           //! LHC17x GJ MC in EMCal acc.
+        kLHC18l6a2,           //! LHC17x GJ MC in DCal/PHOS acc.
+
         // 2018
         kLHC18NomB,           //!< pp 13 TeV nominal B field
         kLHC18LowB,           //!< pp 13 TeV low B field
@@ -922,7 +926,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,100)
+      ClassDef(AliConvEventCuts,101)
       /// \endcond
 };
 

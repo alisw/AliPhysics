@@ -10526,7 +10526,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC18l6b1") == 0 ||
             namePeriod.CompareTo("LHC18l6b2") == 0 ||
             namePeriod.CompareTo("LHC18l6c1") == 0 ||
-            namePeriod.CompareTo("LHC18l6c2") == 0 )    return kPP13T17P1JJTrigger;
+            namePeriod.CompareTo("LHC18l6c2") == 0 ||
+            namePeriod.CompareTo("LHC18l6a1") == 0 ||
+            namePeriod.CompareTo("LHC18l6a2") == 0 )    return kPP13T17P1JJTrigger;
   else if ( namePeriod.CompareTo("LHC17HERJJ") == 0 ||
             namePeriod.CompareTo("LHC20k1") == 0 )      return kPP13T17HERJJ;
   // XeXe 5.44 TeV 2017 MB MC

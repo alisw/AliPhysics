@@ -3241,6 +3241,8 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC21j8a :
     case kLHC17P1JJ :
     case kLHC17P1JJLowB :
+    case kLHC18l6a1:
+    case kLHC18l6a2:
     case kLHC18l6b1 :
     case kLHC18l6b2 :
     case kLHC18l6c1 :
@@ -4113,6 +4115,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         fPeriodEnum != kLHC17g6b3a &&  fPeriodEnum != kLHC17g6b3b &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17P1JJ && fPeriodEnum != kLHC17P1JJLowB &&                               // LHC17X Jet Jet MC's
+        fPeriodEnum != kLHC18l6a1 && fPeriodEnum != kLHC18l6a2 &&                                   // LHC17x gamma jet MC's
         fPeriodEnum != kLHC18P1JJ &&                                                                // LHC18X Jet Jet MC's
         fPeriodEnum != kLHC17HERJJ &&                                                               // LHC17x HERWIG JJ MC
         fPeriodEnum != kLHC16h3  &&                                                                 // LHC15n Jet Jet MC's
@@ -4224,6 +4227,19 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             weight = weightsBins[pthardbin-1];
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
+
+        } else  if ( fPeriodEnum == kLHC18l6a1 || fPeriodEnum == kLHC18l6a2){
+          Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 1000000};
+          Double_t weightsBins[6]      = { 6.731200e-03, 6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; // preliminary estimates
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 6) weight = weightsBins[bin];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+
         } else  if ( fPeriodEnum == kLHC24j3 ){
           Double_t ptHardBinRanges[8]  = {  5, 12, 21, 36, 57,
                                             85, 115, 1000000};
@@ -4974,6 +4990,19 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
         }
+
+        } else  if ( fPeriodEnum == kLHC18l6a1 || fPeriodEnum == kLHC18l6a2){
+          Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 1000000};
+          Double_t weightsBins[6]      = { 6.731200e-03, 6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03};
+
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 6) weight = weightsBins[bin];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
+
         } else  if ( fPeriodEnum == kLHC24j3 ){
           Double_t ptHardBinRanges[8]  = {  5, 12, 21, 36, 57,
                                             85, 115, 1000000};
@@ -5795,6 +5824,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC17g6b3a &&  fPeriodEnum != kLHC17g6b3b &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17P1JJ && fPeriodEnum != kLHC17P1JJLowB &&                               // LHC17X Jet Jet MC's
+        fPeriodEnum != kLHC18l6a1 && fPeriodEnum != kLHC18l6a2 &&                                   // LHC17x gamma jet MC's
         fPeriodEnum != kLHC18P1JJ &&                                                                // LHC18X Jet Jet MC's
         fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
@@ -5937,6 +5967,7 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
         fPeriodEnum != kLHC17g6b3a &&  fPeriodEnum != kLHC17g6b3b &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
         fPeriodEnum != kLHC17P1JJ && fPeriodEnum != kLHC17P1JJLowB &&                               // LHC17X Jet Jet MC's
+        fPeriodEnum != kLHC18l6a1 && fPeriodEnum != kLHC18l6a2 &&                                   // LHC17x Gamma Jet MC's
         fPeriodEnum != kLHC18P1JJ &&                                                                // LHC18X Jet Jet MC's
         fPeriodEnum != kLHC16h3 &&                                                                  // LHC15n Jet Jet MC's
         fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
@@ -9827,6 +9858,14 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC18l6c2") == 0){
     fPeriodEnum = kLHC18l6c2;
+    fEnergyEnum = k13TeV;
+  // GJ MC in EMCal Acceptance
+  } else if ( periodName.CompareTo("LHC18l6a1") == 0){
+    fPeriodEnum = kLHC18l6a1;
+    fEnergyEnum = k13TeV;
+  // GJ MC in DCAL/PHOS Acceptance
+  } else if ( periodName.CompareTo("LHC18l6a2") == 0){
+    fPeriodEnum = kLHC18l6a2;
     fEnergyEnum = k13TeV;
 
   // pp 13 TeV LHC17 special MC - strangeness enhanced
