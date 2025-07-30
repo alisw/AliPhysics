@@ -221,6 +221,23 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         // PDF Selection
         (AliPythia8::Instance())->ReadString("PDF:pSet = 14");
 
+    } else if(specialTune.EqualTo("MonashWithFSR") || specialTune.EqualTo("MonashWithoutFSR")){
+        // setting tune
+        std::cout << "setting tune: " << tune << std::endl;
+        gener->SetTune(tune);
+        if(kCR){            
+            (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on");
+        } else {
+            (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = off");
+        }
+        (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
+
+        // Setting FSR on
+        if(specialTune.EqualTo("MonashWithFSR")) {
+            (AliPythia8::Instance())->ReadString("TimeShower:QEDshowerByQ = on");
+        } else {
+            (AliPythia8::Instance())->ReadString("TimeShower:QEDshowerByQ = off");
+        }
 
     } else if(specialTune.EqualTo("") || specialTune.EqualTo("Monash")){
         // setting tune

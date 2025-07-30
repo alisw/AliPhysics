@@ -66,7 +66,6 @@ void AddTask_MesonJetCorr_ConvCalo(
   int runOnlyZPt = 0,           // if 0, bot pt and z histograms will be filled, if 1, pt histograms will be filled, if 2, only z histograms will be filled
   bool doTrackingStudies = false,
   bool cutOnJetEnergyAsymm = false,
-  bool addV0ToJet = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 )
@@ -720,7 +719,6 @@ void AddTask_MesonJetCorr_ConvCalo(
   task->SetDoRadiusDependence(enableRadiusDep);
   task->SetDoTrackingEff(doTrackingStudies);
   task->SetCutJetEnergyAsymm(cutOnJetEnergyAsymm);
-  task->SetDoAddV0ToJet(addV0ToJet);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_ConvCalo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
