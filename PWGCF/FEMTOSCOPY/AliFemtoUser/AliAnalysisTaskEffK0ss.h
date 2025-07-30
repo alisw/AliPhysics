@@ -23,32 +23,7 @@ class AliAnalysisTaskEffK0ss :public AliAnalysisTaskSE{
   enum PidMethod {kNSigma=0, kNSigmaNoDoubleCounting=1, kExclusivePID=2, kExclusivePIDDiffRejection=3};
   typedef enum PidMethod PidMethod;
  
- AliAnalysisTaskEffK0ss(); /*AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvK0sPass(0), fMassInvK0sFail(0),fEtaK0s(0),fPtK0s(0), fCutsK0s(0), fTruePtK0sMC(0), fRecPtK0sMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kV0M), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
-
-
-    {
-
-      for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
-	for(Int_t chg=0;chg<2;chg++){
-	  fGeneratedMCPrimaries[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed[i][chg] = NULL;
-	  fGeneratedMCPrimaries4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
-	  fReconstructedAfterCuts[i][chg] = NULL;
-	  fReconstructedNotPrimaries[i][chg] = NULL;
-	  fReconstructedPrimaries[i][chg] = NULL;
-	  fContamination[i][chg] = NULL;
-	}
-      }
-
-      for ( Int_t i = 0; i < 11; i++) {
-	fHistQA[i] = NULL;
-	if(i<3) fHistQA2D[i] = NULL;
-	if(i<4) fHistP[i]=NULL;
-      }
-    }*/
-
+ AliAnalysisTaskEffK0ss();
 AliAnalysisTaskEffK0ss(TString name,
                        int pidMethod,
                        int filterbit,
@@ -59,14 +34,13 @@ AliAnalysisTaskEffK0ss(TString name,
                        Double_t dcaPVMin,
                        Bool_t electronRejection,
                        Double_t nsigmaErej,
-		               Double_t minDCApos, 
-		               Double_t minDCAneg,
-		               Double_t maxctau, 
-		               Double_t minV0rad,
-		               Bool_t ownDCA, 
-		               Float_t dcaxy, 
-		               Float_t dcaz
-);
+		       Double_t minDCApos, 
+		       Double_t minDCAneg,
+		       Double_t maxctau, 
+		       Double_t minV0rad,
+		       Bool_t ownDCA, 
+		       Float_t dcaxy, 
+		       Float_t dcaz);
   virtual ~AliAnalysisTaskEffK0ss(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
