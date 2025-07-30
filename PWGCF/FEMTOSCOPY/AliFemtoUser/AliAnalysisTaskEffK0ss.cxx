@@ -160,7 +160,7 @@ fMaxCTauK0s(4.0 * 2.68),
 fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
-fNsigmaDaughters(5.0),
+fNsigmaDaughters(4.0),
 fMinCosPointingAngle(0.998),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
@@ -251,7 +251,7 @@ fMaxCTauK0s(4.0 * 2.68),
 fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
-fNsigmaDaughters(5.0),
+fNsigmaDaughters(4.0),
 fMinCosPointingAngle(0.998),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
@@ -1451,7 +1451,7 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
     //********* PID - pions ********
      if (isPionNsigma){
       if(track->Eta() < -0.8 || track->Eta() > 0.8) continue; 
-      if (track->Pt() > 0.2 && track->Pt() < 2.5)
+      if (track->Pt() > 0.1 && track->Pt() < 10)
         fReconstructedAfterCuts[PARTTYPES*fcent+1][charge]->Fill(track->Eta(), track->Pt());
       if (!MCtrk) continue;
       recoParticleArray[1].Add(MCtrk);
@@ -1461,7 +1461,7 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
      //********* PID - kaons ********
      if (isKaonNsigma){
        if(track->Eta() < -0.7 || track->Eta() > 0.7) continue; 
-       if (track->Pt() > 0.5 && track->Pt() < 2.5)
+       if (track->Pt() > 0.1 && track->Pt() < 10)
          fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
        if (!MCtrk) continue;
        recoParticleArray[2].Add(MCtrk);
@@ -1469,13 +1469,13 @@ void AliAnalysisTaskEffK0ss::UserExec(Option_t *)
      //Fills for all identified kaons found after cuts (reconstructed) - numerator for Efficiency
 
     //********* PID - protons ********
-     if (isProtonNsigma){
+     /*if (isProtonNsigma){
        if(track->Eta() < -0.5 || track->Eta() > 0.5) continue;
        if (track->Pt() > 0.5 && track->Pt() < 2.5)
          fReconstructedAfterCuts[PARTTYPES*fcent+3][charge]->Fill(track->Eta(), track->Pt());
        if (!MCtrk) continue;
        recoParticleArray[3].Add(MCtrk);
-     }
+     }*/
 
      //Fills for all identified protos found after cuts (reconstructed) - numerator for Efficiency
      //******************************
@@ -1654,7 +1654,7 @@ fCutsK0s->Fill(cutK0s++);
 
 Double_t decayL = aodv0->DecayLength(fV1K0s);
 Double_t dcav0PV = TMath::Abs(aodv0->DcaV0ToPrimVertex());
-Double_t cTau = decayL * aodv0->MassK0Short() / aodv0->P();
+Double_t cTau = decayL * (aodv0->MassK0Short() / aodv0->P());
 if(cTau > fMaxCTauK0s) continue; 
 fCutsK0s->Fill(cutK0s++);
 
@@ -1704,7 +1704,7 @@ if (!isPionNsigmaPos || !isPionNsigmaNeg) continue;
       //if(trackneg->Pt() < 0.10 || trackneg->Pt() > 10) continue; //pion minus
       //fCutsK0s->Fill(cutK0s++);
       fMassInvK0sAfterCuts->Fill(aodv0->MassK0Short());
-      if (TMath::Abs(MassK0Short - 0.497) > fInvMassWindow) continue;
+      if(aodv0->MassK0Short() < 0.48 || aodv0->MassK0Short() > 0.51) continue;
 
       // if(aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
         fCutsK0s->Fill(cutK0s++);
