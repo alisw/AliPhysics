@@ -36,6 +36,9 @@
 #include "AliClusterContainer.h"
 
 #include "AliMCEvent.h"
+#include "AliAODEvent.h"
+#include "AliAODv0.h"
+#include "AliAODTrack.h"
 
 #include "AliAnalysisTaskConvJet.h"
 
@@ -82,7 +85,25 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fVecMeasurable({22, 211, 321, 2212, 11, 13}),
                                                    funcJES(nullptr),
                                                    funcJER(nullptr),
-                                                   funcJERCut(nullptr)
+                                                   funcJERCut(nullptr),
+                                                   fAddV0sToJet(false),
+                                                   fV0sCurrEvtAdded(false),
+                                                   fMinRV0(5.),
+                                                   fMaxRV0(180.),
+                                                   fMaxPtCutV0(100),
+                                                   fMaxPtCutV0Leg(100),
+                                                   fMinFracTPCClusV0Leg(0.5),
+                                                   fMaxCutAlphaV0(0.85),
+                                                   fMaxCutV0Qt(0.23),
+                                                   fHistograms(nullptr),
+                                                   hJetEtaDiffWithV0(nullptr),
+                                                   hJetPhiDiffWithV0(nullptr),
+                                                   hJetPtDiffWithV0(nullptr),
+                                                   hV0Pt(nullptr),
+                                                   hV0LegsPt(nullptr),
+                                                   fHistoV0TrueMotherLegPt(nullptr),
+                                                   fHistoArmenterosV0(nullptr),
+                                                   fHistoV0DaughterResol(nullptr)
 {
 }
 
@@ -124,7 +145,25 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fVecMeasurable({22, 211, 321, 2212, 11, 13}),
                                                                    funcJES(nullptr),
                                                                    funcJER(nullptr),
-                                                                   funcJERCut(nullptr)
+                                                                   funcJERCut(nullptr),
+                                                                   fAddV0sToJet(false),
+                                                                   fV0sCurrEvtAdded(false),
+                                                                   fMinRV0(5.),
+                                                                   fMaxRV0(180.),
+                                                                   fMaxPtCutV0(100),
+                                                                   fMaxPtCutV0Leg(100),
+                                                                   fMinFracTPCClusV0Leg(0.5),
+                                                                   fMaxCutAlphaV0(0.85),
+                                                                   fMaxCutV0Qt(0.23),
+                                                                   fHistograms(nullptr),
+                                                                   hJetEtaDiffWithV0(nullptr),
+                                                                   hJetPhiDiffWithV0(nullptr),
+                                                                   hJetPtDiffWithV0(nullptr),
+                                                                   hV0Pt(nullptr),
+                                                                   hV0LegsPt(nullptr),
+                                                                   fHistoV0TrueMotherLegPt(nullptr),
+                                                                   fHistoArmenterosV0(nullptr),
+                                                                   fHistoV0DaughterResol(nullptr)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -140,6 +179,103 @@ AliAnalysisTaskConvJet::~AliAnalysisTaskConvJet()
 void AliAnalysisTaskConvJet::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  if(fHistograms != nullptr){
+    delete fHistograms;
+    fHistograms=nullptr;
+  }
+
+  if(fHistograms==nullptr){
+    fHistograms=new TList();
+    fHistograms->SetOwner(kTRUE);
+    fHistograms->SetName("ConvJetTask");
+  }
+
+  if(!fAddV0sToJet){
+    return;
+  }
+  double epsilon = 1.e-10;
+  std::vector<double> fVecBinsJetPt;
+  double valJetPt = 0;
+  for (int i = 0; i < 1000; ++i) {
+    fVecBinsJetPt.push_back(valJetPt);
+    if (valJetPt < 5.0 - epsilon)
+      valJetPt += 2.5;
+    else if (valJetPt < 100.0 - epsilon)
+      valJetPt += 5;
+    else if (valJetPt < 500 - epsilon)
+      valJetPt += 10;
+    else
+      break;
+  }
+
+  std::vector<double> fVecBinsClusterPt;
+  double valClusterPt = 0;
+  for (int i = 0; i < 1000; ++i) {
+    fVecBinsClusterPt.push_back(valClusterPt);
+    if (valClusterPt < 1.0 - epsilon)
+      valClusterPt += 0.1;
+    else if (valClusterPt < 5 - epsilon)
+      valClusterPt += 0.2;
+    else if (valClusterPt < 10 - epsilon)
+      valClusterPt += 0.5;
+    else if (valClusterPt < 50 - epsilon)
+      valClusterPt += 1;
+    else if (valClusterPt < 100 - epsilon)
+      valClusterPt += 5;
+    else if (valClusterPt < 200 - epsilon)
+      valClusterPt += 10;
+    else
+      break;
+  }
+
+  hJetEtaDiffWithV0 = new TH2F("JetEtaDiffWithV0", "JetEtaDiffWithV0", 41, -0.4, 0.4, fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+  hJetEtaDiffWithV0->SetXTitle("#eta_{mod}-#eta_{before}");
+  hJetEtaDiffWithV0->SetYTitle("p_{T, rec} (GeV/c)");
+  hJetEtaDiffWithV0->Sumw2();
+  fHistograms->Add(hJetEtaDiffWithV0);
+
+  hJetPhiDiffWithV0 = new TH2F("JetPhiDiffWithV0", "JetPhiDiffWithV0", 41, -0.4, 0.4, fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+  hJetPhiDiffWithV0->SetXTitle("#phi_{mod}-#phi_{before}");
+  hJetPhiDiffWithV0->SetYTitle("p_{T, rec} (GeV/c)");
+  hJetPhiDiffWithV0->Sumw2();
+  fHistograms->Add(hJetPhiDiffWithV0);
+
+  hJetPtDiffWithV0 = new TH2F("JetPtDiffWithV0", "JetPtDiffWithV0", 21, 0., 1.05, fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+  hJetPtDiffWithV0->SetXTitle("p_{T, org}/p_{T, mod}");
+  hJetPtDiffWithV0->SetYTitle("p_{T, rec} (GeV/c)");
+  hJetPtDiffWithV0->Sumw2();
+  fHistograms->Add(hJetPtDiffWithV0);
+
+  hV0Pt = new TH1D("V0Pt", "V0Pt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  hV0Pt->SetXTitle("p_{T, V0} (GeV/c)");
+  hV0Pt->Sumw2();
+  fHistograms->Add(hV0Pt);
+
+  hV0LegsPt = new TH1D("V0LegPt", "V0LegPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  hV0LegsPt->SetXTitle("p_{T, V0, leg} (GeV/c)");
+  hV0LegsPt->Sumw2();
+  fHistograms->Add(hV0LegsPt);
+
+  fHistoV0TrueMotherLegPt = new TH2F("V0LegPtTrueMother", "V0LegPtTrueMother", 5, -0.5, 4.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0TrueMotherLegPt->SetXTitle("MotherPart");
+  fHistoV0TrueMotherLegPt->GetXaxis()->SetBinLabel(1, "#gamma");
+  fHistoV0TrueMotherLegPt->GetXaxis()->SetBinLabel(2, "K^{0}_{L}");
+  fHistoV0TrueMotherLegPt->GetXaxis()->SetBinLabel(3, "K^{0}_{s}");
+  fHistoV0TrueMotherLegPt->GetXaxis()->SetBinLabel(4, "#Lambda");
+  fHistoV0TrueMotherLegPt->GetXaxis()->SetBinLabel(5, "Rest");
+  fHistoV0TrueMotherLegPt->SetYTitle("p_{T, V0, leg} (GeV/c)");
+  fHistoV0TrueMotherLegPt->Sumw2();
+  fHistograms->Add(fHistoV0TrueMotherLegPt);
+
+  fHistoArmenterosV0=new TH2F("ArmenterosV0", "ArmenterosV0",200,-1,1,120,0,0.3);
+  fHistoArmenterosV0->Sumw2();
+  fHistograms->Add(fHistoArmenterosV0);
+
+  fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0DaughterResol->Sumw2();
+  fHistograms->Add(fHistoV0DaughterResol);
+  
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -163,6 +299,7 @@ Bool_t AliAnalysisTaskConvJet::FillHistograms()
  */
 void AliAnalysisTaskConvJet::DoJetLoop()
 {
+  fV0sCurrEvtAdded = false;
   AliJetContainer* jetCont = 0;
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
@@ -479,7 +616,8 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   const char* ncells,
   const char* suffix,
   const double distToEMCBorder,
-  const double distToSMEdges
+  const double distToSMEdges,
+  const bool addV0sToJet
   )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -581,10 +719,12 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
     sampleTask->GetTrackContainer(0)->SetParticleEtaLimits(-0.8, 0.8);
   }
 
+  sampleTask->SetAddV0sToJet(addV0sToJet);
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
   mgr->AddTask(sampleTask);
+
 
   // Create containers for input/output
   AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
@@ -633,4 +773,129 @@ bool AliAnalysisTaskConvJet::IsNonMeasurable(const int pdg, const int charge){
     return false;
   }
   return true;
+}
+
+bool AliAnalysisTaskConvJet::IsParticleInJet(const std::vector<double> &vecJetEta, const std::vector<double> &vecJetPhi, double partEta, double partPhi, int &matchedJet, double &RJetPi0Cand ){
+  RJetPi0Cand = 1000.;
+  for(size_t j=0; j<vecJetEta.size(); j++){
+    double DeltaEta = vecJetEta.at(j)-partEta;
+    double DeltaPhi = abs(vecJetPhi.at(j)-partPhi);
+    if(DeltaPhi > TMath::Pi()) {
+      DeltaPhi = 2*TMath::Pi() - DeltaPhi;
+    }
+    double RJetPi0Cand_tmp = sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
+    if(RJetPi0Cand_tmp < RJetPi0Cand) {
+      RJetPi0Cand = RJetPi0Cand_tmp;
+      matchedJet = j;
+    }
+  }
+  if(RJetPi0Cand < Get_Jet_Radius()){
+    return true;
+  }
+  return false;
+}
+
+
+void AliAnalysisTaskConvJet::AddV0sToJet(double weight){
+  if(!fAddV0sToJet) return;
+  if(fV0sCurrEvtAdded) return; // already done
+  fV0sCurrEvtAdded = true;
+  
+  AliAODEvent* aodEvt = static_cast<AliAODEvent*>(InputEvent());
+  auto AODMCTrackArray = dynamic_cast<TClonesArray*>(aodEvt->FindListObject(AliAODMCParticle::StdBranchName()));
+  const int nV0s = aodEvt->GetNumberOfV0s();
+  if(nV0s == 0) return;
+  auto vectorJetEtaOrg = GetVectorJetEta();
+  auto vectorJetPhiOrg = GetVectorJetPhi();
+  auto vectorJetPtOrg = GetVectorJetPt();
+
+  std::vector<bool> vecTrackAdded(aodEvt->GetNumberOfTracks()*2, false); // *2 as sometimes the track IDs can be larger than the total number of tracks
+  std::vector<bool> vecIsJetMod(fVectorJetPt.size(), false);
+
+  for (int iV0 = 0; iV0 < nV0s; iV0++)
+  { // This is the begining of the V0 loop
+    AliAODv0 *v0 = aodEvt->GetV0(iV0);
+    if (!v0) continue;
+    // loose, hardcoded cuts for tests
+    if(v0->RadiusV0() < fMinRV0) continue;
+    if(std::abs(v0->AlphaV0()) > fMaxCutAlphaV0) continue;
+    if(v0->PtArmV0() > fMaxCutV0Qt) continue;
+    if(v0->Pt() > fMaxPtCutV0) continue; // resolution to bad
+
+    hV0Pt->Fill(v0->Pt(), weight);
+    fHistoArmenterosV0->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
+
+    double RJetPi0Cand = 0;
+    int matchedJet = -1;
+    if (IsParticleInJet(fVectorJetEta, fVectorJetPhi, v0->Eta(), v0->Phi(), matchedJet, RJetPi0Cand)) {
+      for(const auto & sign : {0, 1} ){
+        const AliAODTrack *v0DaughterTr=(AliAODTrack *)v0->GetDaughter(sign);
+        int daughterID = v0DaughterTr->GetID();
+        // In some rare cases, the track ID is larger than the total number of tracks
+        if(daughterID >= static_cast<int>(vecTrackAdded.size())){
+          vecTrackAdded.resize(daughterID + 1, false);
+        }
+        if(daughterID >= 0 && !vecTrackAdded[daughterID]){
+          vecTrackAdded[daughterID] = true;
+
+          // hybrid tracks are already counted
+          if(v0DaughterTr->IsHybridGlobalConstrainedGlobal()){
+            continue;
+          }
+          // Quality criteria for tracks
+          if (!v0DaughterTr->IsOn(AliAODTrack::kTPCrefit)) continue;
+          float nTPCFoundFrac = v0DaughterTr->GetTPCFoundFraction(); 
+          if (nTPCFoundFrac<fMinFracTPCClusV0Leg) continue; // loose findable fraction cut
+
+          int labelTr = v0DaughterTr->GetLabel();
+          if(labelTr > 0){
+            AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
+            if(tmpPart){
+              fHistoV0DaughterResol->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), weight);
+              int motherlabel = tmpPart->GetMother();
+              AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
+              int pdgMother = tmpPartMother->GetPdgCode();
+              if(pdgMother == 22){ // Photon
+                fHistoV0TrueMotherLegPt->Fill(0., v0DaughterTr->Pt(), weight);
+              } else if(pdgMother == 130){ // K0l
+                fHistoV0TrueMotherLegPt->Fill(1., v0DaughterTr->Pt(), weight);
+              } else if(pdgMother == 310){ // K0s
+                fHistoV0TrueMotherLegPt->Fill(2., v0DaughterTr->Pt(), weight);
+              } else if(pdgMother == 3122){ // Lambda
+                fHistoV0TrueMotherLegPt->Fill(3., v0DaughterTr->Pt(), weight);
+              } else { // Rest
+                fHistoV0TrueMotherLegPt->Fill(4., v0DaughterTr->Pt(), weight);
+              }
+            }
+          }
+          if(v0DaughterTr->Pt() > fMaxPtCutV0Leg) continue; // most likely wrongly reconstructed! Resoluion is very poor above that
+
+          hV0LegsPt->Fill(v0DaughterTr->Pt(), weight);
+          fVectorJetPx[matchedJet]+=v0DaughterTr->Px();
+          fVectorJetPy[matchedJet]+=v0DaughterTr->Py();
+          fVectorJetPz[matchedJet]+=v0DaughterTr->Pz();
+          vecIsJetMod[matchedJet] = true;
+        }
+      }
+    }
+  } 
+  
+  for(size_t i = 0; i < fVectorJetPt.size(); ++i){
+    if(!vecIsJetMod[i]) {
+      hJetEtaDiffWithV0->Fill(0., fVectorJetPt[i], weight);
+      hJetPhiDiffWithV0->Fill(0., fVectorJetPt[i], weight);
+      hJetPtDiffWithV0->Fill(1., fVectorJetPt[i], weight);
+      continue;
+    }
+    fVectorJetPt[i] = sqrt(fVectorJetPx[i]*fVectorJetPx[i] + fVectorJetPy[i]*fVectorJetPy[i]);
+    double pJet = sqrt(fVectorJetPt[i]*fVectorJetPt[i] + fVectorJetPz[i]*fVectorJetPz[i]);
+    fVectorJetPhi[i] = atan2(fVectorJetPy[i], fVectorJetPx[i]);
+    if(fVectorJetPhi[i] < 0) fVectorJetPhi[i]+=2*TMath::Pi();
+    fVectorJetEta[i] = 0.5 * log((pJet + fVectorJetPz[i]) / (pJet - fVectorJetPz[i]));
+
+    hJetEtaDiffWithV0->Fill(fVectorJetEta[i] - vectorJetEtaOrg[i], fVectorJetPt[i], weight);
+    hJetPhiDiffWithV0->Fill(fVectorJetPhi[i] - vectorJetPhiOrg[i], fVectorJetPt[i], weight);
+    hJetPtDiffWithV0->Fill(vectorJetPtOrg[i]/fVectorJetPt[i], fVectorJetPt[i], weight);
+  }
+    
 }

@@ -38,7 +38,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
     const char* ncells = "usedefault",
     const char* suffix = "",
     const double distToEMCBorder = 0.,
-    const double distToSMEdges = 0.
+    const double distToSMEdges = 0.,
+    const bool addV0sToJet = false
     );
 
   Double_t GetNJets() { return fNJets; }
@@ -119,6 +120,19 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
     return funcJERCut->Eval(pt);
   }
 
+  void SetMinRCutV0(double tmp) { fMinRV0 = tmp; }
+  void SetMaxRCutV0(double tmp) { fMaxRV0 = tmp; }
+  void SetMaxPtCutV0(double tmp) { fMaxPtCutV0 = tmp; }
+  void SetMaxPtCutV0Leg(double tmp) { fMaxPtCutV0Leg = tmp; }
+  void SetFracTPCClus(double tmp) { fMinFracTPCClusV0Leg = tmp; }
+  void SetMaxAlphaV0(double tmp) { fMaxCutAlphaV0 = tmp; }
+  void SetMaxQtV0(double tmp) { fMaxCutV0Qt = tmp; }
+
+  void SetAddV0sToJet(bool tmp) { fAddV0sToJet = tmp; }
+  void AddV0sToJet(double weight = 1.);
+  bool IsParticleInJet(const std::vector<double> &vecJetEta, const std::vector<double> &vecJetPhi, double partEta, double partPhi, int &matchedJet, double &RJetPi0Cand );
+  TList *GetHistograms(){return fHistograms;}
+
  protected:
   void ExecOnce();
   Bool_t FillHistograms();
@@ -181,13 +195,33 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TF1* funcJER;                 // function to parameterize jet energy resolution
   TF1* funcJERCut;              // function to parameterize jet energy resolution cut (used for jet matching for response)
 
+  bool fAddV0sToJet;                     // flag if V0s should be added to the jet
+  bool fV0sCurrEvtAdded;                 // flag to keep track if for the current event, the V0s were already added
+  double fMinRV0;                        // minimum radius for V0
+  double fMaxRV0;                        // maximum radius for V0
+  double fMaxPtCutV0;                    // maximum Pt for V0
+  double fMaxPtCutV0Leg;                 // maximum Pt for V0 leg
+  double fMinFracTPCClusV0Leg;           // minimum fraction of TPC clusters for V0
+  double fMaxCutAlphaV0;                 // maximum alpha for V0
+  double fMaxCutV0Qt;                    // maximum Qt cut
+  TList* fHistograms;                    //!  List containing all histograms
+  TH2F* hJetEtaDiffWithV0;               //!  difference in eta between original and V0 included jets
+  TH2F* hJetPhiDiffWithV0;               //!  difference in phi between original and V0 included jets
+  TH2F* hJetPtDiffWithV0;                //!  difference in pt between original and V0 included jets
+  TH1D* hV0Pt;                           //!  V0Pt that is added to the jet energy
+  TH1D* hV0LegsPt;                       //!  Pt of V0 legs (each leg can only contribute once) that is added to the jet energy
+  TH2F* fHistoV0TrueMotherLegPt;         //! Pt of V0 legs for different mother particles
+  TH2F* fHistoArmenterosV0;              //!  Armenteros-Podolanski plot for V0s added to jet
+  TH2F* fHistoV0DaughterResol;           //!  Resolution of V0 daughters
+
+
  private:
   bool IsJetAccepted(const AliEmcalJet *jet);
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&);
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 22);
+  ClassDef(AliAnalysisTaskConvJet, 23);
   /// \endcond
 };
 #endif

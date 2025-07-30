@@ -95,7 +95,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoCutOnEnergyAsymm(false),
                                                                              fDoProcessOnlyJets(false),
                                                                              fJetErrCounter(0),
-                                                                             fAddV0ToJets(false),
+                                                                            //  fAddV0ToJets(false),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
                                                                              fMCEventNeg(nullptr),
@@ -238,13 +238,6 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoEnergyFracNonMeasTrack({}),
                                                                              fHistoEnergyFracNonMeasClus({}),
                                                                              fHistoClusterAbundanceMC({}),
-                                                                             hJetEtaDiffWithV0({}),
-                                                                             hJetPhiDiffWithV0({}),
-                                                                             hJetPtDiffWithV0({}),
-                                                                             hV0Pt({}),
-                                                                             hV0LegsPt({}),
-                                                                             fHistoArmenterosV0({}),
-                                                                             fHistoV0DaughterResol({}),
                                                                              // true meson histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -414,7 +407,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoCutOnEnergyAsymm(false),
                                                                                            fDoProcessOnlyJets(false),
                                                                                            fJetErrCounter(0),
-                                                                                           fAddV0ToJets(false),
+                                                                                          //  fAddV0ToJets(false),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
                                                                                            fMCEventNeg(nullptr),
@@ -557,13 +550,6 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoEnergyFracNonMeasTrack({}),
                                                                                            fHistoEnergyFracNonMeasClus({}),
                                                                                            fHistoClusterAbundanceMC({}),
-                                                                                           hJetEtaDiffWithV0({}),
-                                                                                           hJetPhiDiffWithV0({}),
-                                                                                           hJetPtDiffWithV0({}),
-                                                                                           hV0Pt({}),
-                                                                                           hV0LegsPt({}),
-                                                                                           fHistoArmenterosV0({}),
-                                                                                           fHistoV0DaughterResol({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -1023,17 +1009,6 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     hTracksResolution.resize(fnCuts);
   }
 
-  if(fAddV0ToJets){
-    hJetEtaDiffWithV0.resize(fnCuts);
-    hJetPhiDiffWithV0.resize(fnCuts);
-    hJetPtDiffWithV0.resize(fnCuts);
-    hV0Pt.resize(fnCuts);
-    hV0LegsPt.resize(fnCuts);
-    if(!fDoLightOutput){
-      fHistoArmenterosV0.resize(fnCuts);
-      fHistoV0DaughterResol.resize(fnCuts);
-    }
-  }
 
   if (fIsConv && fFillDCATree) {
     fDCATree.resize(fnCuts);
@@ -1999,38 +1974,6 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fTrueList[iCut]->Add(hTracksResolution[iCut]);
     }
 
-    if(fAddV0ToJets){
-      hJetEtaDiffWithV0[iCut] = new TH2F("JetEtaDiffWithV0", "JetEtaDiffWithV0", 41, -0.4, 0.4, fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
-      hJetEtaDiffWithV0[iCut]->SetXTitle("#eta_{mod}-#eta_{before}");
-      hJetEtaDiffWithV0[iCut]->SetYTitle("p_{T, rec} (GeV/c)");
-      fJetList[iCut]->Add(hJetEtaDiffWithV0[iCut]);
-
-      hJetPhiDiffWithV0[iCut] = new TH2F("JetPhiDiffWithV0", "JetPhiDiffWithV0", 41, -0.4, 0.4, fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
-      hJetPhiDiffWithV0[iCut]->SetXTitle("#phi_{mod}-#phi_{before}");
-      hJetPhiDiffWithV0[iCut]->SetYTitle("p_{T, rec} (GeV/c)");
-      fJetList[iCut]->Add(hJetPhiDiffWithV0[iCut]);
-
-      hJetPtDiffWithV0[iCut] = new TH2F("JetPtDiffWithV0", "JetPtDiffWithV0", 21, 0., 1.05, fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
-      hJetPtDiffWithV0[iCut]->SetXTitle("p_{T, org}/p_{T, mod}");
-      hJetPtDiffWithV0[iCut]->SetYTitle("p_{T, rec} (GeV/c)");
-      fJetList[iCut]->Add(hJetPtDiffWithV0[iCut]);
-
-      hV0Pt[iCut] = new TH1D("V0Pt", "V0Pt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
-      hV0Pt[iCut]->SetXTitle("p_{T, V0} (GeV/c)");
-      fJetList[iCut]->Add(hV0Pt[iCut]);
-
-      hV0LegsPt[iCut] = new TH1D("V0LegPt", "V0LegPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
-      hV0LegsPt[iCut]->SetXTitle("p_{T, V0, leg} (GeV/c)");
-      fJetList[iCut]->Add(hV0LegsPt[iCut]);
-
-      if(!fDoLightOutput){
-        fHistoArmenterosV0[iCut]=new TH2F("ArmenterosV0", "ArmenterosV0",200,-1,1,120,0,0.3);
-        fJetList[iCut]->Add(fHistoArmenterosV0[iCut]);
-
-        fHistoV0DaughterResol[iCut]=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
-        fJetList[iCut]->Add(fHistoV0DaughterResol[iCut]);
-      }
-    }
 
     if (fUseCentralEventSelection) {
       fAliEventCuts.AddQAplotsToList(fESDList[iCut]);
@@ -2090,6 +2033,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       }
     }
   }
+
+  fOutputContainer->Add(fConvJetReader->GetHistograms());
 
   OpenFile(1);
   PostData(1, fOutputContainer);
@@ -2319,6 +2264,8 @@ void AliAnalysisTaskMesonJetCorrelation::CallSumw2ForLists(TList* l)
 //________________________________________________________________________
 bool AliAnalysisTaskMesonJetCorrelation::InitJets()
 {
+  fConvJetReader->AddV0sToJet(fWeightJetJetMC); //always call this function. Will return if not selected that V0s should be added
+
   fVectorJetPt = fConvJetReader->GetVectorJetPt();
   fVectorJetPx = fConvJetReader->GetVectorJetPx();
   fVectorJetPy = fConvJetReader->GetVectorJetPy();
@@ -2375,91 +2322,6 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
     }
   }
     
-  if(fAddV0ToJets){
-    std::vector<bool> vecIsJetMod(fVectorJetPt.size(), false);
-    AliAODEvent* aodEvt = static_cast<AliAODEvent*>(fInputEvent);
-    const int nV0s = aodEvt->GetNumberOfV0s();
-    std::vector<bool> vecTrackAdded(aodEvt->GetNumberOfTracks()*2, false); // *2 as sometimes the track IDs can be larger than the total number of tracks
-    for (int iV0 = 0; iV0 < nV0s; iV0++)
-    { // This is the begining of the V0 loop
-      AliAODv0 *v0 = aodEvt->GetV0(iV0);
-      if (!v0) continue;
-      // loose, hardcoded cuts for tests
-      // if(v0->GetOnFlyStatus()) continue;
-      if(v0->RadiusV0() > 1.) continue;
-      if(std::abs(v0->AlphaV0()) > 0.85) continue;
-
-      hV0Pt[fiCut]->Fill(v0->Pt(), fWeightJetJetMC);
-      if(!fDoLightOutput){
-        fHistoArmenterosV0[fiCut]->Fill(v0->AlphaV0(),v0->PtArmV0(), fWeightJetJetMC);
-      }
-
-      double RJetPi0Cand = 0;
-      int matchedJet = -1;
-      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), v0->Eta(), v0->Phi(), matchedJet, RJetPi0Cand)) {
-        for(const auto & sign : {0, 1} ){
-          const AliAODTrack *v0DaughterTr=(AliAODTrack *)v0->GetDaughter(sign);
-          int daughterID = v0DaughterTr->GetID();
-          // In some rare cases, the track ID is larger than the total number of tracks
-          if(daughterID >= vecTrackAdded.size()){
-            vecTrackAdded.resize(daughterID + 1, false);
-          }
-          if(daughterID >= 0 && !vecTrackAdded[daughterID]){
-            vecTrackAdded[daughterID] = true;
-
-            // hybrid tracks are already counted
-            if(v0DaughterTr->IsHybridGlobalConstrainedGlobal()){
-              continue;
-            }
-            // Quality criteria for tracks
-            if (!v0DaughterTr->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
-            float nCrossedRowsTPC = v0DaughterTr->GetTPCClusterInfo(2,1); 
-            const int daugNClsTPC = 70;
-            if (nCrossedRowsTPC<daugNClsTPC) return kFALSE;
-
-            if(fIsMC){
-              if(!fDoLightOutput){
-                int labelTr = v0DaughterTr->GetLabel();
-                if(labelTr > 0){
-                  AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelTr));
-                  fHistoV0DaughterResol[fiCut]->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), fWeightJetJetMC);
-                }
-              }
-            }
-            if(v0DaughterTr->Pt() > 100) continue; // most likely wrongly reconstructed! Resoluion is very poor above that
-
-            hV0LegsPt[fiCut]->Fill(v0DaughterTr->Pt(), fWeightJetJetMC);
-            fVectorJetPx[matchedJet]+=v0DaughterTr->Px();
-            fVectorJetPy[matchedJet]+=v0DaughterTr->Py();
-            fVectorJetPz[matchedJet]+=v0DaughterTr->Pz();
-            vecIsJetMod[matchedJet] = true;
-          }
-        }
-      }
-    } 
-    auto vectorJetEtaOrg = fConvJetReader->GetVectorJetEta();
-    auto vectorJetPhiOrg = fConvJetReader->GetVectorJetPhi();
-    auto vectorJetPtOrg = fConvJetReader->GetVectorJetPt();
-    for(size_t i = 0; i < fVectorJetPt.size(); ++i){
-      if(!vecIsJetMod[i]) {
-        hJetEtaDiffWithV0[fiCut]->Fill(0., fVectorJetPt[i], fWeightJetJetMC);
-        hJetPhiDiffWithV0[fiCut]->Fill(0., fVectorJetPt[i], fWeightJetJetMC);
-        hJetPtDiffWithV0[fiCut]->Fill(1., fVectorJetPt[i], fWeightJetJetMC);
-        continue;
-      }
-      fVectorJetPt[i] = sqrt(fVectorJetPx[i]*fVectorJetPx[i] + fVectorJetPy[i]*fVectorJetPy[i]);
-      double pJet = sqrt(fVectorJetPt[i]*fVectorJetPt[i] + fVectorJetPz[i]*fVectorJetPz[i]);
-      fVectorJetPhi[i] = atan2(fVectorJetPy[i], fVectorJetPx[i]);
-      if(fVectorJetPhi[i] < 0) fVectorJetPhi[i]+=2*TMath::Pi();
-      fVectorJetEta[i] = 0.5 * log((pJet + fVectorJetPz[i]) / (pJet - fVectorJetPz[i]));
-
-      hJetEtaDiffWithV0[fiCut]->Fill(fVectorJetEta[i] - vectorJetEtaOrg[i], fVectorJetPt[i], fWeightJetJetMC);
-      hJetPhiDiffWithV0[fiCut]->Fill(fVectorJetPhi[i] - vectorJetPhiOrg[i], fVectorJetPt[i], fWeightJetJetMC);
-      hJetPtDiffWithV0[fiCut]->Fill(vectorJetPtOrg[i]/fVectorJetPt[i], fVectorJetPt[i], fWeightJetJetMC);
-    }
-    
-  }
-
   fVectorJetEtaPerp = fConvJetReader->GetVectorJetEta();
   for (auto& eta : fVectorJetEtaPerp) {
     eta *= -1;
@@ -2834,8 +2696,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           
           int motherLabel = tmpPart->GetMother();
           int pdgMother = 0;
+          AliAODMCParticle* particleMother = nullptr;
           if(motherLabel > 0){
-            AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherLabel));
+            particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherLabel));
             pdgMother = std::abs(particleMother->PdgCode());
           }
           
@@ -2848,7 +2711,25 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
             AliError(Form("PDG code seems suspicious, skipping this particle (pdg = %i)", pdgCode)); // not really clear what is happening here...
             continue;
           }
-
+          // find where direct photons come from
+          // if(std::abs(tmpPart->PdgCode()) == 22 && (pdgMother < 100 ||  pdgMother > 10000)){
+          //   cout << "direct photon coming from " << pdgMother << " ptorg = " << tmpPart->Pt() << " - " << particleMother->Pt() << endl;
+          //   int pdgMotherTmp = pdgMother;
+          //   int labelTmp = particleMother->GetLabel();
+          //   while(pdgMotherTmp == 22){
+          //     // check if particle is in jet
+          //     for(size_t partsearch = 0; partsearch < vecTruePart.size(); ++partsearch){
+          //       auto tmpParticle = vecTruePart[partsearch];
+          //       if(tmpParticle->GetLabel() == labelTmp){
+          //         cout << "mother is in jet!!!" << endl;
+          //       }
+          //     }
+          //     AliAODMCParticle* particleMotherTmp = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelTmp));
+          //     pdgMotherTmp = std::abs(particleMotherTmp->PdgCode());
+          //     labelTmp = particleMotherTmp->GetMother();
+          //     cout << "label = " << particleMotherTmp->PdgCode() << "   pt = "  <<  particleMotherTmp->Pt() << endl;
+          //   }
+          // }
           fHistoGenParticleInJet[fiCut]->Fill(GetParticleIndex(pdgCode, pdgMother), tmpPart->Pt(), fTrueVectorJetPt.at(i), fWeightJetJetMC);
           if(fTrueVectorJetPt.at(i) > 0) {
             fHistoGenParticleInJetMomFrac[fiCut]->Fill(GetParticleIndex(pdgCode, pdgMother), tmpPart->Pt()/fTrueVectorJetPt.at(i), fTrueVectorJetPt.at(i), fWeightJetJetMC);
