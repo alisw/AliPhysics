@@ -296,6 +296,16 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusElectronFromEtaPtvsM02;               //!
     TH2F**                  fHistoTrueSecPi0PtvsDiffReco;                       //!
 
+    TH2F**                  fHistoTrueClusMergedLeadingGammaFromPi0PtvsM02;     //!
+    TH2F**                  fHistoTrueClusMergedLeadingGammaFromPi0ResolPt;     //!   
+    TH2F**                  fHistoTrueClusMergedLeadingElecFromPi0PtvsM02;      //!
+    TH2F**                  fHistoTrueClusMergedLeadingElecFromPi0ResolPt;      //!
+    TH2F**                  fHistoTrueClusMergedLeadingRestFromPi0PtvsM02;      //!
+    TH2F**                  fHistoTrueClusMergedLeadingRestFromPi0ResolPt;      //!
+    TH2F**                  fHistoTrueClusMergedLeadingGammaFromPi0Response;    //!
+    TH2F**                  fHistoTrueClusMergedLeadingElecFromPi0Response;     //!
+    TH2F**                  fHistoTrueClusMergedLeadingRestFromPi0Response;     //!
+
     TH2F**                  fHistoTrueClusBGPtvsM02;                            //!
     TH2F**                  fHistoTrueClusGammaPtvsM02;                         //!
     TH2F**                  fHistoTrueClusGammaPartConvPtvsM02;                 //!
@@ -428,7 +438,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 50);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 51);
 };
 
 #endif
