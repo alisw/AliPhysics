@@ -129,7 +129,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void SetMaxQtV0(double tmp) { fMaxCutV0Qt = tmp; }
 
   void SetAddV0sToJet(bool tmp) { fAddV0sToJet = tmp; }
-  void AddV0sToJet(double weight = 1.);
+  void AddV0sToJet(double weight = 1., const int isMC = 0);
   bool IsParticleInJet(const std::vector<double> &vecJetEta, const std::vector<double> &vecJetPhi, double partEta, double partPhi, int &matchedJet, double &RJetPi0Cand );
   TList *GetHistograms(){return fHistograms;}
 
