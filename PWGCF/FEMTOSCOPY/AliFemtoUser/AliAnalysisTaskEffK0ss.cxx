@@ -160,12 +160,12 @@ fMaxCTauK0s(4.0 * 2.68),
 fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
-fNsigmaDaughters(4.0),
+fNsigmaDaughters(5.0),
 fMinCosPointingAngle(0.998),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
 fElectronReject(kTRUE),
-fNsigmaElectronRejection(3.0),
+fNsigmaElectronRejection(2.0),
 
 // --- Centrality and PID ---
 fCentMin(0),
@@ -251,12 +251,12 @@ fMaxCTauK0s(4.0 * 2.68),
 fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
-fNsigmaDaughters(4.0),
+fNsigmaDaughters(5.0),
 fMinCosPointingAngle(0.998),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
 fElectronReject(kTRUE),
-fNsigmaElectronRejection(3.0),
+fNsigmaElectronRejection(2.0),
 
 // --- Centrality and PID ---
 fCentMin(0),
