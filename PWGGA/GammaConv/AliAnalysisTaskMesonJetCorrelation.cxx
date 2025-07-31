@@ -2264,7 +2264,7 @@ void AliAnalysisTaskMesonJetCorrelation::CallSumw2ForLists(TList* l)
 //________________________________________________________________________
 bool AliAnalysisTaskMesonJetCorrelation::InitJets()
 {
-  fConvJetReader->AddV0sToJet(fWeightJetJetMC); //always call this function. Will return if not selected that V0s should be added
+  fConvJetReader->AddV0sToJet(fWeightJetJetMC, fIsMC); //always call this function. Will return if not selected that V0s should be added
 
   fVectorJetPt = fConvJetReader->GetVectorJetPt();
   fVectorJetPx = fConvJetReader->GetVectorJetPx();

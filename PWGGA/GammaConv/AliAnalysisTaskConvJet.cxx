@@ -796,13 +796,16 @@ bool AliAnalysisTaskConvJet::IsParticleInJet(const std::vector<double> &vecJetEt
 }
 
 
-void AliAnalysisTaskConvJet::AddV0sToJet(double weight){
+void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
   if(!fAddV0sToJet) return;
   if(fV0sCurrEvtAdded) return; // already done
   fV0sCurrEvtAdded = true;
   
   AliAODEvent* aodEvt = static_cast<AliAODEvent*>(InputEvent());
-  auto AODMCTrackArray = dynamic_cast<TClonesArray*>(aodEvt->FindListObject(AliAODMCParticle::StdBranchName()));
+  TClonesArray* AODMCTrackArray = nullptr;
+  if(isMC) {
+    AODMCTrackArray = dynamic_cast<TClonesArray*>(aodEvt->FindListObject(AliAODMCParticle::StdBranchName()));
+  }
   const int nV0s = aodEvt->GetNumberOfV0s();
   if(nV0s == 0) return;
   auto vectorJetEtaOrg = GetVectorJetEta();
@@ -847,24 +850,26 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight){
           float nTPCFoundFrac = v0DaughterTr->GetTPCFoundFraction(); 
           if (nTPCFoundFrac<fMinFracTPCClusV0Leg) continue; // loose findable fraction cut
 
-          int labelTr = v0DaughterTr->GetLabel();
-          if(labelTr > 0){
-            AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
-            if(tmpPart){
-              fHistoV0DaughterResol->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), weight);
-              int motherlabel = tmpPart->GetMother();
-              AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
-              int pdgMother = tmpPartMother->GetPdgCode();
-              if(pdgMother == 22){ // Photon
-                fHistoV0TrueMotherLegPt->Fill(0., v0DaughterTr->Pt(), weight);
-              } else if(pdgMother == 130){ // K0l
-                fHistoV0TrueMotherLegPt->Fill(1., v0DaughterTr->Pt(), weight);
-              } else if(pdgMother == 310){ // K0s
-                fHistoV0TrueMotherLegPt->Fill(2., v0DaughterTr->Pt(), weight);
-              } else if(pdgMother == 3122){ // Lambda
-                fHistoV0TrueMotherLegPt->Fill(3., v0DaughterTr->Pt(), weight);
-              } else { // Rest
-                fHistoV0TrueMotherLegPt->Fill(4., v0DaughterTr->Pt(), weight);
+          if(isMC){
+            int labelTr = v0DaughterTr->GetLabel();
+            if(labelTr > 0){
+              AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
+              if(tmpPart){
+                fHistoV0DaughterResol->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), weight);
+                int motherlabel = tmpPart->GetMother();
+                AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
+                int pdgMother = tmpPartMother->GetPdgCode();
+                if(pdgMother == 22){ // Photon
+                  fHistoV0TrueMotherLegPt->Fill(0., v0DaughterTr->Pt(), weight);
+                } else if(pdgMother == 130){ // K0l
+                  fHistoV0TrueMotherLegPt->Fill(1., v0DaughterTr->Pt(), weight);
+                } else if(pdgMother == 310){ // K0s
+                  fHistoV0TrueMotherLegPt->Fill(2., v0DaughterTr->Pt(), weight);
+                } else if(pdgMother == 3122){ // Lambda
+                  fHistoV0TrueMotherLegPt->Fill(3., v0DaughterTr->Pt(), weight);
+                } else { // Rest
+                  fHistoV0TrueMotherLegPt->Fill(4., v0DaughterTr->Pt(), weight);
+                }
               }
             }
           }
