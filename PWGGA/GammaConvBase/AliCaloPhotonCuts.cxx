@@ -223,6 +223,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fApplyClusterEffOnData(false),
   fApplyClusterEffToEMProbesOnly(false),
   fClusterEfficiencyFunc(NULL),
+  fMinEnergyClusNeighbor(0.5),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -512,6 +513,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fApplyClusterEffOnData(ref.fApplyClusterEffOnData),
   fApplyClusterEffToEMProbesOnly(ref.fApplyClusterEffToEMProbesOnly),
   fClusterEfficiencyFunc(ref.fClusterEfficiencyFunc),
+  fMinEnergyClusNeighbor(ref.fMinEnergyClusNeighbor),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -3177,6 +3179,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
           return kFALSE;
         }
+      }
+    } else if (fUseDispersion == 3) {
+      bool isClusterIso = kTRUE;
+      AliVCaloCells* EMCcells    = NULL;
+      if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        EMCcells                 = event->GetEMCALCells();
+        const int nCells      = cluster->GetNCells();
+        std::vector<int> vecCellsClus(nCells);
+        for (int iCell = 0;iCell < nCells;iCell++){
+          vecCellsClus[iCell]       = cluster->GetCellsAbsId()[iCell];
+        }
+        isClusterIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), fMinEnergyClusNeighbor, EMCcells, vecCellsClus);
       }
     }
   }
@@ -8007,6 +8021,16 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
     fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
     fClusterEfficiencyFunc->SetParameters(1., 1., -2.);
     break;
+
+  // overloaded experimental settings of cluster rejection if cluster is next to higher energetic cluster
+  case 15: // f: next to cluster rejection
+    if (!fUseDispersion) fUseDispersion = 3;
+    fMinEnergyClusNeighbor = 0.5; // min cluster requirement
+    break;
+  case 16: // g: next to cluster rejection
+    if (!fUseDispersion) fUseDispersion = 3;
+    fMinEnergyClusNeighbor = 1.0; // min cluster requirement
+    break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
     return kFALSE;
@@ -10854,7 +10878,7 @@ Float_t AliCaloPhotonCuts::GetECross( Int_t absID, AliVCaloCells* cells )
 
 // Check if cell is next to other cell above certain threshold
 //___________________________________________________________________________
-Bool_t AliCaloPhotonCuts::IsCellNextToCluster( Int_t absID, Double_t Ethresh, AliVCaloCells* cells )
+Bool_t AliCaloPhotonCuts::IsCellNextToCluster( Int_t absID, Double_t Ethresh, AliVCaloCells* cells, const std::vector<int> &vCellID )
 {
 
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
@@ -10870,9 +10894,11 @@ Bool_t AliCaloPhotonCuts::IsCellNextToCluster( Int_t absID, Double_t Ethresh, Al
 
   Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
   // Do not include bad channels found in analysis,
-  if (AcceptCellByBadChannelMap(absID1)) ecell1 = cells->GetCellAmplitude(absID1);
+  bool isCellInCurrClus = (std::find(vCellID.begin(), vCellID.end(), absID1) != vCellID.end());
+  if (!isCellInCurrClus && AcceptCellByBadChannelMap(absID1)) ecell1 = cells->GetCellAmplitude(absID1);
   if(ecell1 > Ethresh) return kTRUE;
-  if (AcceptCellByBadChannelMap(absID2)) ecell2 = cells->GetCellAmplitude(absID2);
+  isCellInCurrClus = (std::find(vCellID.begin(), vCellID.end(), absID2) != vCellID.end());
+  if (!isCellInCurrClus && AcceptCellByBadChannelMap(absID2)) ecell2 = cells->GetCellAmplitude(absID2);
   if(ecell2 > Ethresh) return kTRUE;
 
 
@@ -10891,10 +10917,12 @@ Bool_t AliCaloPhotonCuts::IsCellNextToCluster( Int_t absID, Double_t Ethresh, Al
     if ( ieta > 0 )
       absID4 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
   }
-
-  if (AcceptCellByBadChannelMap(absID3)) ecell3 = cells->GetCellAmplitude(absID3); ;
+  
+  isCellInCurrClus = (std::find(vCellID.begin(), vCellID.end(), absID3) != vCellID.end());
+  if (!isCellInCurrClus && AcceptCellByBadChannelMap(absID3)) ecell3 = cells->GetCellAmplitude(absID3); ;
   if(ecell3 > Ethresh) return kTRUE;
-  if (AcceptCellByBadChannelMap(absID4)) ecell4 = cells->GetCellAmplitude(absID4); ;
+  isCellInCurrClus = (std::find(vCellID.begin(), vCellID.end(), absID4) != vCellID.end());
+  if (!isCellInCurrClus && AcceptCellByBadChannelMap(absID4)) ecell4 = cells->GetCellAmplitude(absID4); ;
   if(ecell4 > Ethresh) return kTRUE;
 
   return kFALSE;
