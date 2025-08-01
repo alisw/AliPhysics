@@ -481,7 +481,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
     Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
-    Bool_t      IsCellNextToCluster( Int_t absID, Double_t Ethresh, AliVCaloCells* cells );
+    Bool_t      IsCellNextToCluster( Int_t absID, Double_t Ethresh, AliVCaloCells* cells, const std::vector<int> &vCellID = {} );
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     Bool_t      IsAbsIDsFromTCard(Int_t absId1, Int_t absId2) const;
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
@@ -640,6 +640,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     bool      fApplyClusterEffOnData;                   // switch weather cluster efficiency should be applied on data or MC
     bool      fApplyClusterEffToEMProbesOnly;           // if true and we are in the MC case, only clusters with a leading photon or electron contribution are considered
     TF1*      fClusterEfficiencyFunc;                   // function giveing the probability a cluster should survive the cuts as function of energy
+    // reject cluster next to higher energetic cluster
+    double fMinEnergyClusNeighbor;                      // value of min energy that the neighboring cluster has to have
 
 
     //vector
@@ -818,7 +820,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,147)
+    ClassDef(AliCaloPhotonCuts,148)
 };
 
 #endif
