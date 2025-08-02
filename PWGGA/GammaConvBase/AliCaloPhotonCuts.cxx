@@ -3154,7 +3154,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//7, next cut
 
   // dispersion cut
-  if (fUseDispersion && !passedSpecialNCell){
+  if (fUseDispersion){
     if(fUseDispersion == 1){
       if( cluster->GetDispersion()> fMaxDispersion) {
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
@@ -3181,7 +3181,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         }
       }
     } else if (fUseDispersion == 3) {
-      bool isClusterIso = kTRUE;
       AliVCaloCells* EMCcells    = NULL;
       if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         EMCcells                 = event->GetEMCALCells();
@@ -3190,7 +3189,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         for (int iCell = 0;iCell < nCells;iCell++){
           vecCellsClus[iCell]       = cluster->GetCellsAbsId()[iCell];
         }
-        isClusterIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), fMinEnergyClusNeighbor, EMCcells, vecCellsClus);
+        bool isNextToClus = IsCellNextToCluster(cluster->GetCellAbsId(0), fMinEnergyClusNeighbor, EMCcells, vecCellsClus);
+        if(isNextToClus){
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
+          return kFALSE;
+        }
       }
     }
   }
