@@ -153,11 +153,11 @@ fUseDcaCuts(kFALSE),
 fDcaXYCut(0.3),
 fDcaZCut(1),
 
-fMaxDcaV0Daughters(1.0),
+fMaxDcaV0Daughters(0.7),
 fMinDcaPosToPrimVertex(0.1),
 fMinDcaNegToPrimVertex(0.1),
-fMaxCTauK0s(4.0 * 2.68),
-fMinV0Radius(5.0),
+fMaxCTauK0s(10.0 * 2.68),
+fMinV0Radius(10.0),
 
 // --- Existing V0 cut settings ---
 fNsigmaDaughters(5.0),
@@ -165,7 +165,7 @@ fMinCosPointingAngle(0.998),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
 fElectronReject(kTRUE),
-fNsigmaElectronRejection(2.0),
+fNsigmaElectronRejection(3.0),
 
 // --- Centrality and PID ---
 fCentMin(0),
@@ -244,11 +244,11 @@ fUseDcaCuts(kFALSE),
 fDcaXYCut(0.1),
 fDcaZCut(0.2),
 
-fMaxDcaV0Daughters(1.0),
+fMaxDcaV0Daughters(0.7),
 fMinDcaPosToPrimVertex(0.1),
 fMinDcaNegToPrimVertex(0.1),
-fMaxCTauK0s(4.0 * 2.68),
-fMinV0Radius(5.0),
+fMaxCTauK0s(10.0 * 2.68),
+fMinV0Radius(10.0),
 
 // --- Existing V0 cut settings ---
 fNsigmaDaughters(5.0),
@@ -256,7 +256,7 @@ fMinCosPointingAngle(0.998),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
 fElectronReject(kTRUE),
-fNsigmaElectronRejection(2.0),
+fNsigmaElectronRejection(3.0),
 
 // --- Centrality and PID ---
 fCentMin(0),
