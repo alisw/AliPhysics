@@ -34,6 +34,8 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliInputEventHandler.h"
+#include "AliPIDResponse.h"
 
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
@@ -95,6 +97,8 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fMinFracTPCClusV0Leg(0.5),
                                                    fMaxCutAlphaV0(0.85),
                                                    fMaxCutV0Qt(0.23),
+                                                   fnSigmaPID(5.),
+                                                   fMinCosPA(0.99),
                                                    fHistograms(nullptr),
                                                    hJetEtaDiffWithV0(nullptr),
                                                    hJetPhiDiffWithV0(nullptr),
@@ -155,6 +159,8 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fMinFracTPCClusV0Leg(0.5),
                                                                    fMaxCutAlphaV0(0.85),
                                                                    fMaxCutV0Qt(0.23),
+                                                                   fnSigmaPID(5.),
+                                                                   fMinCosPA(0.99),
                                                                    fHistograms(nullptr),
                                                                    hJetEtaDiffWithV0(nullptr),
                                                                    hJetPhiDiffWithV0(nullptr),
@@ -800,6 +806,10 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
   if(!fAddV0sToJet) return;
   if(fV0sCurrEvtAdded) return; // already done
   fV0sCurrEvtAdded = true;
+
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  auto fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
   
   AliAODEvent* aodEvt = static_cast<AliAODEvent*>(InputEvent());
   TClonesArray* AODMCTrackArray = nullptr;
@@ -815,6 +825,10 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
   std::vector<bool> vecTrackAdded(aodEvt->GetNumberOfTracks()*2, false); // *2 as sometimes the track IDs can be larger than the total number of tracks
   std::vector<bool> vecIsJetMod(fVectorJetPt.size(), false);
 
+  std::vector<AliPID::EParticleType> arrPID = {AliPID::kPion, AliPID::kProton, AliPID::kElectron};
+
+  AliAODVertex* aodVtx = const_cast<AliAODVertex*>(static_cast<const AliAODVertex*>(InputEvent()->GetPrimaryVertex()));
+
   for (int iV0 = 0; iV0 < nV0s; iV0++)
   { // This is the begining of the V0 loop
     AliAODv0 *v0 = aodEvt->GetV0(iV0);
@@ -824,6 +838,7 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
     if(std::abs(v0->AlphaV0()) > fMaxCutAlphaV0) continue;
     if(v0->PtArmV0() > fMaxCutV0Qt) continue;
     if(v0->Pt() > fMaxPtCutV0) continue; // resolution to bad
+    if(v0->CosPointingAngle(aodVtx) < fMinCosPA) continue;
 
     hV0Pt->Fill(v0->Pt(), weight);
     fHistoArmenterosV0->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
@@ -849,12 +864,28 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
           if (!v0DaughterTr->IsOn(AliAODTrack::kTPCrefit)) continue;
           float nTPCFoundFrac = v0DaughterTr->GetTPCFoundFraction(); 
           if (nTPCFoundFrac<fMinFracTPCClusV0Leg) continue; // loose findable fraction cut
+          // cut on NSigma
+          bool rejectPID = false;
+          for(const auto & pid : arrPID){
+            if(std::abs(fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,pid)) > fnSigmaPID) {
+              rejectPID= true;
+              break;
+            }
+          }
+          if(rejectPID) {
+            continue;
+          }
+          
 
           if(isMC){
             int labelTr = v0DaughterTr->GetLabel();
             if(labelTr > 0){
               AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
               if(tmpPart){
+
+                // if(v0DaughterTr->Pt() > 20 && v0DaughterTr->Pt()/tmpPart->Pt() > 1.5){
+                //   std::cout << "ptrec: " << v0DaughterTr->Pt() << "  pttrue " << tmpPart->Pt() << "  pdg " << tmpPart->GetPdgCode() <<"   nsigPion: " << fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,AliPID::kPion) << "   nsigProton: " << fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,AliPID::kProton) << "   nsigElec: " << fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,AliPID::kElectron) << "  nTPCFoundFrac " << nTPCFoundFrac << "  GetTPCchi2perCluster " << v0DaughterTr->GetTPCchi2perCluster() << "  GetTPCNcls " << v0DaughterTr->GetTPCNcls() << "  mass " <<v0->MassK0Short() << "  CosPointingAngle " << v0->CosPointingAngle(aodVtx) << std::endl;
+                // }
                 fHistoV0DaughterResol->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), weight);
                 int motherlabel = tmpPart->GetMother();
                 AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));

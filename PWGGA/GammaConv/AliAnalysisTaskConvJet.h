@@ -127,6 +127,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void SetFracTPCClus(double tmp) { fMinFracTPCClusV0Leg = tmp; }
   void SetMaxAlphaV0(double tmp) { fMaxCutAlphaV0 = tmp; }
   void SetMaxQtV0(double tmp) { fMaxCutV0Qt = tmp; }
+  void SetNSigmaCut(double tmp) { fnSigmaPID = tmp; }
+  void SetCosPACut(double tmp) { fMinCosPA = tmp; }
 
   void SetAddV0sToJet(bool tmp) { fAddV0sToJet = tmp; }
   void AddV0sToJet(double weight = 1., const int isMC = 0);
@@ -204,6 +206,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   double fMinFracTPCClusV0Leg;           // minimum fraction of TPC clusters for V0
   double fMaxCutAlphaV0;                 // maximum alpha for V0
   double fMaxCutV0Qt;                    // maximum Qt cut
+  double fnSigmaPID;                     // nsigma cut on PID
+  double fMinCosPA;                      // Cos PA cut
   TList* fHistograms;                    //!  List containing all histograms
   TH2F* hJetEtaDiffWithV0;               //!  difference in eta between original and V0 included jets
   TH2F* hJetPhiDiffWithV0;               //!  difference in phi between original and V0 included jets
@@ -221,7 +225,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 23);
+  ClassDef(AliAnalysisTaskConvJet, 24);
   /// \endcond
 };
 #endif
