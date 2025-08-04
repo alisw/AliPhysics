@@ -150,14 +150,14 @@ fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0
 
 // --- New configurable V0 and track cuts ---
 fUseDcaCuts(kFALSE), 
-fDcaXYCut(0.3),
-fDcaZCut(1),
+fDcaXYCut(0.6),
+fDcaZCut(2),
 
-fMaxDcaV0Daughters(0.7),
+fMaxDcaV0Daughters(1),
 fMinDcaPosToPrimVertex(0.1),
 fMinDcaNegToPrimVertex(0.1),
-fMaxCTauK0s(10.0 * 2.68),
-fMinV0Radius(10.0),
+fMaxCTauK0s(4 * 2.68),
+fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
 fNsigmaDaughters(5.0),
@@ -241,14 +241,14 @@ fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0
 
 // --- New configurable V0 and track cuts ---
 fUseDcaCuts(kFALSE), 
-fDcaXYCut(0.1),
-fDcaZCut(0.2),
+fDcaXYCut(0.6),
+fDcaZCut(2),
 
-fMaxDcaV0Daughters(0.7),
+fMaxDcaV0Daughters(1),
 fMinDcaPosToPrimVertex(0.1),
 fMinDcaNegToPrimVertex(0.1),
-fMaxCTauK0s(10.0 * 2.68),
-fMinV0Radius(10.0),
+fMaxCTauK0s(4 * 2.68),
+fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
 fNsigmaDaughters(5.0),

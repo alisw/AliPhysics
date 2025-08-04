@@ -842,7 +842,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 
     //********* PID - pions ********
      if (isPionNsigma){
-      if(track->Y(PionMass) < -0.8 || track->Y(PionMass) > 0.8) continue; 
+      if(track->Y(PionMass) < -0.5 || track->Y(PionMass) > 0.5) continue; 
       if (track->Pt() > 0.2 && track->Pt() < 2.5)
         fReconstructedAfterCuts[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
       if (!MCtrk) continue;
@@ -852,7 +852,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 
      //********* PID - kaons ********
      if (isKaonNsigma){
-       if(track->Y(KaonMass) < -0.7 || track->Y(KaonMass) > 0.7) continue; 
+       if(track->Y(KaonMass) < -0.5 || track->Y(KaonMass) > 0.5) continue; 
        if (track->Pt() > 0.5 && track->Pt() < 2.5)
          fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
        if (!MCtrk) continue;
@@ -991,11 +991,11 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   else if(MCtrk->Charge() > 0) charge=0;
  
   if(MCtrk->GetPdgCode() == 211){
-    if(MCtrk->Y() < -0.8 || MCtrk->Y() > 0.8) continue; 
+    if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
     if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == 321){
-     if(MCtrk->Y() < -0.7 || MCtrk->Y() > 0.7) continue; 
+     if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == 2212){
@@ -1003,11 +1003,11 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == -211){
-    if(MCtrk->Y() < -0.8 || MCtrk->Y() > 0.8) continue; 
+    if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
     if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == -321){
-    if(MCtrk->Y() < -0.7 || MCtrk->Y() > 0.7) continue; 
+    if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == -2212){
