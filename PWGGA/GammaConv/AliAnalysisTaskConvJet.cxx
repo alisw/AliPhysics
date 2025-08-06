@@ -20,6 +20,7 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TList.h>
 
 #include <AliAnalysisManager.h>
@@ -99,6 +100,12 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fMaxCutV0Qt(0.23),
                                                    fnSigmaPID(5.),
                                                    fMinCosPA(0.99),
+                                                   fMaxEtaCutVoLeg(0.9),
+                                                   fSelectK0sMass(false),
+                                                   fSelectLambdaMass(false),
+                                                   fSelectPhotonMass(false),
+                                                   fV0FinderType(0),
+                                                   fDoFillExtendedHistos(false),
                                                    fHistograms(nullptr),
                                                    hJetEtaDiffWithV0(nullptr),
                                                    hJetPhiDiffWithV0(nullptr),
@@ -107,6 +114,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    hV0LegsPt(nullptr),
                                                    fHistoV0TrueMotherLegPt(nullptr),
                                                    fHistoArmenterosV0(nullptr),
+                                                   fHistoArmenterosV0Pt(nullptr),
+                                                   fHistoArmenterosV0Source(nullptr),
+                                                   fHistoMassPhoton(nullptr),
                                                    fHistoV0DaughterResol(nullptr)
 {
 }
@@ -161,6 +171,12 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fMaxCutV0Qt(0.23),
                                                                    fnSigmaPID(5.),
                                                                    fMinCosPA(0.99),
+                                                                   fMaxEtaCutVoLeg(0.9),
+                                                                   fSelectK0sMass(false),
+                                                                   fSelectLambdaMass(false),
+                                                                   fSelectPhotonMass(false),
+                                                                   fV0FinderType(0),
+                                                                   fDoFillExtendedHistos(false),
                                                                    fHistograms(nullptr),
                                                                    hJetEtaDiffWithV0(nullptr),
                                                                    hJetPhiDiffWithV0(nullptr),
@@ -169,6 +185,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    hV0LegsPt(nullptr),
                                                                    fHistoV0TrueMotherLegPt(nullptr),
                                                                    fHistoArmenterosV0(nullptr),
+                                                                   fHistoArmenterosV0Pt(nullptr),
+                                                                   fHistoArmenterosV0Source(nullptr),
+                                                                   fHistoMassPhoton(nullptr),
                                                                    fHistoV0DaughterResol(nullptr)
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -278,6 +297,31 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
   fHistoArmenterosV0->Sumw2();
   fHistograms->Add(fHistoArmenterosV0);
 
+  if(fDoFillExtendedHistos){
+    std::vector<double> vecValAlpha(201);
+    for(size_t i = 0; i < vecValAlpha.size(); ++i){
+      vecValAlpha[i] = -1 + i*0.01;
+    }
+    std::vector<double> vecValQt(121);
+    for(size_t i = 0; i < vecValQt.size(); ++i){
+      vecValQt[i] = i*0.0025;
+    }
+    std::vector<double> vecValPt = {0., 1., 2., 5., 10., 100};
+
+    fHistoArmenterosV0Pt=new TH3F("ArmenterosV0Pt", "ArmenterosV0Pt",vecValAlpha.size()-1, vecValAlpha.data(),vecValQt.size()-1, vecValQt.data(),vecValPt.size()-1, vecValPt.data());
+    fHistoArmenterosV0Pt->Sumw2();
+    fHistograms->Add(fHistoArmenterosV0Pt);
+
+    std::vector<double> vecValSource = {-0.5, 0.5, 1.5, 2.5, 3.5};
+
+    fHistoArmenterosV0Source=new TH3F("ArmenterosV0Source", "ArmenterosV0Source",vecValAlpha.size()-1, vecValAlpha.data(),vecValQt.size()-1, vecValQt.data(),vecValSource.size()-1, vecValSource.data());
+    fHistoArmenterosV0Source->Sumw2();
+    fHistograms->Add(fHistoArmenterosV0Source);
+
+    fHistoMassPhoton = new TH2F("MassPhotonVsPt", "MassPhotonVsPt",50, 0, 0.5, 100, 0, 20);
+    fHistoMassPhoton->Sumw2();
+    fHistograms->Add(fHistoMassPhoton);
+  }
   fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
   fHistoV0DaughterResol->Sumw2();
   fHistograms->Add(fHistoV0DaughterResol);
@@ -833,15 +877,64 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
   { // This is the begining of the V0 loop
     AliAODv0 *v0 = aodEvt->GetV0(iV0);
     if (!v0) continue;
+    // choose V0 finder
+    if(fV0FinderType == 1 && v0->GetOnFlyStatus()){
+      continue;
+    } else if(fV0FinderType == 2 && !v0->GetOnFlyStatus()){
+      continue;
+    }
     // loose, hardcoded cuts for tests
     if(v0->RadiusV0() < fMinRV0) continue;
     if(std::abs(v0->AlphaV0()) > fMaxCutAlphaV0) continue;
     if(v0->PtArmV0() > fMaxCutV0Qt) continue;
     if(v0->Pt() > fMaxPtCutV0) continue; // resolution to bad
     if(v0->CosPointingAngle(aodVtx) < fMinCosPA) continue;
+    if(fSelectK0sMass || fSelectLambdaMass || fSelectPhotonMass){
+      bool isSelected = false;
+      if(fSelectK0sMass){
+        if(v0->MassK0Short() > 0.477 && v0->MassK0Short() < 0.517){
+          isSelected = true;
+        }
+      } 
+      if(fSelectLambdaMass && !isSelected){
+        if(v0->MassLambda() > 1.1 && v0->MassLambda() < 1.125 ) {
+          isSelected = true;
+        }
+        if(!isSelected && v0->MassAntiLambda() > 1.1 && v0->MassAntiLambda() < 1.125 ) {
+          isSelected = true;
+        }
+      }
+      if(fSelectPhotonMass && !isSelected){
+        if(v0->MassK0Short() < 0.05 ) {
+          isSelected = true;
+        }
+      }
+      if(!isSelected) continue;
+    }
 
     hV0Pt->Fill(v0->Pt(), weight);
     fHistoArmenterosV0->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
+    if(isMC && fDoFillExtendedHistos){
+      const AliAODTrack *v0DaughterTr=(AliAODTrack *)v0->GetDaughter(0);
+      int labelTr = v0DaughterTr->GetLabel();
+      if(labelTr > 0){
+        AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
+        int motherlabel = tmpPart->GetMother();
+        AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
+        if(tmpPartMother){
+          fHistoArmenterosV0Pt->Fill(v0->AlphaV0(),v0->PtArmV0(), v0->Pt(), weight);
+          double classification = 3.;
+          const int pdgMother = std::abs(tmpPartMother->GetPdgCode());
+          if( pdgMother == 22 ) classification = 0.;
+          if( pdgMother == 310 ) classification = 1.;
+          if( pdgMother == 3122 ) classification = 2.;
+          fHistoArmenterosV0Source->Fill(v0->AlphaV0(),v0->PtArmV0(), classification, weight);
+          if(classification==0){
+            fHistoMassPhoton->Fill(v0->MassK0Short(), v0->Pt(), weight);
+          }
+        }
+      } 
+    }
 
     double RJetPi0Cand = 0;
     int matchedJet = -1;
@@ -864,6 +957,7 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
           if (!v0DaughterTr->IsOn(AliAODTrack::kTPCrefit)) continue;
           float nTPCFoundFrac = v0DaughterTr->GetTPCFoundFraction(); 
           if (nTPCFoundFrac<fMinFracTPCClusV0Leg) continue; // loose findable fraction cut
+          if(std::abs(v0DaughterTr->Eta()) > fMaxEtaCutVoLeg) continue;
           // cut on NSigma
           bool rejectPID = false;
           for(const auto & pid : arrPID){

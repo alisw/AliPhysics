@@ -13,6 +13,7 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
+#include "TH3F.h"
 
 /**
  * \class AliAnalysisTaskConvJet
@@ -129,6 +130,12 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void SetMaxQtV0(double tmp) { fMaxCutV0Qt = tmp; }
   void SetNSigmaCut(double tmp) { fnSigmaPID = tmp; }
   void SetCosPACut(double tmp) { fMinCosPA = tmp; }
+  void SetMaxEtaCut(double tmp) { fMaxEtaCutVoLeg = tmp; }
+  void SetSelectK0sMass(bool tmp) {fSelectK0sMass = tmp; }
+  void SetSelectLambdaMass(bool tmp) {fSelectLambdaMass = tmp; }
+  void SetSelectPhotonMass(bool tmp) {fSelectPhotonMass = tmp; }
+  void SetV0FinderType(int tmp) {fV0FinderType = tmp; }
+  void SetDoExtQA(bool tmp) { fDoFillExtendedHistos = tmp; }
 
   void SetAddV0sToJet(bool tmp) { fAddV0sToJet = tmp; }
   void AddV0sToJet(double weight = 1., const int isMC = 0);
@@ -208,6 +215,12 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   double fMaxCutV0Qt;                    // maximum Qt cut
   double fnSigmaPID;                     // nsigma cut on PID
   double fMinCosPA;                      // Cos PA cut
+  double fMaxEtaCutVoLeg;                // Max Eta cut
+  bool fSelectK0sMass;                   // Bool if V0s in K0s mass should be selected
+  bool fSelectLambdaMass;                // Bool if V0s in Lambda mass should be selected
+  bool fSelectPhotonMass;                // Bool if V0s in Photon mass should be selected
+  int fV0FinderType;                     // Select V0finder type: 0-> both finders, 1->offlineFinder, 2, on-the-fly finder
+  bool fDoFillExtendedHistos;            // Flag to fill extended QA histograms
   TList* fHistograms;                    //!  List containing all histograms
   TH2F* hJetEtaDiffWithV0;               //!  difference in eta between original and V0 included jets
   TH2F* hJetPhiDiffWithV0;               //!  difference in phi between original and V0 included jets
@@ -216,6 +229,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH1D* hV0LegsPt;                       //!  Pt of V0 legs (each leg can only contribute once) that is added to the jet energy
   TH2F* fHistoV0TrueMotherLegPt;         //! Pt of V0 legs for different mother particles
   TH2F* fHistoArmenterosV0;              //!  Armenteros-Podolanski plot for V0s added to jet
+  TH3F* fHistoArmenterosV0Pt;            //!  Armenteros-Podolanski plot for V0s added to jet
+  TH3F* fHistoArmenterosV0Source;        //!  Armenteros-Podolanski plot for V0s added to jet
+  TH2F* fHistoMassPhoton;                //! Mass of photons with K0s expectation
   TH2F* fHistoV0DaughterResol;           //!  Resolution of V0 daughters
 
 
@@ -225,7 +241,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 24);
+  ClassDef(AliAnalysisTaskConvJet, 25);
   /// \endcond
 };
 #endif
