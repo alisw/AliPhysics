@@ -601,6 +601,22 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","4117999097l30200000","0r631031000000d0");  // 700 MeV cluster threshold
     cuts.AddCutCalo("00010113","4117999097l309v0000","0r631031000000d0");  // 700 MeV cluster threshold, M02 cut applied
 
+  } else if (trainConfig == 220){ // open cuts + cluster isolated cut
+    cuts.AddCutCalo("00010113","4117999097eg09000i0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster
+    cuts.AddCutCalo("00010113","4117999097eg09000j0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster
+  } else if (trainConfig == 221){ // open cuts + cluster isolated cut + open M02
+    cuts.AddCutCalo("00010113","4117999097eg02000i0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster
+    cuts.AddCutCalo("00010113","4117999097eg02000j0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster
+
+  } else if (trainConfig == 222){ // open cuts + cluster isolated cut
+    cuts.AddCutCalo("00010113","4117999097lg09000i0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster + exotics > 6
+    cuts.AddCutCalo("00010113","4117999097lg09000j0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster + exotics > 6
+  } else if (trainConfig == 223){ // open cuts + cluster isolated cut + open M02
+    cuts.AddCutCalo("00010113","4117999097lg02000i0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster + exotics > 6
+    cuts.AddCutCalo("00010113","4117999097lg02000j0","0r631031000000d0");  // 300 MeV cluster threshold + iso cluster + exotics > 6
+
+  
+
 
   } else if (trainConfig == 300){ // cluster efficiency applied
     cuts.AddCutCalo("00010113","4117901097e102200a0","0r631031000000d0");  // 500 MeV cluster threshold

@@ -378,6 +378,13 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe30220000","0r63103100000010"); // INT7 with M02/exotic cut, no FT
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609f030000000","0r63103100000010"); // INT7 without M02/exotic cut, no FT
 
+  } else if (trainConfig == 102){ // with isolated cluster cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe302200i0","0r63103100000010"); // INT7 with M02/exotic cut + isolated cluster
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe302200j0","0r63103100000010"); // INT7 with M02/exotic cut + isolated cluster
+  } else if (trainConfig == 102){ // with isolated cluster cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909f0300000i0","0r63103100000010"); // INT7 without M02/exotic cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909f0300000j0","0r63103100000010"); // INT7 without M02/exotic cut
+
     // lowB settings
   } else if (trainConfig == 110){ // lowB
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // INT7 with M02/exotic cut
@@ -411,6 +418,19 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   } else if (trainConfig == 126){ // NL 99, nominal Bfield setting, without NCell cut
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg09v0000","0r63103100000010"); // INT7, Emin = 300 MeV, exotic_E > 6
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg0200000","0r63103100000010"); // INT7, Emin = 300 MeV, open M02, exotic_E > 6
+
+  } else if (trainConfig == 130){ // NL 99, nominal Bfield setting, without NCell cut + isolated cluster cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg09v00i0","0r63103100000010"); // INT7, Emin = 300 MeV + isolated clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg09v00i0","0r63103100000010"); // INT7, Emin = 300 MeV + isolated clusters
+  } else if (trainConfig == 131){ // NL 99, nominal Bfield setting, without NCell cut + isolated cluster cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg02000i0","0r63103100000010"); // INT7, Emin = 300 MeV, open M02 + isolated clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg02000j0","0r63103100000010"); // INT7, Emin = 300 MeV, open M02 + isolated clusters
+  } else if (trainConfig == 132){ // NL 99, nominal Bfield setting, without NCell cut + isolated cluster cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg09v00i0","0r63103100000010"); // INT7, Emin = 300 MeV + isolated clusters, exotic_E > 6
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg09v00i0","0r63103100000010"); // INT7, Emin = 300 MeV + isolated clusters, exotic_E > 6
+  } else if (trainConfig == 133){ // NL 99, nominal Bfield setting, without NCell cut + isolated cluster cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg02000i0","0r63103100000010"); // INT7, Emin = 300 MeV, open M02 + isolated clusters, exotic_E > 6
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg02000j0","0r63103100000010"); // INT7, Emin = 300 MeV, open M02 + isolated clusters, exotic_E > 6
 
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

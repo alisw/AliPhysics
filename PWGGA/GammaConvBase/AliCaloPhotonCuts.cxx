@@ -3180,7 +3180,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           return kFALSE;
         }
       }
-    } else if (fUseDispersion == 3) {
+    } else if (fUseDispersion == 3 || (fUseDispersion == 4 && cluster->GetNCells() == 1)) {
       AliVCaloCells* EMCcells    = NULL;
       if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         EMCcells                 = event->GetEMCALCells();
@@ -8033,6 +8033,15 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
   case 16: // g: next to cluster rejection
     if (!fUseDispersion) fUseDispersion = 3;
     fMinEnergyClusNeighbor = 1.0; // min cluster requirement
+    break;
+  case 17: // h: next to cluster rejection
+    if (!fUseDispersion) fUseDispersion = 3;
+    fMinEnergyClusNeighbor = 0.1; // min cluster requirement
+    break;
+  // applied only to 1 cell clusters
+  case 18: // j: next to cluster rejection
+    if (!fUseDispersion) fUseDispersion = 4;
+    fMinEnergyClusNeighbor = 0.1; // min cluster requirement
     break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
