@@ -1425,7 +1425,19 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityCL1")) ->Fill(centralityCL1);
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityMain"))->Fill(centralityMain);
 
+  /*
   if(centralityV0M >= 90){
+    AliWarning("Centtality is high!");
+    return;
+  }
+  */
+
+  if(centralityV0M < 30){
+    AliWarning("Centtality is high!");
+    return;
+  }
+
+  if(centralityV0M > 50){
     AliWarning("Centtality is high!");
     return;
   }
@@ -2179,6 +2191,8 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   for(Int_t i=0; i<nTracks; i++){
     AliAODTrack* track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
     if(!track) continue;
+    if(!track->TestFilterBit(128)) continue;
+
     dcaxy=0.,dcaz=0.,dca=0.;
     dDCA[2]={0.};              // DCA to the vertex xy(d) and z
     cDCA[3]={0.};              // convariance of impact parameters 
