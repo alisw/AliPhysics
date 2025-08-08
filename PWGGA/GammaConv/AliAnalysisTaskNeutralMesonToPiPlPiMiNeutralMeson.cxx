@@ -245,6 +245,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueHNMPiPlPiMiNDMRapidityvsPt(nullptr),
   fHistoTrueMotherGammaGammaInvMassPt(nullptr),
   fHistoTrueMotherGammaGammaFromHNMInvMassPt(nullptr),
+  fHistoTrueGammaGammaAlphaVsPt(nullptr),
+  fHistoTrueGammaGammaFromHNMAlphaVsPt(nullptr),
   fHistoTrueConvGammaPt(nullptr),
   fHistoTrueConvGammaFromNeutralMesonPt(nullptr),
   fHistoTrueClusterGammaPt(nullptr),
@@ -689,6 +691,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTrueHNMPiPlPiMiNDMRapidityvsPt(nullptr),
   fHistoTrueMotherGammaGammaInvMassPt(nullptr),
   fHistoTrueMotherGammaGammaFromHNMInvMassPt(nullptr),
+  fHistoTrueGammaGammaAlphaVsPt(nullptr),
+  fHistoTrueGammaGammaFromHNMAlphaVsPt(nullptr),
   fHistoTrueConvGammaPt(nullptr),
   fHistoTrueConvGammaFromNeutralMesonPt(nullptr),
   fHistoTrueClusterGammaPt(nullptr),
@@ -1785,7 +1789,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
 
 
-        fHistoGammaGammaAlphaVsPt[iCut]               = new TH2F("ESD_GammaGamma_Alpha_Pt","ESD_GammaGamma_Alpha_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
+        fHistoGammaGammaAlphaVsPt[iCut]               = new TH2F("ESD_GammaGamma_Alpha_Pt","ESD_GammaGamma_Alpha_Pt",200,-1.0,1.0, HistoNPtBins, arrPtBinning);
         fHistoGammaGammaAlphaVsPt[iCut]->GetXaxis()->SetTitle("#alpha");
         fHistoGammaGammaAlphaVsPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoGammaGammaAlphaVsPt[iCut]->Sumw2();
@@ -2296,6 +2300,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     if( fEnableBasicMesonQA ){
       fHistoTrueMotherGammaGammaInvMassPt             = new TH2F*[fnCuts];
       fHistoTrueMotherGammaGammaFromHNMInvMassPt      = new TH2F*[fnCuts];
+      fHistoTrueGammaGammaAlphaVsPt                   = new TH2F*[fnCuts];
+      fHistoTrueGammaGammaFromHNMAlphaVsPt            = new TH2F*[fnCuts];
       fHistoTrueAngleSum                              = new TH2F*[fnCuts];
       fHistoTrueHNMesonPtvsNDMPt                      = new TH2F*[fnCuts];
     }
@@ -2961,6 +2967,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]);
+        fHistoTrueGammaGammaAlphaVsPt[iCut]    = new TH2F("ESD_TrueMotherGG_Alpha_Pt","ESD_TrueMotherGG_Alpha_Pt",200,-1.0,1.0, HistoNPtBins, arrPtBinning);
+        fHistoTrueGammaGammaAlphaVsPt[iCut]->GetXaxis()->SetTitle("#alpha");
+        fHistoTrueGammaGammaAlphaVsPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoTrueGammaGammaAlphaVsPt[iCut]->Sumw2();
+        fTrueList[iCut]->Add(fHistoTrueGammaGammaAlphaVsPt[iCut]);
+        fHistoTrueGammaGammaFromHNMAlphaVsPt[iCut]    = new TH2F("ESD_TrueMotherGGFromHNM_Alpha_Pt","ESD_TrueMotherGGFromHNM_Alpha_Pt",200,-1.0,1.0, HistoNPtBins, arrPtBinning);
+        fHistoTrueGammaGammaFromHNMAlphaVsPt[iCut]->GetXaxis()->SetTitle("#alpha");
+        fHistoTrueGammaGammaFromHNMAlphaVsPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoTrueGammaGammaFromHNMAlphaVsPt[iCut]->Sumw2();
+        fTrueList[iCut]->Add(fHistoTrueGammaGammaFromHNMAlphaVsPt[iCut]);
         fHistoTrueAngleSum[iCut]                            = new TH2F("ESD_TrueMother_AngleSum_Pt","ESD_TrueMother_AngleSum_Pt", HistoNPtBins, arrPtBinning,720,0,2*TMath::Pi());
         fHistoTrueAngleSum[iCut]->GetXaxis()->SetTitle("#sum #angle");
         fHistoTrueAngleSum[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -4750,22 +4766,31 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
     }
     if(fEnableBasicMesonQA){
       fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+      fHistoTrueGammaGammaAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       switch( fSelectedHeavyNeutralMeson ) {
       case 0: // ETA MESON
-        if( IsEtaPiPlPiMiPiZeroDaughter(gamma0MotherLabel) )
+        if( IsEtaPiPlPiMiPiZeroDaughter(gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        }
         break;
       case 1: // OMEGA MESON
-        if( IsOmegaPiPlPiMiPiZeroDaughter(gamma0MotherLabel) )
+        if( IsOmegaPiPlPiMiPiZeroDaughter(gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        }
         break;
       case 2: // ETA PRIME MESON
-        if( IsEtaPrimePiPlPiMiEtaDaughter(gamma0MotherLabel) )
+        if( IsEtaPrimePiPlPiMiEtaDaughter(gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        }
         break;
       case 3: // D0 MESON
-        if( IsD0PiPlPiMiPiZeroDaughter(gamma0MotherLabel) )
+        if( IsD0PiPlPiMiPiZeroDaughter(gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        }
         break;
       default:
         AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -4894,22 +4919,31 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 
     if(fEnableBasicMesonQA){
       fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+      fHistoTrueGammaGammaAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       switch( fSelectedHeavyNeutralMeson ) {
       case 0: // ETA MESON
-        if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,gamma0MotherLabel) )
+        if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        }
         break;
       case 1: // OMEGA MESON
-        if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,gamma0MotherLabel) )
+        if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,gamma0MotherLabel) ) {
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
         break;
       case 2: // ETA PRIME MESON
-        if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray,gamma0MotherLabel) )
+        if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray,gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        }
         break;
       case 3: // D0 MESON
-        if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,gamma0MotherLabel) )
+        if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,gamma0MotherLabel) ){
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
         break;
       default:
         AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -5003,22 +5037,31 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         Pi0Candidate->SetMCLabel(motherRealLabel);
         if(fEnableBasicMesonQA){
           fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          fHistoTrueGammaGammaAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
           switch( fSelectedHeavyNeutralMeson ) {
           case 0: // ETA MESON
-            if( IsEtaPiPlPiMiPiZeroDaughter(motherRealLabel) )
+            if( IsEtaPiPlPiMiPiZeroDaughter(motherRealLabel) ){
                 fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
-            break;
+                fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            } 
+           break;
           case 1: // OMEGA MESON
-            if( IsOmegaPiPlPiMiPiZeroDaughter(motherRealLabel) )
+            if( IsOmegaPiPlPiMiPiZeroDaughter(motherRealLabel) ){
                 fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            }
             break;
           case 2: // ETA PRIME MESON
-            if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) )
+            if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) ){
                 fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            }
             break;
           case 3: // D0 MESON
-            if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) )
+            if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) ){
                 fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+            }
             break;
           default:
             AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -5127,22 +5170,31 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       Pi0Candidate->SetMCLabel(motherRealLabel);
       if(fEnableBasicMesonQA){
         fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        fHistoTrueGammaGammaAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         switch( fSelectedHeavyNeutralMeson ) {
         case 0: // ETA MESON
-          if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,motherRealLabel) )
+          if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 1: // OMEGA MESON
-          if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,motherRealLabel) )
+          if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 2: // ETA PRIME MESON
-          if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray, motherRealLabel) )
+          if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray, motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 3: // D0 MESON
-          if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray, motherRealLabel) )
+          if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray, motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         default:
           AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -5402,22 +5454,31 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       }
       if( fEnableBasicMesonQA ){
         fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        fHistoTrueGammaGammaAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         switch( fSelectedHeavyNeutralMeson ) {
         case 0: // ETA MESON
-          if( IsEtaPiPlPiMiPiZeroDaughter(motherRealLabel) )
+          if( IsEtaPiPlPiMiPiZeroDaughter(motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 1: // OMEGA MESON
-          if( IsOmegaPiPlPiMiPiZeroDaughter(motherRealLabel) )
+          if( IsOmegaPiPlPiMiPiZeroDaughter(motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 2: // ETA PRIME MESON
-          if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) )
+          if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 3: // D0 MESON
-          if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) )
+          if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         default:
           AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -5544,22 +5605,31 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       }
       if(fEnableBasicMesonQA){
         fHistoTrueMotherGammaGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+        fHistoTrueGammaGammaAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         switch( fSelectedHeavyNeutralMeson ) {
         case 0: // ETA MESON
-          if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,motherRealLabel) )
+          if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 1: // OMEGA MESON
-          if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray, motherRealLabel) )
+          if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray, motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 2: // ETA PRIME MESON
-          if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray, motherRealLabel) )
+          if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray, motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         case 3: // D0 MESON
-          if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray, motherRealLabel) )
+          if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray, motherRealLabel) ){
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              fHistoTrueGammaGammaFromHNMAlphaVsPt[fiCut]->Fill(Pi0Candidate->GetAlpha(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+          }
           break;
         default:
           AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
