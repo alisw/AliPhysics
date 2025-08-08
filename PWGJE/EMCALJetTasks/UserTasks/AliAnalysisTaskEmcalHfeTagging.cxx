@@ -1300,13 +1300,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 	}
 
 
-
     AliEmcalJet* jetbase = nullptr;
     
     Float_t kWeight=1;
-    if (fCentSelectOn)
+    if (fCentSelectOn) {
         if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
-    
+    }
+
     // list of kink mothers
     Int_t nVertices = 1;
     nVertices = fAOD->GetNumberOfVertices();
@@ -2211,7 +2211,6 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
                                                        Int_t nMother, Double_t listMother[],Int_t decay, Double_t weight)
 {
     //Get number of ULS and LS pairs per event
-    
     Int_t ntracks = 0;
     ntracks = fVevent->GetNumberOfTracks();
     
@@ -2244,7 +2243,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         Bool_t passAssoTrackCut = kFALSE;
         passAssoTrackCut = PhotElecTrackCuts(pVtx,trackAsso,nMother,listMother);
         if (!passAssoTrackCut) continue;
-        
+
         // tagged particle
         Double_t pt = -9;
         Int_t charge = 0;
@@ -2266,7 +2265,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         
         // invariant mass
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-        Double_t mass=999.;
+		Double_t mass=999., width = -999;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
@@ -2279,10 +2278,12 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         AliKFParticle ge1(*track, fPDGe1);
         AliKFParticle ge2(*trackAsso, fPDGe2);
         AliKFParticle recg(ge1, ge2);
-        
+
+		Int_t MassCorrect = recg.GetMass(mass, width);
+
         if(recg.GetNDF()<1) continue;
+
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-        
 		if (TMath::Abs(chi2recg) > 3.) continue;
         
         for (Int_t l=0;l<5;l++){// pt jet range
