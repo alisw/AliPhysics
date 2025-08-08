@@ -205,6 +205,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoTruevsRecJetPtVsLeadingPart({}),
                                                                              fHistoTrueJetPtVsMomFracVsLeadingPart({}),
                                                                              fHistoTrueMatchedJetPtVsLeadingPart({}),
+                                                                             fHistoParticleCatEnergyFracVsJetPt({}),
                                                                              fHistoTrueJetPtVsLeadingPart({}),
                                                                              fHistoTruevsRecJetPtWeighted({}),
                                                                              fHistoMatchedPtJet({}),
@@ -517,6 +518,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoTruevsRecJetPtVsLeadingPart({}),
                                                                                            fHistoTrueJetPtVsMomFracVsLeadingPart({}),
                                                                                            fHistoTrueMatchedJetPtVsLeadingPart({}),
+                                                                                           fHistoParticleCatEnergyFracVsJetPt({}),
                                                                                            fHistoTrueJetPtVsLeadingPart({}),
                                                                                            fHistoTruevsRecJetPtWeighted({}),
                                                                                            fHistoMatchedPtJet({}),
@@ -881,6 +883,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoTrueJetPtVsMomFracVsLeadingPart.resize(fnCuts);
       fHistoTrueMatchedJetPtVsLeadingPart.resize(fnCuts);
       fHistoTrueJetPtVsLeadingPart.resize(fnCuts);
+      fHistoParticleCatEnergyFracVsJetPt.resize(fnCuts);
     }
     if(fDoWeightGenParticles>0){
       fHistoTruevsRecJetPtWeighted.resize(fnCuts);
@@ -1459,6 +1462,14 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
         fHistoTrueJetPtVsLeadingPart[iCut] = new TH2F("TrueInAcc_JetPt_VsPartPDG", "TrueInAcc_JetPt_VsPartPDG", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 17, vecEquidistFromMinus05.data());
         fTrueJetList[iCut]->Add(fHistoTrueJetPtVsLeadingPart[iCut]);
+        
+
+        std::vector<double> vMomFrac(101);    
+        for (size_t i = 0; i < vMomFrac.size(); ++i) {
+            vMomFrac[i] = static_cast<double>(i) / (vMomFrac.size() - 1);
+        }
+        fHistoParticleCatEnergyFracVsJetPt[iCut] = new TH3F("PartCategory_MomFrac_JetPt", "PartCategory_MomFrac_JetPt", 5, vecEquidistFromMinus05.data(), vMomFrac.size()-1, vMomFrac.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fTrueJetList[iCut]->Add(fHistoParticleCatEnergyFracVsJetPt[iCut]);
       }
 
       if(fDoWeightGenParticles>0){
@@ -2682,6 +2693,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
       int leadingPDG = -1;
       int leadingPDGMother = -1;
       if(fDoJetQA){
+        std::array<double, 5> arrEFracCategory = {0., 0., 0., 0., 0.}; // Charged meas, neutral meas, non meas, K0s+Lambda, non meas - K0s+Lambda
         auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
         for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
           AliVParticle* tmpPart = vecTruePart[ipart];
@@ -2711,6 +2723,29 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
             AliError(Form("PDG code seems suspicious, skipping this particle (pdg = %i)", pdgCode)); // not really clear what is happening here...
             continue;
           }
+
+          // categorize
+          if( pdgCode == 211 ||  // ch. pion
+              pdgCode == 321 ||  // ch kaon
+              pdgCode == 2212 || // proton
+              pdgCode == 11 ||   // electron
+              pdgCode == 13      // muon
+          ){
+            arrEFracCategory[0] += tmpPart->P();
+          } else if (pdgCode == 22) // photon
+          {
+            arrEFracCategory[1] += tmpPart->P();
+          } else {
+            arrEFracCategory[2] += tmpPart->P();
+            if(pdgCode == 310 || // K0s
+               pdgCode == 3122   // Lambda
+            ){
+              arrEFracCategory[3] += tmpPart->P();
+            } else {
+              arrEFracCategory[4] += tmpPart->P();
+            }
+          }
+
           // find where direct photons come from
           // if(std::abs(tmpPart->PdgCode()) == 22 && (pdgMother < 100 ||  pdgMother > 10000)){
           //   cout << "direct photon coming from " << pdgMother << " ptorg = " << tmpPart->Pt() << " - " << particleMother->Pt() << endl;
@@ -2745,39 +2780,41 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         }
         for(size_t ipart = 0; ipart < arrPartEnergy.size(); ++ipart){
           fHistoTrueJetPtVsMomFracVsLeadingPart[fiCut]->Fill(ipart, arrPartEnergy[ipart]/fTrueVectorJetPt.at(i), fTrueVectorJetPt.at(i), fWeightJetJetMC);
+        } 
+        double jetMom = sqrt(fTrueVectorJetPt[i]*fTrueVectorJetPt[i] + fTrueVectorJetPz[i]*fTrueVectorJetPz[i]);
+        for(size_t ip = 0; ip < arrEFracCategory.size(); ++ip){
+          fHistoParticleCatEnergyFracVsJetPt[fiCut]->Fill(ip, arrEFracCategory[ip]/jetMom, fTrueVectorJetPt[i], fWeightJetJetMC);
         }
       }      
     }
-  }
+      // Now loop over all generated particles
+    if(fDoJetQA ){
+      // Loop over all primary MC particle
+      for (Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
 
-  // Now loop over all generated particles
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+        if (!particle)
+          continue;
+        
+        int pdgCode = particle->PdgCode();
+        if(!(particle->IsPhysicalPrimary() || pdgCode == 111 || pdgCode == 221)){
+          continue;
+        }
+        int motherLabel = particle->GetMother();
+        int pdgMother = 0;
+        if(motherLabel > 0){
+          AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherLabel));
+          pdgMother = std::abs(particleMother->PdgCode());
+        }
 
-  if(fDoJetQA){
-    // Loop over all primary MC particle
-    for (Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
-
-      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
-      if (!particle)
-        continue;
-      
-      int pdgCode = particle->PdgCode();
-      if(!(particle->IsPhysicalPrimary() || pdgCode == 111 || pdgCode == 221)){
-        continue;
+        int matchedJet = -1;
+        double RJetPi0Cand = 0;
+        double trueJetPt = 0.;
+        if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)) {
+          trueJetPt = fTrueVectorJetPt[matchedJet];
+        }
+        fHistoGenParticleAllVsJetPt[fiCut]->Fill(GetParticleIndex(pdgCode, pdgMother), particle->Pt(), trueJetPt, fWeightJetJetMC);
       }
-      int motherLabel = particle->GetMother();
-      int pdgMother = 0;
-      if(motherLabel > 0){
-        AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherLabel));
-        pdgMother = std::abs(particleMother->PdgCode());
-      }
-
-      int matchedJet = -1;
-      double RJetPi0Cand = 0;
-      double trueJetPt = 0.;
-      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)) {
-        trueJetPt = fTrueVectorJetPt[matchedJet];
-      }
-      fHistoGenParticleAllVsJetPt[fiCut]->Fill(GetParticleIndex(pdgCode, pdgMother), particle->Pt(), trueJetPt, fWeightJetJetMC);
     }
   }
 }
