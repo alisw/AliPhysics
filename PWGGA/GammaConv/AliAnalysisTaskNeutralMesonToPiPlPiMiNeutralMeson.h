@@ -268,6 +268,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoHigherContrGammaPt;                           //!<! array of histos of one of gamma contributiong to NDM (higher energy), only calo
     TH2F**                            fHistoGammaGammaInvMassPt;                          //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
+    TH2F**                            fHistoGammaGammaAlphaVsPt;                          //!<! array of histos of gamma-gamma alpha vs pT within inv mass cut
     TH2F**                            fHistoSwappingGammaGammaInvMassPt;                  //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
@@ -701,7 +702,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 41);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 42);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

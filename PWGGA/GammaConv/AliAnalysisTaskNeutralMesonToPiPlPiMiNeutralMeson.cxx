@@ -155,6 +155,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoHigherContrGammaPt(nullptr),
   fHistoGammaGammaInvMassPt(nullptr),
   fHistoGammaGammaInvMassPtBeforeCuts(nullptr),
+  fHistoGammaGammaAlphaVsPt(nullptr),
   fHistoSwappingGammaGammaInvMassPt(nullptr),
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
@@ -598,6 +599,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoHigherContrGammaPt(nullptr),
   fHistoGammaGammaInvMassPt(nullptr),
   fHistoGammaGammaInvMassPtBeforeCuts(nullptr),
+  fHistoGammaGammaAlphaVsPt(nullptr),
   fHistoSwappingGammaGammaInvMassPt(nullptr),
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
@@ -1444,6 +1446,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
     fHistoGammaGammaInvMassPt               = new TH2F*[fnCuts];
     fHistoGammaGammaInvMassPtBeforeCuts     = new TH2F*[fnCuts];
+    fHistoGammaGammaAlphaVsPt               = new TH2F*[fnCuts];
   }
 
   if( fEnableAdvancedMesonQA ){
@@ -1780,6 +1783,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoGammaGammaInvMassPtBeforeCuts[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
+
+
+        fHistoGammaGammaAlphaVsPt[iCut]               = new TH2F("ESD_GammaGamma_Alpha_Pt","ESD_GammaGamma_Alpha_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
+        fHistoGammaGammaAlphaVsPt[iCut]->GetXaxis()->SetTitle("#alpha");
+        fHistoGammaGammaAlphaVsPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoGammaGammaAlphaVsPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoGammaGammaAlphaVsPt[iCut]);
       }
     }
 
@@ -4419,6 +4429,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralDecayMeson
 
             if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
             }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                     (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 1))){
@@ -4426,6 +4437,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralDecayMeson
 
             if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
             }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                     ((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 2)) ||
@@ -4434,6 +4446,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralDecayMeson
 
             if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
             }
           } else{
             delete NDMcand;
@@ -4598,6 +4611,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
             if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
             }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                     (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 1))){
@@ -4606,6 +4620,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
             if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
             }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                     ((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 2)) ||
@@ -4615,6 +4630,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
             if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
             }
           }else {
             delete NDMcand;
@@ -5233,6 +5249,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
               if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
               }
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                       (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 1))){
@@ -5241,6 +5258,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
               if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
               }
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                       ((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcand, 2)) ||
@@ -5250,6 +5268,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
 
               if(fEnableBasicMesonQA){
                 fHistoGammaGammaInvMassPt[fiCut]->Fill(NDMcand->M(),NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
+                fHistoGammaGammaAlphaVsPt[fiCut]->Fill(NDMcand->GetAlpha(), NDMcand->Pt(), fWeightJetJetMC*weightMatBudget);
               }
             }
             if(fIsMC){
