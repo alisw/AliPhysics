@@ -462,6 +462,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH3F*> fHistoTruevsRecJetPtVsLeadingPart;       //! vector of histos with true vs rec. jet pt for different leading particles
   std::vector<TH3F*> fHistoTrueJetPtVsMomFracVsLeadingPart;   //! vector of histos with true jet pt vs. particle enery fraction for different leading particles
   std::vector<TH2F*> fHistoTrueMatchedJetPtVsLeadingPart;     //! vector of histos with matched true jets for different leading particles
+  std::vector<TH3F*> fHistoParticleCatEnergyFracVsJetPt;      //! vector of histos with particle category vs energy fraction vs jet pt
   std::vector<TH2F*> fHistoTrueJetPtVsLeadingPart;            //! vector of histos with true jets in acceptance for different leading particles
   std::vector<TH2F*> fHistoTruevsRecJetPtWeighted;            //! vector of histos response matrix for jets weighted
   
