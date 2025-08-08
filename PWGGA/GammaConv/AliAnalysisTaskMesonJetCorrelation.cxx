@@ -2184,6 +2184,8 @@ void AliAnalysisTaskMesonJetCorrelation::MakeBinning()
         valJetPt += 5;
       else if (valJetPt < 500 - epsilon)
         valJetPt += 10;
+      else if (valJetPt < 1000 - epsilon)
+        valJetPt += 100.;
       else
         break;
     }
