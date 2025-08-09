@@ -158,7 +158,7 @@ protected:
 	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
 	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
 	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
-	static constexpr Int_t 				nbins_gsys = 7;			 // number of bins for angularity systematic
+	static constexpr Int_t 				nbins_gsys = 6;			 // number of bins for angularity systematic
 	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
 	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
     static constexpr Int_t 				nbranches = 21;		     // number of branches in output tree

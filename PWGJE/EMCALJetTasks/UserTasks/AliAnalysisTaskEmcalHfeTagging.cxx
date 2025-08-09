@@ -580,9 +580,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,
         9,10,11,12,13,14,15,16,18,20};
     
-    /* Double_t bin_gsys[nbins_gsys + 1] = {0., 0.1, 0.2, 0.3, 0.4, 0.6, 0.7}; */
-    /* Double_t bin_ptdsys[nbins_gsys + 1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}; */
-    
 	Int_t nbin_jetptRM[2] = {24, 24};
 	Double_t max_jetptRM[2] = {120., 120};
    	Double_t min_jetptRM[2] = {0., 0.};
@@ -805,7 +802,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     }
     
     
-    for(Int_t i = 0; i < nbins_jetpt; i++){
+    for(Int_t i = 0; i < ncutseff; i++){
         fptTrueHFEeffEMCal[i] = new TH1F(Form("fptTrueHFEeffEMCal%d",i), Form("fptTrueHFEeffEMCal%d",i), nbins_ept,bin_ept);
         fOutput->Add(fptTrueHFEeffEMCal[i]);
     }
@@ -1836,10 +1833,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., phi = -99., pte=0.;
     
     Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
-    Double_t bin_g[nbins_gsys + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 
-								   0.5, 0.55, 0.6, 0.65, 0.7};
-    Double_t bin_ptd[nbins_ptdsys + 1] = {0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
-									   0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+    Double_t bin_g[nbins_gsys + 1] = {0., 0.1, 0.2, 0.3, 0.4, 0.6, 0.7};
+    Double_t bin_ptd[nbins_ptdsys + 1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
     Bool_t passTrackCut = kFALSE;
@@ -2230,10 +2225,8 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
     Int_t sub = -1;
     
     Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
-    Double_t bin_g[nbins_gsys + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 
-								   0.5, 0.55, 0.6, 0.65, 0.7};
-    Double_t bin_ptd[nbins_ptdsys + 1] = {0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
-									   0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+    Double_t bin_g[nbins_gsys + 1] = {0., 0.1, 0.2, 0.3, 0.4, 0.6, 0.7};
+    Double_t bin_ptd[nbins_ptdsys + 1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     
     Double_t jetPt = jet->Pt();
     Double_t  ang = GetJetAngularity(jet,0);
