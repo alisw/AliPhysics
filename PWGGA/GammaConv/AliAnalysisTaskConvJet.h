@@ -233,6 +233,12 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH3F* fHistoArmenterosV0Source;        //!  Armenteros-Podolanski plot for V0s added to jet
   TH2F* fHistoMassPhoton;                //! Mass of photons with K0s expectation
   TH2F* fHistoV0DaughterResol;           //!  Resolution of V0 daughters
+  TH2F* fHistoSourceV0Pt;                //! Reconstructed V0s for different sources (K0s, Lambda, photons, rest) vs pt
+  TH2F* fHistoSourceV0DaughterPt;        //! Reconstructed V0s daughters for different sources (K0s, Lambda, photons, rest) vs pt
+  TH2F* fHistoSourceV0DaughterTrackPt;   //! Reconstructed V0s daughter tracks that are reconstructed for different sources (K0s, Lambda, photons, rest) vs pt
+  TH2F* fHistoV0Generated;               //! Generated V0 particles for different sources (K0s, Lambda, photons, rest) vs pt
+  TH2F* fHistoV0GeneratedMeasDecay;      //! Generated V0 particles with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt
+  TH2F* fHistoV0DaughtersGenerated;      //! Generated V0 particle daughters with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt
 
 
  private:
