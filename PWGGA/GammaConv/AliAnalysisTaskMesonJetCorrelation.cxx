@@ -2574,10 +2574,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           }
         }
         
-        fHistoEnergyFracNonMeas[fiCut]->Fill(fracMomNonMeasPartTrack+fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
-        fHistoEnergyFracNonMeasClus[fiCut]->Fill(fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
-        fHistoEnergyFracNonMeasTrack[fiCut]->Fill(fracMomNonMeasPartTrack, fVectorJetPt[i], fWeightJetJetMC );
-
+        if(fIsMC){
+          if(fHistoEnergyFracNonMeas[fiCut]) fHistoEnergyFracNonMeas[fiCut]->Fill(fracMomNonMeasPartTrack+fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
+          if(fHistoEnergyFracNonMeasClus[fiCut]) fHistoEnergyFracNonMeasClus[fiCut]->Fill(fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
+          if(fHistoEnergyFracNonMeasTrack[fiCut]) fHistoEnergyFracNonMeasTrack[fiCut]->Fill(fracMomNonMeasPartTrack, fVectorJetPt[i], fWeightJetJetMC );
+        }
         if(IsJetAtEMCSupermoduleBorder(jetPhi)){
           fHistoPtJetSMBorder[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
         }
