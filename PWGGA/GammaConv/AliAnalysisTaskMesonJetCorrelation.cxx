@@ -200,6 +200,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoJetPhi({}),
                                                                              fHistoJetArea({}),
                                                                              fHistoTruevsRecJetPt({}),
+                                                                             fHistoJetResolution({}),
                                                                              fHistoTruevsRecJetPtForTrueJets({}),
                                                                              fHistoTrueJetPtVsPartonPt({}),
                                                                              fHistoTruevsRecJetPtVsLeadingPart({}),
@@ -513,6 +514,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoJetPhi({}),
                                                                                            fHistoJetArea({}),
                                                                                            fHistoTruevsRecJetPt({}),
+                                                                                           fHistoJetResolution({}),
                                                                                            fHistoTruevsRecJetPtForTrueJets({}),
                                                                                            fHistoTrueJetPtVsPartonPt({}),
                                                                                            fHistoTruevsRecJetPtVsLeadingPart({}),
@@ -879,6 +881,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoTrueJetPhi.resize(fnCuts);
     fHistoTrueJetPtVsPartonPt.resize(fnCuts);
     if(fDoJetQA){
+      fHistoJetResolution.resize(fnCuts);
       fHistoTruevsRecJetPtVsLeadingPart.resize(fnCuts);
       fHistoTrueJetPtVsMomFracVsLeadingPart.resize(fnCuts);
       fHistoTrueMatchedJetPtVsLeadingPart.resize(fnCuts);
@@ -1446,11 +1449,15 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtForTrueJets[iCut]);
         fHistoNPartInTrueJetVsJetPt[iCut] = new TH2F("NparticlesInTrueJetVsJetPt", "NparticlesInTrueJetVsJetPt", 100, vecEquidistFromMinus05.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fTrueJetList[iCut]->Add(fHistoNPartInTrueJetVsJetPt[iCut]);
+
       }
       fHistoTrueJetPtVsPartonPt[iCut] = new TH2F("True_JetPt_vs_Parton_Pt", "True_JetPt_vs_Parton_Pt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTrueJetPtVsPartonPt[iCut]);
 
       if(fDoJetQA){
+        fHistoJetResolution[iCut] = new TH2F("JetResolution_TrueJetPt", "JetResolution_TrueJetPt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 60, -1., 2.);
+        fTrueJetList[iCut]->Add(fHistoJetResolution[iCut]);
+
         fHistoTruevsRecJetPtVsLeadingPart[iCut] = new TH3F("True_JetPt_vs_Rec_JetPt_VsPartPDG", "True_JetPt_vs_Rec_JetPt_VsPartPDG", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 17, vecEquidistFromMinus05.data());
         fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtVsLeadingPart[iCut]);
 
@@ -2610,6 +2617,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           fHistoTrueJetPtVsPartonPt[fiCut]->Fill(fTrueVectorJetPt.at(match), fTrueVectorJetPartonPt.at(match), fWeightJetJetMC);
           fHistoMatchedPtJet[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
           if(fDoJetQA){
+            fHistoJetResolution[fiCut]->Fill(fTrueVectorJetPt.at(match),  (fVectorJetPt.at(i) - fTrueVectorJetPt.at(match))/fTrueVectorJetPt.at(match) ,fWeightJetJetMC);
             fHistoTruevsRecJetPtVsLeadingPart[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), GetParticleIndex(LeadingPartPDG, 111), fWeightJetJetMC);
             fHistoTrueMatchedJetPtVsLeadingPart[fiCut]->Fill(fTrueVectorJetPt.at(match), GetParticleIndex(LeadingPartPDG, 111), fWeightJetJetMC);
             // jet resolution at SM border

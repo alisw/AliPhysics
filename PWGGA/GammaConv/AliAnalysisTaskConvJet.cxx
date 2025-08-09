@@ -117,7 +117,13 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fHistoArmenterosV0Pt(nullptr),
                                                    fHistoArmenterosV0Source(nullptr),
                                                    fHistoMassPhoton(nullptr),
-                                                   fHistoV0DaughterResol(nullptr)
+                                                   fHistoV0DaughterResol(nullptr),
+                                                   fHistoSourceV0Pt(nullptr),
+                                                   fHistoSourceV0DaughterPt(nullptr),
+                                                   fHistoSourceV0DaughterTrackPt(nullptr),
+                                                   fHistoV0Generated(nullptr),
+                                                   fHistoV0GeneratedMeasDecay(nullptr),
+                                                   fHistoV0DaughtersGenerated(nullptr)
 {
 }
 
@@ -188,7 +194,13 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fHistoArmenterosV0Pt(nullptr),
                                                                    fHistoArmenterosV0Source(nullptr),
                                                                    fHistoMassPhoton(nullptr),
-                                                                   fHistoV0DaughterResol(nullptr)
+                                                                   fHistoV0DaughterResol(nullptr),
+                                                                   fHistoSourceV0Pt(nullptr),
+                                                                   fHistoSourceV0DaughterPt(nullptr),
+                                                                   fHistoSourceV0DaughterTrackPt(nullptr),
+                                                                   fHistoV0Generated(nullptr),
+                                                                   fHistoV0GeneratedMeasDecay(nullptr),
+                                                                   fHistoV0DaughtersGenerated(nullptr)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -321,6 +333,29 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
     fHistoMassPhoton = new TH2F("MassPhotonVsPt", "MassPhotonVsPt",50, 0, 0.5, 100, 0, 20);
     fHistoMassPhoton->Sumw2();
     fHistograms->Add(fHistoMassPhoton);
+
+    fHistoSourceV0DaughterTrackPt = new TH2F("SourceVsV0DaughterTrackPt", "SourceVsV0DaughterTrackPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoSourceV0DaughterTrackPt->Sumw2();
+    fHistograms->Add(fHistoSourceV0DaughterTrackPt);
+
+    fHistoSourceV0Pt = new TH2F("SourceVsV0Pt", "SourceVsV0Pt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoSourceV0Pt->Sumw2();
+    fHistograms->Add(fHistoSourceV0Pt);
+    fHistoSourceV0DaughterPt = new TH2F("SourceVsV0DaughterPt", "SourceVsV0DaughterPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoSourceV0DaughterPt->Sumw2();
+    fHistograms->Add(fHistoSourceV0DaughterPt);
+    fHistoSourceV0DaughterTrackPt = new TH2F("SourceVsV0DaughterTrackPt", "SourceVsV0DaughterTrackPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoSourceV0DaughterTrackPt->Sumw2();
+    fHistograms->Add(fHistoSourceV0DaughterTrackPt);
+    fHistoV0Generated = new TH2F("SourceVsV0GenPt", "SourceVsV0GenPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoV0Generated->Sumw2();
+    fHistograms->Add(fHistoV0Generated);
+    fHistoV0GeneratedMeasDecay = new TH2F("SourceVsV0GenPt_MeasDecay", "SourceVsV0GenPt_MeasDecay",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoV0GeneratedMeasDecay->Sumw2();
+    fHistograms->Add(fHistoV0GeneratedMeasDecay);
+    fHistoV0DaughtersGenerated = new TH2F("SourceVsV0DaughterGenPt_MeasDecay", "SourceVsV0DaughterGenPt_MeasDecay",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+    fHistoV0DaughtersGenerated->Sumw2();
+    fHistograms->Add(fHistoV0DaughtersGenerated);
   }
   fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
   fHistoV0DaughterResol->Sumw2();
@@ -905,33 +940,38 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
         }
       }
       if(fSelectPhotonMass && !isSelected){
-        if(v0->MassK0Short() < 0.05 ) {
+        if(v0->InvMass2Prongs(0, 1, 11, 11) < 0.1 ) {
           isSelected = true;
         }
       }
       if(!isSelected) continue;
     }
 
+    double classification = 3.;
     hV0Pt->Fill(v0->Pt(), weight);
     fHistoArmenterosV0->Fill(v0->AlphaV0(),v0->PtArmV0(), weight);
     if(isMC && fDoFillExtendedHistos){
       const AliAODTrack *v0DaughterTr=(AliAODTrack *)v0->GetDaughter(0);
       int labelTr = v0DaughterTr->GetLabel();
+      const AliAODTrack *v0DaughterTr2=(AliAODTrack *)v0->GetDaughter(1);
       if(labelTr > 0){
         AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
         int motherlabel = tmpPart->GetMother();
         AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
         if(tmpPartMother){
           fHistoArmenterosV0Pt->Fill(v0->AlphaV0(),v0->PtArmV0(), v0->Pt(), weight);
-          double classification = 3.;
           const int pdgMother = std::abs(tmpPartMother->GetPdgCode());
           if( pdgMother == 22 ) classification = 0.;
-          if( pdgMother == 310 ) classification = 1.;
-          if( pdgMother == 3122 ) classification = 2.;
+          else if( pdgMother == 310 ) classification = 1.;
+          else if( pdgMother == 3122 ) classification = 2.;
           fHistoArmenterosV0Source->Fill(v0->AlphaV0(),v0->PtArmV0(), classification, weight);
           if(classification==0){
-            fHistoMassPhoton->Fill(v0->MassK0Short(), v0->Pt(), weight);
+            fHistoMassPhoton->Fill(v0->InvMass2Prongs(0, 1, 11, 11), v0->Pt(), weight);
           }
+          // Fill Pt histogram for true v0s
+          fHistoSourceV0Pt->Fill(classification, v0->Pt(), weight);
+          fHistoSourceV0DaughterPt->Fill(classification, v0DaughterTr->Pt(), weight);
+          fHistoSourceV0DaughterPt->Fill(classification, v0DaughterTr2->Pt(), weight);
         }
       } 
     }
@@ -996,6 +1036,9 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
                   fHistoV0TrueMotherLegPt->Fill(4., v0DaughterTr->Pt(), weight);
                 }
               }
+              if(fDoFillExtendedHistos){
+                fHistoSourceV0DaughterTrackPt->Fill(classification, v0DaughterTr->Pt(), weight);
+              }
             }
           }
           if(v0DaughterTr->Pt() > fMaxPtCutV0Leg) continue; // most likely wrongly reconstructed! Resoluion is very poor above that
@@ -1027,5 +1070,56 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
     hJetPhiDiffWithV0->Fill(fVectorJetPhi[i] - vectorJetPhiOrg[i], fVectorJetPt[i], weight);
     hJetPtDiffWithV0->Fill(vectorJetPtOrg[i]/fVectorJetPt[i], fVectorJetPt[i], weight);
   }
-    
+
+
+  // Loop over all primary MC particle
+  if(isMC && fDoFillExtendedHistos){
+    for (Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+
+      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
+      if (!particle)
+        continue;
+
+      if(std::abs(particle->Y()) > 0.8){
+        continue;
+      }
+      bool isDecayChannelMeas = false;
+      double classificationGen = 3.;
+      const int pdgCode = std::abs(particle->GetPdgCode());
+      std::array<AliAODMCParticle*, 2> arrDaughters = {nullptr};
+      if( pdgCode == 22 ) {
+        classificationGen = 0.;
+        if(particle->GetNDaughters() == 2){
+          arrDaughters[0] =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterFirst()));
+          arrDaughters[1] = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLast()));
+          isDecayChannelMeas = true;
+        }
+      } else if( pdgCode == 310 ) {
+        classificationGen = 1.;
+        if(particle->GetNDaughters() == 2){
+          arrDaughters[0] =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterFirst()));
+          arrDaughters[1] = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLast()));
+          if(std::abs(arrDaughters[0]->GetPdgCode()) == 111 && arrDaughters[0]->GetPdgCode() == -arrDaughters[1]->GetPdgCode()){
+            isDecayChannelMeas = true;
+          }
+        }
+      } else if( pdgCode == 3122 ) {
+        classificationGen = 2.;
+        if(particle->GetNDaughters() == 2){
+          arrDaughters[0] =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterFirst()));
+          arrDaughters[1] = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLast()));
+          if(std::abs(arrDaughters[0]->GetPdgCode()) == 2212 || std::abs(arrDaughters[1]->GetPdgCode()) == 2212){
+            isDecayChannelMeas = true;
+          }
+        }
+      } else continue;
+
+      fHistoV0Generated->Fill(classificationGen, particle->Pt(), weight);
+      if(isDecayChannelMeas) {
+        fHistoV0GeneratedMeasDecay->Fill(classificationGen, particle->Pt(), weight);
+        if(arrDaughters[0]) fHistoV0DaughtersGenerated->Fill(classificationGen, arrDaughters[0]->Pt(), weight);
+        if(arrDaughters[1]) fHistoV0DaughtersGenerated->Fill(classificationGen, arrDaughters[1]->Pt(), weight);
+      }
+    }
+  }   
 }
