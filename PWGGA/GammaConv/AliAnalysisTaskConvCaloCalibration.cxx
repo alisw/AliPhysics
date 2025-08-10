@@ -1912,7 +1912,6 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
           }
 
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC);
-          // if(arrClustersMesonCand) delete cluster;
 
           AliAODConversionMother *mesonCand = new AliAODConversionMother(gamma0,gamma1);
           mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
@@ -2001,6 +2000,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
           }
           delete mesonCand;
           mesonCand=0x0;
+          if(arrClustersMesonCand && cluster) delete cluster;
         }
       }
     }
@@ -2112,6 +2112,10 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
               Double_t sparesFill[4] = {mesonCand->M(),mesonCand->Pt(),(Double_t)zbin,(Double_t)mbin};
               if (fSparseMotherInvMassPtZM[fiCut]) fSparseMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
+            if(arrClustersMesonCand){
+              if(Cluster0) delete Cluster0;
+              if(Cluster1) delete Cluster1;
+            }
           }
           delete mesonCand;
           mesonCand=0x0;
@@ -2189,6 +2193,8 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackground(){
               if (fSparseMotherBackInvMassPtZM[fiCut]) fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
           }
+          if(backgroundCandidate) delete backgroundCandidate;
+          backgroundCandidate = 0x0;
         }
       }
     }
