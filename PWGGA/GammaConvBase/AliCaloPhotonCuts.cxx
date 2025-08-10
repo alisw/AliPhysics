@@ -4919,11 +4919,13 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
           }
         }
         // fill vs. supermodule
-        int iSM = -1;
-        fGeomEMCAL->SuperModuleNumberFromEtaPhi(inTrack->GetTrackEtaOnEMCal(), inTrack->GetTrackPhiOnEMCal(), iSM);
-        fHistElectronPositronVsSM->Fill(inTrack->GetTrackPOnEMCal(), iSM, weight);
-        //fill vs eta position
-        fHistElectronPositronVsEta->Fill(inTrack->GetTrackPOnEMCal(), inTrack->GetTrackEtaOnEMCal(), weight);
+        if(fExtendedMatchAndQA > 1){
+          int iSM = -1;
+          fGeomEMCAL->SuperModuleNumberFromEtaPhi(inTrack->GetTrackEtaOnEMCal(), inTrack->GetTrackPhiOnEMCal(), iSM);
+          fHistElectronPositronVsSM->Fill(inTrack->GetTrackPOnEMCal(), iSM, weight);
+          //fill vs eta position
+          fHistElectronPositronVsEta->Fill(inTrack->GetTrackPOnEMCal(), inTrack->GetTrackEtaOnEMCal(), weight);
+        }
       }
     }
 
@@ -5024,7 +5026,9 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
 
   for(const auto & etr : vecElectronMixing){
     // fill all electron tracks
-    fHistElectronPositronOnEMCCellMixing->Fill(etr.momOnCalo, weight);
+    if(fExtendedMatchAndQA > 1 ){
+      fHistElectronPositronOnEMCCellMixing->Fill(etr.momOnCalo, weight);
+    }
     for(unsigned int icl = 0; icl < vCluster.size(); icl++){
       AliVCluster* cluster = vCluster[icl];
       if(!cluster){
@@ -5058,8 +5062,10 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
 
       // matched
       if(match_dEta && match_dPhi){
-        fHistElectronPositronOnEMCCellMatchedMixing->Fill(etr.momOnCalo, weight);
-        fHistElectronPositronClusterMatchEoverPMixing->Fill(cluster->E() / etr.momOnCalo, etr.momOnCalo, weight);
+        if(fExtendedMatchAndQA > 1 ){
+          fHistElectronPositronOnEMCCellMatchedMixing->Fill(etr.momOnCalo, weight);
+          fHistElectronPositronClusterMatchEoverPMixing->Fill(cluster->E() / etr.momOnCalo, etr.momOnCalo, weight);
+        }
       } // end matched condition
     } // end cluster loop
   } // end track loop
@@ -5086,7 +5092,6 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       }
     }
   }
-
 }
 
 //________________________________________________________________________
