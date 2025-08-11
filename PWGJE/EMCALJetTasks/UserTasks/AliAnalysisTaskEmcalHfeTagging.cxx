@@ -239,17 +239,20 @@ fAngJetNoElectrons(0),
 fDispJetNoElectrons(0),
 fTreeObservableTagging(0)
 {
-    for(Int_t i=0;i<21;i++){
+    for(Int_t i = 0; i < nbranches; i++){
         fShapesVar[i]=0;
     }
     
-    for(Int_t i=0;i<5;i++){
+	for(Int_t i = 0; i < ncutseff; i++){
         fptTrueHFEeffTPCTOF[i] = NULL;
         fptTrueHFEeffEMCal[i] = NULL;
+    }
+    
+    for(Int_t i = 0; i < nbins_jetpt; i++){
         fnEovPelecTPCsscut[i] = NULL;
     }
     
-    for(Int_t i=0;i<2;i++){
+    for(Int_t i = 0; i < ncutseffsubs; i++){
         fptTrueHFEeffTPCTOFang[i] = NULL;
         fptTrueHFEeffEMCalang[i] = NULL;
         fptTrueHFEeffTPCTOFdisp[i] = NULL;
@@ -258,22 +261,22 @@ fTreeObservableTagging(0)
     }
     
     
-    for(Int_t i=0;i<5;i++){
+    for(Int_t i = 0; i < nbins_jetpt; i++){
         fInvmassLS[i] = NULL;
         fInvmassULS[i] = NULL;
-        for(Int_t j=0;j<18;j++){
+        for(Int_t j = 0; j < nbins_eptTPC; j++){
             fnTPCSigma[i][j] = NULL;
         }
     }
     
-    for(Int_t i=0;i<5;i++){
-        for(Int_t j=0;j<5;j++){
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        for(Int_t j = 0; j < nbins_gsys; j++){
             fRecPEAng[i][j] = NULL;
             fTotPEAng[i][j] = NULL;
             fULSptAng[i][j] = NULL;
             fLSptAng[i][j] = NULL;
         }
-        for(Int_t j=0;j<6;j++){
+        for(Int_t j = 0; j < nbins_ptdsys; j++){
             fRecPEDisp[i][j] = NULL;
             fTotPEDisp[i][j] = NULL;
             fULSptDisp[i][j] = NULL;
@@ -281,7 +284,7 @@ fTreeObservableTagging(0)
         }
     }
     
-	for(Int_t i = 0; i < 5; i++){
+	for(Int_t i = 0; i < nbins_jetpt; i++){
         fPtSemiInclJet[i] = NULL;
         fAngSemiInclJet[i] = NULL;
 		fDispSemiInclJet[i] = NULL;
@@ -480,24 +483,27 @@ fDispJetNoElectrons(0),
 fTreeObservableTagging(0)
 {
     // Standard constructor.
-    for(Int_t i=0;i<21;i++){
+    for(Int_t i = 0; i < nbranches; i++){
         fShapesVar[i]=0;
     }
     
-    for(Int_t i=0;i<5;i++){
+	for(Int_t i = 0; i < ncutseff; i++){
         fptTrueHFEeffTPCTOF[i] = NULL;
         fptTrueHFEeffEMCal[i] = NULL;
+    }
+    
+    for(Int_t i = 0; i < nbins_jetpt; i++){
         fnEovPelecTPCsscut[i] = NULL;
     }
     
-    for(Int_t i=0;i<2;i++){
+    for(Int_t i = 0; i < ncutseffsubs; i++){
         fptTrueHFEeffTPCTOFang[i] = NULL;
         fptTrueHFEeffEMCalang[i] = NULL;
         fptTrueHFEeffTPCTOFdisp[i] = NULL;
         fptTrueHFEeffEMCaldisp[i] = NULL;
     }
     
-    for(Int_t i=0;i<5;i++){
+    for(Int_t i = 0; i < nbins_jetpt; i++){
         fInvmassLS[i] = NULL;
         fInvmassULS[i] = NULL;
         for(Int_t j=0;j<18;j++){
@@ -505,14 +511,14 @@ fTreeObservableTagging(0)
         }
     }
     
-    for(Int_t i=0;i<5;i++){
-        for(Int_t j=0;j<5;j++){
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        for(Int_t j = 0; j < nbins_gsys; j++){
             fRecPEAng[i][j] = NULL;
             fTotPEAng[i][j] = NULL;
             fULSptAng[i][j] = NULL;
             fLSptAng[i][j] = NULL;
         }
-        for(Int_t j=0;j<6;j++){
+        for(Int_t j = 0; j < nbins_ptdsys; j++){
             fRecPEDisp[i][j] = NULL;
             fTotPEDisp[i][j] = NULL;
             fULSptDisp[i][j] = NULL;
@@ -520,7 +526,7 @@ fTreeObservableTagging(0)
         }
     }
 	
-	for(Int_t i = 0; i < 5; i++){
+	for(Int_t i = 0; i < nbins_jetpt; i++){
         fPtSemiInclJet[i] = NULL;
         fAngSemiInclJet[i] = NULL;
 		fDispSemiInclJet[i] = NULL;
@@ -553,24 +559,26 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
     
-    Double_t ptRange[34] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
+	/* const int nbins_ept = 33, nbins_jetpt = 6, nbins_g = 14, nbins_ptd = 14; */
+	/* const int nbins_gsys = 6, nbins_ptdsys = 7, nbins_ptauxiliary = 59; */
+
+    Double_t bin_ept[nbins_ept + 1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
         1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
         6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
         35., 40., 45., 50.};
     
-    int nbin = 59;
-    double xbins[60] =  {0.01,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,
+    Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
+    Double_t bin_g[nbins_g + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 
+								   0.5, 0.55, 0.6, 0.65, 0.7};
+    Double_t bin_ptd[nbins_ptd + 1] = {0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
+									   0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+    
+    Double_t bin_ptauxiliary[nbins_ptauxiliary + 1] = {0.01,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,
         0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,
         0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,
         1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,
         3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,
         9,10,11,12,13,14,15,16,18,20};
-    
-    Double_t bin_JetPt[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t bin_g[9] = {0., 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.6};//g
-    Double_t bin_ptd[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};//pTD
-    
-    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};//for syst.
     
 	Int_t nbin_jetptRM[2] = {24, 24};
 	Double_t max_jetptRM[2] = {120., 120};
@@ -583,6 +591,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	Int_t nbin_ptdRM[4] = {24, 24, 20, 20};
 	Double_t max_ptdRM[4] = {120., 120., 1., 1.};
 	Double_t min_ptdRM[4] = {0., 0., 0., 0.};
+
 
     fNeventV0 = new TH1F("fNeventV0","Number of Events (V0)",5,-0.5,4.5);
     fOutput->Add(fNeventV0);
@@ -653,8 +662,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnTPCcutPt=new TH2F("fnTPCcutPt", "fnTPCcutPt", 50, 0, 5, 200, -10, 10);
     fOutput->Add(fnTPCcutPt);
     
-    for(Int_t i=0;i<5;i++){
-        for(Int_t j=0;j<18;j++){
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        for(Int_t j=0; j < nbins_eptTPC; j++){
             fnTPCSigma[i][j] = new TH1F(Form("fnTPCSigma%d%d",i,j),Form("fnTPCSigma%d%d",i,j), 100,-15,15);
             fOutput->Add(fnTPCSigma[i][j]);
         }
@@ -663,13 +672,13 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnULSmLSpairsPerElectron =new TH2F("fnULSmLSpairsPerElectron", "fnULSmLSpairsPerElectron", 50, 0, 5, 100, 0, 100);
     fOutput->Add(fnULSmLSpairsPerElectron);
     
-    for(Int_t i=0;i<5;i++){
-        fInvmassLS[i] = new TH2F(Form("fInvmassLS%d",i), Form("fInvmassLS%d",i), 33,ptRange, 100, 0, 0.5);
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        fInvmassLS[i] = new TH2F(Form("fInvmassLS%d",i), Form("fInvmassLS%d",i), nbins_ept,bin_ept, 100, 0, 0.5);
         fOutput->Add(fInvmassLS[i]);
     }
     
-    for(Int_t i=0;i<5;i++){
-        fInvmassULS[i] = new TH2F(Form("fInvmassULS%d",i), Form("fInvmassULS%d",i), 33,ptRange, 100, 0, 0.5);
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        fInvmassULS[i] = new TH2F(Form("fInvmassULS%d",i), Form("fInvmassULS%d",i), nbins_ept,bin_ept, 100, 0, 0.5);
         fOutput->Add(fInvmassULS[i]);
     }
     
@@ -697,67 +706,64 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	fnTruePElecPerJet=new TH1F("fnTruePElecPerJet", "fnTruePElecPerJet", 50,0,50);
     fOutput->Add(fnTruePElecPerJet);
     
-	fnTrueElecPerJetPt = new TH2F("fnTrueElecPerJetPt", "fnTrueElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+	fnTrueElecPerJetPt = new TH2F("fnTrueElecPerJetPt", "fnTrueElecPerJetPt", nbins_jetpt, bin_jetpt, 10, 0, 10);
     fOutput->Add(fnTrueElecPerJetPt);
     
-    fnTrueHFElecPerJetPt = new TH2F("fnTrueHFElecPerJetPt", "fnTrueHFElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+    fnTrueHFElecPerJetPt = new TH2F("fnTrueHFElecPerJetPt", "fnTrueHFElecPerJetPt", nbins_jetpt, bin_jetpt, 10, 0, 10);
     fOutput->Add(fnTrueHFElecPerJetPt);
     
-	fnTruePElecPerJetPt = new TH2F("fnTruePElecPerJetPt", "fnTruePElecPerJetPt", 5, bin_JetPt, 10, 0, 10);
+	fnTruePElecPerJetPt = new TH2F("fnTruePElecPerJetPt", "fnTruePElecPerJetPt", nbins_jetpt, bin_jetpt, 10, 0, 10);
     fOutput->Add(fnTruePElecPerJetPt);
     
-    fPi0PtGen = new TH1F("fPi0PtGen","fPi0PtGen",nbin,xbins);
+    fPi0PtGen = new TH1F("fPi0PtGen","fPi0PtGen",nbins_ptauxiliary,bin_ptauxiliary);
     fOutput->Add(fPi0PtGen);
     
-    fPi0PtEnh = new TH1F("fPi0PtEnh","fPi0PtEnh",nbin,xbins);
+    fPi0PtEnh = new TH1F("fPi0PtEnh","fPi0PtEnh",nbins_ptauxiliary,bin_ptauxiliary);
     fOutput->Add(fPi0PtEnh);
     
-    fEtaPtGen = new TH1F("fEtaPtGen", "fEtaPtGen",nbin,xbins);
+    fEtaPtGen = new TH1F("fEtaPtGen", "fEtaPtGen",nbins_ptauxiliary,bin_ptauxiliary);
     fOutput->Add(fEtaPtGen);
     
-    fEtaPtEnh = new TH1F("fEtaPtEnh", "fEtaPtEnh",nbin,xbins);
+    fEtaPtEnh = new TH1F("fEtaPtEnh", "fEtaPtEnh",nbins_ptauxiliary,bin_ptauxiliary);
     fOutput->Add(fEtaPtEnh);
     
-    fGenHfePt = new TH1F("fGenHfePt","fGenHfePt",nbin,xbins);
+    fGenHfePt = new TH1F("fGenHfePt","fGenHfePt",nbins_ptauxiliary,bin_ptauxiliary);
     fOutput->Add(fGenHfePt);
     
-    fGenPePt = new TH1F("fGenPePt", "fGenPePt",nbin,xbins);
+    fGenPePt = new TH1F("fGenPePt", "fGenPePt",nbins_ptauxiliary,bin_ptauxiliary);
     fOutput->Add(fGenPePt);
     
-    for(Int_t i=0;i<5;i++){
-        
-        for(Int_t j=0;j<5;j++){
-            fRecPEAng[i][j] = new TH1F(Form("fRecPEAng%d%d",i,j), Form("fRecPEAng%d%d",i,j), 33,ptRange);
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        for(Int_t j = 0; j < nbins_gsys; j++){
+            fRecPEAng[i][j] = new TH1F(Form("fRecPEAng%d%d",i,j), Form("fRecPEAng%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fRecPEAng[i][j]);
 
-            fTotPEAng[i][j] = new TH1F(Form("fTotPEAng%d%d",i,j), Form("fTotPEAng%d%d",i,j), 33,ptRange);
+            fTotPEAng[i][j] = new TH1F(Form("fTotPEAng%d%d",i,j), Form("fTotPEAng%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fTotPEAng[i][j]);
             
-            fULSptAng[i][j] = new TH1F(Form("fULSptAng%d%d",i,j), Form("fULSptAng%d%d",i,j), 33,ptRange);
+            fULSptAng[i][j] = new TH1F(Form("fULSptAng%d%d",i,j), Form("fULSptAng%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fULSptAng[i][j]);
 
-            fLSptAng[i][j] = new TH1F(Form("fLSptAng%d%d",i,j), Form("fLSptAng%d%d",i,j), 33,ptRange);
+            fLSptAng[i][j] = new TH1F(Form("fLSptAng%d%d",i,j), Form("fLSptAng%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fLSptAng[i][j]);
         }
         
-        for(Int_t j=0;j<6;j++){
-            fRecPEDisp[i][j] = new TH1F(Form("fRecPEDisp%d%d",i,j), Form("fRecPEDisp%d%d",i,j), 33,ptRange);
+        for(Int_t j = 0; j < nbins_ptdsys; j++){
+            fRecPEDisp[i][j] = new TH1F(Form("fRecPEDisp%d%d",i,j), Form("fRecPEDisp%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fRecPEDisp[i][j]);
             
-            fTotPEDisp[i][j] = new TH1F(Form("fTotPEDisp%d%d",i,j), Form("fTotPEDisp%d%d",i,j), 33,ptRange);
+            fTotPEDisp[i][j] = new TH1F(Form("fTotPEDisp%d%d",i,j), Form("fTotPEDisp%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fTotPEDisp[i][j]);
             
-            fULSptDisp[i][j] = new TH1F(Form("fULSptDisp%d%d",i,j), Form("fULSptDisp%d%d",i,j), 33,ptRange);
+            fULSptDisp[i][j] = new TH1F(Form("fULSptDisp%d%d",i,j), Form("fULSptDisp%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fULSptDisp[i][j]);
             
-            fLSptDisp[i][j] = new TH1F(Form("fLSptDisp%d%d",i,j), Form("fLSptDisp%d%d",i,j), 33,ptRange);
+            fLSptDisp[i][j] = new TH1F(Form("fLSptDisp%d%d",i,j), Form("fLSptDisp%d%d",i,j), nbins_ept,bin_ept);
             fOutput->Add(fLSptDisp[i][j]);
         }
     }
     
-
-    
-    fPtP=new TH2F("fPtP", "fPtP", 33,ptRange,33,ptRange);
+    fPtP=new TH2F("fPtP", "fPtP", nbins_ept,bin_ept,nbins_ept,bin_ept);
     fOutput->Add(fPtP);
     
     fptJetIE= new TH1F("fptJetIE", "fptJetIE", 100, 0, 200);
@@ -772,44 +778,44 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	fptJetHadron = new TH1F("fptJetHadron", "fptJetHadron", 24, 0., 120.);
     fOutput -> Add(fptJetHadron);
     
-    fptRecPE= new TH1F("fptRecPE", "fptRecPE", 33,ptRange);
+    fptRecPE= new TH1F("fptRecPE", "fptRecPE", nbins_ept,bin_ept);
     fOutput->Add(fptRecPE);
     
-    fptTruePE= new TH1F("fptTruePE", "fptTruePE", 33,ptRange);
+    fptTruePE= new TH1F("fptTruePE", "fptTruePE", nbins_ept,bin_ept);
     fOutput->Add(fptTruePE);
     
-    for(Int_t i=0;i<5;i++){
-        fptTrueHFEeffTPCTOF[i] = new TH1F(Form("fptTrueHFEeffTPCTOF%d",i), Form("fptTrueHFEeffTPCTOF%d",i), 33,ptRange);
+    for(Int_t i = 0; i < ncutseff; i++){
+        fptTrueHFEeffTPCTOF[i] = new TH1F(Form("fptTrueHFEeffTPCTOF%d",i), Form("fptTrueHFEeffTPCTOF%d",i), nbins_ept,bin_ept);
         fOutput->Add(fptTrueHFEeffTPCTOF[i]);
     }
     
-    for(Int_t i=0;i<2;i++){
+    for(Int_t i = 0; i < ncutseffsubs; i++){
         fptTrueHFEeffTPCTOFang[i] = new TH3F(Form("fptTrueHFEeffTPCTOFang%d",i),
-                                             Form("fptTrueHFEeffTPCTOFang%d",i), 33,ptRange,5, bin_JetPt, 5, angRange);
+                                             Form("fptTrueHFEeffTPCTOFang%d",i), nbins_ept,bin_ept,nbins_jetpt, bin_jetpt, nbins_g, bin_g);
         fOutput->Add(fptTrueHFEeffTPCTOFang[i]);
     }
     
-    for(Int_t i=0;i<2;i++){
+    for(Int_t i = 0; i < ncutseffsubs; i++){
         fptTrueHFEeffTPCTOFdisp[i] = new TH3F(Form("fptTrueHFEeffTPCTOFdisp%d",i),
-                                              Form("fptTrueHFEeffTPCTOFdisp%d",i), 33,ptRange,5, bin_JetPt,6, bin_ptd);
+                                              Form("fptTrueHFEeffTPCTOFdisp%d",i), nbins_ept,bin_ept,nbins_jetpt, bin_jetpt,nbins_ptd, bin_ptd);
         fOutput->Add(fptTrueHFEeffTPCTOFdisp[i]);
     }
     
     
-    for(Int_t i=0;i<5;i++){
-        fptTrueHFEeffEMCal[i] = new TH1F(Form("fptTrueHFEeffEMCal%d",i), Form("fptTrueHFEeffEMCal%d",i), 33,ptRange);
+    for(Int_t i = 0; i < ncutseff; i++){
+        fptTrueHFEeffEMCal[i] = new TH1F(Form("fptTrueHFEeffEMCal%d",i), Form("fptTrueHFEeffEMCal%d",i), nbins_ept,bin_ept);
         fOutput->Add(fptTrueHFEeffEMCal[i]);
     }
     
-    for(Int_t i=0;i<2;i++){
+    for(Int_t i = 0; i < ncutseffsubs; i++){
         fptTrueHFEeffEMCalang[i] = new TH3F(Form("fptTrueHFEeffEMCalang%d",i),
-                                            Form("fptTrueHFEeffEMCalang%d",i), 33,ptRange,5, bin_JetPt, 5, angRange);
+                                            Form("fptTrueHFEeffEMCalang%d",i), nbins_ept,bin_ept,nbins_jetpt, bin_jetpt, nbins_g, bin_g);
         fOutput->Add(fptTrueHFEeffEMCalang[i]);
     }
     
-    for(Int_t i=0;i<2;i++){
+    for(Int_t i = 0; i < ncutseffsubs; i++){
         fptTrueHFEeffEMCaldisp[i] = new TH3F(Form("fptTrueHFEeffEMCaldisp%d",i),
-                                             Form("fptTrueHFEeffEMCaldisp%d",i), 33,ptRange,5, bin_JetPt,6, bin_ptd);
+                                             Form("fptTrueHFEeffEMCaldisp%d",i), nbins_ept,bin_ept,nbins_jetpt, bin_jetpt,nbins_ptd, bin_ptd);
         fOutput->Add(fptTrueHFEeffEMCaldisp[i]);
     }
     
@@ -864,8 +870,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnEovPelecTPCEMCalcut = new TH2F("fnEovPelecTPCEMCalcut", "fnEovPelecTPCEMCalcut", 100, 0, 100,40,0,2);
     fOutput->Add(fnEovPelecTPCEMCalcut);
     
-    for(Int_t i=0;i<5;i++){
-        fnEovPelecTPCsscut[i] = new TH2F(Form("fnEovPelecTPCsscut%d",i), Form("fnEovPelecTPCsscut%d",i), 33,ptRange,40,0,2);
+    for(Int_t i = 0; i < nbins_jetpt; i++){
+        fnEovPelecTPCsscut[i] = new TH2F(Form("fnEovPelecTPCsscut%d",i), Form("fnEovPelecTPCsscut%d",i), nbins_ept,bin_ept,40,0,2);
         fOutput->Add(fnEovPelecTPCsscut[i]);
     }
     
@@ -893,140 +899,140 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnClsTime = new TH2F("fnClsTime", "fnClsTime", 100, 0, 100, 100, -200,200);
     fOutput->Add(fnClsTime);
     
-	fnM20TrueElec = new TH2F("fnM20TrueElec", "fnM20TrueElec", 50, 0.5, 50.5, 100, 0.01, 2.01);
+	fnM20TrueElec = new TH2F("fnM20TrueElec", "fnM20TrueElec", 50, 0., 50., 100, 0.01, 2.01);
     fOutput->Add(fnM20TrueElec);
 	
-	fnM02TrueElec = new TH2F("fnM02TrueElec", "fnM02TrueElec", 50, 0.5, 50.5, 100, 0.01, 2.01);
+	fnM02TrueElec = new TH2F("fnM02TrueElec", "fnM02TrueElec", 50, 0., 50., 100, 0.01, 2.01);
     fOutput->Add(fnM02TrueElec);
 	
-	fnShowerShapeTrueElec = new TH3F("fnShowerShapeTrueElec", "fnShowerShapeTrueElec", 50, 0.5, 50.5, 50, 0.01, 2.01, 50, 0.01, 2.01);
+	fnShowerShapeTrueElec = new TH3F("fnShowerShapeTrueElec", "fnShowerShapeTrueElec", 50, 0., 50., 50, 0.01, 2.01, 50, 0.01, 2.01);
     fOutput->Add(fnShowerShapeTrueElec);
 	
-	fnEovPTrueElecnocut = new TH2F("fnEovPTrueElecnocut", "fnEovPTrueElecnocut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueElecnocut = new TH2F("fnEovPTrueElecnocut", "fnEovPTrueElecnocut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueElecnocut);
 	
-	fnEovPTrueElecTPCcut = new TH2F("fnEovPTrueElecTPCcut", "fnEovPTrueElecTPCcut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueElecTPCcut = new TH2F("fnEovPTrueElecTPCcut", "fnEovPTrueElecTPCcut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueElecTPCcut);
 	
-	fnEovPTrueElecEMCalcut = new TH2F("fnEovPTrueElecEMCalcut", "fnEovPTrueElecEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueElecEMCalcut = new TH2F("fnEovPTrueElecEMCalcut", "fnEovPTrueElecEMCalcut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueElecEMCalcut);
     
-	fnEovPTrueElecTPCEMCalcut = new TH2F("fnEovPTrueElecTPCEMCalcut", "fnEovPTrueElecTPCEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueElecTPCEMCalcut = new TH2F("fnEovPTrueElecTPCEMCalcut", "fnEovPTrueElecTPCEMCalcut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueElecTPCEMCalcut);
 	
-	fnM20TrueBkg = new TH2F("fnM20TrueBkg", "fnM20TrueBkg", 50, 0.5, 50.5, 100, 0.01, 2.01);
+	fnM20TrueBkg = new TH2F("fnM20TrueBkg", "fnM20TrueBkg", 50, 0., 50., 100, 0.01, 2.01);
     fOutput->Add(fnM20TrueBkg);
 	
-	fnM02TrueBkg = new TH2F("fnM02TrueBkg", "fnM02TrueBkg", 50, 0.5, 50.5, 100, 0.01, 2.01);
+	fnM02TrueBkg = new TH2F("fnM02TrueBkg", "fnM02TrueBkg", 50, 0., 50., 100, 0.01, 2.01);
     fOutput->Add(fnM02TrueBkg);
 	
-	fnShowerShapeTrueBkg = new TH3F("fnShowerShapeTrueBkg", "fnShowerShapeTrueBkg", 50, 0.5, 50.5, 50, 0.01, 2.01, 50, 0.01, 2.01);
+	fnShowerShapeTrueBkg = new TH3F("fnShowerShapeTrueBkg", "fnShowerShapeTrueBkg", 50, 0., 50., 50, 0.01, 2.01, 50, 0.01, 2.01);
     fOutput->Add(fnShowerShapeTrueBkg);
 	
-	fnEovPTrueBkgnocut = new TH2F("fnEovPTrueBkgnocut", "fnEovPTrueBkgnocut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueBkgnocut = new TH2F("fnEovPTrueBkgnocut", "fnEovPTrueBkgnocut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueBkgnocut);
 
-	fnEovPTrueBkgTPCcut = new TH2F("fnEovPTrueBkgTPCcut", "fnEovPTrueBkgTPCcut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueBkgTPCcut = new TH2F("fnEovPTrueBkgTPCcut", "fnEovPTrueBkgTPCcut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueBkgTPCcut);
 	
-	fnEovPTrueBkgEMCalcut = new TH2F("fnEovPTrueBkgEMCalcut", "fnEovPTrueBkgEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueBkgEMCalcut = new TH2F("fnEovPTrueBkgEMCalcut", "fnEovPTrueBkgEMCalcut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueBkgEMCalcut);
 
-	fnEovPTrueBkgTPCEMCalcut = new TH2F("fnEovPTrueBkgTPCEMCalcut", "fnEovPTrueBkgTPCEMCalcut", 50, 0.5, 50.5, 40, 0, 2);
+	fnEovPTrueBkgTPCEMCalcut = new TH2F("fnEovPTrueBkgTPCEMCalcut", "fnEovPTrueBkgTPCEMCalcut", 50, 0., 50., 40, 0, 2);
     fOutput->Add(fnEovPTrueBkgTPCEMCalcut);
     
-    fAngULS = new TH2F("fAngULS", "fAngULS", 5, bin_JetPt, 8, bin_g);
+    fAngULS = new TH2F("fAngULS", "fAngULS", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngULS);
     
-    fAngLS = new TH2F("fAngLS", "fAngLS", 5, bin_JetPt, 8, bin_g);
+    fAngLS = new TH2F("fAngLS", "fAngLS", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngLS);
     
-    fAngChargPart = new TH2F("fAngChargPart", "fAngChargPart", 5, bin_JetPt, 8, bin_g);
+    fAngChargPart = new TH2F("fAngChargPart", "fAngChargPart", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngChargPart);
     
-    fAngHadron = new TH2F("fAngHadron", "fAngHadron", 5, bin_JetPt, 8, bin_g);
+    fAngHadron = new TH2F("fAngHadron", "fAngHadron", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngHadron);
     
-    fAngIncElec = new TH2F("fAngIncElec", "fAngIncElec", 5, bin_JetPt, 8, bin_g);
+    fAngIncElec = new TH2F("fAngIncElec", "fAngIncElec", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngIncElec);
     
-    fAngPhotElec = new TH2F("fAngPhotElec", "fAngPhotElec", 5, bin_JetPt, 8, bin_g);
+    fAngPhotElec = new TH2F("fAngPhotElec", "fAngPhotElec", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngPhotElec);
     
-    fAngElecFromD = new TH2F("fAngElecFromD", "fAngElecFromD", 5, bin_JetPt, 8, bin_g);
+    fAngElecFromD = new TH2F("fAngElecFromD", "fAngElecFromD", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngElecFromD);
     
-    fAngElecFromB = new TH2F("fAngElecFromB", "fAngElecFromB", 5, bin_JetPt, 8, bin_g);
+    fAngElecFromB = new TH2F("fAngElecFromB", "fAngElecFromB", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngElecFromB);
     
-    fAngElecFromDFromB = new TH2F("fAngElecFromDFromB", "fAngElecFromDFromB", 5, bin_JetPt, 8, bin_g);
+    fAngElecFromDFromB = new TH2F("fAngElecFromDFromB", "fAngElecFromDFromB", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngElecFromDFromB);
     
-    fAngD = new TH2F("fAngD", "fAngD", 5, bin_JetPt, 8, bin_g);
+    fAngD = new TH2F("fAngD", "fAngD", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngD);
     
-    fAngB = new TH2F("fAngB", "fAngB", 5, bin_JetPt, 8, bin_g);
+    fAngB = new TH2F("fAngB", "fAngB", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngB);
     
-    fAngCharm = new TH2F("fAngCharm", "fAngCharm", 5, bin_JetPt, 8, bin_g);
+    fAngCharm = new TH2F("fAngCharm", "fAngCharm", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngCharm);
     
-    fAngBeauty = new TH2F("fAngBeauty", "fAngBeauty", 5, bin_JetPt, 8, bin_g);
+    fAngBeauty = new TH2F("fAngBeauty", "fAngBeauty", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngBeauty);
     
-    fAngQuark = new TH2F("fAngQuark", "fAngQuark", 5, bin_JetPt, 8, bin_g);
+    fAngQuark = new TH2F("fAngQuark", "fAngQuark", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngQuark);
     
-    fAngGluon = new TH2F("fAngGluon", "fAngGluon", 5, bin_JetPt, 8, bin_g);
+    fAngGluon = new TH2F("fAngGluon", "fAngGluon", nbins_jetpt, bin_jetpt, nbins_g, bin_g);
     fOutput->Add(fAngGluon);
     
-    fDispULS = new TH2F("fDispULS", "fDispULS", 5, bin_JetPt, 6, bin_ptd);
+    fDispULS = new TH2F("fDispULS", "fDispULS", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispULS);
     
-    fDispLS = new TH2F("fDispLS", "fDispLS", 5, bin_JetPt, 6, bin_ptd);
+    fDispLS = new TH2F("fDispLS", "fDispLS", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispLS);
     
-    fDispChargPart = new TH2F("fDispChargPart", "fDispChargPart", 5, bin_JetPt, 6, bin_ptd);
+    fDispChargPart = new TH2F("fDispChargPart", "fDispChargPart", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispChargPart);
     
-    fDispHadron = new TH2F("fDispHadron", "fDispHadron", 5, bin_JetPt, 6, bin_ptd);
+    fDispHadron = new TH2F("fDispHadron", "fDispHadron", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispHadron);
     
-    fDispIncElec = new TH2F("fDispIncElec", "fDispIncElec", 5, bin_JetPt, 6, bin_ptd);
+    fDispIncElec = new TH2F("fDispIncElec", "fDispIncElec", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispIncElec);
     
-    fDispPhotElec = new TH2F("fDispPhotElec", "fDispPhotElec", 5, bin_JetPt, 6, bin_ptd);
+    fDispPhotElec = new TH2F("fDispPhotElec", "fDispPhotElec", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispPhotElec);
     
-    fDispElecFromD = new TH2F("fDispElecFromD", "fDispElecFromD", 5, bin_JetPt, 6, bin_ptd);
+    fDispElecFromD = new TH2F("fDispElecFromD", "fDispElecFromD", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispElecFromD);
     
-    fDispElecFromB = new TH2F("fDispElecFromB", "fDispElecFromB", 5, bin_JetPt, 6, bin_ptd);
+    fDispElecFromB = new TH2F("fDispElecFromB", "fDispElecFromB", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispElecFromB);
     
-    fDispElecFromDFromB = new TH2F("fDispElecFromDFromB", "fDispElecFromDFromB", 5, bin_JetPt, 6, bin_ptd);
+    fDispElecFromDFromB = new TH2F("fDispElecFromDFromB", "fDispElecFromDFromB", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispElecFromDFromB);
     
-    fDispD = new TH2F("fDispD", "fDispD", 5, bin_JetPt, 6, bin_ptd);
+    fDispD = new TH2F("fDispD", "fDispD", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispD);
     
-    fDispB = new TH2F("fDispB", "fDispB", 5, bin_JetPt, 6, bin_ptd);
+    fDispB = new TH2F("fDispB", "fDispB", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispB);
     
-    fDispCharm = new TH2F("fDispCharm", "fDispCharm", 5, bin_JetPt, 6, bin_ptd);
+    fDispCharm = new TH2F("fDispCharm", "fDispCharm", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispCharm);
     
-    fDispBeauty = new TH2F("fDispBeauty", "fDispBeauty", 5, bin_JetPt, 6, bin_ptd);
+    fDispBeauty = new TH2F("fDispBeauty", "fDispBeauty", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispBeauty);
     
-    fDispQuark = new TH2F("fDispQuark", "fDispQuark", 5, bin_JetPt, 6, bin_ptd);
+    fDispQuark = new TH2F("fDispQuark", "fDispQuark", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispQuark);
     
-    fDispGluon = new TH2F("fDispGluon", "fDispGluon", 5, bin_JetPt, 6, bin_ptd);
+    fDispGluon = new TH2F("fDispGluon", "fDispGluon", nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
     fOutput->Add(fDispGluon);
 
 	// Inclusive and semi-inclusive histograms
-    for(Int_t i = 0; i < 5; i++){
+    for(Int_t i = 0; i < nbins_jetpt; i++){
         fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 24, 0., 120.);
 		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
@@ -1036,7 +1042,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fRMPtSemiInclJet[i]);
         fOutput->Add(fRMUWPtSemiInclJet[i]);
 
-        fAngSemiInclJet[i] = new TH2F(Form("fAngSemiInclJet%d",i), Form("fAngSemiInclJet%d",i), 5, bin_JetPt, 8, bin_g);
+        fAngSemiInclJet[i] = new TH2F(Form("fAngSemiInclJet%d",i), Form("fAngSemiInclJet%d",i), nbins_jetpt, bin_jetpt, nbins_g, bin_g);
 		fRMAngSemiInclJet[i] = new THnSparseF(Form("fRMAngSemiInclJet%d", i), Form("fRMAngSemiInclJet%d", i), 4, 
 						                    nbin_gRM, min_gRM, max_gRM);
 		fRMUWAngSemiInclJet[i] = new THnSparseF(Form("fRMUWAngSemiInclJet%d", i), Form("fRMUWAngSemiInclJet%d", i), 4, 
@@ -1045,7 +1051,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fRMAngSemiInclJet[i]);
         fOutput->Add(fRMUWAngSemiInclJet[i]);
         
-		fDispSemiInclJet[i] = new TH2F(Form("fDispSemiInclJet%d",i), Form("fDispSemiInclJet%d",i), 5, bin_JetPt, 6, bin_ptd);
+		fDispSemiInclJet[i] = new TH2F(Form("fDispSemiInclJet%d",i), Form("fDispSemiInclJet%d",i), nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
 		fRMDispSemiInclJet[i] = new THnSparseF(Form("fRMDispSemiInclJet%d", i), Form("fRMDispSemiInclJet%d", i), 4, 
 						                    nbin_ptdRM, min_ptdRM, max_ptdRM);
 		fRMUWDispSemiInclJet[i] = new THnSparseF(Form("fRMUWDispSemiInclJet%d", i), Form("fRMUWDispSemiInclJet%d", i), 4, 
@@ -1056,13 +1062,13 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     }
 
 	// No electrons 3D methodology
-    fptJetNoElectrons = new TH2F("fptJetNoElectrons", "fptJetNoElectrons", 33, ptRange, 5, bin_JetPt);
+    fptJetNoElectrons = new TH2F("fptJetNoElectrons", "fptJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt);
 	fOutput -> Add(fptJetNoElectrons);
 
-    fAngJetNoElectrons = new TH3F("fAngJetNoElectrons", "fAngJetNoElectrons", 33, ptRange, 5, bin_JetPt, 8, bin_g);
+    fAngJetNoElectrons = new TH3F("fAngJetNoElectrons", "fAngJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_g, bin_g);
 	fOutput -> Add(fAngJetNoElectrons);
 
-    fDispJetNoElectrons = new TH3F("fDispJetNoElectrons", "fDispJetNoElectrons", 33, ptRange, 5, bin_JetPt, 6, bin_ptd);
+    fDispJetNoElectrons = new TH3F("fDispJetNoElectrons", "fDispJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
 	fOutput -> Add(fDispJetNoElectrons);
     
 
@@ -1079,11 +1085,10 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     
     TH1::AddDirectory(oldStatus);
-    const Int_t nVar = 21;
     
     fTreeObservableTagging = new TTree(GetOutputSlot(2)->GetContainer()->GetName(), GetOutputSlot(2)->GetContainer()->GetName());
     
-    TString *fShapesVarNames = new TString [nVar];
+    TString *fShapesVarNames = new TString [nbranches];
     
 	// Jet info
     fShapesVarNames[0] = "partonCode";
@@ -1111,7 +1116,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[20] = "pdgOnlyOneTrueElectron";
     
     
-    for(Int_t ivar=0; ivar < nVar; ivar++){
+    for(Int_t ivar=0; ivar < nbranches; ivar++){
         //cout<<"looping over variables"<<endl;
         fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));
     }
@@ -1300,13 +1305,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 	}
 
 
-
     AliEmcalJet* jetbase = nullptr;
     
     Float_t kWeight=1;
-    if (fCentSelectOn)
+    if (fCentSelectOn) {
         if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
-    
+    }
+
     // list of kink mothers
     Int_t nVertices = 1;
     nVertices = fAOD->GetNumberOfVertices();
@@ -1640,11 +1645,12 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
     
     Double_t jetPt = jet->Pt();
     
-    Double_t ptRange[34] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
+    Double_t bin_ept[nbins_ept + 1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
         1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
         6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
         35., 40., 45., 50.};
-    Double_t ptJetRange[6] = {5,20,40,60,80,120};
+    
+    Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (jet->GetNumberOfTracks()){
@@ -1700,9 +1706,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                 fnTPCcutP->Fill(p,fTPCnSigma);
                 fnTPCcutPt->Fill(pt,fTPCnSigma);
                 
-                for (Int_t l=0;l<5;l++){// pt jet range
-                    for(Int_t k=0;k<18;k++){// pt electron range (up to 4 GeV/c)
-                        if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && p>=ptRange[k] && p<ptRange[k+1]) fnTPCSigma[l][k]->Fill(fTPCnSigma);
+                for (Int_t l = 0; l < nbins_jetpt; l++){// pt jet range
+                    for(Int_t k = 0; k < nbins_eptTPC; k++){// pt electron range (up to 4 GeV/c)
+                        if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1] && p>=bin_ept[k] && p<bin_ept[k+1]) fnTPCSigma[l][k]->Fill(fTPCnSigma);
                     }
                 }
             }
@@ -1770,8 +1776,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut && m02 > fMinM02cut && m02 < fMaxM02cut){
                 fnEovPelecTPCEMCalcut->Fill(pt,EovP);
                 
-                for (Int_t l=0;l<5;l++){// pt jet range
-                    if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]) fnEovPelecTPCsscut[l]->Fill(pt,EovP);
+                for (Int_t l = 0; l < nbins_jetpt; l++){// pt jet range
+                    if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1]) fnEovPelecTPCsscut[l]->Fill(pt,EovP);
                 }
             }
             
@@ -1826,9 +1832,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
 	Int_t nIEptmin = 0, nHFEptmin = 0, nPEptmin = 0;
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., phi = -99., pte=0.;
     
-    Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
-    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
-    Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+    Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
+    Double_t bin_g[nbins_gsys + 1] = {0., 0.1, 0.2, 0.3, 0.4, 0.6, 0.7};
+    Double_t bin_ptd[nbins_ptdsys + 1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     
     Bool_t isFromHFdecay=kFALSE;
     Bool_t passTrackCut = kFALSE;
@@ -2092,18 +2098,18 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
                             
-                            for (Int_t l=0;l<5;l++){// pt jet range
-                                if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
+                            for (Int_t l = 0; l < nbins_jetpt; l++){// pt jet range
+                                if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1]){
                                     
-                                    for (Int_t m=0;m<5;m++){// angularity
-                                        if (ang>=angRange[m] && ang<angRange[m+1]){
+                                    for (Int_t m = 0; m < nbins_gsys; m++){// angularity
+                                        if (ang>=bin_g[m] && ang<bin_g[m+1]){
                                             if (iDecay>0 && iDecay<7) fTotPEAng[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l][m]->Fill(pt,MCweight);
                                         }
                                     }
                                     
-                                    for (Int_t m=0;m<6;m++){// dispersion
-                                        if (disp>=dispRange[m] && disp<dispRange[m+1]){
+                                    for (Int_t m = 0; m < nbins_ptdsys; m++){// dispersion
+                                        if (disp>=bin_ptd[m] && disp<bin_ptd[m+1]){
                                             if (iDecay>0 && iDecay<7) fTotPEDisp[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l][m]->Fill(pt,MCweight);
                                         }
@@ -2119,18 +2125,18 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
                             if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
                             
-                            for (Int_t l=0;l<5;l++){// pt jet range
-                                if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
+                            for (Int_t l = 0; l < nbins_jetpt; l++){// pt jet range
+                                if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1]){
                                     
-                                    for (Int_t m=0;m<5;m++){// angularity
-                                        if (ang>=angRange[m] && ang<angRange[m+1]){
+                                    for (Int_t m = 0; m < nbins_gsys; m++){// angularity
+                                        if (ang>=bin_g[m] && ang<bin_g[m+1]){
                                             if (iDecay>0 && iDecay<7) fTotPEAng[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l][m]->Fill(pt,MCweight);
                                         }
                                     }
                                     
-                                    for (Int_t m=0;m<6;m++){// dispersion
-                                        if (disp>=dispRange[m] && disp<dispRange[m+1]){
+                                    for (Int_t m = 0; m < nbins_ptdsys; m++){// dispersion
+                                        if (disp>=bin_ptd[m] && disp<bin_ptd[m+1]){
                                             if (iDecay>0 && iDecay<7) fTotPEDisp[l][m]->Fill(pt,MCweight);
                                             if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l][m]->Fill(pt,MCweight);
                                         }
@@ -2211,7 +2217,6 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
                                                        Int_t nMother, Double_t listMother[],Int_t decay, Double_t weight)
 {
     //Get number of ULS and LS pairs per event
-    
     Int_t ntracks = 0;
     ntracks = fVevent->GetNumberOfTracks();
     
@@ -2219,9 +2224,9 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
     Int_t nLSpairs = 0;
     Int_t sub = -1;
     
-    Double_t ptJetRange[6] = {5,20,40,60,80,120};
-    Double_t angRange[6] = {0., 0.1, 0.2, 0.3, 0.4, 0.6};
-    Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+    Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
+    Double_t bin_g[nbins_gsys + 1] = {0., 0.1, 0.2, 0.3, 0.4, 0.6, 0.7};
+    Double_t bin_ptd[nbins_ptdsys + 1] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
     
     Double_t jetPt = jet->Pt();
     Double_t  ang = GetJetAngularity(jet,0);
@@ -2244,7 +2249,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         Bool_t passAssoTrackCut = kFALSE;
         passAssoTrackCut = PhotElecTrackCuts(pVtx,trackAsso,nMother,listMother);
         if (!passAssoTrackCut) continue;
-        
+
         // tagged particle
         Double_t pt = -9;
         Int_t charge = 0;
@@ -2266,7 +2271,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         
         // invariant mass
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-        Double_t mass=999.;
+		Double_t mass=999., width = -999;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
@@ -2279,15 +2284,17 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         AliKFParticle ge1(*track, fPDGe1);
         AliKFParticle ge2(*trackAsso, fPDGe2);
         AliKFParticle recg(ge1, ge2);
-        
+
+		Int_t MassCorrect = recg.GetMass(mass, width);
+
         if(recg.GetNDF()<1) continue;
+
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-        
 		if (TMath::Abs(chi2recg) > 3.) continue;
         
-        for (Int_t l=0;l<5;l++){// pt jet range
-            if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && fFlagULS) fInvmassULS[l]->Fill(pt,mass);
-            if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && fFlagLS)  fInvmassLS[l]->Fill(pt,mass);
+        for (Int_t l = 0; l < nbins_jetpt; l++){// pt jet range
+            if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1] && fFlagULS) fInvmassULS[l]->Fill(pt,mass);
+            if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1] && fFlagLS)  fInvmassLS[l]->Fill(pt,mass);
         }
         
         if(mass<fIMcut && fFlagULS){
@@ -2303,18 +2310,18 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         }
         
         
-        for (Int_t l=0;l<5;l++){// pt jet range
-            if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
+        for (Int_t l = 0; l < nbins_jetpt; l++){// pt jet range
+            if (jetPt>=bin_jetpt[l] && jetPt<bin_jetpt[l+1]){
                 
-                for (Int_t m=0;m<5;m++){// angularity
-                    if (ang>=angRange[m] && ang<angRange[m+1] && decay>0 && decay<7 && mass<fIMcut){
+                for (Int_t m = 0; m < nbins_gsys; m++){// angularity
+                    if (ang>=bin_g[m] && ang<bin_g[m+1] && decay>0 && decay<7 && mass<fIMcut){
                         if (fFlagULS) fULSptAng[l][m]->Fill(pt,weight);
                         if (fFlagLS) fLSptAng[l][m]->Fill(pt,weight);
                     }
                 }
                 
-                for (Int_t m=0;m<6;m++){// dispersion
-                    if (disp>=dispRange[m] && disp<dispRange[m+1]  && decay>0 && decay<7 && mass<fIMcut){
+                for (Int_t m = 0; m < nbins_ptdsys; m++){// dispersion
+                    if (disp>=bin_ptd[m] && disp<bin_ptd[m+1]  && decay>0 && decay<7 && mass<fIMcut){
                         if (fFlagULS) fULSptDisp[l][m]->Fill(pt,weight);
                         if (fFlagLS) fLSptDisp[l][m]->Fill(pt,weight);
                     }

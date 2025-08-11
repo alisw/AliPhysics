@@ -152,13 +152,25 @@ protected:
     TClonesArray                        *fMCarray;              //! MC array
     AliAODMCHeader                      *fMCheader;
     
+	// Binning and tree size constants
+	static constexpr Int_t 				nbins_ept = 33;			 // number of bins for electron pt
+	static constexpr Int_t				nbins_eptTPC = 18;       // number of bins for electron pt using TPC
+	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
+	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
+	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
+	static constexpr Int_t 				nbins_gsys = 6;			 // number of bins for angularity systematic
+	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
+	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
+    static constexpr Int_t 				nbranches = 21;		     // number of branches in output tree
+    static constexpr Int_t				ncutseff = 5;			 // cuts for HFE efficiency calculation
+    static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
     
     Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
     Float_t                             fMinFractionShared;      // only fill histos for jets if shared fraction larger than X
     JetShapeType                        fJetShapeType;           // jet type to be used
     JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
     JetSelectionType                    fJetSelection;           // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[21];          // jet shapes used for the tagging
+    Float_t                             fShapesVar[nbranches];   // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
     Int_t                               fSelectedShapes;         //chose set of shapes
@@ -223,10 +235,10 @@ protected:
     TH2F                                *fnTOFnocutP;
     TH2F                                *fnTPCcutP;
     TH2F                                *fnTPCcutPt;
-    TH1F                                *fnTPCSigma[5][18];
+    TH1F                                *fnTPCSigma[nbins_jetpt][nbins_eptTPC];
     TH2F                                *fnULSmLSpairsPerElectron;
-    TH2F                                *fInvmassLS[5];
-    TH2F                                *fInvmassULS[5];
+    TH2F                                *fInvmassLS[nbins_jetpt];
+    TH2F                                *fInvmassULS[nbins_jetpt];
     TH1F                                *fnPartPerJet;
     TH1F                                *fnElecOverPartPerJet;
     TH1F                                *fnInclElecPerJet;
@@ -244,25 +256,25 @@ protected:
     TH1F                                *fEtaPtEnh;
     TH1F                                *fGenHfePt;
     TH1F                                *fGenPePt;
-    TH1F                                *fRecPEAng[5][5];
-    TH1F                                *fTotPEAng[5][5];
-    TH1F                                *fRecPEDisp[5][6];
-    TH1F                                *fTotPEDisp[5][6];
-    TH1F                                *fULSptAng[5][5];
-    TH1F                                *fLSptAng[5][5];
-    TH1F                                *fULSptDisp[5][6];
-    TH1F                                *fLSptDisp[5][6];
+    TH1F                                *fRecPEAng[nbins_jetpt][nbins_gsys];
+    TH1F                                *fTotPEAng[nbins_jetpt][nbins_gsys];
+    TH1F                                *fRecPEDisp[nbins_jetpt][nbins_ptdsys];
+    TH1F                                *fTotPEDisp[nbins_jetpt][nbins_ptdsys];
+    TH1F                                *fULSptAng[nbins_jetpt][nbins_gsys];
+    TH1F                                *fLSptAng[nbins_jetpt][nbins_gsys];
+    TH1F                                *fULSptDisp[nbins_jetpt][nbins_ptdsys];
+    TH1F                                *fLSptDisp[nbins_jetpt][nbins_ptdsys];
     TH2F                                *fPtP;
     TH1F                                *fptJetIE;               // pT of jets containing IE
     TH1F                                *fptJetPE;               // pT of jets containing PE
     TH1F                                *fptJetHFE;              // pT of jets containing HFE
-    TH1F                                *fptJetHadron;              // pT of jets not containing electrons
+    TH1F                                *fptJetHadron;           // pT of jets not containing electrons
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
-    TH1F                                *fptTrueHFEeffTPCTOF[5];
+    TH1F                                *fptTrueHFEeffTPCTOF[nbins_jetpt];
     TH3F                                *fptTrueHFEeffTPCTOFang[2];
     TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
-    TH1F                                *fptTrueHFEeffEMCal[5];
+    TH1F                                *fptTrueHFEeffEMCal[nbins_jetpt];
     TH3F                                *fptTrueHFEeffEMCalang[2];
     TH3F                                *fptTrueHFEeffEMCaldisp[2];
     TH1F                                *fPtTrack;
@@ -282,7 +294,7 @@ protected:
     TH2F                                *fnEovPelecTPCcut;
     TH2F                                *fnEovPelecEMCalcut;
     TH2F                                *fnEovPelecTPCEMCalcut;
-    TH2F                                *fnEovPelecTPCsscut[5];
+    TH2F                                *fnEovPelecTPCsscut[nbins_jetpt];
     TH2F                                *fnM20backg;
     TH2F                                *fnM02backg;
     TH2F                                *fnEovPbackg;
@@ -337,16 +349,16 @@ protected:
     TH2F                                *fDispGluon;
 
 	// (Semi-)inclusive observables and response matrices
-	TH1F								*fPtSemiInclJet[5];
-	TH2F								*fAngSemiInclJet[5];
-	TH2F								*fDispSemiInclJet[5];
-	THnSparseF							*fRMPtSemiInclJet[5];
-	THnSparseF						    *fRMAngSemiInclJet[5];
-	THnSparseF						    *fRMDispSemiInclJet[5];
+	TH1F								*fPtSemiInclJet[nbins_jetpt];
+	TH2F								*fAngSemiInclJet[nbins_jetpt];
+	TH2F								*fDispSemiInclJet[nbins_jetpt];
+	THnSparseF							*fRMPtSemiInclJet[nbins_jetpt];
+	THnSparseF						    *fRMAngSemiInclJet[nbins_jetpt];
+	THnSparseF						    *fRMDispSemiInclJet[nbins_jetpt];
 	// Unweighted response matrices
-	THnSparseF							*fRMUWPtSemiInclJet[5];
-	THnSparseF						    *fRMUWAngSemiInclJet[5];
-	THnSparseF						    *fRMUWDispSemiInclJet[5];
+	THnSparseF							*fRMUWPtSemiInclJet[nbins_jetpt];
+	THnSparseF						    *fRMUWAngSemiInclJet[nbins_jetpt];
+	THnSparseF						    *fRMUWDispSemiInclJet[nbins_jetpt];
 
 	// No electron methodology
 	TH2F								*fptJetNoElectrons;
