@@ -189,6 +189,8 @@ protected:
   TH2F**                  fHistoMotherInvMassECalib;                          //! array of histos with signal + background with alpha < 0.1 for NonLin
   TH2F**                  fHistoMotherBackInvMassECalib;                      //! array of histos with mixed event background with alpha < 0.1 for NonLin
 
+  TH2F**                  fHistoEVsNCells;                                    //! array of histos with cluster energy
+  TH3F**                  fHistoEVsNCellsVsSource;                            //! array of histos with cluster energy vs NCells vs source
   TH2F**                  fHistoEVsNCellsInPiMass;                            //! array of histos with cluster energy vs. cluster NCells for pi0 tagged photon clusters
   TH2F**                  fHistoEVsNCellsInPiMassSideband;                    //! array of histos with cluster energy vs. cluster NCells for pi0 sideband tagged photon clusters
   TH3F**                  fHistoEVsNCellsInPiMassVsSource;                    //! array of histos with cluster energy vs. cluster NCells for pi0 tagged photon clusters for different cluster sources
@@ -280,7 +282,7 @@ private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 13);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 14);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
