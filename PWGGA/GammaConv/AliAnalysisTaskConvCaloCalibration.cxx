@@ -109,6 +109,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoMotherBackInvMassECalibSM(NULL),
   fHistoMotherInvMassECalib(NULL),
   fHistoMotherBackInvMassECalib(NULL),
+  fHistoEVsNCells(nullptr),
+  fHistoEVsNCellsVsSource(nullptr),
   fHistoEVsNCellsInPiMass(NULL),
   fHistoEVsNCellsInPiMassSideband(NULL),
   fHistoEVsNCellsInPiMassVsSource(NULL),
@@ -242,6 +244,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoMotherBackInvMassECalibSM(NULL),
   fHistoMotherInvMassECalib(NULL),
   fHistoMotherBackInvMassECalib(NULL),
+  fHistoEVsNCells(nullptr),
+  fHistoEVsNCellsVsSource(nullptr),
   fHistoEVsNCellsInPiMass(NULL),
   fHistoEVsNCellsInPiMassSideband(NULL),
   fHistoEVsNCellsInPiMassVsSource(NULL),
@@ -556,11 +560,13 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     }
 
     if(!fDoLightOutput && fMesonRecoMode > 0){
+      fHistoEVsNCells                   = new TH2F*[fnCuts];
       fHistoEVsNCellsInPiMass           = new TH2F*[fnCuts];
       fHistoEVsNCellsInPiMassSideband   = new TH2F*[fnCuts];
       fHistoMotherInvMassClusE          = new TH2F*[fnCuts];
       fHistoMotherBackInvMassClusE      = new TH2F*[fnCuts];
       if(fIsMC){
+        fHistoEVsNCellsVsSource          = new TH3F*[fnCuts];
         fHistoMotherInvMassEClusVsSource = new TH3F*[fnCuts];
         fHistoEVsNCellsInPiMassVsSource  = new TH3F*[fnCuts];
       }
@@ -975,6 +981,10 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       }
 
       if(fMesonRecoMode > 0){
+        fHistoEVsNCells[iCut]       = new TH2F("ESD_EVsNcell", "ESD_EVsNcell; #it{E}_{clus} (GeV); #it{N}_{cells}",
+                                                         nBinsPt, arrPtBinning, 25, -0.5, 24.5);
+       fESDList[iCut]->Add(fHistoEVsNCells[iCut]);
+
         fHistoEVsNCellsInPiMass[iCut]       = new TH2F("ESD_EVsNcell_Pi0Tagged", "ESD_EVsNcell_Pi0Tagged; #it{E}_{clus} (GeV); #it{N}_{cells}",
                                                          nBinsPt, arrPtBinning, 25, -0.5, 24.5);
        fESDList[iCut]->Add(fHistoEVsNCellsInPiMass[iCut]);
@@ -1002,6 +1012,10 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
           for(int i = 0; i < 26; ++i){
             arrNCell[i] = i - 0.5;
           }
+          fHistoEVsNCellsVsSource[iCut]       = new TH3F("ESD_EVsNcell_Source", "ESD_EVsNcell_Source; #it{E}_{clus} (GeV); #it{N}_{cells};Source",
+                                                         nBinsPt, arrPtBinning, 25, arrNCell, 4, source);
+          fESDList[iCut]->Add(fHistoEVsNCellsVsSource[iCut]);
+
           fHistoEVsNCellsInPiMassVsSource[iCut]       = new TH3F("ESD_EVsNcell_Pi0Tagged_Source", "ESD_EVsNcell_Pi0Tagged_Source; #it{E}_{clus} (GeV); #it{N}_{cells};Source",
                                                          nBinsPt, arrPtBinning, 25, arrNCell, 4, source);
           fESDList[iCut]->Add(fHistoEVsNCellsInPiMassVsSource[iCut]);
@@ -1029,9 +1043,11 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       if (fMesonRecoMode > 0){
         if (fHistoMotherInvMassECalib[iCut]) fHistoMotherInvMassECalib[iCut]->Sumw2();
         if (fHistoMotherBackInvMassECalib[iCut]) fHistoMotherBackInvMassECalib[iCut]->Sumw2();
+        if (fHistoEVsNCells[iCut]) fHistoEVsNCells[iCut]->Sumw2();
         if (fHistoEVsNCellsInPiMass[iCut]) fHistoEVsNCellsInPiMass[iCut]->Sumw2();
         if (fHistoEVsNCellsInPiMassSideband[iCut]) fHistoEVsNCellsInPiMassSideband[iCut]->Sumw2();
         if (fHistoEVsNCellsInPiMassVsSource[iCut]) fHistoEVsNCellsInPiMassVsSource[iCut]->Sumw2();
+        if (fHistoEVsNCellsVsSource[iCut]) fHistoEVsNCellsVsSource[iCut]->Sumw2();
         if (fHistoMotherInvMassEClusVsSource[iCut]) fHistoMotherInvMassEClusVsSource[iCut]->Sumw2();
         if (fHistoMotherInvMassClusE[iCut]) fHistoMotherInvMassClusE[iCut]->Sumw2();
         if (fHistoMotherBackInvMassClusE[iCut]) fHistoMotherBackInvMassClusE[iCut]->Sumw2();
@@ -1529,6 +1545,22 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
         fHistoEVsM02VsNCell[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), clus->GetNCells(), fWeightJetJetMC);
         if(clus->GetNCells() > 4){
           fHistoEVsM02NCell4[fiCut]->Fill(PhotonCandidate->E(), clus->GetM02(), fWeightJetJetMC);
+        }
+      }
+
+      // NCell efficiency studies
+      if(!fDoLightOutput){
+        fHistoEVsNCells[fiCut]->Fill(PhotonCandidate->E(), clus->GetNCells(), fWeightJetJetMC);
+        if(fIsMC){
+          if(PhotonCandidate->IsLargestComponentPhoton()){
+            fHistoEVsNCellsVsSource[fiCut]->Fill(PhotonCandidate->E(), clus->GetNCells(), 0., fWeightJetJetMC);
+          } else if(PhotonCandidate->IsLargestComponentElectron() && PhotonCandidate->IsConversion()){
+            fHistoEVsNCellsVsSource[fiCut]->Fill(PhotonCandidate->E(), clus->GetNCells(), 1., fWeightJetJetMC);
+          } else if(PhotonCandidate->IsLargestComponentElectron()){
+            fHistoEVsNCellsVsSource[fiCut]->Fill(PhotonCandidate->E(), clus->GetNCells(), 2., fWeightJetJetMC);
+          } else {
+            fHistoEVsNCellsVsSource[fiCut]->Fill(PhotonCandidate->E(), clus->GetNCells(), 3., fWeightJetJetMC);
+          }
         }
       }
 
