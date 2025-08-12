@@ -2807,7 +2807,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         if (!particle)
           continue;
         
-        int pdgCode = particle->PdgCode();
+        int pdgCode = std::abs(particle->PdgCode());
         if(!(particle->IsPhysicalPrimary() || pdgCode == 111 || pdgCode == 221)){
           continue;
         }
