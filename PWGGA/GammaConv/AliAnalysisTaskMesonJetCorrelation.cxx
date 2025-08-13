@@ -231,6 +231,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoGenParticleInJetMomFrac({}),
                                                                              fHistoGenParticleAllVsJetPt({}),
                                                                              fHistoGenLeadParticleInJetMomFrac({}),
+                                                                             fHistoJetTrackPt({}),
                                                                              fHistoJetTrackPtRadialProfile({}),
                                                                              fHistoJetClusterPtRadialProfile({}),
                                                                              fHistoPtJetSMBorder({}),
@@ -545,6 +546,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoGenParticleInJetMomFrac({}),
                                                                                            fHistoGenParticleAllVsJetPt({}),
                                                                                            fHistoGenLeadParticleInJetMomFrac({}),
+                                                                                           fHistoJetTrackPt({}),
                                                                                            fHistoJetTrackPtRadialProfile({}),
                                                                                            fHistoJetClusterPtRadialProfile({}),
                                                                                            fHistoPtJetSMBorder({}),
@@ -854,6 +856,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoGenParticleInJet.resize(fnCuts);
     fHistoGenParticleInJetMomFrac.resize(fnCuts);
     fHistoGenLeadParticleInJetMomFrac.resize(fnCuts);
+    fHistoJetTrackPt.resize(fnCuts),
     fHistoJetTrackPtRadialProfile.resize(fnCuts);
     fHistoJetClusterPtRadialProfile.resize(fnCuts);
     fHistoGenParticleAllVsJetPt.resize(fnCuts);
@@ -1566,6 +1569,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoMaxJetPtVsMult[iCut] = new TH2F("MaxJetPt_TrackMult", "MaxJetPt_TrackMult", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsMult.size() - 1, fVecBinsMult.data());
       fJetList[iCut]->Add(fHistoMaxJetPtVsMult[iCut]);
 
+      fHistoJetTrackPt[iCut] = new TH1F("JetTrackPt", "JetTrackPt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fJetList[iCut]->Add(fHistoJetTrackPt[iCut]);
 
       std::vector<double> vecRadiusXax = {0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4};
       fHistoJetTrackPtRadialProfile[iCut] = new TH3F("RadialProfile_JetPt_FracMom_Tracks", "RadialProfile_JetPt_FracMom_Tracks", vecRadiusXax.size()-1, vecRadiusXax.data(), fVecBinsFragment.size()-1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
@@ -2495,6 +2500,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           float dPhi = jetPhi - tmpPart->Phi();
           float dist = sqrt(dEta*dEta + dPhi*dPhi);
           float fracMom = tmpPart->Pt()/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
+          fHistoJetTrackPt[fiCut]->Fill(tmpPart->Pt(), fWeightJetJetMC);
           fHistoJetTrackPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
 
           if(fIsMC){
