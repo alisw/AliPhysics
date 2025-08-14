@@ -204,6 +204,7 @@ protected:
   TH1F**                  fHistoConvGammaPt;                                  //! array of histogram conversion photon pT
   TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
   TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
+  TH2F**                  fHistoClusGammaESource;                             //! array of histos with cluster, E vs source    
   TH1F***                 fHistoClusGammaPtSM;                                //! array of histos with cluster, pt
   TH1F***                 fHistoClusGammaESM;                                 //! array of histos with cluster, E
   TH1F**                  fHistoClusGammaERx;                                 //! array of histos with cluster E in 0.1 < M02 < 0.3
