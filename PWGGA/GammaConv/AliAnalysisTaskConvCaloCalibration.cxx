@@ -122,6 +122,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoConvGammaPt(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
+  fHistoClusGammaESource(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
   fHistoClusGammaERx(NULL),
@@ -255,6 +256,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoConvGammaPt(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
+  fHistoClusGammaESource(NULL),
   fHistoClusGammaPtSM(NULL),
   fHistoClusGammaESM(NULL),
   fHistoClusGammaERx(NULL),
@@ -512,6 +514,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       fHistoNGammaCaloCandidates          = new TH1F*[fnCuts];
       fHistoClusGammaPt                   = new TH1F*[fnCuts];
       fHistoClusGammaE                    = new TH1F*[fnCuts];
+      fHistoClusGammaESource              = new TH2F*[fnCuts];
       fHistoClusGammaPtSM                 = new TH1F**[fnCuts];
       fHistoClusGammaESM                  = new TH1F**[fnCuts];
       for(Int_t icuts = 0; icuts < fnCuts; icuts++){
@@ -856,6 +859,8 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoClusGammaPt[iCut]);
         fHistoClusGammaE[iCut]          = new TH1F("ClusGamma_E", "ClusGamma_E; E_{clus} (GeV)", nBinsClusterPt, arrClusPtBinning);
         fESDList[iCut]->Add(fHistoClusGammaE[iCut]);
+        fHistoClusGammaESource[iCut]   = new TH2F("ClusGamma_E_Source", "ClusGamma_E_Source", nBinsClusterPt, arrClusPtBinning, 3, -0.5, 2.5);
+        fESDList[iCut]->Add(fHistoClusGammaESource[iCut]);
       }
     }
 
@@ -880,6 +885,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
           if (fHistoClusGammaPt[iCut]) fHistoClusGammaPt[iCut]->Sumw2();
           if (fHistoClusGammaE[iCut]) fHistoClusGammaE[iCut]->Sumw2();
+          if (fHistoClusGammaESource[iCut]) fHistoClusGammaESource[iCut]->Sumw2();
         }
       }
     }
@@ -1627,6 +1633,16 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     if (!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckVectorForIndexAndAdd(vectorRejectCluster, iter,kFALSE)){
       fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+
+      if(fIsMC > 0){
+        int index = 2;
+        if(vectorCurrentClusters.at(iter)->IsLargestComponentPhoton()){
+          index = 0;
+        } else if (vectorCurrentClusters.at(iter)->IsLargestComponentElectron()){
+          index = 1;
+        }
+        fHistoClusGammaESource[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), index, vectorPhotonWeight.at(iter));
+      }
 
       if(vectorClusterSM.at(iter) >= 0 && vectorClusterSM.at(iter) < 20){
         fHistoClusGammaPtSM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
