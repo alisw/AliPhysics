@@ -2191,7 +2191,7 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   for(Int_t i=0; i<nTracks; i++){
     AliAODTrack* track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
     if(!track) continue;
-    if(!track->TestFilterBit(128)) continue;
+    //if(!track->TestFilterBit(128)) continue;
 
     dcaxy=0.,dcaz=0.,dca=0.;
     dDCA[2]={0.};              // DCA to the vertex xy(d) and z
