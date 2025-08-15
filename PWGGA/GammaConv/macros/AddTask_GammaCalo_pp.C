@@ -4173,6 +4173,21 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fe30220001","0s631031000000d0"); // No NCell cut, 1NLM
     cuts.AddCutCalo("00010113","411790109fe30220002","0s631031000000d0"); // No NCell cut, 2NLM
 
+  // NCell efficiency with S300A100 clusterizer
+  } else if (trainConfig == 2526){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411799909fe309v0000","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411799909fe329v0000","0s631031000000d0"); // NCell >= 2
+  } else if (trainConfig == 2527){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411799909fe3D9v0000","0s631031000000d0"); // NCell effi, PCM-EMC tagged pi0s, Gaussian, applied to all clusters
+    cuts.AddCutCalo("00010113","411799909fe3E9v0000","0s631031000000d0"); // NCell effi, PCM-EMC tagged pi0s, Pol2, applied to all clusters
+    cuts.AddCutCalo("00010113","411799909fe3F9v0000","0s631031000000d0"); // NCell effi, EMC-EMC tagged pi0s, Gaussian, applied to all clusters
+    cuts.AddCutCalo("00010113","411799909fe3G9v0000","0s631031000000d0"); // NCell effi, EMC-EMC tagged pi0s, Pol2, applied to all clusters
+  } else if (trainConfig == 2528){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411799909fe3H9v0000","0s631031000000d0"); // NCell effi, PCM-EMC tagged pi0s, Gaussian, applied to only gamma clusters
+    cuts.AddCutCalo("00010113","411799909fe3I9v0000","0s631031000000d0"); // NCell effi, PCM-EMC tagged pi0s, Pol2, applied to only gamma clusters
+    cuts.AddCutCalo("00010113","411799909fe3J9v0000","0s631031000000d0"); // NCell effi, EMC-EMC tagged pi0s, Gaussian, applied to only gamma clusters
+    cuts.AddCutCalo("00010113","411799909fe3K9v0000","0s631031000000d0"); // NCell effi, EMC-EMC tagged pi0s, Pol2, applied to only gamma clusters
+
     // different clusterization settings
   } else if (trainConfig == 2530) { //S500 A90
     cuts.AddCutCalo("00010113","411790109fe32230000","0s631031000000d0"); // NCell >=2
