@@ -2758,6 +2758,21 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f030000000","0163103100000010"); //  no exotics, no M02
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901090030000000","0163103100000010"); //  no exotics, no M02, no TM
 
+  } else if (trainConfig == 2146){
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); // No NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe329v0000","0r63103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 2147){
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3D9v0000","0r63103100000010"); // NCell effi, PCM-EMC tagged pi0s, Gaussian, applied to all clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3E9v0000","0r63103100000010"); // NCell effi, PCM-EMC tagged pi0s, Pol2, applied to all clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3F9v0000","0r63103100000010"); // NCell effi, EMC-EMC tagged pi0s, Gaussian, applied to all clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3G9v0000","0r63103100000010"); // NCell effi, EMC-EMC tagged pi0s, Pol2, applied to all clusters
+  } else if (trainConfig == 2148){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3H9v0000","0r63103100000010"); // NCell effi, PCM-EMC tagged pi0s, Gaussian, applied to only gamma clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3I9v0000","0r63103100000010"); // NCell effi, PCM-EMC tagged pi0s, Pol2, applied to only gamma clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3J9v0000","0r63103100000010"); // NCell effi, EMC-EMC tagged pi0s, Gaussian, applied to only gamma clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe3K9v0000","0r63103100000010"); // NCell effi, EMC-EMC tagged pi0s, Pol2, applied to only gamma clusters
+
+
     // NCell effi from correction framework
   } else if (trainConfig == 2150){ // std. cuts no NL (to be applied in the CF)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // std but no NL

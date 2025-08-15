@@ -7388,11 +7388,63 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
     fFuncNCellCutEfficiencyEMCal->SetParameters(1.12525e-01, 1.34649e+00, 8.02834e-01); // nominal field, gaussian, EMC tagged pi0
     break;
-  case 38: // Pol2, applied to all clusters, same shape as case 32, but slightly lower
+  case 38: // C Pol2, applied to all clusters, same shape as case 32, but slightly lower
     fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
     fFuncNCellCutEfficiencyEMCal->SetParameters(-5.23612e-02, 1.51722e-01, -0.026878580); // nominal field, pol2, EMC tagged pi0
+    break;
+
+  // S300A100 settings with cell scale
+  case 39: // D
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0717845 , 1.49616, 0.855248); // nominal field, gaussian, PCM-EMC tagged pi0
+    break;
+  case 40: // E
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0] + [1]*pow(x - [2], 2)", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0719902 , -0.0445588, 1.50303); // nominal field, pol2, PCM-EMC tagged pi0
+    break;
+  case 41: // F
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0715105 , 1.28696, 0.687075); // nominal field, gaussian, EMC-EMC tagged pi0
+    break;
+  case 42: // G
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0] + [1]*pow(x - [2], 2)", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0717755 , -0.0428371, 1.41893); // nominal field, pol2, EMC-EMC tagged pi0
+    break;
+  // S300A100 settings with cell scale
+  // Applied to only photon clusters
+  case 43: // H
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0971336 , 1.45961, 0.997874); // nominal field, gaussian, PCM-EMC tagged pi0, only photon clusters
+    break;
+  case 44: // I
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0] + [1]*pow(x - [2], 2)", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0975155 , -0.0465594, 1.47032); // nominal field, pol2, PCM-EMC tagged pi0, only photon clusters
+    break;
+  case 45: // J
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0868173 , 1.19348, 0.725739); // nominal field, gaussian, EMC-EMC tagged pi0, only photon clusters
+    break;
+  case 46: // K
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0] + [1]*pow(x - [2], 2)", 0., 10.);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.0861133 , -0.0421298, 1.353); // nominal field, pol2, EMC-EMC tagged pi0, only photon clusters
     break;
 
   default:
