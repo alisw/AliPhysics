@@ -1092,14 +1092,16 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
         if(particle->GetNDaughters() == 2){
           arrDaughters[0] =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterFirst()));
           arrDaughters[1] = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLast()));
-          isDecayChannelMeas = true;
+          if(std::abs(arrDaughters[0]->GetPdgCode()) == 11 && arrDaughters[0]->GetPdgCode() == -arrDaughters[1]->GetPdgCode()){ // make sure its a photon conversion
+            isDecayChannelMeas = true;
+          }
         }
       } else if( pdgCode == 310 ) {
         classificationGen = 1.;
         if(particle->GetNDaughters() == 2){
           arrDaughters[0] =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterFirst()));
           arrDaughters[1] = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLast()));
-          if(std::abs(arrDaughters[0]->GetPdgCode()) == 111 && arrDaughters[0]->GetPdgCode() == -arrDaughters[1]->GetPdgCode()){
+          if(std::abs(arrDaughters[0]->GetPdgCode()) == 211 && arrDaughters[0]->GetPdgCode() == -arrDaughters[1]->GetPdgCode()){
             isDecayChannelMeas = true;
           }
         }
