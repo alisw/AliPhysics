@@ -113,6 +113,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    hV0Pt(nullptr),
                                                    hV0LegsPt(nullptr),
                                                    fHistoV0TrueMotherLegPt(nullptr),
+                                                   fHistoV0TrueMotherLegPtTrue(nullptr),
                                                    fHistoArmenterosV0(nullptr),
                                                    fHistoArmenterosV0Pt(nullptr),
                                                    fHistoArmenterosV0Source(nullptr),
@@ -190,6 +191,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    hV0Pt(nullptr),
                                                                    hV0LegsPt(nullptr),
                                                                    fHistoV0TrueMotherLegPt(nullptr),
+                                                                   fHistoV0TrueMotherLegPtTrue(nullptr),
                                                                    fHistoArmenterosV0(nullptr),
                                                                    fHistoArmenterosV0Pt(nullptr),
                                                                    fHistoArmenterosV0Source(nullptr),
@@ -305,6 +307,17 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
   fHistoV0TrueMotherLegPt->Sumw2();
   fHistograms->Add(fHistoV0TrueMotherLegPt);
 
+  fHistoV0TrueMotherLegPtTrue = new TH2F("V0TrueLegPtTrueMother", "V0TrueLegPtTrueMother", 5, -0.5, 4.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0TrueMotherLegPtTrue->SetXTitle("MotherPart");
+  fHistoV0TrueMotherLegPtTrue->GetXaxis()->SetBinLabel(1, "#gamma");
+  fHistoV0TrueMotherLegPtTrue->GetXaxis()->SetBinLabel(2, "K^{0}_{L}");
+  fHistoV0TrueMotherLegPtTrue->GetXaxis()->SetBinLabel(3, "K^{0}_{s}");
+  fHistoV0TrueMotherLegPtTrue->GetXaxis()->SetBinLabel(4, "#Lambda");
+  fHistoV0TrueMotherLegPtTrue->GetXaxis()->SetBinLabel(5, "Rest");
+  fHistoV0TrueMotherLegPtTrue->SetYTitle("p_{T, V0, leg} (GeV/c)");
+  fHistoV0TrueMotherLegPtTrue->Sumw2();
+  fHistograms->Add(fHistoV0TrueMotherLegPtTrue);
+
   fHistoArmenterosV0=new TH2F("ArmenterosV0", "ArmenterosV0",200,-1,1,120,0,0.3);
   fHistoArmenterosV0->Sumw2();
   fHistograms->Add(fHistoArmenterosV0);
@@ -344,9 +357,6 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
     fHistoSourceV0DaughterPt = new TH2F("SourceVsV0DaughterPt", "SourceVsV0DaughterPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
     fHistoSourceV0DaughterPt->Sumw2();
     fHistograms->Add(fHistoSourceV0DaughterPt);
-    fHistoSourceV0DaughterTrackPt = new TH2F("SourceVsV0DaughterTrackPt", "SourceVsV0DaughterTrackPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
-    fHistoSourceV0DaughterTrackPt->Sumw2();
-    fHistograms->Add(fHistoSourceV0DaughterTrackPt);
     fHistoV0Generated = new TH2F("SourceVsV0GenPt", "SourceVsV0GenPt",4, -0.5, 3.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
     fHistoV0Generated->Sumw2();
     fHistograms->Add(fHistoV0Generated);
@@ -1026,14 +1036,19 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
                 int pdgMother = tmpPartMother->GetPdgCode();
                 if(pdgMother == 22){ // Photon
                   fHistoV0TrueMotherLegPt->Fill(0., v0DaughterTr->Pt(), weight);
+                  fHistoV0TrueMotherLegPtTrue->Fill(0., tmpPart->Pt(), weight);
                 } else if(pdgMother == 130){ // K0l
                   fHistoV0TrueMotherLegPt->Fill(1., v0DaughterTr->Pt(), weight);
+                  fHistoV0TrueMotherLegPtTrue->Fill(1., tmpPart->Pt(), weight);
                 } else if(pdgMother == 310){ // K0s
                   fHistoV0TrueMotherLegPt->Fill(2., v0DaughterTr->Pt(), weight);
+                  fHistoV0TrueMotherLegPtTrue->Fill(2., tmpPart->Pt(), weight);
                 } else if(pdgMother == 3122){ // Lambda
                   fHistoV0TrueMotherLegPt->Fill(3., v0DaughterTr->Pt(), weight);
+                  fHistoV0TrueMotherLegPtTrue->Fill(3., tmpPart->Pt(), weight);
                 } else { // Rest
                   fHistoV0TrueMotherLegPt->Fill(4., v0DaughterTr->Pt(), weight);
+                  fHistoV0TrueMotherLegPtTrue->Fill(4., tmpPart->Pt(), weight);
                 }
               }
               if(fDoFillExtendedHistos){

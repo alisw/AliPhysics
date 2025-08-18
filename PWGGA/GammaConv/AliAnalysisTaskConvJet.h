@@ -228,6 +228,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH1D* hV0Pt;                           //!  V0Pt that is added to the jet energy
   TH1D* hV0LegsPt;                       //!  Pt of V0 legs (each leg can only contribute once) that is added to the jet energy
   TH2F* fHistoV0TrueMotherLegPt;         //! Pt of V0 legs for different mother particles
+  TH2F* fHistoV0TrueMotherLegPtTrue;     //! True Pt of V0 legs for different mother particles
   TH2F* fHistoArmenterosV0;              //!  Armenteros-Podolanski plot for V0s added to jet
   TH3F* fHistoArmenterosV0Pt;            //!  Armenteros-Podolanski plot for V0s added to jet
   TH3F* fHistoArmenterosV0Source;        //!  Armenteros-Podolanski plot for V0s added to jet
