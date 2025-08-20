@@ -129,7 +129,7 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const char *name,const char *title) :
   fQtMin(0.),
   fAlphaMin(-1.),
   fAlphaMax(1.),
-  fUseOnFlyV0Finder(false),
+  fUseOnFlyV0Finder(0),
   fCosPAngleCut(0.),
   fDCAZPrimVtxCut(0.),
   fDCAPrimVtxCut(0.),
@@ -188,7 +188,7 @@ AliConvK0LambdaCuts::AliConvK0LambdaCuts(const AliConvK0LambdaCuts &ref) :
   fQtMin(0.),
   fAlphaMin(-1.),
   fAlphaMax(1.),
-  fUseOnFlyV0Finder(false),
+  fUseOnFlyV0Finder(0),
   fCosPAngleCut(0.),
   fDCAZPrimVtxCut(0.),
   fDCAPrimVtxCut(0.),
@@ -323,7 +323,9 @@ bool AliConvK0LambdaCuts::InitPIDResponse(){
 }
 
 bool AliConvK0LambdaCuts::DoV0ReaderTypeCut(bool status) const{
-  if(status == fUseOnFlyV0Finder){
+  if(fUseOnFlyV0Finder == 2){ // accept both on fly and offline V0s
+    return true;
+  } else if(status == fUseOnFlyV0Finder){
     return true;
   }
   return false;
@@ -364,29 +366,40 @@ bool AliConvK0LambdaCuts::DoTPCClusCut(const AliAODTrack *trNeg, const AliAODTra
 
 bool AliConvK0LambdaCuts::DodEdXCut(int pdgCode, const AliAODTrack *trNeg, const AliAODTrack *trPos){
   if(!fPIDResponse){InitPIDResponse();}
-  if(pdgCode == 310){ // K0s, both are pions
+  bool isSelected = false;
+  if(pdgCode == 310 || pdgCode == -1){ // K0s, both are pions
     if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) > fPIDnSigmaAbove){
-      return false;
+      isSelected = false;
     } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) > fPIDnSigmaAbove){
-      return false;
+      isSelected = false;
     }
-    return true;
-  } else if (pdgCode == 3122){ // Lambda: Pos track is proton, negative is pion
+    isSelected = true;
+  } 
+  if (!isSelected && (pdgCode == 3122 || pdgCode == -1)){ // Lambda: Pos track is proton, negative is pion
     if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kPion) > fPIDnSigmaAbove){
-      return false;
+      isSelected = false;
     } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kProton) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kProton) > fPIDnSigmaAbove){
-      return false;
+      isSelected = false;
     }
-    return true;
-  } else if (pdgCode == -3122){ // Anti-Lambda: Neg track is proton, positive is pion
+    isSelected = true;
+  } 
+  if (!isSelected && (pdgCode == -3122 || pdgCode == -1)){ // Anti-Lambda: Neg track is proton, positive is pion
     if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kProton) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kProton) > fPIDnSigmaAbove){
-      return false;
+      isSelected = false;
     } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kPion) > fPIDnSigmaAbove){
-      return false;
+      isSelected = false;
     }
-    return true;
+    isSelected = true;
+  } 
+  if (!isSelected && (pdgCode == 22 || pdgCode == -1)){ // Photon: Neg track is electron, positive is positron
+    if(fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kElectron) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trNeg,AliPID::kElectron) > fPIDnSigmaAbove){
+      isSelected = false;
+    } else if(fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kElectron) < fPIDnSigmaBelow || fPIDResponse->NumberOfSigmasTPC(trPos,AliPID::kElectron) > fPIDnSigmaAbove){
+      isSelected = false;
+    }
+    isSelected = true;
   }
-  return true;
+  return isSelected;
 }
 
 
@@ -747,11 +760,15 @@ bool AliConvK0LambdaCuts::SetV0Finder(Int_t v0FinderType){   // Set Cut
   switch (v0FinderType){
   case 0:  // on fly V0 finder
     cout << "have chosen onfly V0" << endl;
-    fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0Finder=1;
     break;
   case 1:  // offline V0 finder
     cout << "have chosen offline V0" << endl;
-    fUseOnFlyV0Finder=kFALSE;
+    fUseOnFlyV0Finder=0;
+    break;
+  case 2:  // online + offline V0 finder
+    cout << "have chosen onfly offline V0. I hope you know what you are doing?!" << endl;
+    fUseOnFlyV0Finder=2;
     break;
   default:
     AliError(Form(" v0FinderType not defined %d",v0FinderType));
@@ -1020,6 +1037,14 @@ bool AliConvK0LambdaCuts::SetArmenterosQTCut(Int_t QtMaxCut){   // Set Cut
     fQtMin=0.03;
     fAlphaMin = -0.9;
     fAlphaMax = -0.5;
+    fDoArmenteros2DCuts=false;
+    break;
+  case 4: // select all particles including photons
+    fDoArmenteros1DCuts = true;
+    fQtMax=0.3;
+    fQtMin=0.;
+    fAlphaMin = -1.;
+    fAlphaMax = 1.;
     fDoArmenteros2DCuts=false;
     break;
   case 10: // Selection with 2D cuts, diff of 0.03

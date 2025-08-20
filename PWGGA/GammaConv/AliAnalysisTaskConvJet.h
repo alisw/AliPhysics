@@ -14,6 +14,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
 #include "TH3F.h"
+#include "AliConvK0LambdaCuts.h"
 
 /**
  * \class AliAnalysisTaskConvJet
@@ -136,6 +137,16 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   void SetSelectPhotonMass(bool tmp) {fSelectPhotonMass = tmp; }
   void SetV0FinderType(int tmp) {fV0FinderType = tmp; }
   void SetDoExtQA(bool tmp) { fDoFillExtendedHistos = tmp; }
+  void SetK0LambdaCutsFromCutString(const TString &cutString, const bool SetDoLightOutput = false, const bool enableQAK0Lambda = false){
+    if (fK0LambdaCuts) delete fK0LambdaCuts;
+    fK0LambdaCuts = new AliConvK0LambdaCuts(cutString);
+    if (SetDoLightOutput > 0)
+      fK0LambdaCuts->SetLightOutput(SetDoLightOutput);
+    fK0LambdaCuts->SetDoQA(enableQAK0Lambda); 
+    fK0LambdaCuts->InitializeCutsFromCutString(cutString);
+    fK0LambdaCuts->SetFillCutHistograms("K0LambdaCuts", true);
+    fDoK0LambdaCutsAdvanced = true;
+  }
 
   void SetAddV0sToJet(bool tmp) { fAddV0sToJet = tmp; }
   void AddV0sToJet(double weight = 1., const int isMC = 0);
@@ -221,6 +232,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   bool fSelectPhotonMass;                // Bool if V0s in Photon mass should be selected
   int fV0FinderType;                     // Select V0finder type: 0-> both finders, 1->offlineFinder, 2, on-the-fly finder
   bool fDoFillExtendedHistos;            // Flag to fill extended QA histograms
+  AliConvK0LambdaCuts* fK0LambdaCuts;    // Cuts for K0s and Lambda V0s
+  bool fDoK0LambdaCutsAdvanced;          // Flag to use advanced K0s and Lambda cuts   
   TList* fHistograms;                    //!  List containing all histograms
   TH2F* hJetEtaDiffWithV0;               //!  difference in eta between original and V0 included jets
   TH2F* hJetPhiDiffWithV0;               //!  difference in phi between original and V0 included jets
@@ -248,7 +261,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 25);
+  ClassDef(AliAnalysisTaskConvJet, 26);
   /// \endcond
 };
 #endif

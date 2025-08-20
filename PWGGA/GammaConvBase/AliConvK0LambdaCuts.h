@@ -232,7 +232,7 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     double          fQtMin;                             ///< Maximum Qt vs Pt param from Armenteros to select Gammas
     double          fAlphaMin;
     double          fAlphaMax;
-    bool            fUseOnFlyV0Finder;                    ///< flag
+    int             fUseOnFlyV0Finder;                    ///< flag
     float           fCosPAngleCut;                        ///<
     double          fDCAZPrimVtxCut;                      ///< cut value for the maximum distance in Z between the photon & the primary vertex [cm]
     double          fDCAPrimVtxCut;                      ///< cut value for the maximum distance in R between the photon & the primary vertex [cm]
@@ -259,7 +259,7 @@ class AliConvK0LambdaCuts : public AliAnalysisCuts {
     TH2F*             fHistoNSigmaNegTrackTrue;             ///< NSigma TPC of negative tracks for true particles
 
     /// \cond CLASSIMP
-    ClassDef(AliConvK0LambdaCuts,2)
+    ClassDef(AliConvK0LambdaCuts,3)
     /// \endcond
 };
 
