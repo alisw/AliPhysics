@@ -106,6 +106,8 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fSelectPhotonMass(false),
                                                    fV0FinderType(0),
                                                    fDoFillExtendedHistos(false),
+                                                   fK0LambdaCuts(nullptr),
+                                                   fDoK0LambdaCutsAdvanced(false),
                                                    fHistograms(nullptr),
                                                    hJetEtaDiffWithV0(nullptr),
                                                    hJetPhiDiffWithV0(nullptr),
@@ -184,6 +186,8 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fSelectPhotonMass(false),
                                                                    fV0FinderType(0),
                                                                    fDoFillExtendedHistos(false),
+                                                                   fK0LambdaCuts(nullptr),
+                                                                   fDoK0LambdaCutsAdvanced(false),
                                                                    fHistograms(nullptr),
                                                                    hJetEtaDiffWithV0(nullptr),
                                                                    hJetPhiDiffWithV0(nullptr),
@@ -370,6 +374,10 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
   fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
   fHistoV0DaughterResol->Sumw2();
   fHistograms->Add(fHistoV0DaughterResol);
+
+  if(fK0LambdaCuts) {
+    fHistograms->Add(fK0LambdaCuts->GetCutHistograms());
+  }
   
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -922,18 +930,26 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
   { // This is the begining of the V0 loop
     AliAODv0 *v0 = aodEvt->GetV0(iV0);
     if (!v0) continue;
-    // choose V0 finder
-    if(fV0FinderType == 1 && v0->GetOnFlyStatus()){
-      continue;
-    } else if(fV0FinderType == 2 && !v0->GetOnFlyStatus()){
-      continue;
+
+    if(fDoK0LambdaCutsAdvanced){
+      if(!fK0LambdaCuts->IsK0sLambdaAccepted(v0, -1, weight)){
+        continue;
+      }
+    } else {
+      // choose V0 finder
+      if(fV0FinderType == 1 && v0->GetOnFlyStatus()){
+        continue;
+      } else if(fV0FinderType == 2 && !v0->GetOnFlyStatus()){
+        continue;
+      }
+      // loose, hardcoded cuts for tests
+      if(v0->RadiusV0() < fMinRV0) continue;
+      if(std::abs(v0->AlphaV0()) > fMaxCutAlphaV0) continue;
+      if(v0->PtArmV0() > fMaxCutV0Qt) continue;
+      if(v0->CosPointingAngle(aodVtx) < fMinCosPA) continue;
     }
-    // loose, hardcoded cuts for tests
-    if(v0->RadiusV0() < fMinRV0) continue;
-    if(std::abs(v0->AlphaV0()) > fMaxCutAlphaV0) continue;
-    if(v0->PtArmV0() > fMaxCutV0Qt) continue;
+    // Additional cuts for in-jet specific stuff 
     if(v0->Pt() > fMaxPtCutV0) continue; // resolution to bad
-    if(v0->CosPointingAngle(aodVtx) < fMinCosPA) continue;
     if(fSelectK0sMass || fSelectLambdaMass || fSelectPhotonMass){
       bool isSelected = false;
       if(fSelectK0sMass){
@@ -950,7 +966,7 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
         }
       }
       if(fSelectPhotonMass && !isSelected){
-        if(v0->InvMass2Prongs(0, 1, 11, 11) < 0.1 ) {
+        if(v0->InvMass2Prongs(0, 1, 11, 11) < 0.05 ) {
           isSelected = true;
         }
       }
@@ -1008,17 +1024,22 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
           float nTPCFoundFrac = v0DaughterTr->GetTPCFoundFraction(); 
           if (nTPCFoundFrac<fMinFracTPCClusV0Leg) continue; // loose findable fraction cut
           if(std::abs(v0DaughterTr->Eta()) > fMaxEtaCutVoLeg) continue;
-          // cut on NSigma
-          bool rejectPID = false;
-          for(const auto & pid : arrPID){
-            if(std::abs(fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,pid)) > fnSigmaPID) {
-              rejectPID= true;
-              break;
+
+          // cut on NSigma in case no advanced cuts are applied
+          // The advanced cuts already include the PID cuts
+          if(!fDoK0LambdaCutsAdvanced){
+            bool rejectPID = false;
+            for(const auto & pid : arrPID){
+              if(std::abs(fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,pid)) > fnSigmaPID) {
+                rejectPID= true;
+                break;
+              }
+            }
+            if(rejectPID) {
+              continue;
             }
           }
-          if(rejectPID) {
-            continue;
-          }
+            
           
 
           if(isMC){
