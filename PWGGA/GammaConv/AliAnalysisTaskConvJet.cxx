@@ -76,6 +76,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fTrueVectorJetPartonPy(0),
                                                    fTrueVectorJetPartonPz(0),
                                                    fVecJetClusters({}),
+                                                   fVecJetClusterLabel({}),
                                                    fVecJetTracks({}),
                                                    fVecTrueJetParticles({}),
                                                    fAccType(0),
@@ -156,6 +157,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fTrueVectorJetPartonPy(0),
                                                                    fTrueVectorJetPartonPz(0),
                                                                    fVecJetClusters({}),
+                                                                   fVecJetClusterLabel({}),
                                                                    fVecJetTracks({}),
                                                                    fVecTrueJetParticles({}),
                                                                    fAccType(0),
@@ -402,6 +404,8 @@ Bool_t AliAnalysisTaskConvJet::FillHistograms()
  */
 void AliAnalysisTaskConvJet::DoJetLoop()
 {
+  double vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   fV0sCurrEvtAdded = false;
   AliJetContainer* jetCont = 0;
   TIter next(&fJetCollArray);
@@ -424,6 +428,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fVectorJetNClus.clear();
       fVectorJetNCh.clear();
       fVecJetClusters.clear();
+      fVecJetClusterLabel.clear();
       fVecJetTracks.clear();
 
       for (auto const& jet : jetCont->accepted()) {
@@ -432,15 +437,30 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         if (!IsJetAccepted(jet))
           continue;
 
-        std::vector<AliVCluster*> vecTmpClus;
+        std::vector<TLorentzVector> vecTmpClus(jet->GetNumberOfClusters());
+        std::vector<int> vecTmpClusLabel(jet->GetNumberOfClusters(), -1);
         for(size_t cl = 0; cl < jet->GetNumberOfClusters(); ++cl){
-          vecTmpClus.push_back(jet->Cluster(cl));
+          auto clus = dynamic_cast<AliAODCaloCluster*>(jet->Cluster(cl));
+          TLorentzVector clusVec;
+          clus->GetMomentum(clusVec, vertex);
+          vecTmpClus[cl] = clusVec;
+          vecTmpClusLabel[cl] = clus->GetLabel();
         }
         fVecJetClusters.push_back(vecTmpClus);
+        fVecJetClusterLabel.push_back(vecTmpClusLabel);
 
-        std::vector<AliVParticle*> vecTmpTracks;
+        std::vector<AliAODTrack*> vecTmpTracks;
         for(size_t tr = 0; tr < jet->GetNumberOfTracks(); ++tr){
-          vecTmpTracks.push_back(jet->Track(tr));
+          auto tmpTrack = dynamic_cast<AliAODTrack*>(jet->Track(tr));
+          if(!tmpTrack) {
+            std::cout << "Warning: jet->Track(tr) returned null pointer, skipping track" << std::endl;
+            continue;
+          }
+          int TrID = tmpTrack->GetID();
+          if(TrID <= 0) continue;
+          AliAODTrack *inTrack = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(TrID));
+          if(!inTrack) continue;
+          vecTmpTracks.push_back(inTrack);
         }
         fVecJetTracks.push_back(vecTmpTracks);
 
@@ -479,6 +499,8 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         vec.clear();
       }
       fVecTrueJetParticles.clear();
+
+
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
           continue;
@@ -492,9 +514,10 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fTrueVectorJetR.push_back(jet->Area());
         fTrueVectorJetNPart.push_back(jet->N());
 
-        std::vector<AliVParticle*> vecTmpPart;
+        std::vector<int> vecTmpPart(jet->GetNumberOfTracks());
         for(size_t tr = 0; tr < jet->GetNumberOfTracks(); ++tr){
-          vecTmpPart.push_back(jet->Track(tr));
+          auto trk = dynamic_cast<AliAODMCParticle*>(jet->Track(tr));
+          vecTmpPart[tr] = trk->GetLabel();
         }
         fVecTrueJetParticles.push_back(vecTmpPart);
         auto [ptLead, pdgcodeLead] = GetLeadingPartPt(jet, true);
@@ -528,18 +551,14 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       if(Rmatch < 0.3){ // hardcoded min distance requirement
         double ptNonMeas = 0;
         for(const auto & tr : fVecTrueJetParticles[Imatch]){
-          if(!tr) {
-            AliError("track from vecTmpPart is null");
-            continue;
-          }
-          int mcLabel = std::abs(tr->GetLabel());
-          auto mcParticle = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mcLabel));
+          if(tr < 0) continue;
+          auto mcParticle = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(tr));
           if(!mcParticle) {
             AliError("mcParticle is null");
             continue;
           }
-          if(IsNonMeasurable(std::abs(mcParticle->GetPdgCode()), tr->Charge())){
-            ptNonMeas+=tr->Pt();
+          if(IsNonMeasurable(std::abs(mcParticle->GetPdgCode()), mcParticle->Charge())){
+            ptNonMeas+=mcParticle->Pt();
           }
         }
         double jetEnergyWeight = funcEnergyWeights->Eval(fTrueVectorJetPt[Imatch]) - 1.;

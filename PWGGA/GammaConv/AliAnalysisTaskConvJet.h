@@ -14,6 +14,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
 #include "TH3F.h"
+#include "TLorentzVector.h"
 #include "AliConvK0LambdaCuts.h"
 
 /**
@@ -57,9 +58,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<Double_t> GetVectorJetNclus() { return fVectorJetNClus; }
 
   // Jet constituents
-  std::vector<AliVCluster*> GetJetClusters(int jet) { return fVecJetClusters[jet]; }
-  std::vector<AliVParticle*> GetJetTracks(int jet) { return fVecJetTracks[jet]; }
-  std::vector<AliVParticle*> GetTrueJetParticles(int jet) { return fVecTrueJetParticles[jet]; }
+  std::vector<TLorentzVector> GetJetClusters(int jet) { return fVecJetClusters[jet]; }
+  std::vector<int> GetJetClustersLabel(int jet) { return fVecJetClusterLabel[jet]; }
+  std::vector<AliAODTrack*> GetJetTracks(int jet) { return fVecJetTracks[jet]; }
+  std::vector<int> GetTrueJetParticles(int jet) { return fVecTrueJetParticles[jet]; }
   double GetTrueJetLeadPartPt(int jet) const { return fVecTrueJetMaxPartPt[jet]; }
   int GetTrueJetLeadPartPDG(int jet) const { return fVecTrueJetMaxPartPDG[jet]; }
 
@@ -191,10 +193,11 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<double> fTrueVectorJetPartonPz; // vector containing the pt of the leading parton ("seed of the jet")
 
   // Jet constituents
-  std::vector<std::vector<AliVCluster*>> fVecJetClusters;
-  std::vector<std::vector<AliVParticle*>> fVecJetTracks;
+  std::vector<std::vector<TLorentzVector>> fVecJetClusters;
+  std::vector<std::vector<int>> fVecJetClusterLabel;
+  std::vector<std::vector<AliAODTrack*>> fVecJetTracks;
 
-  std::vector<std::vector<AliVParticle*>> fVecTrueJetParticles;
+  std::vector<std::vector<int>> fVecTrueJetParticles;
 
   std::vector<double> fVecTrueJetMaxPartPt;
   std::vector<double> fVecTrueJetMaxPartPDG;

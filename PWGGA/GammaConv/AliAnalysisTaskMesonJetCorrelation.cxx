@@ -2375,7 +2375,7 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
         auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
         double sumFracMom = 0.;
         for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
-          AliVParticle* tmpPart = vecTruePart[ipart];
+          auto tmpPart = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(vecTruePart[ipart]));
           if(!tmpPart || tmpPart == nullptr) continue;
           // cout << "fTrueVectorJetPt.at(i): " << fTrueVectorJetPt.at(i) << endl;
           // cout << "tmpPart->Pt(): " << tmpPart->Pt() << endl;
@@ -2494,18 +2494,21 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         double fracMomNonMeasPartClus = 0.;
         double fracMomNonMeasPartTrack = 0.;
         for(size_t ipart = 0; ipart < vecTracks.size(); ++ipart){
-          
-          AliVParticle* tmpPart = static_cast<AliVParticle*>(vecTracks[ipart]);
-          float dEta = jetEta - tmpPart->Eta();
-          float dPhi = jetPhi - tmpPart->Phi();
+          if (!vecTracks[ipart]) {
+            std::cout << "WARNING: nullptr track pointer!" << std::endl;
+            continue;
+          }
+
+          float dEta = jetEta - vecTracks[ipart]->Eta();
+          float dPhi = jetPhi - vecTracks[ipart]->Phi();
           float dist = sqrt(dEta*dEta + dPhi*dPhi);
-          float fracMom = tmpPart->Pt()/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
-          fHistoJetTrackPt[fiCut]->Fill(tmpPart->Pt(), fWeightJetJetMC);
+          float fracMom = vecTracks[ipart]->Pt()/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
+          fHistoJetTrackPt[fiCut]->Fill(vecTracks[ipart]->Pt(), fWeightJetJetMC);
           fHistoJetTrackPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
 
           if(fIsMC){
             // Get MC label
-            int MCLabel = tmpPart->GetLabel();
+            int MCLabel = vecTracks[ipart]->GetLabel();
             if(MCLabel > 0){
               if (!fAODMCTrackArray)
                 fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -2524,27 +2527,24 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         
 
         auto vecClus = fConvJetReader->GetJetClusters(i);
+        auto vecClusLabel = fConvJetReader->GetJetClustersLabel(i);
         for(size_t ipart = 0; ipart < vecClus.size(); ++ipart){
-          AliAODCaloCluster* clus = static_cast<AliAODCaloCluster*>(vecClus[ipart]);
-          float clusPos[3] = {0, 0, 0};
-          clus->GetPosition(clusPos);
-          TVector3 clusVec(clusPos[0], clusPos[1], clusPos[2]);
-          float dEta = jetEta - clusVec.Eta();
-          float dPhi = jetPhi - clusVec.Phi();
+          float dEta = jetEta - vecClus[ipart].Eta();
+          float dPhi = jetPhi - vecClus[ipart].Phi();
           float dist = sqrt(dEta*dEta + dPhi*dPhi);
-          float PTotClus = sqrt(clusPos[0]*clusPos[0]+clusPos[1]*clusPos[1]+clusPos[2]*clusPos[2]) ; 
-          float px = clus->E()*clusPos[0]/PTotClus;
-          float py = clus->E()*clusPos[1]/PTotClus;
-          float ptclus =  sqrt(px*px + py*py);
+          float ptclus =  vecClus[ipart].Pt();
           float fracMom = ptclus/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
           fHistoJetClusterPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
 
           if(fIsMC){
-            int MCLabel = clus->GetLabel();
+            int MCLabel = vecClusLabel[ipart];
             if(MCLabel > 0){
               if (!fAODMCTrackArray)
                 fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
               AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(MCLabel));
+              if(!particle){
+                continue;
+              }
               int pdg = std::abs(particle->GetPdgCode());
               if(pdg == 130 || pdg == 310 || pdg == 3122 || pdg == 2112){ // mother is K0s, K0l, Lambda or neutron
                 fracMomNonMeasPartClus += fracMom;
@@ -2713,7 +2713,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         std::array<double, 5> arrEFracCategory = {0., 0., 0., 0., 0.}; // Charged meas, neutral meas, non meas, K0s+Lambda, non meas - K0s+Lambda
         auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
         for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
-          AliVParticle* tmpPart = vecTruePart[ipart];
+          auto tmpPart = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(vecTruePart[ipart]));
           if(!tmpPart) continue;
           if(!tmpPart->IsPhysicalPrimary()){
             cout << "Particle is not a physical primary but ends up in my jet..." << endl;
