@@ -199,6 +199,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoJetEta({}),
                                                                              fHistoJetPhi({}),
                                                                              fHistoJetArea({}),
+                                                                             fHistoJetAreaVsJetPt({}),
                                                                              fHistoTruevsRecJetPt({}),
                                                                              fHistoJetResolution({}),
                                                                              fHistoTruevsRecJetPtForTrueJets({}),
@@ -514,6 +515,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoJetEta({}),
                                                                                            fHistoJetPhi({}),
                                                                                            fHistoJetArea({}),
+                                                                                           fHistoJetAreaVsJetPt({}),
                                                                                            fHistoTruevsRecJetPt({}),
                                                                                            fHistoJetResolution({}),
                                                                                            fHistoTruevsRecJetPtForTrueJets({}),
@@ -848,6 +850,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoNchVsPtJet.resize(fnCuts);
     fHistoNclusVsPtJet.resize(fnCuts);
     fHistoNPartVsPtJet.resize(fnCuts);
+    fHistoJetAreaVsJetPt.resize(fnCuts);
   }
   if(fDoJetQA){
     fHistoMaxJetPtVsMult.resize(fnCuts);
@@ -1557,6 +1560,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
       fHistoNPartVsPtJet[iCut] = new TH2F("JetPt_Nparticles", "JetPt_Nparticles", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 100, vecEquidistFromMinus05.data());
       fJetList[iCut]->Add(fHistoNPartVsPtJet[iCut]);
+
+      fHistoJetAreaVsJetPt[iCut] = new TH2F("JetPt_JetArea", "JetPt_JetArea", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 50, 0, 1);
+      fJetList[iCut]->Add(fHistoJetAreaVsJetPt[iCut]);
 
     }
     if(fDoJetQA){
@@ -2478,6 +2484,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         fHistoNchVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i), fWeightJetJetMC);
         fHistoNclusVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNclus.at(i), fWeightJetJetMC);
         fHistoNPartVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i) + fVectorJetNclus.at(i), fWeightJetJetMC);
+        fHistoJetAreaVsJetPt[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetArea.at(i), fWeightJetJetMC);
       }
 
       if(fVectorJetPt.at(i) > 5 ) {
