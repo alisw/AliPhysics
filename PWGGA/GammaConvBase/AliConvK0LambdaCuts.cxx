@@ -1043,8 +1043,8 @@ bool AliConvK0LambdaCuts::SetArmenterosQTCut(Int_t QtMaxCut){   // Set Cut
     fDoArmenteros1DCuts = true;
     fQtMax=0.3;
     fQtMin=0.;
-    fAlphaMin = -1.;
-    fAlphaMax = 1.;
+    fAlphaMin = -0.9;
+    fAlphaMax = 0.9;
     fDoArmenteros2DCuts=false;
     break;
   case 10: // Selection with 2D cuts, diff of 0.03

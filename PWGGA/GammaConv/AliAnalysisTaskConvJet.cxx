@@ -434,9 +434,10 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
           continue;
+
         if (!IsJetAccepted(jet))
           continue;
-
+        
         std::vector<TLorentzVector> vecTmpClus(jet->GetNumberOfClusters());
         std::vector<int> vecTmpClusLabel(jet->GetNumberOfClusters(), -1);
         for(size_t cl = 0; cl < jet->GetNumberOfClusters(); ++cl){
@@ -458,12 +459,16 @@ void AliAnalysisTaskConvJet::DoJetLoop()
           }
           int TrID = tmpTrack->GetID();
           if(TrID <= 0) continue;
-          AliAODTrack *inTrack = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(TrID));
+          auto inTracktmp = fInputEvent->GetTrack(TrID);
+          if(!inTracktmp) {
+            std::cout << "Warning: fInputEvent->GetTrack(" << TrID << ") returned null pointer, skipping track" << std::endl;
+            continue;
+          }
+          AliAODTrack *inTrack = dynamic_cast<AliAODTrack*>(tmpTrack);
           if(!inTrack) continue;
           vecTmpTracks.push_back(inTrack);
         }
         fVecJetTracks.push_back(vecTmpTracks);
-
         double jetEnergyWeight = 1.;
         if(fApplyEnergyWeight == 1){
           jetEnergyWeight = funcEnergyWeights->Eval(jet->Pt());
