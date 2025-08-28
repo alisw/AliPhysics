@@ -455,6 +455,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoJetEta;                    //! vector of histos with eta of jets
   std::vector<TH1F*> fHistoJetPhi;                    //! vector of histos with phi of jets
   std::vector<TH1F*> fHistoJetArea;                   //! vector of histos with jet area
+  std::vector<TH2F*> fHistoJetAreaVsJetPt;            //! vector of histos with jet area vs. jet pT
   std::vector<TH2F*> fHistoTruevsRecJetPt;            //! vector of histos response matrix for jets
   std::vector<TH2F*> fHistoTruevsRecJetPtForTrueJets; //! vector of histos response matrix for true jets
   std::vector<TH2F*> fHistoTrueJetPtVsPartonPt;       //! vector of histos true jet pt vs. parton pt
