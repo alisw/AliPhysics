@@ -62,7 +62,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-	
+
   //multiplicity bins
   int runmults[3] = {1, 1, 1};
   int multbins[4] = {0, 200, 400, 900};
@@ -111,7 +111,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetCentralityFlattening(kFALSE);
   Reader->SetReadV0(0);//from ML*/
-  
+
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
 
@@ -172,7 +172,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
-      
+
 	  /*mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0,10000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);*/
@@ -180,8 +180,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  mecetaphitpc[aniter] = new AliFemtoSphericityEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0.01,100000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);
-	  mecetaphitpc[aniter]->SetStMin(0.7);
-	  mecetaphitpc[aniter]->SetStMax(1.0);
+	  mecetaphitpc[aniter]->SetStMin(0.0);
+	  mecetaphitpc[aniter]->SetStMax(0.3);
 
 	  cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 	  cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", chrgs[ichg], imult));

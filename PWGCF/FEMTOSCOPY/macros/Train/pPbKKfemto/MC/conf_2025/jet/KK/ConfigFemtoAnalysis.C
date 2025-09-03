@@ -62,7 +62,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-	
+
   //multiplicity bins
   int runmults[3] = {1, 1, 1};
   int multbins[4] = {0, 200, 400, 900};
@@ -71,7 +71,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   const char *chrgs[2] = { "Kp", "Km"};
 
   int runktdep = 1;
-  double ktrng[3] = {0.2, 0.5, 1.2};
+  double ktrng[3] = {0.15, 0.5, 1.2};
 
   int run3d = 0;
   //int runshlcms = 1;

@@ -62,7 +62,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
-	
+
   //multiplicity bins
   int runmults[3] = {1, 1, 1};
   int multbins[4] = {0, 200, 400, 900};
@@ -172,7 +172,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
-      
+
 	  /*mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0,10000);
 	  mecetaphitpc[aniter]->SetVertZPos(-10,10);*/
@@ -186,7 +186,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 	  cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 	  mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
-	  
+
 	  cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 	  cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 	  mecetaphitpc[aniter]->AddCutMonitor(cutPassEvVetaphitpc[aniter], cutFailEvVetaphitpc[aniter]);
