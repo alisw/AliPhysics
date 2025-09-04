@@ -271,12 +271,12 @@ protected:
     TH1F                                *fptJetHadron;           // pT of jets not containing electrons
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
-    TH1F                                *fptTrueHFEeffTPCTOF[nbins_jetpt];
-    TH3F                                *fptTrueHFEeffTPCTOFang[2];
-    TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
-    TH1F                                *fptTrueHFEeffEMCal[nbins_jetpt];
-    TH3F                                *fptTrueHFEeffEMCalang[2];
-    TH3F                                *fptTrueHFEeffEMCaldisp[2];
+    TH1F                                *fptTrueHFEeffTPCTOF[ncutseff];
+    TH3F                                *fptTrueHFEeffTPCTOFang[ncutseffsubs];
+    TH3F                                *fptTrueHFEeffTPCTOFdisp[ncutseffsubs];
+    TH1F                                *fptTrueHFEeffEMCal[ncutseff];
+    TH3F                                *fptTrueHFEeffEMCalang[ncutseffsubs];
+    TH3F                                *fptTrueHFEeffEMCaldisp[ncutseffsubs];
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
     TH2F                                *fEtaTrack;
