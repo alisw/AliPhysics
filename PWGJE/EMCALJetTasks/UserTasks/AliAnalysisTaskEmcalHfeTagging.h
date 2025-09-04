@@ -165,6 +165,7 @@ protected:
     static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
     static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
+    static constexpr Int_t				ncutssemiincl = 6;	     // cuts for constituent semi inclusive jets (leading track pt)
     
     Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
     Float_t                             fMinFractionShared;      // only fill histos for jets if shared fraction larger than X
@@ -350,19 +351,20 @@ protected:
     TH2F                                *fDispGluon;
 
 	// (Semi-)inclusive observables and response matrices
-	TH1F								*fPtSemiInclJet[nbins_jetpt];
-	TH2F								*fAngSemiInclJet[nbins_jetpt];
-	TH2F								*fDispSemiInclJet[nbins_jetpt];
-	THnSparseF							*fRMPtSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMAngSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMDispSemiInclJet[nbins_jetpt];
+	TH1F								*fPtSemiInclJet[ncutssemiincl];
+	TH2F								*fAngSemiInclJet[ncutssemiincl];
+	TH2F								*fDispSemiInclJet[ncutssemiincl];
+	THnSparseF							*fRMPtSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMAngSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMDispSemiInclJet[ncutssemiincl];
 	// Unweighted response matrices
-	THnSparseF							*fRMUWPtSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMUWAngSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMUWDispSemiInclJet[nbins_jetpt];
+	THnSparseF							*fRMUWPtSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMUWAngSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMUWDispSemiInclJet[ncutssemiincl];
 
 	// No electron methodology
 	TH2F								*fptJetNoElectrons;
+	TH2F								*fptExtendedJetNoElectrons;
 	TH3F								*fAngJetNoElectrons;
 	TH3F								*fDispJetNoElectrons;
     

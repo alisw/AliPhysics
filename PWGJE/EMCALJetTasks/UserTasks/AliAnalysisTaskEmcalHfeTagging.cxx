@@ -287,7 +287,7 @@ fTreeObservableTagging(0)
         }
     }
     
-	for(Int_t i = 0; i < nbins_jetpt; i++){
+	for(Int_t i = 0; i < ncutssemiincl; i++){
         fPtSemiInclJet[i] = NULL;
         fAngSemiInclJet[i] = NULL;
 		fDispSemiInclJet[i] = NULL;
@@ -532,7 +532,7 @@ fTreeObservableTagging(0)
         }
     }
 	
-	for(Int_t i = 0; i < nbins_jetpt; i++){
+	for(Int_t i = 0; i < ncutssemiincl; i++){
         fPtSemiInclJet[i] = NULL;
         fAngSemiInclJet[i] = NULL;
 		fDispSemiInclJet[i] = NULL;
@@ -585,6 +585,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,
         3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,
         9,10,11,12,13,14,15,16,18,20};
+
+	Double_t bin_extendedjetpt[25] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 
+			                          65., 70., 75., 80., 85., 90., 95., 100., 105., 110., 115., 120.};
     
 	Int_t nbin_jetptRM[2] = {24, 24};
 	Double_t max_jetptRM[2] = {120., 120};
@@ -1038,7 +1041,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fOutput->Add(fDispGluon);
 
 	// Inclusive and semi-inclusive histograms
-    for(Int_t i = 0; i < nbins_jetpt; i++){
+    for(Int_t i = 0; i < ncutssemiincl; i++){
         fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 24, 0., 120.);
 		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
@@ -1070,6 +1073,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	// No electrons 3D methodology
     fptJetNoElectrons = new TH2F("fptJetNoElectrons", "fptJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt);
 	fOutput -> Add(fptJetNoElectrons);
+
+    fptExtendedJetNoElectrons = new TH2F("fptExtendedJetNoElectrons", "fptExtendedJetNoElectrons", nbins_ept, bin_ept, 24, bin_extendedjetpt);
+	fOutput -> Add(fptExtendedJetNoElectrons);
 
     fAngJetNoElectrons = new TH3F("fAngJetNoElectrons", "fAngJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_g, bin_g);
 	fOutput -> Add(fAngJetNoElectrons);
@@ -1200,8 +1206,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
 
 	// Fix user-defined minimum pT cut for semi-inclusive if needed as calculations need
 	// its array to be ordered in MaxPtBinForSemiInclusiveJet
-	if (fMinPtSemiInclusive <= 2.5) {
-		cout << "User-defined MinPtSemiInclusive <= 2.5 GeV, setting new value to 5 GeV" << endl;
+	if (fMinPtSemiInclusive <= 4.) {
+		cout << "User-defined MinPtSemiInclusive <= 4 GeV, setting new value to 5 GeV" << endl;
 		fMinPtSemiInclusive = 5.;
 	}
     
@@ -1559,6 +1565,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 				AliVParticle* randomtagger = jetbase -> Track(randomtaggernumber);
 				if (randomtagger) {
 					fptJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted);
+					fptExtendedJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted);
 					fAngJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseang);
 					fDispJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseptd);
 				}
@@ -2672,7 +2679,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *j
 	// No need for transverse mass rescaling since lowest pT cut >> mass of electron
 	
 	// This array must be ordered
-	double minpT[5] = {0, 0.5, 1.0, 2.5, fMinPtSemiInclusive};
+	double minpT[ncutssemiincl] = {0, 0.5, 1.0, 2.5, 4.0, fMinPtSemiInclusive};
 
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (!jet->GetNumberOfTracks()) return -1;
@@ -2693,7 +2700,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *j
 
 	// If there is a particle with pt > min pt[j], the jet should populate all the bins previous
 	// to j (inclusive) 
-	for (int j = 4; j > 0; j--) {
+	for (int j = ncutssemiincl - 1; j > 0; j--) {
     	if (largestpt > minpT[j]) {
         	return j;
         }
