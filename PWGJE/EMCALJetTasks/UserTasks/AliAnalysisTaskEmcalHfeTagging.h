@@ -162,8 +162,10 @@ protected:
 	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
 	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
     static constexpr Int_t 				nbranches = 21;		     // number of branches in output tree
-    static constexpr Int_t				ncutseff = 5;			 // cuts for HFE efficiency calculation
+    static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
+    static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
+    static constexpr Int_t				ncutssemiincl = 6;	     // cuts for constituent semi inclusive jets (leading track pt)
     
     Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
     Float_t                             fMinFractionShared;      // only fill histos for jets if shared fraction larger than X
@@ -271,12 +273,12 @@ protected:
     TH1F                                *fptJetHadron;           // pT of jets not containing electrons
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
-    TH1F                                *fptTrueHFEeffTPCTOF[nbins_jetpt];
-    TH3F                                *fptTrueHFEeffTPCTOFang[2];
-    TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
-    TH1F                                *fptTrueHFEeffEMCal[nbins_jetpt];
-    TH3F                                *fptTrueHFEeffEMCalang[2];
-    TH3F                                *fptTrueHFEeffEMCaldisp[2];
+    TH1F                                *fptTrueHFEeffTPCTOF[ncutsefflowpt];
+    TH3F                                *fptTrueHFEeffTPCTOFang[ncutseffsubs];
+    TH3F                                *fptTrueHFEeffTPCTOFdisp[ncutseffsubs];
+    TH1F                                *fptTrueHFEeffEMCal[ncutseffhighpt];
+    TH3F                                *fptTrueHFEeffEMCalang[ncutseffsubs];
+    TH3F                                *fptTrueHFEeffEMCaldisp[ncutseffsubs];
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
     TH2F                                *fEtaTrack;
@@ -349,19 +351,20 @@ protected:
     TH2F                                *fDispGluon;
 
 	// (Semi-)inclusive observables and response matrices
-	TH1F								*fPtSemiInclJet[nbins_jetpt];
-	TH2F								*fAngSemiInclJet[nbins_jetpt];
-	TH2F								*fDispSemiInclJet[nbins_jetpt];
-	THnSparseF							*fRMPtSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMAngSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMDispSemiInclJet[nbins_jetpt];
+	TH1F								*fPtSemiInclJet[ncutssemiincl];
+	TH2F								*fAngSemiInclJet[ncutssemiincl];
+	TH2F								*fDispSemiInclJet[ncutssemiincl];
+	THnSparseF							*fRMPtSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMAngSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMDispSemiInclJet[ncutssemiincl];
 	// Unweighted response matrices
-	THnSparseF							*fRMUWPtSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMUWAngSemiInclJet[nbins_jetpt];
-	THnSparseF						    *fRMUWDispSemiInclJet[nbins_jetpt];
+	THnSparseF							*fRMUWPtSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMUWAngSemiInclJet[ncutssemiincl];
+	THnSparseF						    *fRMUWDispSemiInclJet[ncutssemiincl];
 
 	// No electron methodology
 	TH2F								*fptJetNoElectrons;
+	TH2F								*fptExtendedJetNoElectrons;
 	TH3F								*fAngJetNoElectrons;
 	TH3F								*fDispJetNoElectrons;
     
