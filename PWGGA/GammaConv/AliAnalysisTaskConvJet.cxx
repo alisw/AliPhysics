@@ -373,7 +373,7 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
     fHistoV0DaughtersGenerated->Sumw2();
     fHistograms->Add(fHistoV0DaughtersGenerated);
   }
-  fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), 200, -1., 3.);
   fHistoV0DaughterResol->Sumw2();
   fHistograms->Add(fHistoV0DaughterResol);
 
@@ -1075,7 +1075,7 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
                 // if(v0DaughterTr->Pt() > 20 && v0DaughterTr->Pt()/tmpPart->Pt() > 1.5){
                 //   std::cout << "ptrec: " << v0DaughterTr->Pt() << "  pttrue " << tmpPart->Pt() << "  pdg " << tmpPart->GetPdgCode() <<"   nsigPion: " << fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,AliPID::kPion) << "   nsigProton: " << fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,AliPID::kProton) << "   nsigElec: " << fPIDResponse->NumberOfSigmasTPC(v0DaughterTr,AliPID::kElectron) << "  nTPCFoundFrac " << nTPCFoundFrac << "  GetTPCchi2perCluster " << v0DaughterTr->GetTPCchi2perCluster() << "  GetTPCNcls " << v0DaughterTr->GetTPCNcls() << "  mass " <<v0->MassK0Short() << "  CosPointingAngle " << v0->CosPointingAngle(aodVtx) << std::endl;
                 // }
-                fHistoV0DaughterResol->Fill(v0DaughterTr->Pt(), tmpPart->Pt(), weight);
+                fHistoV0DaughterResol->Fill(tmpPart->Pt(), (v0DaughterTr->Pt() - tmpPart->Pt()) / tmpPart->Pt(), weight);
                 int motherlabel = tmpPart->GetMother();
                 AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
                 int pdgMother = tmpPartMother->GetPdgCode();
