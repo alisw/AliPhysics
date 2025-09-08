@@ -1103,10 +1103,11 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
           }
           if(v0DaughterTr->Pt() > fMaxPtCutV0Leg) continue; // most likely wrongly reconstructed! Resoluion is very poor above that
 
-          hV0LegsPt->Fill(v0DaughterTr->Pt(), weight);
-          fVectorJetPx[matchedJet]+=v0DaughterTr->Px();
-          fVectorJetPy[matchedJet]+=v0DaughterTr->Py();
-          fVectorJetPz[matchedJet]+=v0DaughterTr->Pz();
+          double eFRacDaughter = v0DaughterTr->P()/v0->P();
+          hV0LegsPt->Fill(v0->Pt()*eFRacDaughter, weight);
+          fVectorJetPx[matchedJet]+=v0->Px()*eFRacDaughter;
+          fVectorJetPy[matchedJet]+=v0->Py()*eFRacDaughter;
+          fVectorJetPz[matchedJet]+=v0->Pz()*eFRacDaughter;
           vecIsJetMod[matchedJet] = true;
         }
       }
