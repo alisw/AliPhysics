@@ -222,6 +222,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
     TH1F**                fHistoClusRejectedHeadersGammaPt;                     //! array of histos with cluster, pt rejected with other headers
     TH2F**                fHistoClusGammaPtM02;                                 //! array of histos with cluster M02 vs. pt
+    std::vector<std::vector<double>> fArrGammaEnergyPerEvt;                     //! array with all gamma cluster energies per event for efficiency studies
+    TH2F**                fHistoClusEffiPerEvent;                               //! array of histos with cluster efficiency per event    
     //histograms for pure MC quantities
     TH1I**                fHistoMCHeaders;                                      //! array of histos for header names
     TH1D**                fHistoMCEventsTrigg;                                  //! array of histos with number of accepted and rejected events selected on MC based trigger (important for mult. dep INEL>0)
@@ -546,7 +548,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 99);
+    ClassDef(AliAnalysisTaskGammaCalo, 100);
 };
 
 #endif

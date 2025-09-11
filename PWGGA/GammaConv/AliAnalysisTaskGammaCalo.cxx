@@ -130,6 +130,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoClusGammaPtM02(NULL),
+  fArrGammaEnergyPerEvt({}),
+  fHistoClusEffiPerEvent(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCEventsTrigg(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
@@ -502,6 +504,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoClusGammaPtM02(NULL),
+  fArrGammaEnergyPerEvt({}),
+  fHistoClusEffiPerEvent(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCEventsTrigg(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
@@ -1364,6 +1368,13 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
 
+  if(fIsMC && fDoClusterQA > 0){
+    fArrGammaEnergyPerEvt.resize(2);
+    fArrGammaEnergyPerEvt[0].resize(fnCuts);
+    fArrGammaEnergyPerEvt[1].resize(fnCuts);
+    fHistoClusEffiPerEvent = new TH2F*[fnCuts];
+  }
+
   if (fDoMesonQA == 4 && fIsMC == 0){
     fTreeList                       = new TList*[fnCuts];
     tSigInvMassPtAlphaTheta         = new TTree*[fnCuts];
@@ -1712,7 +1723,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoClusGammaPtM02[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
       fHistoClusGammaPtM02[iCut]->SetYTitle("#sigma_{long}^{2}");
       fESDList[iCut]->Add(fHistoClusGammaPtM02[iCut]);
+    }
 
+    if(fIsMC && fDoClusterQA > 0){
+      fHistoClusEffiPerEvent[iCut]        = new TH2F("ClusEffiPerEvent", "ClusEffiPerEvent", 100, 0., 200., 100, 0., 2.);
+      fHistoClusEffiPerEvent[iCut]->SetXTitle("E_{#gamma} per event (GeV/c)");
+      fHistoClusEffiPerEvent[iCut]->SetYTitle("efficiency (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusEffiPerEvent[iCut]);
+      if(fIsMC>1){
+        fHistoClusEffiPerEvent[iCut]->Sumw2();
+      }
     }
 
     if (fIsMC > 1){
@@ -3967,6 +3987,9 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fIsFromDesiredHeader = vectorIsFromDesiredHeader.at(iter);
       fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+      if(fDoClusterQA > 0){
+        fArrGammaEnergyPerEvt[1][fiCut] += vectorCurrentClusters.at(iter)->E();
+      }
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         //--------------------------------------------------
         //if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){ //Only MB
@@ -4332,6 +4355,22 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       if((pdg ==221) && isSep) fHistoMCEtaGenFoundInTwoCluster[fiCut]->Fill(pi0Pt,pi0Eta,fWeightJetJetMC);
   }
 
+  // Fill photon energy efficiency study
+  if(fIsMC && fDoClusterQA > 0){
+    if(fArrGammaEnergyPerEvt[0][fiCut] > 0){
+      fArrGammaEnergyPerEvt[1][fiCut]/=fArrGammaEnergyPerEvt[0][fiCut];
+    } else {
+      fArrGammaEnergyPerEvt[1][fiCut] = 0.;
+    }
+    
+    fHistoClusEffiPerEvent[fiCut]->Fill(fArrGammaEnergyPerEvt[0][fiCut], fArrGammaEnergyPerEvt[1][fiCut], fWeightJetJetMC);
+    // reset values for next event
+    for (auto& cat : fArrGammaEnergyPerEvt) {
+        for (auto& val : cat) {
+            val = 0.0;
+        }
+    }
+  }
   return;
 }
 
@@ -4796,6 +4835,13 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles(Int_t isCurrentEventSelecte
           fHistoMCGammaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
         }
         fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
+        if(fDoClusterQA > 0){
+          // check emcal acceptance
+          int cellIDtmp = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(particle->Eta(), static_cast<double>((particle->Phi()<0) ? particle->Phi() + TMath::Pi()*2. : particle->Phi()));
+          if(cellIDtmp >= 0){
+            fArrGammaEnergyPerEvt[0][fiCut] += particle->E();
+          }
+        }
 
         if(!fDoLightOutput){
           if(particle->GetMother() >-1){ // Meson Decay Gamma
