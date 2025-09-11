@@ -256,6 +256,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH2F* fHistoV0Generated;               //! Generated V0 particles for different sources (K0s, Lambda, photons, rest) vs pt
   TH2F* fHistoV0GeneratedMeasDecay;      //! Generated V0 particles with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt
   TH2F* fHistoV0DaughtersGenerated;      //! Generated V0 particle daughters with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt
+  TH3F* fHistoV0SourceVsPtVsJetPt;       //! Reconstructed V0s for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
+  TH3F* fHistoV0SourceVsGenPtVsJetPt;    //! Reconstructed V0s for different sources (K0s, Lambda, photons, rest) vs gen pt vs jet pt
+  TH3F* fHistoGenV0SourceVsPtVsJetPt;    //! Generated V0s for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
+  TH3F* fHistoGenV0SourceMeasDecayVsPtVsJetPt; //! Generated V0s with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
 
 
  private:
@@ -264,7 +268,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 26);
+  ClassDef(AliAnalysisTaskConvJet, 27);
   /// \endcond
 };
 #endif
