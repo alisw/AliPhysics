@@ -224,6 +224,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoClusGammaPtM02;                                 //! array of histos with cluster M02 vs. pt
     std::vector<std::vector<double>> fArrGammaEnergyPerEvt;                     //! array with all gamma cluster energies per event for efficiency studies
     TH2F**                fHistoClusEffiPerEvent;                               //! array of histos with cluster efficiency per event    
+    TH2F**                fHistoClusEffiPerEventECut;                           //! array of histos with cluster efficiency per event with energy cut on MC gen level 
     //histograms for pure MC quantities
     TH1I**                fHistoMCHeaders;                                      //! array of histos for header names
     TH1D**                fHistoMCEventsTrigg;                                  //! array of histos with number of accepted and rejected events selected on MC based trigger (important for mult. dep INEL>0)

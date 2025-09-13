@@ -132,6 +132,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoClusGammaPtM02(NULL),
   fArrGammaEnergyPerEvt({}),
   fHistoClusEffiPerEvent(NULL),
+  fHistoClusEffiPerEventECut(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCEventsTrigg(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
@@ -506,6 +507,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoClusGammaPtM02(NULL),
   fArrGammaEnergyPerEvt({}),
   fHistoClusEffiPerEvent(NULL),
+  fHistoClusEffiPerEventECut(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCEventsTrigg(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
@@ -1368,13 +1370,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoClusGammaPtM02            = new TH2F*[fnCuts];
   }
 
-  if(fIsMC && fDoClusterQA > 0){
-    fArrGammaEnergyPerEvt.resize(2);
-    fArrGammaEnergyPerEvt[0].resize(fnCuts);
-    fArrGammaEnergyPerEvt[1].resize(fnCuts);
-    fHistoClusEffiPerEvent = new TH2F*[fnCuts];
-  }
-
   if (fDoMesonQA == 4 && fIsMC == 0){
     fTreeList                       = new TList*[fnCuts];
     tSigInvMassPtAlphaTheta         = new TTree*[fnCuts];
@@ -1723,16 +1718,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoClusGammaPtM02[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
       fHistoClusGammaPtM02[iCut]->SetYTitle("#sigma_{long}^{2}");
       fESDList[iCut]->Add(fHistoClusGammaPtM02[iCut]);
-    }
-
-    if(fIsMC && fDoClusterQA > 0){
-      fHistoClusEffiPerEvent[iCut]        = new TH2F("ClusEffiPerEvent", "ClusEffiPerEvent", 100, 0., 200., 100, 0., 2.);
-      fHistoClusEffiPerEvent[iCut]->SetXTitle("E_{#gamma} per event (GeV/c)");
-      fHistoClusEffiPerEvent[iCut]->SetYTitle("efficiency (GeV/c)");
-      fESDList[iCut]->Add(fHistoClusEffiPerEvent[iCut]);
-      if(fIsMC>1){
-        fHistoClusEffiPerEvent[iCut]->Sumw2();
-      }
     }
 
     if (fIsMC > 1){
@@ -2230,6 +2215,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTrueEtaCategory8            = new TH2F*[fnCuts];
         }
       }
+    }
+
+    if(fIsMC && fDoClusterQA > 0){
+      fArrGammaEnergyPerEvt.resize(3);
+      fArrGammaEnergyPerEvt[0].resize(fnCuts);
+      fArrGammaEnergyPerEvt[1].resize(fnCuts);
+      fArrGammaEnergyPerEvt[2].resize(fnCuts);
+      fHistoClusEffiPerEvent = new TH2F*[fnCuts];
+      fHistoClusEffiPerEventECut = new TH2F*[fnCuts];
     }
 
 
@@ -3321,6 +3315,24 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fTreeList[iCut]->Add(tTrueInvMassROpenABPtFlag[iCut]);
         }
       }
+
+      if(fIsMC && fDoClusterQA > 0){
+        fHistoClusEffiPerEvent[iCut]        = new TH2F("ClusEffiPerEvent", "ClusEffiPerEvent", 100, 0., 200., 100, 0., 2.);
+        fHistoClusEffiPerEvent[iCut]->SetXTitle("E_{#gamma} per event (GeV/c)");
+        fHistoClusEffiPerEvent[iCut]->SetYTitle("efficiency (GeV/c)");
+        fTrueList[iCut]->Add(fHistoClusEffiPerEvent[iCut]);
+        if(fIsMC>1){
+          fHistoClusEffiPerEvent[iCut]->Sumw2();
+        }
+
+        fHistoClusEffiPerEventECut[iCut]        = new TH2F("ClusEffiPerEventECut", "ClusEffiPerEventECut", 100, 0., 200., 100, 0., 2.);
+        fHistoClusEffiPerEventECut[iCut]->SetXTitle("E_{#gamma} per event (GeV/c)");
+        fHistoClusEffiPerEventECut[iCut]->SetYTitle("efficiency (GeV/c)");
+        fTrueList[iCut]->Add(fHistoClusEffiPerEventECut[iCut]);
+        if(fIsMC>1){
+          fHistoClusEffiPerEventECut[iCut]->Sumw2();
+        }
+      }
     }
   }
   fVectorDoubleCountTruePi0s.clear();
@@ -3988,7 +4000,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
       if(fDoClusterQA > 0){
-        fArrGammaEnergyPerEvt[1][fiCut] += vectorCurrentClusters.at(iter)->E();
+        fArrGammaEnergyPerEvt[2][fiCut] += vectorCurrentClusters.at(iter)->E();
       }
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         //--------------------------------------------------
@@ -4357,13 +4369,21 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
   // Fill photon energy efficiency study
   if(fIsMC && fDoClusterQA > 0){
+    double effi = fArrGammaEnergyPerEvt[2][fiCut];
+    double effiWithECut = fArrGammaEnergyPerEvt[2][fiCut];
     if(fArrGammaEnergyPerEvt[0][fiCut] > 0){
-      fArrGammaEnergyPerEvt[1][fiCut]/=fArrGammaEnergyPerEvt[0][fiCut];
+      effi/=fArrGammaEnergyPerEvt[0][fiCut];
     } else {
-      fArrGammaEnergyPerEvt[1][fiCut] = 0.;
+      effi = 0.;
+    }
+    if(fArrGammaEnergyPerEvt[1][fiCut] > 0){
+      effiWithECut/=fArrGammaEnergyPerEvt[1][fiCut];
+    } else {
+      effiWithECut = 0.;
     }
     
-    fHistoClusEffiPerEvent[fiCut]->Fill(fArrGammaEnergyPerEvt[0][fiCut], fArrGammaEnergyPerEvt[1][fiCut], fWeightJetJetMC);
+    fHistoClusEffiPerEvent[fiCut]->Fill(fArrGammaEnergyPerEvt[0][fiCut], effi, fWeightJetJetMC);
+    fHistoClusEffiPerEventECut[fiCut]->Fill(fArrGammaEnergyPerEvt[0][fiCut], effiWithECut, fWeightJetJetMC);
     // reset values for next event
     for (auto& cat : fArrGammaEnergyPerEvt) {
         for (auto& val : cat) {
@@ -4840,6 +4860,9 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles(Int_t isCurrentEventSelecte
           int cellIDtmp = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(particle->Eta(), static_cast<double>((particle->Phi()<0) ? particle->Phi() + TMath::Pi()*2. : particle->Phi()));
           if(cellIDtmp >= 0){
             fArrGammaEnergyPerEvt[0][fiCut] += particle->E();
+            if(particle->E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy()){
+              fArrGammaEnergyPerEvt[1][fiCut] += particle->E();
+            }
           }
         }
 

@@ -4326,6 +4326,11 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2575) { // NonLin applied in CF.  S100A50,  min energy = 300MeV
     cuts.AddCutCalo("00052113","411790009feg2230000","0s631031000000d0"); // EMC7
 
+  // Open cuts and low cluster energy cut for jet cluster efficiency plots
+  } else if (trainConfig == 2576) { // 
+  cuts.AddCutCalo("00010113","411790109feg0200000","0s631031000000d0"); // INT7 energy 0.3 GeV, open cuts
+  cuts.AddCutCalo("00010113","4117901090eg0200000","0s631031000000d0"); // INT7 energy 0.3 GeV, open cuts, no TM
+
     // configs with new cell scale and TestBeam NL + fine tuning
     // no scale in data NL with PCMEMC or EMC fine tuning
   } else if (trainConfig == 2580) {
