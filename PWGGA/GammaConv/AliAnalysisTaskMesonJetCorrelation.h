@@ -501,8 +501,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   // Non measurable particle study
   std::vector<TH2F*> fHistoEnergyFracNonMeas;         //! vector of histos with energy fraction of non-measurable particles
-  std::vector<TH2F*> fHistoEnergyFracNonMeasTrack;    //! vector of histos with energy fraction of non-measurable particles for tracks
-  std::vector<TH2F*> fHistoEnergyFracNonMeasClus;     //! vector of histos with energy fraction of non-measurable particles for clusters
+  std::vector<TH3F*> fHistoEnergyFracNonMeasTrack;    //! vector of histos with energy fraction of non-measurable particles for tracks
+  std::vector<TH3F*> fHistoEnergyFracNonMeasClus;     //! vector of histos with energy fraction of non-measurable particles for clusters
   std::vector<TH3F*> fHistoClusterAbundanceMC;        //! vector of histos with number of clusters for different leading particles
 
   //-------------------------------

@@ -1598,14 +1598,18 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fHistoEnergyFracNonMeas[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
         fJetList[iCut]->Add(fHistoEnergyFracNonMeas[iCut]);
 
-        fHistoEnergyFracNonMeasTrack[iCut] = new TH2F("MC_EnergyFracNonMeasTracksVsJetPt", "MC_EnergyFracNonMeasTracksVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoEnergyFracNonMeasTrack[iCut] = new TH3F("MC_EnergyFracNonMeasTracksVsJetPt", "MC_EnergyFracNonMeasTracksVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 3, vecEquidistFromMinus05.data());
         fHistoEnergyFracNonMeasTrack[iCut]->SetXTitle("z (non meas. track)");
         fHistoEnergyFracNonMeasTrack[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+        fHistoEnergyFracNonMeasTrack[iCut]->GetZaxis()->SetBinLabel(1, "K0s");
+        fHistoEnergyFracNonMeasTrack[iCut]->GetZaxis()->SetBinLabel(2, "Lambda");
+        fHistoEnergyFracNonMeasTrack[iCut]->GetZaxis()->SetBinLabel(3, "all");
         fJetList[iCut]->Add(fHistoEnergyFracNonMeasTrack[iCut]);
 
-        fHistoEnergyFracNonMeasClus[iCut] = new TH2F("MC_EnergyFracNonMeasClusVsJetPt", "MC_EnergyFracNonMeasClusVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoEnergyFracNonMeasClus[iCut] = new TH3F("MC_EnergyFracNonMeasClusVsJetPt", "MC_EnergyFracNonMeasClusVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 3, vecEquidistFromMinus05.data());
         fHistoEnergyFracNonMeasClus[iCut]->SetXTitle("z (non meas. clus)");
         fHistoEnergyFracNonMeasClus[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+
         fJetList[iCut]->Add(fHistoEnergyFracNonMeasClus[iCut]);
 
         fHistoClusterAbundanceMC[iCut] = new TH3F("MC_ClusterAbundanceInJetsVsJetPt", "MC_ClusterAbundanceInJetsVsJetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 11, vecEquidistFromMinus05.data());
@@ -2498,8 +2502,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         float jetPhi = fVectorJetPhi.at(i);
 
         auto vecTracks = fConvJetReader->GetJetTracks(i);
-        double fracMomNonMeasPartClus = 0.;
-        double fracMomNonMeasPartTrack = 0.;
+        std::array<double, 3> fracMomNonMeasPartClus = {0., 0., 0.};
+        std::array<double, 3> fracMomNonMeasPartTrack = {0., 0., 0.};
         for(size_t ipart = 0; ipart < vecTracks.size(); ++ipart){
           if (!vecTracks[ipart]) {
             std::cout << "WARNING: nullptr track pointer!" << std::endl;
@@ -2525,7 +2529,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
                 AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherLabel));
                 int pdg = std::abs(particleMother->GetPdgCode());
                 if(pdg == 130 || pdg == 310 || pdg == 3122){ // mother is K0s, K0l or Lambda
-                  fracMomNonMeasPartTrack += fracMom;
+                  if(pdg == 130){
+                    fracMomNonMeasPartTrack[0] += fracMom;
+                  } else if (pdg == 3122){
+                    fracMomNonMeasPartTrack[1] += fracMom;
+                  }
+                  fracMomNonMeasPartTrack[2] += fracMom;
                 }
               }              
             }
@@ -2554,7 +2563,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
               }
               int pdg = std::abs(particle->GetPdgCode());
               if(pdg == 130 || pdg == 310 || pdg == 3122 || pdg == 2112){ // mother is K0s, K0l, Lambda or neutron
-                fracMomNonMeasPartClus += fracMom;
+                if(pdg == 130){ // K0l
+                  fracMomNonMeasPartClus[0] += fracMom;
+                } else if (pdg == 2112){ // neutron
+                  fracMomNonMeasPartClus[1] += fracMom;
+                }
+                fracMomNonMeasPartClus[2] += fracMom;
               }
 
               double iClass = -1;
@@ -2588,9 +2602,17 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         }
         
         if(fIsMC){
-          if(fHistoEnergyFracNonMeas[fiCut]) fHistoEnergyFracNonMeas[fiCut]->Fill(fracMomNonMeasPartTrack+fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
-          if(fHistoEnergyFracNonMeasClus[fiCut]) fHistoEnergyFracNonMeasClus[fiCut]->Fill(fracMomNonMeasPartClus, fVectorJetPt[i], fWeightJetJetMC );
-          if(fHistoEnergyFracNonMeasTrack[fiCut]) fHistoEnergyFracNonMeasTrack[fiCut]->Fill(fracMomNonMeasPartTrack, fVectorJetPt[i], fWeightJetJetMC );
+          if(fHistoEnergyFracNonMeas[fiCut]) fHistoEnergyFracNonMeas[fiCut]->Fill(fracMomNonMeasPartTrack[2]+fracMomNonMeasPartClus[2], fVectorJetPt[i], fWeightJetJetMC );
+          if(fHistoEnergyFracNonMeasClus[fiCut]){
+            for(size_t iFill = 0; iFill < fracMomNonMeasPartTrack.size(); iFill++){
+              fHistoEnergyFracNonMeasClus[fiCut]->Fill(fracMomNonMeasPartClus[iFill], fVectorJetPt[i], iFill, fWeightJetJetMC );
+            }
+          }
+          if(fHistoEnergyFracNonMeasTrack[fiCut]) {
+            for(size_t iFill = 0; iFill < fracMomNonMeasPartTrack.size(); iFill++){
+              fHistoEnergyFracNonMeasTrack[fiCut]->Fill(fracMomNonMeasPartTrack[iFill], fVectorJetPt[i], iFill, fWeightJetJetMC );
+            }
+          }
         }
         if(IsJetAtEMCSupermoduleBorder(jetPhi)){
           fHistoPtJetSMBorder[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
