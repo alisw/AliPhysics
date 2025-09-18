@@ -163,6 +163,7 @@ public:
   void SetCutCascadeV0RadiusDecayMax(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMax = val;}
   void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
   void SetCutV0MassDiff(Double_t val = 0.005) {fdCutV0MassDiff = val;}
+  void SetCutDCABacBar(Double_t val = 1.0) {fdCutDCABacBar = val;}
   void SetCutNSigmadEdxMaxCasc(Double_t val = 4.) {fdCutNSigmadEdxMaxCasc = val;}
   
   // axis: Xi invariant mass
@@ -559,8 +560,9 @@ private:
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
   Double_t fdCutV0MassDiff; //(0.005) [GeV] V0 daughter mass difference from Lambda mass
   Double_t fdCutNSigmadEdxMaxCasc; //(4.0)
+  Double_t fdCutDCABacBar; //(1.0) DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
  
-  static const Int_t fgkiNCategCascade = 22; // number of Cascade selection steps  
+  static const Int_t fgkiNCategCascade = 23; // number of Cascade selection steps  
   //Histograms 
   TH1D* fh1CascadeCandPerEvent; //! number of Cascade cand per event
    //QA 
