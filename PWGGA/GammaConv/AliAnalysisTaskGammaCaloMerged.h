@@ -352,6 +352,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusMergedEtaEVsM02;                      //! array of histos with validated merged eta, E, m02
     TH2F**                  fHistoTrueClusBGEvsM20;                             //! array of histos with validated hadrons(BG), E, m20
 
+    TH2F**                  fHistoTruePrimaryPi0MCPtRecPt;                      //! array of histos with validated weighted primary pi0, MCpt, rec pt
     TH2F**                  fHistoTruePrimaryPi0MCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi0PureMergedMCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi0MergedPartConvMCPtResolPt;      //! array of histos with validated weighted primary pi0, MCpt, resol pt
@@ -438,7 +439,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 51);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 52);
 };
 
 #endif
