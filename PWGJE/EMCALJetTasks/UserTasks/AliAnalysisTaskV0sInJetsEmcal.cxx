@@ -214,7 +214,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCascadeV0RadiusDecayMax(100.),
   fdCutV0MassDiff(0.005),
   fdCutNSigmadEdxMaxCasc(4.),
-  fdCutDCABacBar(1.),
+  fdCutDCABacBar(0.999999),
+  fbParametricBacBarCosPA(kFALSE),  
+  fh1PtBacBarCosPA(0),
 
   fh1CascadeCandPerEvent(0)
 //------------------------------------------
@@ -756,8 +758,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCascadeV0RadiusDecayMax(100.),
   fdCutV0MassDiff(0.005),
   fdCutNSigmadEdxMaxCasc(4.),
-  fdCutDCABacBar(1.),
-  
+  fdCutDCABacBar(0.999999),
+  fbParametricBacBarCosPA(kFALSE),  
+  fh1PtBacBarCosPA(0),
   
   fh1CascadeCandPerEvent(0)
 //------------------------------------------  
@@ -1857,9 +1860,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fh2V0ALambdaMCPtGenPtRec[i] = new TH2D(Form("fh2V0ALambdaMCPtGenPtRec_%d", i), Form("MC ALambda associated: pt gen vs pt rec, cent %s;#it{p}_{T}^{gen} (GeV/#it{c});#it{p}_{T}^{rec} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtV0, dPtV0Min, dPtV0Max, iNBinsPtV0, dPtV0Min, dPtV0Max);
       fOutputListMC->Add(fh2V0ALambdaMCPtGenPtRec[i]);
 
-      Int_t iNBinsPtXi = 150;
+      Int_t iNBinsPtXi = 200;
       Double_t dPtXiMin = 0;
-      Double_t dPtXiMax = 15;
+      Double_t dPtXiMax = 20;
       const Int_t iNDimFD = 4;
       Int_t binsFD[iNDimFD] = {iNBinsPtV0, iNBinsPtXi, iNJetPtBins, iNBinsCentV0};
       Double_t xminFD[iNDimFD] = {dPtV0Min, dPtXiMin, dJetPtMin, 0};
@@ -2509,7 +2512,8 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutCascadeV0RadiusDecayMax > 0.) printf( "min V0 from cascade decay radius: %g\n", fdCutCascadeV0RadiusDecayMax);
   if(fdCutV0MassDiff > 0.) printf("Max difference of v0 daughter mass from the PDG Lambda mass value: %g\n", fdCutV0MassDiff);
   if( fdCutNSigmadEdxMaxCasc > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx] of cascade: %g\n",  fdCutNSigmadEdxMaxCasc);
-  if(fdCutDCABacBar > 0.) printf("DCA cut on the bachelor to batyon (kCasc_BacBarCosPA): %g\n", fdCutDCABacBar);
+  if(fdCutDCABacBar > 0.) printf("BBCosPa cut on the bachelor to baryon (kCasc_BacBarCosPA): %g\n", fdCutDCABacBar);
+  if(fbParametricBacBarCosPA > 0.) printf("Parametric BacBarCosPA is on\n");
   
   printf("-------------------------------------------------------\nJet analysis:\n");
   printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
@@ -4324,6 +4328,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     else 
       dMassCascV0 = Cascade->MassAntiLambda();
 
+    // Apply parametric BacBarCosPA cut, if requested
+    if (fbParametricBacBarCosPA) {
+      if (dPtCascade >= fh1PtBacBarCosPA->GetXaxis()->GetXmin() && dPtCascade <= fh1PtBacBarCosPA->GetXaxis()->GetXmax())
+        fdCutDCABacBar = fh1PtBacBarCosPA->GetBinContent(fh1PtBacBarCosPA->GetXaxis()->FindBin(dPtCascade));
+      else 
+        fdCutDCABacBar = 0.999999;         
+    }
 
     // QA histograms before cuts
     FillQAHistogramXi(primVtx, Cascade, 0, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, bIsInPeakXi, bIsInPeakOmega);
@@ -5738,4 +5749,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsFromGoodGenerator(Int_t index)
       return kFALSE;
   }
   return kTRUE;
+}
+
+void AliAnalysisTaskV0sInJetsEmcal::SetParametricBacBarCosPA(Int_t nbins, Float_t* ptbins, Float_t* values) {
+  fbParametricBacBarCosPA = kTRUE;
+  fh1PtBacBarCosPA = new TH1D("", "", nbins, ptbins);
+  for (int iBin=1; iBin<=nbins; iBin++) fh1PtBacBarCosPA->SetBinContent(iBin, values[iBin-1]);
 }

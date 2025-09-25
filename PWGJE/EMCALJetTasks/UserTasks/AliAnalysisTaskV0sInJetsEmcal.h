@@ -163,9 +163,10 @@ public:
   void SetCutCascadeV0RadiusDecayMax(Double_t val = 1.2) {fdCutCascadeV0RadiusDecayMax = val;}
   void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
   void SetCutV0MassDiff(Double_t val = 0.005) {fdCutV0MassDiff = val;}
-  void SetCutDCABacBar(Double_t val = 1.0) {fdCutDCABacBar = val;}
+  void SetCutDCABacBar(Double_t val = 0.999999) {fdCutDCABacBar = val;}
   void SetCutNSigmadEdxMaxCasc(Double_t val = 4.) {fdCutNSigmadEdxMaxCasc = val;}
   
+  void SetParametricBacBarCosPA(Int_t nbins, Float_t* ptbins, Float_t* values);
   // axis: Xi invariant mass
   static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
   static const Double_t fgkdMassXiMin; // minimum
@@ -805,14 +806,16 @@ private:
   //OmegaPlus------------------------
   
   //TH1D* fh1QACascadeOmegaCos[fgkiNQAIndeces]; //! cosine of pointing angle (CPA) (Omega)
-
-
+  //
+  //parametric BacBarCosPA cut for Cascades (depending on pt)
+  Bool_t fbParametricBacBarCosPA;                           //
+  TH1D* fh1PtBacBarCosPA;                                //
 //-------------------------------------------------------------------------------------------
 
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 31) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 32) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
