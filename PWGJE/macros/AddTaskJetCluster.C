@@ -1,5 +1,6 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2,Int_t dice=0,Int_t smear=0,Bool_t useOADB=kFALSE,Double_t changeEfficiencyFraction=0.);
-AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlag);
+//#include <AliAnalysisTaskJetCluster.h>
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE, const char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2,Int_t dice=0,Int_t smear=0,Bool_t useOADB=kFALSE,Double_t changeEfficiencyFraction=0.);
+AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlagi = 0);
 
 Int_t kBackgroundModeCl = 0;
 Float_t kPtTrackCutCl = 0.15;
@@ -31,7 +32,7 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask,Bool_t kUseA
  }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone,Int_t dice,Int_t smear,Bool_t useOADB,Double_t changeEfficiencyFraction)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,const char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone,Int_t dice,Int_t smear,Bool_t useOADB,Double_t changeEfficiencyFraction)
  {
  // Creates a jet fider task, configures it and adds it to the analysis manager.
    kPtTrackCutCl = ptTrackCut;
@@ -144,20 +145,16 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    clus->SetGhostArea(0.005);
    clus->SetGhostEtamax(kTrackEtaWindowCl);
 
-   switch (jf) {
-   case "ANTIKT":
-     clus->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
-     break;
-   case "CA":
-     clus->SetAlgorithm(1); // CA from fastjet/JetDefinition.hh
-     break;
-   case "KT":
-     clus->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
-     break;
-   default:
-     ::Error("AddTaskJetCluster", "Wrong jet finder selected\n");
-     return 0;
-   }
+       if (!strncmp(jf,"ANTIKT",6)) {
+      clus->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
+    } else if (!strncmp(jf,"CA",2)) {
+      clus->SetAlgorithm(1); // CA from fastjet/JetDefinition.hh
+    } else if (!strncmp(jf,"KT",2)) {
+      clus->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh
+   }  else {
+      ::Error("AddTaskJetCluster", "Wrong jet finder selected\n");
+      return 0;
+    }
 
    
    if(kWriteAOD){
