@@ -646,10 +646,11 @@ bool AliMCSpectraWeights::CalcMCFractions() {
         //        DebugPCC("\t cent: " << icent << " => " << _multFront << " - "
         //                             << _multBack << "\n");
 
-        auto const _multBin1 =
-        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
-        auto const _multBbin2 =
-        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
+        _multFront = round(_multFront);
+        _multBack  = icent>0 ? round(_multBack-1.) : round(_multBack);
+
+        auto const _multBin1  = fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
+        auto const _multBbin2 = fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
 
         for (int ipart = 0; ipart < fNPartTypes;
              ++ipart) { // calculate pt spectra of pi+k+p+Sigma+Rest
@@ -1521,6 +1522,8 @@ void AliMCSpectraWeights::FillMCSpectra(AliMCEvent* mcEvent) {
         return;
     if (mcEvent != fMCEvent) {
         fMCEvent = mcEvent;
+    }
+    if (mcEvent) {
         AliMCSpectraWeights::CountEventMult();
     }
 
