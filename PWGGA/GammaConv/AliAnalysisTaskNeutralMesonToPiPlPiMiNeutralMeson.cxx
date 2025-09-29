@@ -8810,7 +8810,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       if( fEnableBasicMesonQA) {
         fHistoTrueHNMInAccVsNDMPt[fiCut]->Fill(mesoncand->Pt(),TrueNeutralDecayMesonCandidate->Pt(),weighted);
         fHistoTrueHNMPiPlPiMiNDMEtavsPt[fiCut]->Fill(mesoncand->Pt(),mesoncand->Eta(),weighted);
-        fHistoTrueHNMPiPlPiMiNDMRapidityvsPt[fiCut]->Fill(mesoncand->Pt(),mesoncand->Y(),weighted);
+        fHistoTrueHNMPiPlPiMiNDMRapidityvsPt[fiCut]->Fill(mesoncand->Pt(),mesoncand->Rapidity(),weighted);
       }
     }
 
@@ -9219,7 +9219,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       if( fEnableBasicMesonQA) {
         fHistoTrueHNMInAccVsNDMPt[fiCut]->Fill(mesoncand->Pt(),TrueNeutralDecayMesonCandidate->Pt(),weighted);
         fHistoTrueHNMPiPlPiMiNDMEtavsPt[fiCut]->Fill(mesoncand->Pt(),mesoncand->Eta(),weighted);
-        fHistoTrueHNMPiPlPiMiNDMRapidityvsPt[fiCut]->Fill(mesoncand->Pt(),mesoncand->Y(),weighted);
+        fHistoTrueHNMPiPlPiMiNDMRapidityvsPt[fiCut]->Fill(mesoncand->Pt(),mesoncand->Rapidity(),weighted);
       }
     }
 
