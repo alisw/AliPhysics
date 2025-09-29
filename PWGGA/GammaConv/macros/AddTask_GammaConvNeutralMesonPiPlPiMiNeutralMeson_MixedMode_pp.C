@@ -1157,6 +1157,18 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 370)  { 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0304000","411790109fe309v0000","32c510796","h0006d3600000000","j453503000000000"); // 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0504000","411790109fe309v0000","32c510796","h0006d3600000000","j453503000000000"); // 
+
+      // ---- AliConversionMesonCuts
+    // rapidity variations - eta prime, default: 0.85
+  } else if(trainConfig == 371)  { 
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","j453103000000000"); // 1: 0.8
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643600000000","j453h03000000000"); // h: 0.9
+  } else if(trainConfig == 372)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","j453103000000000"); // 
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006c3600000000","j453h03000000000"); // 
+  } else if(trainConfig == 373)  { 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","j453103000000000"); // 
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3600000000","j453h03000000000"); // 
   
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
