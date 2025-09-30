@@ -117,6 +117,10 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    hV0LegsPt(nullptr),
                                                    fHistoV0TrueMotherLegPt(nullptr),
                                                    fHistoV0TrueMotherLegPtTrue(nullptr),
+                                                   fHistoV0LegHybrid(nullptr),
+                                                   fHistoV0DaughterResolHybrid(nullptr),
+                                                   fHistoV0TrueMotherLegPtHybrid(nullptr),
+                                                   fHistoV0TrueMotherLegPtTrueHybrid(nullptr),
                                                    fHistoArmenterosV0(nullptr),
                                                    fHistoArmenterosV0Pt(nullptr),
                                                    fHistoArmenterosV0Source(nullptr),
@@ -202,6 +206,10 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    hV0LegsPt(nullptr),
                                                                    fHistoV0TrueMotherLegPt(nullptr),
                                                                    fHistoV0TrueMotherLegPtTrue(nullptr),
+                                                                   fHistoV0LegHybrid(nullptr),
+                                                                   fHistoV0DaughterResolHybrid(nullptr),
+                                                                   fHistoV0TrueMotherLegPtHybrid(nullptr),
+                                                                   fHistoV0TrueMotherLegPtTrueHybrid(nullptr),
                                                                    fHistoArmenterosV0(nullptr),
                                                                    fHistoArmenterosV0Pt(nullptr),
                                                                    fHistoArmenterosV0Source(nullptr),
@@ -331,6 +339,39 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
   fHistoV0TrueMotherLegPtTrue->SetYTitle("p_{T, V0, leg} (GeV/c)");
   fHistoV0TrueMotherLegPtTrue->Sumw2();
   fHistograms->Add(fHistoV0TrueMotherLegPtTrue);
+
+  fHistoV0LegHybrid = new TH1F("V0LegHybrid", "V0LegHybrid", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0LegHybrid->SetXTitle("p_{T, V0, leg} (GeV/c)");
+  fHistoV0LegHybrid->Sumw2();
+  fHistograms->Add(fHistoV0LegHybrid);
+  
+  fHistoV0DaughterResolHybrid = new TH2F("V0DaughterResolHybrid", "V0DaughterResolHybrid", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), 200, -1, 1);
+  fHistoV0DaughterResolHybrid->SetXTitle("p_{T, V0, leg} (GeV/c)");
+  fHistoV0DaughterResolHybrid->SetYTitle("(p_{rec}-p_{true})/p_{true}");
+  fHistoV0DaughterResolHybrid->Sumw2();
+  fHistograms->Add(fHistoV0DaughterResolHybrid);
+
+  fHistoV0TrueMotherLegPtHybrid = new TH2F("V0LegPtHybridTrueMother", "V0LegPtHybridTrueMother", 5, -0.5, 4.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0TrueMotherLegPtHybrid->SetXTitle("MotherPart");
+  fHistoV0TrueMotherLegPtHybrid->GetXaxis()->SetBinLabel(1, "#gamma");
+  fHistoV0TrueMotherLegPtHybrid->GetXaxis()->SetBinLabel(2, "K^{0}_{L}");
+  fHistoV0TrueMotherLegPtHybrid->GetXaxis()->SetBinLabel(3, "K^{0}_{s}");
+  fHistoV0TrueMotherLegPtHybrid->GetXaxis()->SetBinLabel(4, "#Lambda");
+  fHistoV0TrueMotherLegPtHybrid->GetXaxis()->SetBinLabel(5, "Rest");
+  fHistoV0TrueMotherLegPtHybrid->SetYTitle("p_{T, V0, leg} (GeV/c)");
+  fHistoV0TrueMotherLegPtHybrid->Sumw2();
+  fHistograms->Add(fHistoV0TrueMotherLegPtHybrid);
+
+  fHistoV0TrueMotherLegPtTrueHybrid = new TH2F("V0TrueLegPtHybridTrueMother", "V0TrueLegPtHybridTrueMother", 5, -0.5, 4.5, fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data());
+  fHistoV0TrueMotherLegPtTrueHybrid->SetXTitle("MotherPart");
+  fHistoV0TrueMotherLegPtTrueHybrid->GetXaxis()->SetBinLabel(1, "#gamma");
+  fHistoV0TrueMotherLegPtTrueHybrid->GetXaxis()->SetBinLabel(2, "K^{0}_{L}");
+  fHistoV0TrueMotherLegPtTrueHybrid->GetXaxis()->SetBinLabel(3, "K^{0}_{s}");
+  fHistoV0TrueMotherLegPtTrueHybrid->GetXaxis()->SetBinLabel(4, "#Lambda");
+  fHistoV0TrueMotherLegPtTrueHybrid->GetXaxis()->SetBinLabel(5, "Rest");
+  fHistoV0TrueMotherLegPtTrueHybrid->SetYTitle("p_{T, V0, leg} (GeV/c)");
+  fHistoV0TrueMotherLegPtTrueHybrid->Sumw2();
+  fHistograms->Add(fHistoV0TrueMotherLegPtTrueHybrid);
 
   fHistoArmenterosV0=new TH2F("ArmenterosV0", "ArmenterosV0",200,-1,1,120,0,0.3);
   fHistoArmenterosV0->Sumw2();
@@ -1065,10 +1106,42 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
         if(daughterID >= 0 && !vecTrackAdded[daughterID]){
           vecTrackAdded[daughterID] = true;
 
-          // hybrid tracks are already counted
           if(v0DaughterTr->IsHybridGlobalConstrainedGlobal()){
+            if(std::abs(v0DaughterTr->Eta()) > fMaxEtaCutVoLeg) continue;
+            fHistoV0LegHybrid->Fill(v0DaughterTr->Pt(), weight);
+            if(isMC){
+              int labelTr = v0DaughterTr->GetLabel();
+              if(labelTr > 0){
+                AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelTr));
+                if(tmpPart){
+                  fHistoV0DaughterResolHybrid->Fill(tmpPart->Pt(), (v0DaughterTr->Pt() - tmpPart->Pt()) / tmpPart->Pt(), weight);
+                  int motherlabel = tmpPart->GetMother();
+                  AliAODMCParticle* tmpPartMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherlabel));
+                  pTMCPartV0 = tmpPartMother->Pt();
+                  int pdgMother = tmpPartMother->GetPdgCode();
+                  if(pdgMother == 22){ // Photon
+                    fHistoV0TrueMotherLegPtHybrid->Fill(0., v0DaughterTr->Pt(), weight);
+                    fHistoV0TrueMotherLegPtTrueHybrid->Fill(0., tmpPart->Pt(), weight);
+                  } else if(pdgMother == 130){ // K0l
+                    fHistoV0TrueMotherLegPtHybrid->Fill(1., v0DaughterTr->Pt(), weight);
+                    fHistoV0TrueMotherLegPtTrueHybrid->Fill(1., tmpPart->Pt(), weight);
+                  } else if(pdgMother == 310){ // K0s
+                    fHistoV0TrueMotherLegPtHybrid->Fill(2., v0DaughterTr->Pt(), weight);
+                    fHistoV0TrueMotherLegPtTrueHybrid->Fill(2., tmpPart->Pt(), weight);
+                  } else if(pdgMother == 3122){ // Lambda
+                    fHistoV0TrueMotherLegPtHybrid->Fill(3., v0DaughterTr->Pt(), weight);
+                    fHistoV0TrueMotherLegPtTrueHybrid->Fill(3., tmpPart->Pt(), weight);
+                  } else { // Rest
+                    fHistoV0TrueMotherLegPtHybrid->Fill(4., v0DaughterTr->Pt(), weight);
+                    fHistoV0TrueMotherLegPtTrueHybrid->Fill(4., tmpPart->Pt(), weight);
+                  }
+                }
+              }
+            }
+            // hybrid tracks are already counted
             continue;
           }
+
           // Quality criteria for tracks
           if (!v0DaughterTr->IsOn(AliAODTrack::kTPCrefit)) continue;
           float nTPCFoundFrac = v0DaughterTr->GetTPCFoundFraction(); 
