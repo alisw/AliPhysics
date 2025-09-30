@@ -326,6 +326,8 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistWeightingPartAbundance({}),
                                                                              fDoTrackingStudies(false),
                                                                              hGenTracksAcceptedVsJetPt({}),
+                                                                             hTracksGlobalConstrained({}),
+                                                                             hTracksHybridNotGlobalConstrained({}),
                                                                              hTracksAcceptedVsJetPt({}),
                                                                              hTracksResolution({}),
                                                                              fDCATree({}),
@@ -643,6 +645,8 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoTrackingStudies(false),
                                                                                            hGenTracksAcceptedVsJetPt({}),
                                                                                            hTracksAcceptedVsJetPt({}),
+                                                                                           hTracksGlobalConstrained({}),
+                                                                                           hTracksHybridNotGlobalConstrained({}),
                                                                                            hTracksResolution({}),
                                                                                            fDCATree({}),
                                                                                            fDCATree_InvMass(0),
@@ -1016,6 +1020,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   }
 
   if(fDoTrackingStudies){
+    hTracksGlobalConstrained.resize(fnCuts);
+    hTracksHybridNotGlobalConstrained.resize(fnCuts);
     hTracksAcceptedVsJetPt.resize(fnCuts);
     hGenTracksAcceptedVsJetPt.resize(fnCuts);
     hTracksResolution.resize(fnCuts);
@@ -1986,6 +1992,17 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     } // end MC related
 
     if(fDoTrackingStudies){
+
+      hTracksGlobalConstrained[iCut] = new TH2F("Tracks_GlobalConstrained", "Tracks_GlobalConstrained", fVecBinsPhotonPt.size()-1, fVecBinsPhotonPt.data(), 65, 0., 6.5);
+      hTracksGlobalConstrained[iCut]->SetXTitle("p_{T} (GeV/c)");
+      hTracksGlobalConstrained[iCut]->SetYTitle("#varphi");
+      fESDList[iCut]->Add(hTracksGlobalConstrained[iCut]);
+
+      hTracksHybridNotGlobalConstrained[iCut] = new TH2F("Tracks_HybridNotGlobalConstrained", "Tracks_HybridNotGlobalConstrained", fVecBinsPhotonPt.size()-1, fVecBinsPhotonPt.data(), 65, 0., 6.5);
+      hTracksHybridNotGlobalConstrained[iCut]->SetXTitle("p_{T} (GeV/c)");
+      hTracksHybridNotGlobalConstrained[iCut]->SetYTitle("#varphi");
+      fESDList[iCut]->Add(hTracksHybridNotGlobalConstrained[iCut]);
+
       hTracksAcceptedVsJetPt[iCut] = new TH2F("AccTracks_JetPt", "AccTracks_JetPt", fVecBinsPhotonPt.size()-1, fVecBinsPhotonPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
       hTracksAcceptedVsJetPt[iCut]->SetXTitle("p_{T, part} (GeV/c)");
       hTracksAcceptedVsJetPt[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
@@ -2867,11 +2884,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
 
 
 void AliAnalysisTaskMesonJetCorrelation::ProcessTracks(){
-  if(!fIsMC) return;
-  if (!fAODMCTrackArray)
-    fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (fAODMCTrackArray == NULL)
-    return;
+  if(fIsMC){
+    if (!fAODMCTrackArray)
+      fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray == NULL)
+      return;
+  }
 
 
   for (Int_t itr=0;itr<fInputEvent->GetNumberOfTracks();itr++){
@@ -2879,6 +2897,16 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTracks(){
     if(!inTrack) continue;
     AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
     if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+
+    if(aodt->Pt() > 0.15){
+      if(aodt->IsGlobalConstrained()){
+        hTracksGlobalConstrained[fiCut]->Fill(aodt->Pt(), aodt->Phi(), fWeightJetJetMC);
+      } else {
+        hTracksHybridNotGlobalConstrained[fiCut]->Fill(aodt->Pt(), aodt->Phi(), fWeightJetJetMC);
+      }
+    }
+
+    if(!fIsMC) continue; // afterwards, MC only studies are performed
     int label = std::abs(aodt->GetLabel());
     
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(label));
