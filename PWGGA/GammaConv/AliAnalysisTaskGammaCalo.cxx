@@ -3999,9 +3999,6 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fIsFromDesiredHeader = vectorIsFromDesiredHeader.at(iter);
       fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-      if(fDoClusterQA > 0){
-        fArrGammaEnergyPerEvt[2][fiCut] += vectorCurrentClusters.at(iter)->E();
-      }
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         //--------------------------------------------------
         //if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){ //Only MB
@@ -4066,6 +4063,12 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           ProcessTrueClusterCandidates(vectorCurrentClusters.at(iter),vectorClusterM02.at(iter));
         } else {
           ProcessTrueClusterCandidatesAOD(vectorCurrentClusters.at(iter),vectorClusterM02.at(iter));
+        }
+        if(fDoClusterQA > 0){
+          // check if poton or conversion
+          if(vectorCurrentClusters.at(iter)->IsLargestComponentPhoton() || vectorCurrentClusters.at(iter)->IsConversion()){
+            fArrGammaEnergyPerEvt[2][fiCut] += vectorCurrentClusters.at(iter)->E();
+          }
         }
       }
       fClusterCandidates->Add(vectorCurrentClusters.at(iter));
