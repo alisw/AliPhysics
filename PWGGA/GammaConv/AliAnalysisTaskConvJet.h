@@ -243,11 +243,11 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH2F* hJetPtDiffWithV0;                //!  difference in pt between original and V0 included jets
   TH1D* hV0Pt;                           //!  V0Pt that is added to the jet energy
   TH1D* hV0LegsPt;                       //!  Pt of V0 legs (each leg can only contribute once) that is added to the jet energy
-  TH2F* fHistoV0TrueMotherLegPt;         //! Pt of V0 legs for different mother particles
+  TH3F* fHistoV0TrueMotherLegPt;         //! Pt of V0 legs for different mother particles
   TH2F* fHistoV0TrueMotherLegPtTrue;     //! True Pt of V0 legs for different mother particles
   TH1F* fHistoV0LegHybrid;               //! Pt of V0 legs that are reconstructed as hybrid tracks
   TH2F* fHistoV0DaughterResolHybrid;     //! Resolution of V0 daughters that are reconstructed as hybrid tracks
-  TH2F* fHistoV0TrueMotherLegPtHybrid;   //! Pt of V0 legs for different mother particles that are reconstructed as hybrid tracks
+  TH3F* fHistoV0TrueMotherLegPtHybrid;   //! Pt of V0 legs for different mother particles that are reconstructed as hybrid tracks
   TH2F* fHistoV0TrueMotherLegPtTrueHybrid; //! True Pt of V0 legs for different mother particles that are reconstructed as hybrid tracks
   TH2F* fHistoArmenterosV0;              //!  Armenteros-Podolanski plot for V0s added to jet
   TH3F* fHistoArmenterosV0Pt;            //!  Armenteros-Podolanski plot for V0s added to jet
@@ -264,6 +264,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH3F* fHistoV0SourceVsGenPtVsJetPt;    //! Reconstructed V0s for different sources (K0s, Lambda, photons, rest) vs gen pt vs jet pt
   TH3F* fHistoGenV0SourceVsPtVsJetPt;    //! Generated V0s for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
   TH3F* fHistoGenV0SourceMeasDecayVsPtVsJetPt; //! Generated V0s with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
+  TH3F* fHistoV0TrueMotherSourceVsPtVsJetPt;     //! Reconstructed V0s true mother for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
+  TH3F* fHistoV0TrueMotherSourceVsPtVsJetPtHybrid; //! Reconstructed V0s true mother for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt that are reconstructed as hybrid tracks
 
 
  private:
