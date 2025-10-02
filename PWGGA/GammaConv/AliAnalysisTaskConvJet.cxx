@@ -137,7 +137,12 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                     fHistoGenV0SourceVsPtVsJetPt(nullptr),
                                                     fHistoGenV0SourceMeasDecayVsPtVsJetPt(nullptr),
                                                     fHistoV0TrueMotherSourceVsPtVsJetPt(nullptr),
-                                                    fHistoV0TrueMotherSourceVsPtVsJetPtHybrid(nullptr)
+                                                    fHistoV0TrueMotherSourceVsPtVsJetPtHybrid(nullptr),
+                                                    fHistoClusterFromPhotonInJetPt(nullptr),
+                                                    fHistoClusterFromK0sInJetPt(nullptr),
+                                                    fHistoClusterFromK0sInJetPtK0sPt(nullptr),
+                                                    fHistoClusterFromLambdaInJetPt(nullptr),
+                                                    fHistoClusterFromLambdaInJetPtLambdaPt(nullptr)
 {
 }
 
@@ -228,7 +233,13 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                     fHistoGenV0SourceVsPtVsJetPt(nullptr),
                                                                     fHistoGenV0SourceMeasDecayVsPtVsJetPt(nullptr),
                                                                     fHistoV0TrueMotherSourceVsPtVsJetPt(nullptr),
-                                                                    fHistoV0TrueMotherSourceVsPtVsJetPtHybrid(nullptr)
+                                                                    fHistoV0TrueMotherSourceVsPtVsJetPtHybrid(nullptr),
+                                                                    fHistoClusterFromPhotonInJetPt(nullptr),
+                                                                    fHistoClusterFromK0sInJetPt(nullptr),
+                                                                    fHistoClusterFromK0sInJetPtK0sPt(nullptr),
+                                                                    fHistoClusterFromLambdaInJetPt(nullptr),
+                                                                    fHistoClusterFromLambdaInJetPtLambdaPt(nullptr)
+
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -450,6 +461,26 @@ void AliAnalysisTaskConvJet::UserCreateOutputObjects()
     fHistoV0TrueMotherSourceVsPtVsJetPtHybrid = new TH3F("V0TrueMotherSourceVsPtVsJetPtHybrid", "V0TrueMotherSourceVsPtVsJetPtHybrid",vecValSource.size()-1, vecValSource.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
     fHistoV0TrueMotherSourceVsPtVsJetPtHybrid->Sumw2();
     fHistograms->Add(fHistoV0TrueMotherSourceVsPtVsJetPtHybrid);
+
+    fHistoClusterFromK0sInJetPt = new TH2F("ClusterFromK0sInJetPt", "ClusterFromK0sInJetPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+    fHistoClusterFromK0sInJetPt->Sumw2();
+    fHistograms->Add(fHistoClusterFromK0sInJetPt);
+
+    fHistoClusterFromPhotonInJetPt = new TH2F("ClusterFromPhotonInJetPt", "ClusterFromPhotonInJetPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+    fHistoClusterFromPhotonInJetPt->Sumw2();
+    fHistograms->Add(fHistoClusterFromPhotonInJetPt);
+
+    fHistoClusterFromK0sInJetPtK0sPt = new TH2F("ClusterFromK0sInJetPtK0sPt", "ClusterFromK0sInJetPtK0sPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+    fHistoClusterFromK0sInJetPtK0sPt->Sumw2();
+    fHistograms->Add(fHistoClusterFromK0sInJetPtK0sPt);
+
+    fHistoClusterFromLambdaInJetPt = new TH2F("ClusterFromLambdaInJetPt", "ClusterFromLambdaInJetPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+    fHistoClusterFromLambdaInJetPt->Sumw2();
+    fHistograms->Add(fHistoClusterFromLambdaInJetPt);
+
+    fHistoClusterFromLambdaInJetPtLambdaPt = new TH2F("ClusterFromLambdaInJetPtLambdaPt", "ClusterFromLambdaInJetPtLambdaPt", fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+    fHistoClusterFromLambdaInJetPtLambdaPt->Sumw2();
+    fHistograms->Add(fHistoClusterFromLambdaInJetPtLambdaPt);
 
   }
   fHistoV0DaughterResol=new TH2F("ResolutionV0Daughters", "ResolutionV0Daughters",fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), 200, -1., 3.);
@@ -1276,6 +1307,49 @@ void AliAnalysisTaskConvJet::AddV0sToJet(double weight, const int isMC){
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  if(isMC && fDoFillExtendedHistos){
+    // check clusters for photons from K0s or Lambda
+    for(size_t j = 0; j < vectorJetPtOrg.size(); ++j){
+      for(size_t icl = 0; icl < fVecJetClusterLabel[j].size(); ++icl){
+        AliAODMCParticle* clPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(fVecJetClusterLabel[j][icl]));
+        if (!clPart)
+          continue;
+        
+        bool hasfoundPhotonInJet = false;
+        if(clPart->GetPdgCode() == 22){
+          fHistoClusterFromPhotonInJetPt->Fill(fVecJetClusters[j][icl].P(), vectorJetPtOrg[j], weight);
+          hasfoundPhotonInJet = true;
+        }
+        
+        AliAODMCParticle* motherPart = nullptr;
+        int motherPartLabel = clPart->GetMother();
+        for(int i = 0; i < 4; ++i){
+          motherPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherPartLabel));
+          if(!motherPart) break;
+          int pdgMother = std::abs(motherPart->GetPdgCode());
+          
+          if(pdgMother == 22 && !hasfoundPhotonInJet){
+            fHistoClusterFromPhotonInJetPt->Fill(fVecJetClusters[j][icl].P(), vectorJetPtOrg[j], weight);
+            hasfoundPhotonInJet = true;
+          }
+
+          if(pdgMother == 310){
+            fHistoClusterFromK0sInJetPtK0sPt->Fill(motherPart->Pt(), vectorJetPtOrg[j], weight);
+            fHistoClusterFromK0sInJetPt->Fill(fVecJetClusters[j][icl].P(), vectorJetPtOrg[j], weight);
+            break;
+          } else if(pdgMother == 3122){
+            fHistoClusterFromLambdaInJetPtLambdaPt->Fill(motherPart->Pt(), vectorJetPtOrg[j], weight);
+            fHistoClusterFromLambdaInJetPt->Fill(fVecJetClusters[j][icl].P(), vectorJetPtOrg[j], weight);
+            break;
+          } else {
+            motherPartLabel = motherPart->GetMother();
+          }
+
         }
       }
     }
