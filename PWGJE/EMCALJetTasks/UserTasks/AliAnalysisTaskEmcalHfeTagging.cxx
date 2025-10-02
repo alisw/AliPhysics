@@ -576,10 +576,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
     
-    Double_t bin_ept[nbins_ept + 1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
-        1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
-        6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
-        35., 40., 45., 50.};
+    Double_t bin_ept[nbins_ept + 1] = {0.5, 1., 2., 3., 4., 5., 6., 8., 10., 12., 14., 16., 
+									   19., 22., 25., 30., 35., 40., 45., 50.};
     
     Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
     Double_t bin_g[nbins_g + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 
@@ -1661,10 +1659,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
     
     Double_t jetPt = jet->Pt();
     
-    Double_t bin_ept[nbins_ept + 1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
-        1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
-        6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
-        35., 40., 45., 50.};
+    Double_t bin_ept[nbins_ept + 1] = {0.5, 1., 2., 3., 4., 5., 6., 8., 10., 12., 14., 16., 
+									   19., 22., 25., 30., 35., 40., 45., 50.};
     
     Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
     
