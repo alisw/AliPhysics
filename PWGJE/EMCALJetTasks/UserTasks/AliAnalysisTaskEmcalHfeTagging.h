@@ -153,19 +153,19 @@ protected:
     AliAODMCHeader                      *fMCheader;
     
 	// Binning and tree size constants
-	static constexpr Int_t 				nbins_ept = 33;			 // number of bins for electron pt
-	static constexpr Int_t				nbins_eptTPC = 18;       // number of bins for electron pt using TPC
+	static constexpr Int_t 				nbins_ept = 19;			 // number of bins for electron pt
+	static constexpr Int_t				nbins_eptTPC = 4;        // number of bins for electron pt using TPC
 	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
 	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
 	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
 	static constexpr Int_t 				nbins_gsys = 6;			 // number of bins for angularity systematic
 	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
 	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
-    static constexpr Int_t 				nbranches = 21;		     // number of branches in output tree
+    static constexpr Int_t 				nbranches = 17;		     // number of branches in output tree
     static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
     static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
-    static constexpr Int_t				ncutssemiincl = 6;	     // cuts for constituent semi inclusive jets (leading track pt)
+    static constexpr Int_t				ncutssemiincl = 4;	     // cuts for constituent semi inclusive jets (leading track pt)
     
     Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
     Float_t                             fMinFractionShared;      // only fill histos for jets if shared fraction larger than X

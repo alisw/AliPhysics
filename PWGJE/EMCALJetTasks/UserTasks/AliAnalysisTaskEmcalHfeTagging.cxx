@@ -576,10 +576,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
     
-    Double_t bin_ept[nbins_ept + 1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
-        1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
-        6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
-        35., 40., 45., 50.};
+    Double_t bin_ept[nbins_ept + 1] = {0.5, 1., 2., 3., 4., 5., 6., 8., 10., 12., 14., 16., 
+									   19., 22., 25., 30., 35., 40., 45., 50.};
     
     Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
     Double_t bin_g[nbins_g + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 
@@ -1107,26 +1105,26 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[0] = "partonCode";
     fShapesVarNames[1] = "ptJet";
     fShapesVarNames[2] = "ptDJet";
-    fShapesVarNames[3] = "mJet";
-    fShapesVarNames[4] = "angularity";
-    fShapesVarNames[5] = "ptJetMatch";
-    fShapesVarNames[6] = "ptDJetMatch";
-    fShapesVarNames[7] = "mJetMatch";
-    fShapesVarNames[8] = "angularityMatch";
-    fShapesVarNames[9] = "weightPythia";
-    fShapesVarNames[10] = "rhoVal";
-    fShapesVarNames[11] = "rhoMassVal";
-    fShapesVarNames[12] = "ptUnsub";
+    /* fShapesVarNames[3] = "mJet"; */
+    fShapesVarNames[3] = "angularity";
+    fShapesVarNames[4] = "ptJetMatch";
+    fShapesVarNames[5] = "ptDJetMatch";
+    /* fShapesVarNames[7] = "mJetMatch"; */
+    fShapesVarNames[6] = "angularityMatch";
+    fShapesVarNames[7] = "weightPythia";
+    /* fShapesVarNames[10] = "rhoVal"; */
+    /* fShapesVarNames[11] = "rhoMassVal"; */
+    fShapesVarNames[8] = "ptUnsub";
 
 	// Electron info
-    fShapesVarNames[13] = "ptTrueHFE";
-    fShapesVarNames[14] = "ptElec";
-    fShapesVarNames[15] = "nInclElec";
-    fShapesVarNames[16] = "nPhotElec";
-    fShapesVarNames[17] = "hasElec";
-    fShapesVarNames[18] = "nTrueElectronsMC";
-    fShapesVarNames[19] = "nTrueHFElecMC";
-    fShapesVarNames[20] = "pdgOnlyOneTrueElectron";
+    fShapesVarNames[9] = "ptTrueHFE";
+    fShapesVarNames[10] = "ptElec";
+    fShapesVarNames[11] = "nInclElec";
+    fShapesVarNames[12] = "nPhotElec";
+    fShapesVarNames[13] = "hasElec";
+    fShapesVarNames[14] = "nTrueElectronsMC";
+    fShapesVarNames[15] = "nTrueHFElecMC";
+    fShapesVarNames[16] = "pdgOnlyOneTrueElectron";
     
     
     for(Int_t ivar=0; ivar < nbranches; ivar++){
@@ -1502,8 +1500,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 
             fShapesVar[1] = ptSubtracted;
             fShapesVar[2] = jetbaseptd;
-            fShapesVar[3] = GetJetMass(jetbase, 0);
-            fShapesVar[4] = jetbaseang;
+            /* fShapesVar[3] = GetJetMass(jetbase, 0); */
+            fShapesVar[3] = jetbaseang;
             
             Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.;
             
@@ -1514,14 +1512,14 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                 angulMatch = GetJetAngularity(jetpartlevel, kMatched);
             }
             
-            fShapesVar[5] = ptMatch;
-            fShapesVar[6] = ptDMatch;
-            fShapesVar[7] = massMatch;
-            fShapesVar[8] = angulMatch;
-            fShapesVar[9] = kWeight;
-            fShapesVar[10] = rhoVal;
-            fShapesVar[11] = rhoMassVal;
-            fShapesVar[12] = jetbase->Pt();
+            fShapesVar[4] = ptMatch;
+            fShapesVar[5] = ptDMatch;
+            /* fShapesVar[7] = massMatch; */
+            fShapesVar[6] = angulMatch;
+            fShapesVar[7] = kWeight;
+            /* fShapesVar[10] = rhoVal; */
+            /* fShapesVar[11] = rhoMassVal; */
+            fShapesVar[8] = jetbase->Pt();
             
             Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC= 0, nTrueHFElecMC= 0;
             Double_t pElec = 0., ptElec = 0.;
@@ -1617,14 +1615,14 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 				
             }
             
-            fShapesVar[13] = ptTrueHFE;
-            fShapesVar[14] = ptElec;
-            fShapesVar[15] = nInclusiveElectrons;
-            fShapesVar[16] = nPhotonicElectrons;
-            fShapesVar[17] = hasElectrons;
-            fShapesVar[18] = nTrueElectronsMC;
-            fShapesVar[19] = nTrueHFElecMC;
-            fShapesVar[20] = pdgMother;
+            fShapesVar[9] = ptTrueHFE;
+            fShapesVar[10] = ptElec;
+            fShapesVar[11] = nInclusiveElectrons;
+            fShapesVar[12] = nPhotonicElectrons;
+            fShapesVar[13] = hasElectrons;
+            fShapesVar[14] = nTrueElectronsMC;
+            fShapesVar[15] = nTrueHFElecMC;
+            fShapesVar[16] = pdgMother;
             
 			// Only fill tree if electron candidate or MC electron is found, ignore soft jets
 			if ((nInclusiveElectrons > 0 || nTrueElectronsMC > 0) && ptSubtracted > 5.) {
@@ -1661,10 +1659,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
     
     Double_t jetPt = jet->Pt();
     
-    Double_t bin_ept[nbins_ept + 1] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
-        1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
-        6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
-        35., 40., 45., 50.};
+    Double_t bin_ept[nbins_ept + 1] = {0.5, 1., 2., 3., 4., 5., 6., 8., 10., 12., 14., 16., 
+									   19., 22., 25., 30., 35., 40., 45., 50.};
     
     Double_t bin_jetpt[nbins_jetpt + 1] = {5., 10., 20., 40., 60., 80., 120.};
     
@@ -2676,11 +2672,11 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetNumberOfConstituents(AliEmcalJet *
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb=0){
     // Give the bin with max value for minimum pT bin for semi-inclusive observables due to the 
-	// min(pT) = [0.5, 1.0, 2.5, user defined] GeV
+	// min(pT) = [0, 2.5, 4.0, user defined] GeV
 	// No need for transverse mass rescaling since lowest pT cut >> mass of electron
 	
 	// This array must be ordered
-	double minpT[ncutssemiincl] = {0, 0.5, 1.0, 2.5, 4.0, fMinPtSemiInclusive};
+	double minpT[ncutssemiincl] = {0, 2.5, 4.0, fMinPtSemiInclusive};
 
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (!jet->GetNumberOfTracks()) return -1;
