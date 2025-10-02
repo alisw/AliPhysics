@@ -266,6 +266,11 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH3F* fHistoGenV0SourceMeasDecayVsPtVsJetPt; //! Generated V0s with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
   TH3F* fHistoV0TrueMotherSourceVsPtVsJetPt;     //! Reconstructed V0s true mother for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
   TH3F* fHistoV0TrueMotherSourceVsPtVsJetPtHybrid; //! Reconstructed V0s true mother for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt that are reconstructed as hybrid tracks
+  TH2F* fHistoClusterFromPhotonInJetPt;     //! Pt of clusters that are identified as coming from photons in jet
+  TH2F* fHistoClusterFromK0sInJetPt;          //! Pt of clusters that are identified as coming from K0s in jet
+  TH2F* fHistoClusterFromK0sInJetPtK0sPt;    //! Pt of clusters that are identified as coming from K0s in jet vs K0s pt
+  TH2F* fHistoClusterFromLambdaInJetPt;       //! Pt of clusters that are identified as coming from Lambda in jet
+  TH2F* fHistoClusterFromLambdaInJetPtLambdaPt; //! Pt of clusters that are identified as coming from Lambda in jet vs Lambda pt
 
 
  private:
