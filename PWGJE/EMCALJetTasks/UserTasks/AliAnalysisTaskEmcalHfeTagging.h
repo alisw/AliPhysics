@@ -165,7 +165,7 @@ protected:
     static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
     static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
-    static constexpr Int_t				ncutssemiincl = 6;	     // cuts for constituent semi inclusive jets (leading track pt)
+    static constexpr Int_t				ncutssemiincl = 4;	     // cuts for constituent semi inclusive jets (leading track pt)
     
     Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
     Float_t                             fMinFractionShared;      // only fill histos for jets if shared fraction larger than X

@@ -2676,11 +2676,11 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetNumberOfConstituents(AliEmcalJet *
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalHfeTagging::MaxPtBinForSemiInclusiveJet(AliEmcalJet *jet, Int_t jetContNb=0){
     // Give the bin with max value for minimum pT bin for semi-inclusive observables due to the 
-	// min(pT) = [0.5, 1.0, 2.5, user defined] GeV
+	// min(pT) = [0, 2.5, 4.0, user defined] GeV
 	// No need for transverse mass rescaling since lowest pT cut >> mass of electron
 	
 	// This array must be ordered
-	double minpT[ncutssemiincl] = {0, 0.5, 1.0, 2.5, 4.0, fMinPtSemiInclusive};
+	double minpT[ncutssemiincl] = {0, 2.5, 4.0, fMinPtSemiInclusive};
 
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (!jet->GetNumberOfTracks()) return -1;
