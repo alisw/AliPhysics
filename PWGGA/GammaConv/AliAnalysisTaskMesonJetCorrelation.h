@@ -367,6 +367,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   vector<double> fVectorJetPhiPerp; //! vector of jet phi + 90 degree (perpendicular to original jet)
 
   std::map<int, int> MapRecJetsTrueJets; //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
+  std::vector<double> fVectorGammaEnergyInJets; //! vector containing the photon energy in each jet
+  std::vector<double> fVectorGammaClusEnergyInJets; //! vector containing the cluster energy in each jet
 
   //-------------------------------
   // Response Matrix handlers
@@ -621,6 +623,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> hTracksHybridNotGlobalConstrained;//! vector of histos reconstructed track pt vs phi for hybrid not global constrained tracks
   std::vector<TH2F*> hTracksAcceptedVsJetPt;           //! vector of histos reconstructed particle pT (true pT) vs true jet pT
   std::vector<TH3F*> hTracksResolution;                //! vector of histos gen vs. reconstructed track pT
+  std::vector<TH2F*> fHistoJetClusterEfficiency;       //! vector of histos with cluster efficiency per jet
 
   //-------------------------------
   // DCA tree for PCM pile-up estimation
@@ -641,7 +644,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 36);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 37);
 };
 
 #endif

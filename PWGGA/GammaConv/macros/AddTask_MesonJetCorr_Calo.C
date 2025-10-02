@@ -312,6 +312,12 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   // Next should be 80!!
 
+  // Low energy clusters and upper M02
+  } else if (trainConfig == 80) {
+    cuts.AddCutCalo("00010103", "411790009feg0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 81) { // same as 80 but no TM
+    cuts.AddCutCalo("00010103", "4117900090eg0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+
   //---------------------------------------
   // Cut variations for standard cut (2)
   //---------------------------------------
