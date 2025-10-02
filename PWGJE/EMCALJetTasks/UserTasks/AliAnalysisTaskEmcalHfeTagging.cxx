@@ -1107,26 +1107,26 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[0] = "partonCode";
     fShapesVarNames[1] = "ptJet";
     fShapesVarNames[2] = "ptDJet";
-    fShapesVarNames[3] = "mJet";
-    fShapesVarNames[4] = "angularity";
-    fShapesVarNames[5] = "ptJetMatch";
-    fShapesVarNames[6] = "ptDJetMatch";
-    fShapesVarNames[7] = "mJetMatch";
-    fShapesVarNames[8] = "angularityMatch";
-    fShapesVarNames[9] = "weightPythia";
-    fShapesVarNames[10] = "rhoVal";
-    fShapesVarNames[11] = "rhoMassVal";
-    fShapesVarNames[12] = "ptUnsub";
+    /* fShapesVarNames[3] = "mJet"; */
+    fShapesVarNames[3] = "angularity";
+    fShapesVarNames[4] = "ptJetMatch";
+    fShapesVarNames[5] = "ptDJetMatch";
+    /* fShapesVarNames[7] = "mJetMatch"; */
+    fShapesVarNames[6] = "angularityMatch";
+    fShapesVarNames[7] = "weightPythia";
+    /* fShapesVarNames[10] = "rhoVal"; */
+    /* fShapesVarNames[11] = "rhoMassVal"; */
+    fShapesVarNames[8] = "ptUnsub";
 
 	// Electron info
-    fShapesVarNames[13] = "ptTrueHFE";
-    fShapesVarNames[14] = "ptElec";
-    fShapesVarNames[15] = "nInclElec";
-    fShapesVarNames[16] = "nPhotElec";
-    fShapesVarNames[17] = "hasElec";
-    fShapesVarNames[18] = "nTrueElectronsMC";
-    fShapesVarNames[19] = "nTrueHFElecMC";
-    fShapesVarNames[20] = "pdgOnlyOneTrueElectron";
+    fShapesVarNames[9] = "ptTrueHFE";
+    fShapesVarNames[10] = "ptElec";
+    fShapesVarNames[11] = "nInclElec";
+    fShapesVarNames[12] = "nPhotElec";
+    fShapesVarNames[13] = "hasElec";
+    fShapesVarNames[14] = "nTrueElectronsMC";
+    fShapesVarNames[15] = "nTrueHFElecMC";
+    fShapesVarNames[16] = "pdgOnlyOneTrueElectron";
     
     
     for(Int_t ivar=0; ivar < nbranches; ivar++){
@@ -1502,8 +1502,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 
             fShapesVar[1] = ptSubtracted;
             fShapesVar[2] = jetbaseptd;
-            fShapesVar[3] = GetJetMass(jetbase, 0);
-            fShapesVar[4] = jetbaseang;
+            /* fShapesVar[3] = GetJetMass(jetbase, 0); */
+            fShapesVar[3] = jetbaseang;
             
             Float_t ptMatch=0., ptDMatch=0., massMatch=0., angulMatch=0.;
             
@@ -1514,14 +1514,14 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                 angulMatch = GetJetAngularity(jetpartlevel, kMatched);
             }
             
-            fShapesVar[5] = ptMatch;
-            fShapesVar[6] = ptDMatch;
-            fShapesVar[7] = massMatch;
-            fShapesVar[8] = angulMatch;
-            fShapesVar[9] = kWeight;
-            fShapesVar[10] = rhoVal;
-            fShapesVar[11] = rhoMassVal;
-            fShapesVar[12] = jetbase->Pt();
+            fShapesVar[4] = ptMatch;
+            fShapesVar[5] = ptDMatch;
+            /* fShapesVar[7] = massMatch; */
+            fShapesVar[6] = angulMatch;
+            fShapesVar[7] = kWeight;
+            /* fShapesVar[10] = rhoVal; */
+            /* fShapesVar[11] = rhoMassVal; */
+            fShapesVar[8] = jetbase->Pt();
             
             Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC= 0, nTrueHFElecMC= 0;
             Double_t pElec = 0., ptElec = 0.;
@@ -1617,14 +1617,14 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 				
             }
             
-            fShapesVar[13] = ptTrueHFE;
-            fShapesVar[14] = ptElec;
-            fShapesVar[15] = nInclusiveElectrons;
-            fShapesVar[16] = nPhotonicElectrons;
-            fShapesVar[17] = hasElectrons;
-            fShapesVar[18] = nTrueElectronsMC;
-            fShapesVar[19] = nTrueHFElecMC;
-            fShapesVar[20] = pdgMother;
+            fShapesVar[9] = ptTrueHFE;
+            fShapesVar[10] = ptElec;
+            fShapesVar[11] = nInclusiveElectrons;
+            fShapesVar[12] = nPhotonicElectrons;
+            fShapesVar[13] = hasElectrons;
+            fShapesVar[14] = nTrueElectronsMC;
+            fShapesVar[15] = nTrueHFElecMC;
+            fShapesVar[16] = pdgMother;
             
 			// Only fill tree if electron candidate or MC electron is found, ignore soft jets
 			if ((nInclusiveElectrons > 0 || nTrueElectronsMC > 0) && ptSubtracted > 5.) {
