@@ -60,6 +60,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   // Jet constituents
   std::vector<TLorentzVector> GetJetClusters(int jet) { return fVecJetClusters[jet]; }
   std::vector<int> GetJetClustersLabel(int jet) { return fVecJetClusterLabel[jet]; }
+  std::vector<float> GetJetClustersEFrac(int jet) { return fVecJetClusterEFrac[jet]; }
   std::vector<AliAODTrack*> GetJetTracks(int jet) { return fVecJetTracks[jet]; }
   std::vector<int> GetTrueJetParticles(int jet) { return fVecTrueJetParticles[jet]; }
   double GetTrueJetLeadPartPt(int jet) const { return fVecTrueJetMaxPartPt[jet]; }
@@ -195,6 +196,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   // Jet constituents
   std::vector<std::vector<TLorentzVector>> fVecJetClusters;
   std::vector<std::vector<int>> fVecJetClusterLabel;
+  std::vector<std::vector<float>> fVecJetClusterEFrac;
   std::vector<std::vector<AliAODTrack*>> fVecJetTracks;
 
   std::vector<std::vector<int>> fVecTrueJetParticles;
@@ -264,6 +266,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH3F* fHistoV0SourceVsGenPtVsJetPt;    //! Reconstructed V0s for different sources (K0s, Lambda, photons, rest) vs gen pt vs jet pt
   TH3F* fHistoGenV0SourceVsPtVsJetPt;    //! Generated V0s for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
   TH3F* fHistoGenV0SourceMeasDecayVsPtVsJetPt; //! Generated V0s with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
+  TH3F* fHistoGenV0SourceVsPtVsTrueJetPt;    //! Generated V0s for different sources (K0s, Lambda, photons, rest) vs pt vs true jet pt
+  TH3F* fHistoGenV0SourceMeasDecayVsPtVsTrueJetPt; //! Generated V0s with corrected decay channel for different sources (K0s, Lambda, photons, rest) vs pt vs true jet pt
   TH3F* fHistoV0TrueMotherSourceVsPtVsJetPt;     //! Reconstructed V0s true mother for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt
   TH3F* fHistoV0TrueMotherSourceVsPtVsJetPtHybrid; //! Reconstructed V0s true mother for different sources (K0s, Lambda, photons, rest) vs pt vs jet pt that are reconstructed as hybrid tracks
   TH2F* fHistoClusterFromPhotonInJetPt;     //! Pt of clusters that are identified as coming from photons in jet
@@ -271,6 +275,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   TH2F* fHistoClusterFromK0sInJetPtK0sPt;    //! Pt of clusters that are identified as coming from K0s in jet vs K0s pt
   TH2F* fHistoClusterFromLambdaInJetPt;       //! Pt of clusters that are identified as coming from Lambda in jet
   TH2F* fHistoClusterFromLambdaInJetPtLambdaPt; //! Pt of clusters that are identified as coming from Lambda in jet vs Lambda pt
+  TH2F* fHistoClusterFromPhotonInJetPtEFrac;   //! Energy fraction of clusters that are identified as coming from photons in jet
+  TH2F* fHistoClusterFromK0sInJetPtEFrac;        //! Energy fraction of clusters that are identified as coming from K0s in jet
+  TH2F* fHistoClusterFromLambdaInJetPtEFrac;  //! Energy fraction of clusters that are identified as coming from K0s in jet vs K0s pt
 
 
  private:
@@ -279,7 +286,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 27);
+  ClassDef(AliAnalysisTaskConvJet, 28);
   /// \endcond
 };
 #endif
