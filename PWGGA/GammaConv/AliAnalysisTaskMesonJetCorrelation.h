@@ -368,6 +368,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   std::map<int, int> MapRecJetsTrueJets; //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
   std::vector<double> fVectorGammaEnergyInJets; //! vector containing the photon energy in each jet
+  std::vector<double> fVectorGammaEnergyInJetsJetAcc; //! vector containing the photon energy in each jet (in acceptance)
   std::vector<double> fVectorGammaClusEnergyInJets; //! vector containing the cluster energy in each jet
   std::vector<double> fVectorChargedParticleEnergyInJets; //! vector containing the charged particle energy in each jet
   std::vector<double> fVectorTrackEnergyInJets; //! vector containing the track energy in each jet
@@ -626,6 +627,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> hTracksAcceptedVsJetPt;           //! vector of histos reconstructed particle pT (true pT) vs true jet pT
   std::vector<TH3F*> hTracksResolution;                //! vector of histos gen vs. reconstructed track pT
   std::vector<TH2F*> fHistoJetClusterEfficiency;       //! vector of histos with cluster efficiency per jet
+  std::vector<TH2F*> fHistoJetClusterEfficiencyInJetAcc; //! vector of histos with cluster efficiency per jet in acceptance
   std::vector<TH2F*> fHistoJetTrackEfficiency;         //! vector of histos with track efficiency per jet
 
   //-------------------------------

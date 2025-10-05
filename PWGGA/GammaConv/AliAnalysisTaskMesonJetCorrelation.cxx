@@ -144,6 +144,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fVectorJetPhiPerp({}),
                                                                              MapRecJetsTrueJets(),
                                                                              fVectorGammaEnergyInJets({}),
+                                                                             fVectorGammaEnergyInJetsJetAcc({}),
                                                                              fVectorGammaClusEnergyInJets({}),
                                                                              fVectorChargedParticleEnergyInJets({}),
                                                                              fVectorTrackEnergyInJets({}),
@@ -335,6 +336,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              hTracksAcceptedVsJetPt({}),
                                                                              hTracksResolution({}),
                                                                              fHistoJetClusterEfficiency({}),
+                                                                             fHistoJetClusterEfficiencyInJetAcc({}),
                                                                              fHistoJetTrackEfficiency({}),
                                                                              fDCATree({}),
                                                                              fDCATree_InvMass(0),
@@ -468,6 +470,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fVectorJetPhiPerp({}),
                                                                                            MapRecJetsTrueJets(),
                                                                                            fVectorGammaEnergyInJets({}),
+                                                                                           fVectorGammaEnergyInJetsJetAcc({}),
                                                                                            fVectorGammaClusEnergyInJets({}),
                                                                                            fVectorChargedParticleEnergyInJets({}),
                                                                                            fVectorTrackEnergyInJets({}),
@@ -659,6 +662,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            hTracksAcceptedVsJetPt({}),
                                                                                            hTracksResolution({}),
                                                                                            fHistoJetClusterEfficiency({}),
+                                                                                           fHistoJetClusterEfficiencyInJetAcc({}),
                                                                                            fHistoJetTrackEfficiency({}),
                                                                                            fDCATree({}),
                                                                                            fDCATree_InvMass(0),
@@ -1038,6 +1042,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     hGenTracksAcceptedVsJetPt.resize(fnCuts);
     hTracksResolution.resize(fnCuts);
     fHistoJetClusterEfficiency.resize(fnCuts);
+    fHistoJetClusterEfficiencyInJetAcc.resize(fnCuts);
     fHistoJetTrackEfficiency.resize(fnCuts);
   }
 
@@ -2042,6 +2047,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoJetClusterEfficiency[iCut]->SetYTitle("E_{rec}/E_{true}");
       fTrueList[iCut]->Add(fHistoJetClusterEfficiency[iCut]);
 
+      fHistoJetClusterEfficiencyInJetAcc[iCut] = new TH2F("ClusterEfficiencyInJetAcceptanceVsPtJet", "ClusterEfficiencyInJetAcceptanceVsPtJet", 100, 0., 500, 100., 0., 2.);
+      fHistoJetClusterEfficiencyInJetAcc[iCut]->SetXTitle("p_{T, jet} (GeV/c)");
+      fHistoJetClusterEfficiencyInJetAcc[iCut]->SetYTitle("E_{rec}/E_{true}");
+      fTrueList[iCut]->Add(fHistoJetClusterEfficiencyInJetAcc[iCut]);
+
       fHistoJetTrackEfficiency[iCut] = new TH2F("ChargedEfficiencyVsPtJet", "ChargedEfficiencyVsPtJet", 100, 0., 500, 100., 0., 2.);
       fHistoJetTrackEfficiency[iCut]->SetXTitle("p_{T, jet} (GeV/c)");
       fHistoJetTrackEfficiency[iCut]->SetYTitle("p_{T, rec}/p_{T, true}");
@@ -2502,10 +2512,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
   // clear map before next event
   MapRecJetsTrueJets.clear();
   fVectorGammaEnergyInJets.clear();
+  fVectorGammaEnergyInJetsJetAcc.clear();
   fVectorGammaClusEnergyInJets.clear();
   fVectorChargedParticleEnergyInJets.clear();
   fVectorTrackEnergyInJets.clear();
   fVectorGammaEnergyInJets.resize(fConvJetReader->GetTrueNJets(), 0.);
+  fVectorGammaEnergyInJetsJetAcc.resize(fConvJetReader->GetTrueNJets(), 0.);
   fVectorGammaClusEnergyInJets.resize(fConvJetReader->GetTrueNJets(), 0.);
   fVectorChargedParticleEnergyInJets.resize(fConvJetReader->GetTrueNJets(), 0.);
   fVectorTrackEnergyInJets.resize(fConvJetReader->GetTrueNJets(), 0.);
@@ -3410,6 +3422,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
   if(fIsMC > 0 && fDoTrackingStudies){
     for(int i = 0; i < fConvJetReader->GetTrueNJets(); ++i){
       if(fVectorGammaEnergyInJets[i]>0 && fVectorGammaEnergyInJets[i] > 0.05* fTrueVectorJetPt[i]) fHistoJetClusterEfficiency[fiCut]->Fill(fTrueVectorJetPt[i], fVectorGammaClusEnergyInJets[i]/fVectorGammaEnergyInJets[i], fWeightJetJetMC);
+      if(fVectorGammaEnergyInJetsJetAcc[i]>0 && fVectorGammaEnergyInJetsJetAcc[i] > 0.05* fTrueVectorJetPt[i]) fHistoJetClusterEfficiencyInJetAcc[fiCut]->Fill(fTrueVectorJetPt[i], fVectorGammaClusEnergyInJets[i]/fVectorGammaEnergyInJetsJetAcc[i], fWeightJetJetMC);
     }
   }
 }
@@ -4555,6 +4568,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
         int cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(particle->Eta(), static_cast<double>((particle->Phi() < 0) ? particle->Phi() + TMath::Pi() * 2. : particle->Phi()));
         if (cellID >= 0) {
           fVectorGammaEnergyInJets[matchedJet] += particle->E();
+        }
+        int cellIDJet = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(fTrueVectorJetEta[matchedJet], static_cast<double>((fTrueVectorJetPhi[matchedJet] < 0) ? fTrueVectorJetPhi[matchedJet] + TMath::Pi() * 2. : fTrueVectorJetPhi[matchedJet]));
+        if (cellIDJet >= 0) {
+          fVectorGammaEnergyInJetsJetAcc[matchedJet] += particle->E();
         }
       }
     }
