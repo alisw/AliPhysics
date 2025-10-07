@@ -215,6 +215,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutV0MassDiff(0.005),
   fdCutNSigmadEdxMaxCasc(4.),
   fdCutDCABacBar(0.999999),
+  fdCutCompetXiMassOmega(0.008),
   fbParametricBacBarCosPA(kFALSE),  
   fh1PtBacBarCosPA(0),
 
@@ -759,6 +760,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutV0MassDiff(0.005),
   fdCutNSigmadEdxMaxCasc(4.),
   fdCutDCABacBar(0.999999),
+  fdCutCompetXiMassOmega(0.008),
   fbParametricBacBarCosPA(kFALSE),  
   fh1PtBacBarCosPA(0),
   
@@ -2310,6 +2312,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
   }
   else if(fbUseIonutCut == 2) {
+    fEventCuts.SetRejectTPCPileupWithV0CentTPCnTracksCorr(kTRUE);
+  }
+  else if(fbUseIonutCut == 3) {
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
     fEventCuts.fUseStrongVarCorrelationCut = true;
     fEventCuts.fUseVariablesCorrelationCuts = true;
@@ -2513,6 +2518,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutV0MassDiff > 0.) printf("Max difference of v0 daughter mass from the PDG Lambda mass value: %g\n", fdCutV0MassDiff);
   if( fdCutNSigmadEdxMaxCasc > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx] of cascade: %g\n",  fdCutNSigmadEdxMaxCasc);
   if(fdCutDCABacBar > 0.) printf("BBCosPa cut on the bachelor to baryon (kCasc_BacBarCosPA): %g\n", fdCutDCABacBar);
+  if(fdCutCompetXiMassOmega > 0.) printf("Discard Omegas witht the mass close %g to the Xi under the Xi mass hypothesis \n", fdCutCompetXiMassOmega);
   if(fbParametricBacBarCosPA > 0.) printf("Parametric BacBarCosPA is on\n");
   
   printf("-------------------------------------------------------\nJet analysis:\n");
@@ -4207,6 +4213,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       bIsCandidateOmegaMinus = kFALSE; 
       bIsCandidateOmegaPlus  = kFALSE;
     }
+    //Discard Omegas witht the mass close to the Xi under the Xi mass hypothesis 
+    if((TMath::Abs(dMassCascadeXi - dMassPDGXiMinus)) < fdCutCompetXiMassOmega) {
+      bIsCandidateOmegaMinus = kFALSE; 
+      bIsCandidateOmegaPlus  = kFALSE;
+    }
+
+  
     if(!bIsCandidateXiMinus && !bIsCandidateXiPlus && !bIsCandidateOmegaMinus && !bIsCandidateOmegaPlus )
       continue;
 

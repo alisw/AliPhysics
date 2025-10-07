@@ -47,7 +47,7 @@ public:
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;}
   void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
   void SetCentralityEstimator(TString CentEstimator){fCentEstimator = CentEstimator;};
-  void SetUseIonutCut(Bool_t val = kTRUE) {fbUseIonutCut = val;}
+  void SetUseIonutCut(Int_t val = 1) {fbUseIonutCut = val;}
 
   // mixed events
   void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
@@ -164,6 +164,7 @@ public:
   void SetCutNTauXMax(Double_t val = 5.0) {fdCutNTauXMax = val;}
   void SetCutV0MassDiff(Double_t val = 0.005) {fdCutV0MassDiff = val;}
   void SetCutDCABacBar(Double_t val = 0.999999) {fdCutDCABacBar = val;}
+  void SetCutCompetXiMassOmega(Double_t val = 0.008) {fdCutCompetXiMassOmega = val;}
   void SetCutNSigmadEdxMaxCasc(Double_t val = 4.) {fdCutNSigmadEdxMaxCasc = val;}
   
   void SetParametricBacBarCosPA(Int_t nbins, Float_t* ptbins, Float_t* values);
@@ -561,7 +562,8 @@ private:
   Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
   Double_t fdCutV0MassDiff; //(0.005) [GeV] V0 daughter mass difference from Lambda mass
   Double_t fdCutNSigmadEdxMaxCasc; //(4.0)
-  Double_t fdCutDCABacBar; //(1.0) DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
+  Double_t fdCutDCABacBar; //(0.999) DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
+  Double_t fdCutCompetXiMassOmega; //(0.008) Discard Omegas witht the mass close to the Xi under the Xi mass hypothesis 
  
   static const Int_t fgkiNCategCascade = 23; // number of Cascade selection steps  
   //Histograms 
@@ -815,7 +817,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 32) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 33) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
