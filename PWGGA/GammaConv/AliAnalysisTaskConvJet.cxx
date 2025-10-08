@@ -110,6 +110,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fDoFillExtendedHistos(false),
                                                    fK0LambdaCuts(nullptr),
                                                    fDoK0LambdaCutsAdvanced(false),
+                                                   fUseClusHadCorrEnergy(true),
                                                    fHistograms(nullptr),
                                                    hJetEtaDiffWithV0(nullptr),
                                                    hJetPhiDiffWithV0(nullptr),
@@ -212,6 +213,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fDoFillExtendedHistos(false),
                                                                    fK0LambdaCuts(nullptr),
                                                                    fDoK0LambdaCutsAdvanced(false),
+                                                                   fUseClusHadCorrEnergy(true),
                                                                    fHistograms(nullptr),
                                                                    hJetEtaDiffWithV0(nullptr),
                                                                    hJetPhiDiffWithV0(nullptr),
@@ -588,7 +590,8 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         for(size_t cl = 0; cl < jet->GetNumberOfClusters(); ++cl){
           auto clus = dynamic_cast<AliAODCaloCluster*>(jet->Cluster(cl));
           TLorentzVector clusVec;
-          clus->GetMomentum(clusVec, vertex);
+          if(fUseClusHadCorrEnergy) clus->GetMomentum(clusVec, vertex, AliVCluster::VCluUserDefEnergy_t::kHadCorr);
+          else clus->GetMomentum(clusVec, vertex);
           vecTmpClus[cl] = clusVec;
           vecTmpClusLabel[cl] = clus->GetLabel();
           vecTmpClusEFrac[cl] = clus->GetClusterMCEdepFraction(0);

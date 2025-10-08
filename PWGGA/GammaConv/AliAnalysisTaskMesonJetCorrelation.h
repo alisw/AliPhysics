@@ -88,7 +88,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // MC functions
   void ProcessAODMCParticles(int isCurrentEventSelected = 0);
   void ProcessAODMCParticlesK0sLambda(int isCurrentEventSelected = 0);
-  void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate, const int matchedJet = -1);
+  void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate, const int matchedJet = -1, const double clusHadCorrE = 0.);
   void ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate);
   bool MCParticleIsSelected(AliAODMCParticle* particle1, AliAODMCParticle* particle2, bool checkConversion);
   bool MCParticleIsSelected(AliAODMCParticle* particle, bool isConv, bool checkConversion);
@@ -370,6 +370,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<double> fVectorGammaEnergyInJets; //! vector containing the photon energy in each jet
   std::vector<double> fVectorGammaEnergyInJetsJetAcc; //! vector containing the photon energy in each jet (in acceptance)
   std::vector<double> fVectorGammaClusEnergyInJets; //! vector containing the cluster energy in each jet
+  std::vector<double> fVectorGammaClusEnergyInJetsHadCorr; //! vector containing the cluster energy in each jet with hadronic correction
   std::vector<double> fVectorChargedParticleEnergyInJets; //! vector containing the charged particle energy in each jet
   std::vector<double> fVectorTrackEnergyInJets; //! vector containing the track energy in each jet
 
@@ -420,8 +421,12 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoClusterPtInJet;           //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;            //! vector of histos with number of clusters as function of E inside of jets
   std::vector<TH3F*> fHistoClusterPtResolutionInJet; //! vector of histos with number of clusters as function of E inside of jets
+  std::vector<TH3F*> fHistoClusterAbundanceInJet;    //! vector of histos with number of clusters as function of E inside true jets
+  std::vector<TH3F*> fHistoClusterAbundanceInJetEFrac; //! vector of histos with number of clusters as function of E inside true jets
+  std::vector<TH3F*> fHistoClusterAbundanceInJetEFracRemaining; //! vector of histos with number of clusters as function of E inside true jets excluding the leading cluster
 
-  std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of pt vs. jet pt inside of jets
+
+  std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of E vs. jet pt inside of jets
 
   // perpendicular cone
   std::vector<TH1F*> fHistoClusterPtPerpCone; //! vector of histos with number of clusters as function of pt in perpendicular cone
@@ -588,6 +593,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMCSecMesonPtvsSource;       //! vector of histos secondary mesons from different sources vs. pt
   std::vector<TH1F*> fHistoMCSecMesonSource;           //! vector of histos secondary mesons from different sources
   std::vector<TH2F*> fHistoMCSecMesonInAccPtvsSource;  //! vector of histos accepted secondary mesons from different sources vs. pt
+  std::vector<TH3F*> fHistoPrimPartAbundanceInJet;     //! vector of histos with primary particle id vs. particle pt vs. jet pT
+  std::vector<TH3F*> fHistoPrimPartAbundanceInJetAndEMCal;  //! vector of histos with primary particle id vs. particle pt vs. jet pT for jets fully contained in EMCal
 
   //-------------------------------
   // mc generated histograms jet-meson corr
@@ -627,7 +634,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> hTracksAcceptedVsJetPt;           //! vector of histos reconstructed particle pT (true pT) vs true jet pT
   std::vector<TH3F*> hTracksResolution;                //! vector of histos gen vs. reconstructed track pT
   std::vector<TH2F*> fHistoJetClusterEfficiency;       //! vector of histos with cluster efficiency per jet
+  std::vector<TH2F*> fHistoJetClusterEfficiencyHadCorr; //! vector of histos with cluster efficiency per jet (hadronic correction applied)
   std::vector<TH2F*> fHistoJetClusterEfficiencyInJetAcc; //! vector of histos with cluster efficiency per jet in acceptance
+  std::vector<TH2F*> fHistoJetClusterEfficiencyHadCorrInJetAcc; //! vector of histos with cluster efficiency per jet in acceptance (hadronic correction applied)
   std::vector<TH2F*> fHistoJetTrackEfficiency;         //! vector of histos with track efficiency per jet
 
   //-------------------------------
@@ -649,7 +658,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 37);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 38);
 };
 
 #endif

@@ -11960,7 +11960,7 @@ void AliCaloPhotonCuts::FillHistEnergyFracPartInClus(AliVEvent* event, AliAODCal
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
   int* mclabelsCluster = clus->GetLabels();
-  double clusterE = clus->E();
+  double clusterE = clus->GetHadCorrEnergy();
   double totEFrac = 0.;
   if (clus->GetNLabels()>0){
     for (Int_t i =0; i < (int)clus->GetNLabels(); i++){

@@ -150,6 +150,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
     fK0LambdaCuts->SetFillCutHistograms("K0LambdaCuts", true);
     fDoK0LambdaCutsAdvanced = true;
   }
+  bool SetUseClusHadCorrEnergy(bool useHadCorr) {
+    return fUseClusHadCorrEnergy = useHadCorr;
+  }
 
   void SetAddV0sToJet(bool tmp) { fAddV0sToJet = tmp; }
   void AddV0sToJet(double weight = 1., const int isMC = 0);
@@ -238,7 +241,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   int fV0FinderType;                     // Select V0finder type: 0-> both finders, 1->offlineFinder, 2, on-the-fly finder
   bool fDoFillExtendedHistos;            // Flag to fill extended QA histograms
   AliConvK0LambdaCuts* fK0LambdaCuts;    // Cuts for K0s and Lambda V0s
-  bool fDoK0LambdaCutsAdvanced;          // Flag to use advanced K0s and Lambda cuts   
+  bool fDoK0LambdaCutsAdvanced;          // Flag to use advanced K0s and Lambda cuts
+  bool fUseClusHadCorrEnergy;            // Flag to use hadronic correction for cluster energy
   TList* fHistograms;                    //!  List containing all histograms
   TH2F* hJetEtaDiffWithV0;               //!  difference in eta between original and V0 included jets
   TH2F* hJetPhiDiffWithV0;               //!  difference in phi between original and V0 included jets
@@ -286,7 +290,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 28);
+  ClassDef(AliAnalysisTaskConvJet, 29);
   /// \endcond
 };
 #endif
