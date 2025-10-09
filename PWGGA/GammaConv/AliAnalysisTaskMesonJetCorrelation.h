@@ -119,7 +119,6 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetLightOutput(int flag) { fDoLightOutput = flag; }
   void SetDoMesonQA(int flag) { fDoMesonQA = flag; }
   void SetDoPhotonQA(int flag) { fDoPhotonQA = flag; }
-  void SetDoClusterQA(int flag) { fDoClusterQA = flag; }
   void SetDoJetQA(int flag) { 
     if(flag >= 10) {
       fDoProcessOnlyJets = true;
@@ -283,7 +282,6 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   int fDoLightOutput;                                   // flag if light output should be used
   int fDoMesonQA;                                       // flag if meson QA should be switched on
   int fDoPhotonQA;                                      // flag if photon QA should be switched on
-  int fDoClusterQA;                                     // flag if cluster QA should be switched on
   int fDoJetQA;                                         // flag if Jet QA should be switched on
   int fIsHeavyIon;                                      // lag for heavy ion
   bool fIsCalo;                                         // flag if current analysis is calo only

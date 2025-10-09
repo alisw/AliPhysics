@@ -72,7 +72,6 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoLightOutput(0),
                                                                              fDoMesonQA(0),
                                                                              fDoPhotonQA(0),
-                                                                             fDoClusterQA(0),
                                                                              fDoJetQA(0),
                                                                              fIsHeavyIon(0),
                                                                              fIsCalo(false),
@@ -406,7 +405,6 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoLightOutput(0),
                                                                                            fDoMesonQA(0),
                                                                                            fDoPhotonQA(0),
-                                                                                           fDoClusterQA(0),
                                                                                            fDoJetQA(0),
                                                                                            fIsHeavyIon(0),
                                                                                            fIsCalo(false),
@@ -857,7 +855,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoMCJetPtVsMesonPtVsRadius.resize(fnCuts);
       fHistoMCJetPtVsMesonPtVsRadiusInAcc.resize(fnCuts);
     }
-    if(fDoClusterQA>0){
+    if(fDoMesonQA>0){
       fHistoPrimPartAbundanceInJet.resize(fnCuts);
       fHistoPrimPartAbundanceInJetAndEMCal.resize(fnCuts);
     }
@@ -1478,18 +1476,18 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fMCList[iCut]->Add(fHistoMCJetPtVsMesonPtVsRadiusInAcc[iCut]);
       }
 
-      if(fDoClusterQA > 0){
+      if(fDoMesonQA > 0){
         fHistoPrimPartAbundanceInJet[iCut] = new TH3F("PrimaryParticleAbundance_InJet_E_VsJetPt", "PrimaryParticleAbundance_InJet_E_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fHistoPrimPartAbundanceInJet[iCut]->SetXTitle("Particle Index");
         fHistoPrimPartAbundanceInJet[iCut]->SetYTitle("E_{particle} (GeV)");
         fHistoPrimPartAbundanceInJet[iCut]->SetZTitle("P_{T, jet, true.} (GeV/c)");
-        fTrueList[iCut]->Add(fHistoPrimPartAbundanceInJet[iCut]);
+        fMCList[iCut]->Add(fHistoPrimPartAbundanceInJet[iCut]);
 
         fHistoPrimPartAbundanceInJetAndEMCal[iCut] = new TH3F("PrimaryParticleAbundance_InJetAndEMCal_E_VsJetPt", "PrimaryParticleAbundance_InJetAndEMCal_E_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fHistoPrimPartAbundanceInJetAndEMCal[iCut]->SetXTitle("Particle Index");
         fHistoPrimPartAbundanceInJetAndEMCal[iCut]->SetYTitle("E_{particle} (GeV)");
         fHistoPrimPartAbundanceInJetAndEMCal[iCut]->SetZTitle("P_{T, jet, true.} (GeV/c)");
-        fTrueList[iCut]->Add(fHistoPrimPartAbundanceInJetAndEMCal[iCut]);
+        fMCList[iCut]->Add(fHistoPrimPartAbundanceInJetAndEMCal[iCut]);
       }
     } // end MC generated histos
 
@@ -4672,12 +4670,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
         }
       }
     }
-    if(fDoClusterQA > 0 && particle->IsPhysicalPrimary() && std::abs(particle->Eta()) < 0.8 && matchedJet >= 0){ // could be moreged with the code above
+    if(fDoMesonQA > 0 && particle->IsPhysicalPrimary() && std::abs(particle->Eta()) < 0.8 && matchedJet >= 0){ // could be moreged with the code above
       if(mapTrueJetCellID.find(matchedJet) == mapTrueJetCellID.end()){
         int cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(fTrueVectorJetEta[matchedJet], static_cast<double>((fTrueVectorJetPhi[matchedJet] < 0) ? fTrueVectorJetPhi[matchedJet] + TMath::Pi() * 2. : fTrueVectorJetPhi[matchedJet]));
-        if (cellID >= 0) {
-          mapTrueJetCellID[matchedJet] = cellID;
-        }
+        mapTrueJetCellID[matchedJet] = cellID;
       }
       if(mapTrueJetCellID[matchedJet] >= 0){
         int indexPart = GetParticleIndex(std::abs(particle->PdgCode()), 0);
