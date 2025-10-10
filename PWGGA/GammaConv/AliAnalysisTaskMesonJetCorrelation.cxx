@@ -184,6 +184,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoClusterAbundanceInJetEFrac({}),
                                                                              fHistoClusterAbundanceAntiPartInJetEFrac({}),
                                                                              fHistoClusterAbundanceInJetEFracRemaining({}),
+                                                                             fHistoClusterAbundanceInJetEFracSinglePart({}),
                                                                              fHistoClusterAbundanceAntiPartInJetEFracRemaining({}),
                                                                              fHistoClusterPtVsJetPtInJet({}),
                                                                              fHistoClusterPtPerpCone({}),
@@ -519,6 +520,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoClusterAbundanceInJetEFrac({}),
                                                                                            fHistoClusterAbundanceAntiPartInJetEFrac({}),
                                                                                            fHistoClusterAbundanceInJetEFracRemaining({}),
+                                                                                           fHistoClusterAbundanceInJetEFracSinglePart({}),
                                                                                            fHistoClusterAbundanceAntiPartInJetEFracRemaining({}),
                                                                                            fHistoClusterPtVsJetPtInJet({}),
                                                                                            fHistoClusterPtPerpCone({}),
@@ -801,6 +803,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoClusterAbundanceInJetEFrac.resize(fnCuts);
       fHistoClusterAbundanceAntiPartInJetEFrac.resize(fnCuts);
       fHistoClusterAbundanceInJetEFracRemaining.resize(fnCuts);
+      fHistoClusterAbundanceInJetEFracSinglePart.resize(fnCuts);
       fHistoClusterAbundanceAntiPartInJetEFracRemaining.resize(fnCuts);
     }
   }
@@ -1286,6 +1289,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fHistoClusterAbundanceInJetEFracRemaining[iCut]->SetYTitle("E_{cluster, rec., had corr, EFracRemaining}/E_{jet, rec.}");
         fHistoClusterAbundanceInJetEFracRemaining[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
         fTrueList[iCut]->Add(fHistoClusterAbundanceInJetEFracRemaining[iCut]);
+
+        fHistoClusterAbundanceInJetEFracSinglePart[iCut] = new TH3F("ClusPartAbundance_InJet_EFracSingleParticle_VsJetPt", "ClusPartAbundance_InJet_EFracSingleParticle_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoClusterAbundanceInJetEFracSinglePart[iCut]->SetXTitle("Particle Index");
+        fHistoClusterAbundanceInJetEFracSinglePart[iCut]->SetYTitle("E_{cluster, rec., had corr, EFracSingleParticle}/E_{jet, rec.}");
+        fHistoClusterAbundanceInJetEFracSinglePart[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoClusterAbundanceInJetEFracSinglePart[iCut]);
 
         fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut] = new TH3F("ClusAntiPartAbundance_InJet_EFracRemaining_VsJetPt", "ClusAntiPartAbundance_InJet_EFracRemaining_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut]->SetXTitle("Particle Index");
@@ -3506,13 +3515,41 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
               AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelClus));
               if(particle) {
                 int indexPart = GetParticleIndex(std::abs(particle->PdgCode()), 0);
+
+                AliAODTrack* track = nullptr; // get corresponding track to leading particle
+                bool foundTrack = false;
+                for(int i = 0; i < clus->GetNTracksMatched(); ++i){
+                  track = static_cast<AliAODTrack*>(clus->GetTrackMatched(i));
+                  if(!track) continue;
+                  if(track->GetLabel() == labelClus) {
+                    // Found matching track for leading particle
+                    foundTrack = true;
+                    break;
+                  }
+                }
+                
+                double pTrack = 0.;
+                double distTrackCluster = 0.;
+                if(track && foundTrack) {
+                  pTrack = track->P();
+                    double deltaEta = track->GetTrackEtaOnEMCal() - etaCluster;
+                    double deltaPhi = track->GetTrackPhiOnEMCal() - phiCluster;
+                    if(deltaPhi < -TMath::Pi()/2.) deltaPhi += TMath::TwoPi();
+                    if(deltaPhi >  TMath::Pi()/2.) deltaPhi -= TMath::TwoPi();
+                    distTrackCluster = sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+                }
+                double ESubParticleLead = clus->GetClusterMCEdepFraction(0) * clus->E(); // default: subtract energy of leading particle in cluster
+                if(distTrackCluster < 0.015 && pTrack > 0.15){
+                  ESubParticleLead -= pTrack; // subtract momentum of matched track from cluster energy
+                }
                 fHistoClusterAbundanceInJet[fiCut]->Fill(indexPart, clus->GetHadCorrEnergy(), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
                 fHistoClusterAbundanceInJetEFrac[fiCut]->Fill(indexPart, clus->E()*clus->GetClusterMCEdepFraction(0), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
-                double ERemainOld = clus->E()*(1.-clus->GetClusterMCEdepFraction(0)) + clus->GetHadCorrEnergy(); // old calculation
+                // double ERemainOld = clus->E()*(1.-clus->GetClusterMCEdepFraction(0)) + clus->GetHadCorrEnergy(); // old calculation
                 double DeltaE = clus->E() - clus->GetHadCorrEnergy(); // subtracted energy by hadronic correction
                 double ERemain = clus->E()*clus->GetClusterMCEdepFraction(0) - DeltaE; // new calculation: Remaining energy - subtracted energy: Should be the energy contribution of the hadron
                 // if(ERemain < 0) ERemain = 0; // do not cut on negative energy, it is a valid value due to hadronic correction?
                 fHistoClusterAbundanceInJetEFracRemaining[fiCut]->Fill(indexPart, ERemain, fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
+                fHistoClusterAbundanceInJetEFracSinglePart[fiCut]->Fill(indexPart, ESubParticleLead, fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
                 if(particle->GetPdgCode() < 0){ // treat only anti-particles to check difference between particles and antiparticles
                   fHistoClusterAbundanceAntiPartInJetEFrac[fiCut]->Fill(indexPart, clus->E()*clus->GetClusterMCEdepFraction(0), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
                   fHistoClusterAbundanceAntiPartInJetEFracRemaining[fiCut]->Fill(indexPart, ERemain, fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
