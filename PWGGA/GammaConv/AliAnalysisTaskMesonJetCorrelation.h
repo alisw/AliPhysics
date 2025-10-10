@@ -421,7 +421,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH3F*> fHistoClusterPtResolutionInJet; //! vector of histos with number of clusters as function of E inside of jets
   std::vector<TH3F*> fHistoClusterAbundanceInJet;    //! vector of histos with number of clusters as function of E inside true jets
   std::vector<TH3F*> fHistoClusterAbundanceInJetEFrac; //! vector of histos with number of clusters as function of E inside true jets
+  std::vector<TH3F*> fHistoClusterAbundanceAntiPartInJetEFrac; //! vector of histos with number of clusters as function of E inside true jets for only anti-particles
   std::vector<TH3F*> fHistoClusterAbundanceInJetEFracRemaining; //! vector of histos with number of clusters as function of E inside true jets excluding the leading cluster
+  std::vector<TH3F*> fHistoClusterAbundanceAntiPartInJetEFracRemaining; //! vector of histos with number of clusters as function of E inside true jets for only anti-particles
 
 
   std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of E vs. jet pt inside of jets

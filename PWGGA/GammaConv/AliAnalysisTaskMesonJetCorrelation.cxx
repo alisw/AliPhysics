@@ -182,7 +182,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoClusterPtResolutionInJet({}),
                                                                              fHistoClusterAbundanceInJet({}),
                                                                              fHistoClusterAbundanceInJetEFrac({}),
+                                                                             fHistoClusterAbundanceAntiPartInJetEFrac({}),
                                                                              fHistoClusterAbundanceInJetEFracRemaining({}),
+                                                                             fHistoClusterAbundanceAntiPartInJetEFracRemaining({}),
                                                                              fHistoClusterPtVsJetPtInJet({}),
                                                                              fHistoClusterPtPerpCone({}),
                                                                              // conversion histos
@@ -515,7 +517,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoClusterPtResolutionInJet({}),
                                                                                            fHistoClusterAbundanceInJet({}),
                                                                                            fHistoClusterAbundanceInJetEFrac({}),
+                                                                                           fHistoClusterAbundanceAntiPartInJetEFrac({}),
                                                                                            fHistoClusterAbundanceInJetEFracRemaining({}),
+                                                                                           fHistoClusterAbundanceAntiPartInJetEFracRemaining({}),
                                                                                            fHistoClusterPtVsJetPtInJet({}),
                                                                                            fHistoClusterPtPerpCone({}),
                                                                                            // conversion histos
@@ -795,7 +799,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoClusterPtResolutionInJet.resize(fnCuts);
       fHistoClusterAbundanceInJet.resize(fnCuts);
       fHistoClusterAbundanceInJetEFrac.resize(fnCuts);
+      fHistoClusterAbundanceAntiPartInJetEFrac.resize(fnCuts);
       fHistoClusterAbundanceInJetEFracRemaining.resize(fnCuts);
+      fHistoClusterAbundanceAntiPartInJetEFracRemaining.resize(fnCuts);
     }
   }
   if (fIsConv || fIsConvCalo) {
@@ -1257,23 +1263,35 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fHistoClusterPtResolutionInJet[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
         fTrueList[iCut]->Add(fHistoClusterPtResolutionInJet[iCut]);
 
-        fHistoClusterAbundanceInJet[iCut] = new TH3F("ClusGammaAbundance_InJet_E_VsJetPt", "ClusGammaAbundance_InJet_E_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoClusterAbundanceInJet[iCut] = new TH3F("ClusPartAbundance_InJet_E_VsJetPt", "ClusPartAbundance_InJet_E_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fHistoClusterAbundanceInJet[iCut]->SetXTitle("Particle Index");
         fHistoClusterAbundanceInJet[iCut]->SetYTitle("E_{cluster, rec., had corr} (GeV)");
         fHistoClusterAbundanceInJet[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
         fTrueList[iCut]->Add(fHistoClusterAbundanceInJet[iCut]);
 
-        fHistoClusterAbundanceInJetEFrac[iCut] = new TH3F("ClusGammaAbundance_InJet_EFrac_VsJetPt", "ClusGammaAbundance_InJet_EFrac_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoClusterAbundanceInJetEFrac[iCut] = new TH3F("ClusPartAbundance_InJet_EFrac_VsJetPt", "ClusPartAbundance_InJet_EFrac_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fHistoClusterAbundanceInJetEFrac[iCut]->SetXTitle("Particle Index");
         fHistoClusterAbundanceInJetEFrac[iCut]->SetYTitle("E_{cluster, rec., had corr, EFrac}/E_{jet, rec.}");
         fHistoClusterAbundanceInJetEFrac[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
         fTrueList[iCut]->Add(fHistoClusterAbundanceInJetEFrac[iCut]);
 
-        fHistoClusterAbundanceInJetEFracRemaining[iCut] = new TH3F("ClusGammaAbundance_InJet_EFracRemaining_VsJetPt", "ClusGammaAbundance_InJet_EFracRemaining_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoClusterAbundanceAntiPartInJetEFrac[iCut] = new TH3F("ClusAntiPartAbundance_InJet_EFrac_VsJetPt", "ClusAntiPartAbundance_InJet_EFrac_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoClusterAbundanceAntiPartInJetEFrac[iCut]->SetXTitle("Particle Index");
+        fHistoClusterAbundanceAntiPartInJetEFrac[iCut]->SetYTitle("E_{cluster, rec., had corr, EFrac}/E_{jet, rec.}");
+        fHistoClusterAbundanceAntiPartInJetEFrac[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoClusterAbundanceAntiPartInJetEFrac[iCut]);
+
+        fHistoClusterAbundanceInJetEFracRemaining[iCut] = new TH3F("ClusPartAbundance_InJet_EFracRemaining_VsJetPt", "ClusPartAbundance_InJet_EFracRemaining_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
         fHistoClusterAbundanceInJetEFracRemaining[iCut]->SetXTitle("Particle Index");
         fHistoClusterAbundanceInJetEFracRemaining[iCut]->SetYTitle("E_{cluster, rec., had corr, EFracRemaining}/E_{jet, rec.}");
         fHistoClusterAbundanceInJetEFracRemaining[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
         fTrueList[iCut]->Add(fHistoClusterAbundanceInJetEFracRemaining[iCut]);
+
+        fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut] = new TH3F("ClusAntiPartAbundance_InJet_EFracRemaining_VsJetPt", "ClusAntiPartAbundance_InJet_EFracRemaining_VsJetPt", 17, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut]->SetXTitle("Particle Index");
+        fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut]->SetYTitle("E_{cluster, rec., had corr, EFracRemaining}/E_{jet, rec.}");
+        fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoClusterAbundanceAntiPartInJetEFracRemaining[iCut]);
       }
     }
 
@@ -3490,9 +3508,15 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
                 int indexPart = GetParticleIndex(std::abs(particle->PdgCode()), 0);
                 fHistoClusterAbundanceInJet[fiCut]->Fill(indexPart, clus->GetHadCorrEnergy(), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
                 fHistoClusterAbundanceInJetEFrac[fiCut]->Fill(indexPart, clus->E()*clus->GetClusterMCEdepFraction(0), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
-                double ERemain = clus->E()*(1.-clus->GetClusterMCEdepFraction(0)) + clus->GetHadCorrEnergy();
-                if(ERemain < 0) ERemain = 0;
+                double ERemainOld = clus->E()*(1.-clus->GetClusterMCEdepFraction(0)) + clus->GetHadCorrEnergy(); // old calculation
+                double DeltaE = clus->E() - clus->GetHadCorrEnergy(); // subtracted energy by hadronic correction
+                double ERemain = clus->E()*clus->GetClusterMCEdepFraction(0) - DeltaE; // new calculation: Remaining energy - subtracted energy: Should be the energy contribution of the hadron
+                // if(ERemain < 0) ERemain = 0; // do not cut on negative energy, it is a valid value due to hadronic correction?
                 fHistoClusterAbundanceInJetEFracRemaining[fiCut]->Fill(indexPart, ERemain, fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
+                if(particle->GetPdgCode() < 0){ // treat only anti-particles to check difference between particles and antiparticles
+                  fHistoClusterAbundanceAntiPartInJetEFrac[fiCut]->Fill(indexPart, clus->E()*clus->GetClusterMCEdepFraction(0), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
+                  fHistoClusterAbundanceAntiPartInJetEFracRemaining[fiCut]->Fill(indexPart, ERemain, fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
+                }
               }
             }
           }
