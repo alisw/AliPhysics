@@ -218,7 +218,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
     fDoWeightGenParticles = modeJetWeighting;
   }
   void InitializePartAbundanceWeighting();
-  void SetDoTrackingEff(bool tmp) {fDoTrackingStudies = tmp;}
+  void SetDoTrackingEff(float tmp) { // function to set tracking effi studies. If tmp > 1, set the hadronic correction factor to tmp-1 (standard is 2)
+    if(tmp > 0.001) fDoTrackingStudies = true;
+    else fDoTrackingStudies = false;
+    if(tmp > 1.)fEnergyFracHC = tmp - 1.;
+  }
   // void SetDoAddV0ToJet(bool tmp) { fAddV0ToJets = tmp; }
 
  protected:
@@ -305,6 +309,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDoProcessOnlyJets;                              // flag to only process the jets and not the pi0s
   int fJetErrCounter;                                   // counter for number of error mesages of previous jet events
   // bool fAddV0ToJets;                                    // flag to enable the addition of V0s to the jet. This is only for experimental studies. These should be added in the jet finder!
+  double fEnergyFracHC;                                 // factor by which the hadronic correction of the cluster energy is multiplied before subtracting the matched track momentum. Only for QA studies
   //-------------------------------
   // conversions
   //-------------------------------

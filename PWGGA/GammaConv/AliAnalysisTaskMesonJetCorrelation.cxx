@@ -94,6 +94,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoCutOnEnergyAsymm(false),
                                                                              fDoProcessOnlyJets(false),
                                                                              fJetErrCounter(0),
+                                                                             fEnergyFracHC(1.0),
                                                                             //  fAddV0ToJets(false),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
@@ -430,6 +431,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoCutOnEnergyAsymm(false),
                                                                                            fDoProcessOnlyJets(false),
                                                                                            fJetErrCounter(0),
+                                                                                           fEnergyFracHC(1.0),
                                                                                           //  fAddV0ToJets(false),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
@@ -3539,7 +3541,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
                     distTrackCluster = sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
                 }
                 double ESubParticleLead = clus->GetClusterMCEdepFraction(0) * clus->E(); // default: subtract energy of leading particle in cluster
-                if(distTrackCluster < 0.015 && pTrack > 0.15){
+                if(distTrackCluster < 0.02 && pTrack > 0.15){
+                  pTrack*=fEnergyFracHC; // apply hadronic correction factor
+                  if(pTrack > clus->E()){
+                    pTrack = clus->E(); // do not subtract more energy than the cluster has
+                  }
                   ESubParticleLead -= pTrack; // subtract momentum of matched track from cluster energy
                 }
                 fHistoClusterAbundanceInJet[fiCut]->Fill(indexPart, clus->GetHadCorrEnergy(), fTrueVectorJetPt[matchedTrueJet], fWeightJetJetMC);
