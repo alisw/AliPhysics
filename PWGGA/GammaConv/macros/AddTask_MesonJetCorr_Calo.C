@@ -54,7 +54,7 @@ void AddTask_MesonJetCorr_Calo(
   bool enableAddBackground = false,
   bool enableRadiusDep = false,
   int runOnlyZPt = 0,           // if 0, bot pt and z histograms will be filled, if 1, pt histograms will be filled, if 2, only z histograms will be filled
-  bool doTrackingStudies = false,
+  float doTrackingStudies = false,
   bool cutOnJetEnergyAsymm = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
@@ -315,8 +315,10 @@ void AddTask_MesonJetCorr_Calo(
   // Low energy clusters and upper M02
   } else if (trainConfig == 80) {
     cuts.AddCutCalo("00010103", "411790009feg0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
-  } else if (trainConfig == 81) { // same as 80 but no TM
+  } else if (trainConfig >= 81 && trainConfig <= 85) { // same as 80 but no TM
     cuts.AddCutCalo("00010103", "4117900090eg0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  // Next trainConfig should be 86!!
+  
 
   //---------------------------------------
   // Cut variations for standard cut (2)
