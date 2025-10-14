@@ -1432,16 +1432,24 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   }
   */
 
+  //Central
+  if(centralityV0M > 10){
+    AliWarning("Centrality is high!");
+    return;
+  }
+
+  //Semi-central
+  /*
   if(centralityV0M < 30){
-    AliWarning("Centtality is high!");
+    AliWarning("Centrality is high!");
     return;
   }
 
   if(centralityV0M > 50){
-    AliWarning("Centtality is high!");
+    AliWarning("Centrality is high!");
     return;
   }
-
+  */
   dynamic_cast<TH1F*>(fOutputList->FindObject("hCentralityV0M_cut")) ->Fill(centralityV0M);
 
   //============= variable definition
