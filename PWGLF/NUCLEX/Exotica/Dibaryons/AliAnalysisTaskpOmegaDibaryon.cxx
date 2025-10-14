@@ -1432,13 +1432,13 @@ void AliAnalysisTaskpOmegaDibaryon::UserExec(Option_t *)
   }
   */
 
-  if(centralityV0M < 30){
-    AliWarning("Centtality is high!");
+  if(centralityV0M < 10){
+    AliWarning("Centrality is high!");
     return;
   }
 
-  if(centralityV0M > 50){
-    AliWarning("Centtality is high!");
+  if(centralityV0M > 90){
+    AliWarning("Centrality is high!");
     return;
   }
 
