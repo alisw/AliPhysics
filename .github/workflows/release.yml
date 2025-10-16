@@ -22,7 +22,7 @@ jobs:
       - name: Decide which branch to use
         run: |
           case "$TAG" in
-            v5-09-60*) echo branch=master ;;
+            v5-09-62*) echo branch=master ;;
             *) echo "branch=$(echo "$TAG-patches" | sed -r 's/[a-z]+-01-patches$/-01-patches/')" ;;
           esac >> "$GITHUB_OUTPUT"
         id: decide_release_branch
