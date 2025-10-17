@@ -648,7 +648,7 @@ private:
   AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
   AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 7);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 8);
 
 };
 
