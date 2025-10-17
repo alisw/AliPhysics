@@ -421,12 +421,16 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoClusterPt; //! vector of histos with number of clusters as function of pt
   std::vector<TH1F*> fHistoClusterE;  //! vector of histos with number of clusters as function of E
 
+
   std::vector<TH1F*> fHistoClusterPtInJet;           //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;            //! vector of histos with number of clusters as function of E inside of jets
+  std::vector<TH1F*> fHistoHadronicInteractionsVsR;  //! vector of histos with number of particles with their production vertex radius
   std::vector<TH3F*> fHistoClusterPtResolutionInJet; //! vector of histos with number of clusters as function of E inside of jets
   std::vector<TH3F*> fHistoClusterAbundanceInJet;    //! vector of histos with number of clusters as function of E inside true jets
   std::vector<TH3F*> fHistoClusterAbundanceInJetEFrac; //! vector of histos with number of clusters as function of E inside true jets
+  std::vector<TH3F*> fHistoClusterAbundanceInJetEFracHadronic; //! vector of histos with number of clusters as function of E inside true jets produced in hadronic interactions
   std::vector<TH3F*> fHistoClusterAbundanceAntiPartInJetEFrac; //! vector of histos with number of clusters as function of E inside true jets for only anti-particles
+  std::vector<TH3F*> fHistoClusterAbundanceAntiPartInJetEFracHadronic; //! vector of histos with number of clusters as function of E inside true jets for only anti-particles that are produced in hadronic interactiuons
   std::vector<TH3F*> fHistoClusterAbundanceInJetEFracRemaining; //! vector of histos with number of clusters as function of E inside true jets excluding the leading cluster
   std::vector<TH3F*> fHistoClusterAbundanceInJetEFracSinglePart; //! vector of histos with number of clusters as function of E inside true jets for only the leading particle inside that cluster
   std::vector<TH3F*> fHistoClusterAbundanceAntiPartInJetEFracRemaining; //! vector of histos with number of clusters as function of E inside true jets for only anti-particles
