@@ -73,6 +73,7 @@ set(SRCS
     AliAnalysisTRDEfficiency.cxx
     AliAnalysisTaskElectronStudies.cxx
     # MC and cocktail tasks
+    AliAnalysisTaskEtaPrimeMCStudies.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
     AliAnalysisTaskOmegaMCStudies.cxx
