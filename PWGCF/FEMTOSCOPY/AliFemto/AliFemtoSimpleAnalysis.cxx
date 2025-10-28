@@ -9,6 +9,8 @@
 #include "AliFemtoXiCut.h"
 #include "AliFemtoXiTrackCut.h"
 #include "AliFemtoPicoEvent.h"
+#include "AliFemtoCutMonitorEventMult.h"
+#include "AliFemtoCutMonitorCollection.h"
 
 #include <string>
 #include <iostream>
@@ -184,7 +186,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fVerbose(kTRUE),
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE),
-  fEnablePairMonitorsMixEv(kFALSE)
+  fEnablePairMonitorsMixEv(kFALSE),
+  fTotalMixedEvents(0)
 {
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
@@ -208,7 +211,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   fVerbose(a.fVerbose),
   fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
   fEnablePairMonitors(a.fEnablePairMonitors),
-  fEnablePairMonitorsMixEv(a.fEnablePairMonitorsMixEv)
+  fEnablePairMonitorsMixEv(a.fEnablePairMonitorsMixEv),
+  fTotalMixedEvents(0)
 {
   /// Copy constructor
 
@@ -543,9 +547,27 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   if (fVerbose) {
     cout << "AliFemtoSimpleAnalysis::ProcessEvent() - reals done ";
   }
+  
 
+  float centCurrent = hbtEvent->UncorrectedNumberOfPrimaries();  //take the multiplicity class from AliFemtoEvent -> important to have same range as for the number of events from Same distribution
+  int nMixedEvents = 0;
   //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
   for (auto storedEvent : *fMixingBuffer) {
+    nMixedEvents++;
+     // Fill the histogram for each mixed event
+    if (fEventCut && fEventCut->PassMonitorColl()) {
+        AliFemtoCutMonitorCollection *monitors = fEventCut->PassMonitorColl();
+        if (monitors) {
+            for (auto *obj : *monitors) {
+                AliFemtoCutMonitorEventMult *multMon =
+                    dynamic_cast<AliFemtoCutMonitorEventMult*>(obj);
+                if (multMon) {
+                    // fill one entry **per mixed event used**
+                    multMon->FillMixedEvents(centCurrent);
+                }
+            }
+        }
+    }
 
     // If identical - only mix the first particle collections
     if (AnalyzeIdenticalParticles()) {
@@ -560,6 +582,14 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
                            collection2, EnablePairMonitorsMixEv());
     }
   }
+  
+
+
+// Optional debug output
+if (fVerbose) {
+  cout << "[AliFemtoSimpleAnalysis::ProcessEvent] Mixed events used: "
+       << fTotalMixedEvents << endl;
+}
 
   if (fVerbose) {
     cout << " - mixed done   \n";

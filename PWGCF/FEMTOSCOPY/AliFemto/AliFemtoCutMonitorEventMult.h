@@ -41,7 +41,7 @@ public:
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2) {AliFemtoCutMonitor::Fill(aCollection1, aCollection2);}
-
+  void FillMixedEvents(int nMixEvents);
   void SetReadMC(Bool_t mc);
   void AdditionalMultHistsOn(Bool_t addhists);
   void SetfaddRunNumberQA(int addRunNumberQA);
@@ -54,14 +54,13 @@ private:
   TH1D *fNormEvMult;  ///< Normalized event multiplicity distribution
   TH1D *fSPDMult;     ///< SPD tracklet multiplicity
   TH2D *fMultSumPt;   ///< Event total pT vs. multiplicity
-
   Bool_t freadMC;     ///< If true - add only one histogram to the output
   Bool_t faddhists;   ///< If true - add only additional multiplicity histograms
 
   TH1D *fEstimateITSTPC;     ///< Multiplicity estimate ITS+TPC
   TH1D *fEstimateTracklets;  ///< Multiplicity estimate Tracklets
   TH1D *fEstimateITSPure;    ///< Multiplicity estimate ITS Pure
-
+  TH1D *fHistoMixedEvents;  // Histogram to count number of mixed events
   TH2D *fEst1Est2;    ///< ITS+TPC vs Tracklets
   TH2D *fEst1Est3;    ///< ITS+TPC vs ITS Pure
   TH2D *fEst2Est3;    ///< Tracklets vs ITS Pure

@@ -183,7 +183,7 @@ protected:
   Bool_t fPerformSharedDaughterCut;
   Bool_t fEnablePairMonitors;
   Bool_t fEnablePairMonitorsMixEv;                    //to use also mixing events -- to fill pair monitors (by default is false)
-    
+  UInt_t fTotalMixedEvents;   ///< Counter of total mixed events used across all events
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoSimpleAnalysis, 0);
