@@ -80,6 +80,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
 
     // Event list
     gener->SetEventListRange(-1, -1);
+    gener->SetTune(tune);
 
     //random seed based on time
     (AliPythia8::Instance())->ReadString("Random:setSeed = on");
