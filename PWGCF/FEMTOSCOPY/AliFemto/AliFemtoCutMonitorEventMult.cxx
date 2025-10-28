@@ -27,7 +27,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fEst3Norm(NULL),
   fPsiVZERO(NULL),
   faddRunNumberQA(0),
-  fRunNumberQA(NULL)
+  fRunNumberQA(NULL),
+  fHistoMixedEvents(NULL)
 {
   // Default constructor
   fEvMult = new TH1D("EvMult", "Event Multiplicity", 20001, -0.5, 20000.5);
@@ -53,7 +54,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int 
   fEst3Norm(NULL),
   fPsiVZERO(NULL),
   faddRunNumberQA(0),
-  fRunNumberQA(NULL)
+  fRunNumberQA(NULL),
+  fHistoMixedEvents(NULL)
 {
   TString name(aName);
 
@@ -64,6 +66,10 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int 
 
   fNormEvMult = new TH1D("NormEvMult" + name,
                          "Normalized Event Multiplicity",
+                         nBins+1, -0.5, multMax);
+                         
+  fHistoMixedEvents = new TH1D("MixNormEvMult" + name,
+                         "Normalized Event Multiplicity for Mix",
                          nBins+1, -0.5, multMax);
 
   if (!freadMC) {
@@ -150,12 +156,14 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   fEst3Norm(NULL),
   fPsiVZERO(NULL),
   faddRunNumberQA(aCut.faddRunNumberQA),
-  fRunNumberQA(NULL)
+  fRunNumberQA(NULL),
+  fHistoMixedEvents(NULL)
 
 {
   // copy constructor
   fEvMult = new TH1D(*aCut.fEvMult);
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
+  fHistoMixedEvents = new TH1D(*aCut.fHistoMixedEvents);
 
   if(!freadMC) {
     fSPDMult = new TH1D(*aCut.fSPDMult);
@@ -186,6 +194,7 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
   // Destructor
   delete fEvMult;
   delete fNormEvMult;
+  delete fHistoMixedEvents;
 
   if (!freadMC) {
     delete fSPDMult;
@@ -223,6 +232,9 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
 
   if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
+
+  if (fHistoMixedEvents) delete fHistoMixedEvents;
+  fHistoMixedEvents = new TH1D(*aCut.fHistoMixedEvents);
 
   if (fPsiVZERO) delete fPsiVZERO;
   fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
@@ -313,12 +325,17 @@ void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
 	fRunNumberQA->Fill((int)aEvent->RunNumber());
   }  
 }
-
+void AliFemtoCutMonitorEventMult::FillMixedEvents(int nMixEvents)
+{
+  if (fHistoMixedEvents)
+    fHistoMixedEvents->Fill(nMixEvents);
+}
 void AliFemtoCutMonitorEventMult::Write()
 {
   // Write out the relevant histograms
   fEvMult->Write();
   fNormEvMult->Write();
+  fHistoMixedEvents->Write();
   fPsiVZERO->Write();
 
   // if(!freadMC){
@@ -348,6 +365,7 @@ TList *AliFemtoCutMonitorEventMult::GetOutputList()
   TList *tOutputList = new TList();
   tOutputList->Add(fEvMult);
   tOutputList->Add(fNormEvMult);
+  tOutputList->Add(fHistoMixedEvents);
   tOutputList->Add(fPsiVZERO);
   // tOutputList->Add(fSPDMult);
   // tOutputList->Add(fMultSumPt);
