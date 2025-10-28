@@ -155,6 +155,7 @@ fcent_max(100.0),
 fDoRapCut(kFALSE),
 fEtaCut(0.9),
 fYCut(100.0),
+fAntiTrackBiasCut(100.0),
 fjetMinPtSub(-1000.0),
 fjetMaxPtSub(1000.0),
 fjetMinArea(-1000.0),
@@ -355,6 +356,17 @@ fHist_pi_DCAxy(0),
 fHist_pr_DCAxy(0),
 fHistJet_pi_DCAxy(0),
 fHistJet_pr_DCAxy(0),
+fHistPC_delPt1(0),
+fHistPC_delPt2(0),
+fHistPC_delpT_v_trackpT1(0),
+fHistPC_delpT_v_trackpT2(0),
+fHistPC_delpT_v_trackpT_pi1(0),
+fHistPC_delpT_v_trackpT_ka1(0),
+fHistPC_delpT_v_trackpT_pr1(0),
+fHistPC_delpT_v_trackpT_pi2(0),
+fHistPC_delpT_v_trackpT_ka2(0),
+fHistPC_delpT_v_trackpT_pr2(0),
+fMult_histo(0),
 fHistMCTruth_TrackEff_Den_pi(0),
 fHistMCTruth_TrackEff_Den_ka(0),
 fHistMCTruth_TrackEff_Den_pr(0),
@@ -423,6 +435,18 @@ fHist_JERS_dethybPythia(0),
 fHist_JERS_dethybPythia_pi(0),
 fHist_JERS_dethybPythia_ka(0),
 fHist_JERS_dethybPythia_pr(0),
+fHist_PbPbunid_tru_v_hyb_v_track(0),
+fHist_PbPbunid_det_v_hyb_v_track(0),
+fHist_Pythia_tru_v_hyb_v_track(0),
+fHist_Pythia_det_v_hyb_v_track(0),
+fHist_Pythia_tru_v_hyb_v_track_pi(0),
+fHist_Pythia_det_v_hyb_v_track_pi(0),
+fHist_Pythia_tru_v_hyb_v_track_ka(0),
+fHist_Pythia_det_v_hyb_v_track_ka(0),
+fHist_Pythia_tru_v_hyb_v_track_pr(0),
+fHist_Pythia_det_v_hyb_v_track_pr(0),
+fHist_PbPbunid_det_v_data_v_track(0),
+fHist_Pythia_det_v_data_v_track(0),
 fHist_PC_spectra_Pythia(0),
 fHist_PC_spectra_Pythia_pi(0),
 fHist_PC_spectra_Pythia_ka(0),
@@ -497,6 +521,7 @@ fcent_max(100.0),
 fDoRapCut(kFALSE),
 fEtaCut(0.9),
 fYCut(100.0),
+fAntiTrackBiasCut(100.0),
 fjetMinPtSub(-1000.0),
 fjetMaxPtSub(1000.0),
 fjetMinArea(-1000.0),
@@ -697,6 +722,17 @@ fHist_pi_DCAxy(0),
 fHist_pr_DCAxy(0),
 fHistJet_pi_DCAxy(0),
 fHistJet_pr_DCAxy(0),
+fHistPC_delPt1(0),
+fHistPC_delPt2(0),
+fHistPC_delpT_v_trackpT1(0),
+fHistPC_delpT_v_trackpT2(0),
+fHistPC_delpT_v_trackpT_pi1(0),
+fHistPC_delpT_v_trackpT_ka1(0),
+fHistPC_delpT_v_trackpT_pr1(0),
+fHistPC_delpT_v_trackpT_pi2(0),
+fHistPC_delpT_v_trackpT_ka2(0),
+fHistPC_delpT_v_trackpT_pr2(0),
+fMult_histo(0),
 fHistMCTruth_TrackEff_Den_pi(0),
 fHistMCTruth_TrackEff_Den_ka(0),
 fHistMCTruth_TrackEff_Den_pr(0),
@@ -765,6 +801,18 @@ fHist_JERS_dethybPythia(0),
 fHist_JERS_dethybPythia_pi(0),
 fHist_JERS_dethybPythia_ka(0),
 fHist_JERS_dethybPythia_pr(0),
+fHist_PbPbunid_tru_v_hyb_v_track(0),
+fHist_PbPbunid_det_v_hyb_v_track(0),
+fHist_Pythia_tru_v_hyb_v_track(0),
+fHist_Pythia_det_v_hyb_v_track(0),
+fHist_Pythia_tru_v_hyb_v_track_pi(0),
+fHist_Pythia_det_v_hyb_v_track_pi(0),
+fHist_Pythia_tru_v_hyb_v_track_ka(0),
+fHist_Pythia_det_v_hyb_v_track_ka(0),
+fHist_Pythia_tru_v_hyb_v_track_pr(0),
+fHist_Pythia_det_v_hyb_v_track_pr(0),
+fHist_PbPbunid_det_v_data_v_track(0),
+fHist_Pythia_det_v_data_v_track(0),
 fHist_PC_spectra_Pythia(0),
 fHist_PC_spectra_Pythia_pi(0),
 fHist_PC_spectra_Pythia_ka(0),
@@ -911,6 +959,17 @@ AliAnalysisTaskJetHadroAOD::~AliAnalysisTaskJetHadroAOD()
   if (fHist_pr_DCAxy)          delete fHist_pr_DCAxy;
   if (fHistJet_pi_DCAxy)          delete fHistJet_pi_DCAxy;
   if (fHistJet_pr_DCAxy)          delete fHistJet_pr_DCAxy;
+  if (fHistPC_delPt1)          delete fHistPC_delPt1;
+  if (fHistPC_delPt2)          delete fHistPC_delPt2;
+  if (fHistPC_delpT_v_trackpT1)          delete fHistPC_delpT_v_trackpT1;
+  if (fHistPC_delpT_v_trackpT2)          delete fHistPC_delpT_v_trackpT2;
+  if (fHistPC_delpT_v_trackpT_pi1)          delete fHistPC_delpT_v_trackpT_pi1;
+  if (fHistPC_delpT_v_trackpT_ka1)          delete fHistPC_delpT_v_trackpT_ka1;
+  if (fHistPC_delpT_v_trackpT_pr1)          delete fHistPC_delpT_v_trackpT_pr1;
+  if (fHistPC_delpT_v_trackpT_pi2)          delete fHistPC_delpT_v_trackpT_pi2;
+  if (fHistPC_delpT_v_trackpT_ka2)          delete fHistPC_delpT_v_trackpT_ka2;
+  if (fHistPC_delpT_v_trackpT_pr2)          delete fHistPC_delpT_v_trackpT_pr2;
+  if (fMult_histo)          delete fMult_histo;
   if (fHistMCTruth_TrackEff_Den_pi)          delete fHistMCTruth_TrackEff_Den_pi;
   if (fHistMCTruth_TrackEff_Den_ka)          delete fHistMCTruth_TrackEff_Den_ka;
   if (fHistMCTruth_TrackEff_Den_pr)          delete fHistMCTruth_TrackEff_Den_pr;
@@ -977,6 +1036,21 @@ AliAnalysisTaskJetHadroAOD::~AliAnalysisTaskJetHadroAOD()
   if (fHist_JERS_dethybPythia_pi)          delete fHist_JERS_dethybPythia_pi;
   if (fHist_JERS_dethybPythia_ka)          delete fHist_JERS_dethybPythia_ka;
   if (fHist_JERS_dethybPythia_pr)          delete fHist_JERS_dethybPythia_pr;
+
+  if (fHist_PbPbunid_tru_v_hyb_v_track)          delete fHist_PbPbunid_tru_v_hyb_v_track;
+  if (fHist_PbPbunid_det_v_hyb_v_track)          delete fHist_PbPbunid_det_v_hyb_v_track;
+
+  if (fHist_Pythia_tru_v_hyb_v_track)          delete fHist_Pythia_tru_v_hyb_v_track;
+  if (fHist_Pythia_det_v_hyb_v_track)          delete fHist_Pythia_det_v_hyb_v_track;
+  if (fHist_Pythia_tru_v_hyb_v_track_pi)          delete fHist_Pythia_tru_v_hyb_v_track_pi;
+  if (fHist_Pythia_det_v_hyb_v_track_pi)          delete fHist_Pythia_det_v_hyb_v_track_pi;
+  if (fHist_Pythia_tru_v_hyb_v_track_ka)          delete fHist_Pythia_tru_v_hyb_v_track_ka;
+  if (fHist_Pythia_det_v_hyb_v_track_ka)          delete fHist_Pythia_det_v_hyb_v_track_ka;
+  if (fHist_Pythia_tru_v_hyb_v_track_pr)          delete fHist_Pythia_tru_v_hyb_v_track_pr;
+  if (fHist_Pythia_det_v_hyb_v_track_pr)          delete fHist_Pythia_det_v_hyb_v_track_pr;
+
+  if (fHist_PbPbunid_det_v_data_v_track)          delete fHist_PbPbunid_det_v_data_v_track;
+  if (fHist_Pythia_det_v_data_v_track)          delete fHist_Pythia_det_v_data_v_track;
 
   if (fHist_PC_spectra_Pythia)          delete fHist_PC_spectra_Pythia;
   if (fHist_PC_spectra_Pythia_pi)          delete fHist_PC_spectra_Pythia_pi;
@@ -1312,7 +1386,37 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
 
     fHistJet_pi_DCAxy  = new TH2F("fHistJet_pi_DCAxy", "Data DCAxy distribution pion", n_tpc_mom_bins,tpc_mom_bins, n_dcaxy_bins,dcaxy_bins);
     fHistJet_pr_DCAxy  = new TH2F("fHistJet_pr_DCAxy", "Data DCAxy distribution proton", n_tpc_mom_bins,tpc_mom_bins, n_dcaxy_bins,dcaxy_bins);
+
   }
+
+  if (!fMCtrue && !fDoEmbedding){
+
+    fMult_histo = new TH1F("fMult_histo", "Ch particle Multiplicity distribution", 100001, -0.5, 10000.5);
+
+    if (fDoPerpCone || fDoRandCone){
+      Float_t delPC_bins[201];
+        for (int i=0; i < (200+1); i++){
+          delPC_bins[i] = -100.0 + i*1.0;
+        }
+
+      fHistPC_delPt1 = new TH1F("fHistPC_delPt1", "Delta pT distribution of perp cones"  , 200, delPC_bins);
+      fHistPC_delPt2 = new TH1F("fHistPC_delPt2", "Delta pT distribution of perp cones"  , 200, delPC_bins);
+
+      fHistPC_delpT_v_trackpT1 = new TH2F("fHistPC_delpT_v_trackpT1", "Delta pT distribution of perp cones vs track pT"  , n_tpc_mom_bins,tpc_mom_bins, 200, delPC_bins);
+      fHistPC_delpT_v_trackpT2 = new TH2F("fHistPC_delpT_v_trackpT2", "Delta pT distribution of perp cones vs track pT"  , n_tpc_mom_bins,tpc_mom_bins, 200, delPC_bins);
+
+      fHistPC_delpT_v_trackpT_pi1 = new TH3F("fHistPC_delpT_v_trackpT_pi1", "Delta pT distribution of perp cones vs track pT pi", n_tpc_mom_bins,tpc_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, 200, delPC_bins);
+      fHistPC_delpT_v_trackpT_ka1 = new TH3F("fHistPC_delpT_v_trackpT_ka1", "Delta pT distribution of perp cones vs track pT ka", n_tpc_mom_bins,tpc_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, 200, delPC_bins);
+      fHistPC_delpT_v_trackpT_pr1 = new TH3F("fHistPC_delpT_v_trackpT_pr1", "Delta pT distribution of perp cones vs track pT pr", n_tpc_mom_bins,tpc_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, 200, delPC_bins);
+
+      fHistPC_delpT_v_trackpT_pi2 = new TH3F("fHistPC_delpT_v_trackpT_pi2", "Delta pT distribution of perp cones vs track pT pi", n_tpc_mom_bins,tpc_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, 200, delPC_bins);
+      fHistPC_delpT_v_trackpT_ka2 = new TH3F("fHistPC_delpT_v_trackpT_ka2", "Delta pT distribution of perp cones vs track pT ka", n_tpc_mom_bins,tpc_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, 200, delPC_bins);
+      fHistPC_delpT_v_trackpT_pr2 = new TH3F("fHistPC_delpT_v_trackpT_pr2", "Delta pT distribution of perp cones vs track pT pr", n_tpc_mom_bins,tpc_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, 200, delPC_bins);
+
+    }
+
+  }
+
 
   Float_t jet_pT_bins[49] = {};
   for (int i=0; i < (48+1); i++){
@@ -1451,6 +1555,22 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fHist_JERS_dethybPythia_ka = new TH3F("fHist_JERS_dethybPythia_ka", "det JERS for Pythia ka as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
     fHist_JERS_dethybPythia_pr = new TH3F("fHist_JERS_dethybPythia_pr", "det JERS for Pythia pr as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
 
+    fHist_PbPbunid_tru_v_hyb_v_track = new TH3F("fHist_PbPbunid_tru_v_hyb_v_track", "Unid hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_PbPbunid_det_v_hyb_v_track = new TH3F("fHist_PbPbunid_det_v_hyb_v_track", "Unid hyb jet pT vs det jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_Pythia_tru_v_hyb_v_track = new TH3F("fHist_Pythia_tru_v_hyb_v_track", "Unid hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_det_v_hyb_v_track = new TH3F("fHist_Pythia_det_v_hyb_v_track", "Unid hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_Pythia_tru_v_hyb_v_track_pi = new TH3F("fHist_Pythia_tru_v_hyb_v_track_pi", "pi hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_det_v_hyb_v_track_pi = new TH3F("fHist_Pythia_det_v_hyb_v_track_pi", "pi hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_tru_v_hyb_v_track_ka = new TH3F("fHist_Pythia_tru_v_hyb_v_track_ka", "ka hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_det_v_hyb_v_track_ka = new TH3F("fHist_Pythia_det_v_hyb_v_track_ka", "ka hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_tru_v_hyb_v_track_pr = new TH3F("fHist_Pythia_tru_v_hyb_v_track_pr", "pr hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_det_v_hyb_v_track_pr = new TH3F("fHist_Pythia_det_v_hyb_v_track_pr", "pr hyb jet pT vs tru jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_PbPbunid_det_v_data_v_track = new TH3F("fHist_PbPbunid_det_v_data_v_track", "Unid hyb jet pT vs det jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+    fHist_Pythia_det_v_data_v_track = new TH3F("fHist_Pythia_det_v_data_v_track", "data part of emb jet pT vs det part of emb jet pT vs track pT", n_jet_pT_bins,jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_tpc_mom_bins,tpc_mom_bins);
+
     fHist_PC_spectra_Pythia = new TH1F("fHist_PC_spectra_Pythia", "Pythia parts in PC unid spectra", n_tpc_mom_bins,tpc_mom_bins);
     fHist_PC_spectra_Pythia_pi = new TH1F("fHist_PC_spectra_Pythia_pi", "Pythia parts in PC pi spectra", n_tpc_mom_bins,tpc_mom_bins);
     fHist_PC_spectra_Pythia_ka = new TH1F("fHist_PC_spectra_Pythia_ka", "Pythia parts in PC ka spectra", n_tpc_mom_bins,tpc_mom_bins);
@@ -1489,6 +1609,22 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     }
   }
 
+
+	if (!fMCtrue && !fDoEmbedding){
+    if (fDoPerpCone || fDoRandCone){
+      fListHist->Add(fHistPC_delPt1);
+      fListHist->Add(fHistPC_delPt2);
+      fListHist->Add(fHistPC_delpT_v_trackpT1);
+      fListHist->Add(fHistPC_delpT_v_trackpT2);
+      fListHist->Add(fHistPC_delpT_v_trackpT_pi1);
+      fListHist->Add(fHistPC_delpT_v_trackpT_ka1);
+      fListHist->Add(fHistPC_delpT_v_trackpT_pr1);
+      fListHist->Add(fHistPC_delpT_v_trackpT_pi2);
+      fListHist->Add(fHistPC_delpT_v_trackpT_ka2);
+      fListHist->Add(fHistPC_delpT_v_trackpT_pr2);
+    }
+    fListHist->Add(fMult_histo);
+}
 
   if (!fMCtrue || fDoEmbedding){
 
@@ -1674,6 +1810,22 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fListHist->Add(fHist_JERS_dethybPythia_pi);
     fListHist->Add(fHist_JERS_dethybPythia_ka);
     fListHist->Add(fHist_JERS_dethybPythia_pr);
+
+    fListHist->Add(fHist_PbPbunid_tru_v_hyb_v_track);
+    fListHist->Add(fHist_PbPbunid_det_v_hyb_v_track);
+
+    fListHist->Add(fHist_Pythia_tru_v_hyb_v_track);
+    fListHist->Add(fHist_Pythia_det_v_hyb_v_track);
+
+    fListHist->Add(fHist_Pythia_tru_v_hyb_v_track_pi);
+    fListHist->Add(fHist_Pythia_det_v_hyb_v_track_pi);
+    fListHist->Add(fHist_Pythia_tru_v_hyb_v_track_ka);
+    fListHist->Add(fHist_Pythia_det_v_hyb_v_track_ka);
+    fListHist->Add(fHist_Pythia_tru_v_hyb_v_track_pr);
+    fListHist->Add(fHist_Pythia_det_v_hyb_v_track_pr);
+
+    fListHist->Add(fHist_PbPbunid_det_v_data_v_track);
+    fListHist->Add(fHist_Pythia_det_v_data_v_track);
 
     fListHist->Add(fHist_PC_spectra_Pythia);
     fListHist->Add(fHist_PC_spectra_Pythia_pi);
@@ -2255,6 +2407,9 @@ void AliAnalysisTaskJetHadroAOD::FindJetsEMC()
       Axis2 = ((leadJetPhi - (TMath::Pi() / 2.)) < 0) ? leadJetPhi + ((3. / 2.) * TMath::Pi()) : leadJetPhi - (TMath::Pi() / 2.);
     }
 
+    Double_t perp_cone_delpT1 = 0.0;
+    Double_t perp_cone_delpT2 = 0.0;
+
     //loop over all inclusive tracks
     AliVEvent *event=InputEvent();
     for (Int_t itrack=0;itrack<event->GetNumberOfTracks();++itrack) {   // Track loop
@@ -2282,6 +2437,15 @@ void AliAnalysisTaskJetHadroAOD::FindJetsEMC()
       dEta = leadJetEta - track->Eta();
 
       if ((TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) > 0.4) && (TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) > 0.4)) continue; //scale the yields by 1/(2Ncones*piR^2) offline
+
+      //Add the pT of all particles in each perp cone
+      if (TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) > 0.4) {
+        perp_cone_delpT1 += fPt; 
+      }
+      else{
+        perp_cone_delpT2 += fPt; 
+      }
+
 
       //
       // --------------------------------------------------------------
@@ -2436,7 +2600,75 @@ void AliAnalysisTaskJetHadroAOD::FindJetsEMC()
         }*/
       }
     } //end inc track loop for perp cones
+    perp_cone_delpT1 -= fjetRhoVal*TMath::Pi()*0.4*0.4;
+    perp_cone_delpT2 -= fjetRhoVal*TMath::Pi()*0.4*0.4;
+
+    fHistPC_delPt1->Fill(perp_cone_delpT1);
+    fHistPC_delPt2->Fill(perp_cone_delpT2);
+
     fFilledUECone_Rec = kTRUE;
+
+    // 2nd Track loop for perp cone delta pT vs track pT - needed to check that anti-track bias doesn't bias the PC
+    for (Int_t itrack=0;itrack<event->GetNumberOfTracks();++itrack) {  
+      //
+      AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+      if (!track) continue;
+      //
+      // --------------------------------------------------------------
+      //      Get relevant track info and set cut bits
+      // --------------------------------------------------------------
+      //
+
+      Bool_t ifDefaultCuts = track->TestFilterBit(fAOD_FilterBits);
+      if (ifDefaultCuts != 1) continue;
+      //
+      SetCutBitsAndSomeTrackVariables(track);
+      if (TMath::Abs(fEta) > fEtaCut) continue;
+      GetExpecteds(track);
+              
+      Float_t mod_track_phi = track->Phi() + TMath::Pi();
+      //Check if the track is within the R=0.4 cone in eta, phi
+      dPhi1 = TMath::Abs(mod_track_phi - Axis1);
+      dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
+      dPhi2 = TMath::Abs(mod_track_phi - Axis2);
+      dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
+      dEta = leadJetEta - track->Eta();
+
+      if (fPt>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
+
+      //TPC-TOF Matching conditions: Use standard TPC tracks, then require kTIME and kTOFout
+      Bool_t fTOFout = kFALSE;
+      if ((track->GetStatus() & AliAODTrack::kTOFout) != 0) { //Track has the kTOFout flag
+      fTOFout = kTRUE;
+      }
+
+      //kTIME flag
+      Bool_t fTime = kFALSE;
+      if ((track->GetStatus() & AliAODTrack::kTIME) != 0) { //Track has the kTIME flag
+      fTime = kTRUE;
+      }
+
+      if ((TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) < 0.4) && ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut){
+        fHistPC_delpT_v_trackpT1->Fill(fPt, perp_cone_delpT1);
+      }
+
+      if ((TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) < 0.4) && ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut){
+        fHistPC_delpT_v_trackpT2->Fill(fPt, perp_cone_delpT2);
+      }
+
+      if ((TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) < 0.4) && ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && fTOFout && fTime && fFill_TOF){
+        fHistPC_delpT_v_trackpT_pi1->Fill(fPt,fNSigmasPiTOF,perp_cone_delpT1);
+        fHistPC_delpT_v_trackpT_ka1->Fill(fPt,fNSigmasKaTOF,perp_cone_delpT1);
+        fHistPC_delpT_v_trackpT_pr1->Fill(fPt,fNSigmasPrTOF,perp_cone_delpT1);
+      }
+
+      if ((TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) < 0.4) && ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && fTOFout && fTime && fFill_TOF){
+        fHistPC_delpT_v_trackpT_pi2->Fill(fPt,fNSigmasPiTOF,perp_cone_delpT2);
+        fHistPC_delpT_v_trackpT_ka2->Fill(fPt,fNSigmasKaTOF,perp_cone_delpT2);
+        fHistPC_delpT_v_trackpT_pr2->Fill(fPt,fNSigmasPrTOF,perp_cone_delpT2);
+      }
+    }
+    
   }//end perp cone if
 
   if (fFillJetsEMCBG || fFillJetsEMCBGConst){
@@ -3190,6 +3422,8 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
   AliVEvent *event=InputEvent();
   if (CountEmptyEvents()) return;
   fisGoodIncEvent = 1;
+
+  int total_num_ch_particles = 0;
   //
   // --------------------------------------------------------------
   //  Main track loop
@@ -3251,6 +3485,8 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
     Float_t comb_sig_pr = TMath::Sqrt(fNSigmasPrTPC * fNSigmasPrTPC + fNSigmasPrTOF * fNSigmasPrTOF);
 
     if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && TMath::Abs(fY) < fYCut){
+      total_num_ch_particles++;
+
       if (fFill_TPC) fHistIncTracks_dEdx->Fill(fTPCmom_choice,fTPCSignal,TMath::Abs(fEta_choice));
       if (fFillpTPC_pT) fHistIncTracks_moms->Fill(fPt,fPtot);
       if (fFillp_pT) fHistIncTracks_moms_p->Fill(fPt,fPVertex);
@@ -3409,6 +3645,8 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
     }
 
   }// end of track loop
+
+  fMult_histo->Fill(total_num_ch_particles);
 
 }
 //________________________________________________________________________
@@ -4380,6 +4618,7 @@ void AliAnalysisTaskJetHadroAOD::FillEmbJets()
 {
   //Parts from jet extractor task
   //
+
   if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the FillEmbJets ===== " << std::endl;
   AliTOFPIDResponse fTOFPIDResponse = fPIDResponse->GetTOFResponse();
 
@@ -4440,9 +4679,53 @@ void AliAnalysisTaskJetHadroAOD::FillEmbJets()
 
   fEmbJetContainer->ResetCurrentID();
 
+  if (fUseCouts) std::cout << "fAntiTrackBiasCut is " << fAntiTrackBiasCut << std::endl;
+
   for(auto jet_emb : fEmbJetContainer->accepted())
   {
 
+    //anti-track bias check
+    Bool_t pass_anti_track_bias = kTRUE;
+    jet_emb->SortConstituents();
+    if (embParticles) {
+      std::vector<int> pt_ordered_index = jet_emb->GetPtSortedTrackConstituentIndexes(fEmbJetContainer->GetParticleContainer()->GetArray());
+      for(Int_t i = 0; i < pt_ordered_index.size(); i++)
+      {
+        const AliVParticle* particle = jet_emb->Track(pt_ordered_index[i]);
+
+        AliAODTrack* trackReal = (AliAODTrack*)(particle);
+        if (trackReal==NULL) {
+          if (fUseCouts) std::cout << "Didn't have a emb track" << std::endl;
+          continue;
+        }
+
+        Int_t lab = TMath::Abs(trackReal->GetLabel());
+        Int_t imc=trackReal->GetLabel();
+
+        if(!trackReal || !trackReal->TestFilterBit(fAOD_FilterBits)) {
+          continue;
+        }
+
+        float test_pt = trackReal->Pt();
+
+        if (test_pt<0.15 || test_pt>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
+        if (TMath::Abs(trackReal->Eta()) > fEtaCut) continue;
+
+        if (imc==-1) { //A Pb-pb particle
+          if (test_pt > fAntiTrackBiasCut) {
+            if (fUseCouts) std::cout << "This jet has too high pT data particle. Does not pass anti-track bias. Skipping rest of loop." << std::endl;
+            pass_anti_track_bias = kFALSE;
+            break;
+          }
+          else {
+            if (fUseCouts) std::cout << "We know this jets highest pT pb-pb particle is below our anti-track bias level, so it passes the cut. Skipping rest of loop." << std::endl;
+            break;
+          }
+        } 
+      }
+    }
+
+    if (!(pass_anti_track_bias)) continue;
     fhasAcceptedEMCjet = 1;
     //if (jet_emb->Pt() < fTrackPt || jet_emb->Pt() > 1000.0 || TMath::Abs(jet_emb->Eta()) >= jetAbsEtaCut) continue; //this is not needed when using jetcontainer->accepted
     Float_t jet_embpt = jet_emb->Pt();
@@ -4550,6 +4833,10 @@ void AliAnalysisTaskJetHadroAOD::FillEmbJets()
       fHist_JERS_PbPbunid_truhyb->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
       fHist_JERS_PbPbunid_dethyb->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
 
+      fHist_PbPbunid_tru_v_hyb_v_track->Fill(jet_embptsub, matchedJetPt_Part, fPtMC);
+      fHist_PbPbunid_det_v_hyb_v_track->Fill(jet_embptsub, matchedJetPt_Det, fPtMC);
+
+      fHist_PbPbunid_det_v_data_v_track->Fill(jet_embptsub-matchedJetPt_Det, matchedJetPt_Det, fPtMC);
 
       if (isPbPbPart == kFALSE){
 
@@ -4603,24 +4890,44 @@ void AliAnalysisTaskJetHadroAOD::FillEmbJets()
         fHist_JERS_truhybPythia->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
         fHist_JERS_dethybPythia->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
 
+        fHist_Pythia_tru_v_hyb_v_track->Fill(jet_embptsub, matchedJetPt_Part, fPtMC);
+        fHist_Pythia_det_v_hyb_v_track->Fill(jet_embptsub, matchedJetPt_Det, fPtMC);
 
-        if (iPart==1) fHist_JERS_truPythia_pi->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
-        if (iPart==1) fHist_JERS_detPythia_pi->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+        fHist_Pythia_det_v_data_v_track->Fill(jet_embptsub-matchedJetPt_Det, matchedJetPt_Det, fPtMC);
 
-        if (iPart==1) fHist_JERS_truhybPythia_pi->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
-        if (iPart==1) fHist_JERS_dethybPythia_pi->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+        if (iPart==1) {
+          fHist_JERS_truPythia_pi->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+          fHist_JERS_detPythia_pi->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
 
-        if (iPart==2) fHist_JERS_truPythia_ka->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
-        if (iPart==2) fHist_JERS_detPythia_ka->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+          fHist_JERS_truhybPythia_pi->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+          fHist_JERS_dethybPythia_pi->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
 
-        if (iPart==2) fHist_JERS_truhybPythia_ka->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
-        if (iPart==2) fHist_JERS_dethybPythia_ka->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+          fHist_Pythia_tru_v_hyb_v_track_pi->Fill(jet_embptsub, matchedJetPt_Part, fPtMC);
+          fHist_Pythia_det_v_hyb_v_track_pi->Fill(jet_embptsub, matchedJetPt_Det, fPtMC);
 
-        if (iPart==3) fHist_JERS_truPythia_pr->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
-        if (iPart==3) fHist_JERS_detPythia_pr->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+        }
 
-        if (iPart==3) fHist_JERS_truhybPythia_pr->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
-        if (iPart==3) fHist_JERS_dethybPythia_pr->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+        if (iPart==2) {
+          fHist_JERS_truPythia_ka->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+          fHist_JERS_detPythia_ka->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+          fHist_JERS_truhybPythia_ka->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+          fHist_JERS_dethybPythia_ka->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+
+          fHist_Pythia_tru_v_hyb_v_track_ka->Fill(jet_embptsub, matchedJetPt_Part, fPtMC);
+          fHist_Pythia_det_v_hyb_v_track_ka->Fill(jet_embptsub, matchedJetPt_Det, fPtMC);
+        }
+        
+        if (iPart==3) {
+          fHist_JERS_truPythia_pr->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+          fHist_JERS_detPythia_pr->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+          fHist_JERS_truhybPythia_pr->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+          fHist_JERS_dethybPythia_pr->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+
+          fHist_Pythia_tru_v_hyb_v_track_pr->Fill(jet_embptsub, matchedJetPt_Part, fPtMC);
+          fHist_Pythia_det_v_hyb_v_track_pr->Fill(jet_embptsub, matchedJetPt_Det, fPtMC);
+        }
       }
 
 

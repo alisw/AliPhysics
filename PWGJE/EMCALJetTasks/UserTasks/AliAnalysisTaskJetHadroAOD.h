@@ -114,6 +114,7 @@ public:
   void   SetDoRapCut(const Bool_t ifRapCut = kFALSE)         {fDoRapCut         = ifRapCut;}
   void   SetEtaCut(const Double_t etacut = 100.0)         {fEtaCut         = etacut;}
   void   SetYCut(const Double_t ycut = 100.0)         {fYCut         = ycut;}
+  void   SetAntiTrackBiasCut(const Float_t antitrackbias = 100.0)         {fAntiTrackBiasCut        = antitrackbias;}
 
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
   void   SetFillIncTracks(const Bool_t ifIncTracks = kTRUE)           {fFillIncTracks       = ifIncTracks;}
@@ -281,6 +282,7 @@ private:
   Bool_t            fDoRapCut;            //employ rap cut or not
   Float_t           fEtaCut;              //cut on absolute eta
   Float_t           fYCut;              //cut on absolute y
+  Float_t           fAntiTrackBiasCut;  //cut for anti-track bias for embedding only
 
   Bool_t            fFillTreeMC;
 
@@ -522,6 +524,19 @@ private:
   TH2F             * fHistJet_pi_DCAxy;       //!<! histogram for Data DCAxy distributions pion v pT
   TH2F             * fHistJet_pr_DCAxy;       //!<! histogram for jet Data DCAxy distributions pion v pT
 
+  TH1F             * fHistPC_delPt1;        //!<! histogram for 1st PC cone delta pT
+  TH1F             * fHistPC_delPt2;        //!<! histogram for 2nd PC cone delta pT
+  TH2F             * fHistPC_delpT_v_trackpT1;        //!<! histogram for 1st PC cone delta pT vs track pT
+  TH2F             * fHistPC_delpT_v_trackpT2;        //!<! histogram for 2nd PC cone delta pT vs track pT
+  TH3F             * fHistPC_delpT_v_trackpT_pi1;        //!<! histogram for 1st PC cone delta pT vs track pT pi
+  TH3F             * fHistPC_delpT_v_trackpT_ka1;        //!<! histogram for 1st PC cone delta pT vs track pT ka
+  TH3F             * fHistPC_delpT_v_trackpT_pr1;        //!<! histogram for 1st PC cone delta pT vs track pT pr
+  TH3F             * fHistPC_delpT_v_trackpT_pi2;        //!<! histogram for 2nd PC cone delta pT vs track pT pi
+  TH3F             * fHistPC_delpT_v_trackpT_ka2;        //!<! histogram for 2nd PC cone delta pT vs track pT ka
+  TH3F             * fHistPC_delpT_v_trackpT_pr2;        //!<! histogram for 2nd PC cone delta pT vs track pT pr
+
+  TH1F             * fMult_histo;        //!<! histogram for charged particle multiplicity distribution
+
   TH2F             * fHistMCTruth_TrackEff_Den_pi;     //!<! histogram for MC Truth Level Tracking Efficiency Denominator pion v pT, eta
   TH2F             * fHistMCTruth_TrackEff_Den_ka;     //!<! histogram for MC Truth Level Tracking Efficiency Denominator kaon v pT, eta
   TH2F             * fHistMCTruth_TrackEff_Den_pr;     //!<! histogram for MC Truth Level Tracking Efficiency Denominator proton v pT, eta
@@ -595,6 +610,22 @@ private:
   TH3F             * fHist_JERS_dethybPythia_ka; //!<! fHist_JERS_dethybPythia_ka
   TH3F             * fHist_JERS_dethybPythia_pr; //!<! fHist_JERS_dethybPythia_pr
 
+  TH3F             * fHist_PbPbunid_tru_v_hyb_v_track; //!<! fHist_PbPbunid_tru_v_hyb_v_track
+  TH3F             * fHist_PbPbunid_det_v_hyb_v_track; //!<! fHist_PbPbunid_det_v_hyb_v_track
+
+  TH3F             * fHist_Pythia_tru_v_hyb_v_track; //!<! fHist_Pythia_tru_v_hyb_v_track
+  TH3F             * fHist_Pythia_det_v_hyb_v_track; //!<! fHist_Pythia_det_v_hyb_v_track
+
+  TH3F             * fHist_Pythia_tru_v_hyb_v_track_pi; //!<! fHist_Pythia_tru_v_hyb_v_track_pi
+  TH3F             * fHist_Pythia_det_v_hyb_v_track_pi; //!<! fHist_Pythia_det_v_hyb_v_track_pi
+  TH3F             * fHist_Pythia_tru_v_hyb_v_track_ka; //!<! fHist_Pythia_tru_v_hyb_v_track_ka
+  TH3F             * fHist_Pythia_det_v_hyb_v_track_ka; //!<! fHist_Pythia_det_v_hyb_v_track_ka
+  TH3F             * fHist_Pythia_tru_v_hyb_v_track_pr; //!<! fHist_Pythia_tru_v_hyb_v_track_pr
+  TH3F             * fHist_Pythia_det_v_hyb_v_track_pr; //!<! fHist_Pythia_det_v_hyb_v_track_pr
+
+  TH3F             * fHist_PbPbunid_det_v_data_v_track; //!<! fHist_PbPbunid_det_v_data_v_track
+  TH3F             * fHist_Pythia_det_v_data_v_track; //!<! fHist_Pythia_det_v_data_v_track
+
   TH1F             * fHist_PC_spectra_Pythia; //!<! fHist_PC_spectra_Pythia
   TH1F             * fHist_PC_spectra_Pythia_pi; //!<! fHist_PC_spectra_Pythia_pi
   TH1F             * fHist_PC_spectra_Pythia_ka; //!<! fHist_PC_spectra_Pythia_ka
@@ -617,7 +648,7 @@ private:
   AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
   AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 7);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 8);
 
 };
 
