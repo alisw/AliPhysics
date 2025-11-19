@@ -240,6 +240,7 @@ fptJetNoElectrons(0x0),
 fptExtendedJetNoElectrons(0x0),
 fAngJetNoElectrons(0x0),
 fDispJetNoElectrons(0x0),
+fZJetNoElectrons(0x0),
 fDeltaRMatchedJetsWithElectrons(0x0),
 fDeltaRElectrons(0x0),
 fTreeObservableTagging(0)
@@ -494,6 +495,7 @@ fptJetNoElectrons(0x0),
 fptExtendedJetNoElectrons(0x0),
 fAngJetNoElectrons(0x0),
 fDispJetNoElectrons(0x0),
+fZJetNoElectrons(0x0),
 fDeltaRMatchedJetsWithElectrons(0x0),
 fDeltaRElectrons(0x0),
 fTreeObservableTagging(0)
@@ -592,6 +594,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 								   0.5, 0.55, 0.6, 0.65, 0.7};
     Double_t bin_ptd[nbins_ptd + 1] = {0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
 									   0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+	Double_t bin_z[nbins_z + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 
+								   0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
     
     Double_t bin_ptauxiliary[nbins_ptauxiliary + 1] = {0.01,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,
         0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,
@@ -1089,13 +1093,16 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
     fDispJetNoElectrons = new TH3F("fDispJetNoElectrons", "fDispJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_ptd, bin_ptd);
 	fOutput -> Add(fDispJetNoElectrons);
+    
+	fZJetNoElectrons = new TH3F("fZJetNoElectrons", "fZJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_z, bin_z);
+	fOutput -> Add(fZJetNoElectrons);
 
 	// Electron-tagged jet matching quality
 	fDeltaRMatchedJetsWithElectrons = new TH2F("fDeltaRMatchedJetsWithElectrons", "fDeltaRMatchedJetsWithElectrons", 
 											  25, -2., 2., 25, 0., 1.0);
 	fOutput -> Add(fDeltaRMatchedJetsWithElectrons);
 
-	fDeltaRElectrons = new TH2F("fDeltaRElectrons", "fDeltaRElectrons", 50, -0.25, 0.25, 25, 0., 0.05);
+	fDeltaRElectrons = new TH2F("fDeltaRElectrons", "fDeltaRElectrons", 50, -0.25, 1.0, 25, 0., 0.05);
 	fOutput -> Add(fDeltaRElectrons);
     
 
@@ -1141,6 +1148,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[14] = "nTrueElectronsMC";
     fShapesVarNames[15] = "nTrueHFElecMC";
     fShapesVarNames[16] = "pdgOnlyOneTrueElectron";
+    fShapesVarNames[17] = "ptElecMatch";
     
     
     for(Int_t ivar=0; ivar < nbranches; ivar++){
@@ -1485,6 +1493,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 					fptExtendedJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted);
 					fAngJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseang);
 					fDispJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseptd);
+					fZJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, randomtagger -> Pt() / ptSubtracted);
 				}
             }
 				
@@ -1672,6 +1681,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             /* fShapesVar[10] = rhoVal; */
             /* fShapesVar[11] = rhoMassVal; */
             fShapesVar[8] = jetbase->Pt();
+            fShapesVar[17] = ptElecMatch;
             
 			// Only fill tree if electron candidate or MC electron is found, ignore soft jets
 			if ((nInclusiveElectrons > 0 || nTrueElectronsMC > 0) && ptSubtracted > 5.) {

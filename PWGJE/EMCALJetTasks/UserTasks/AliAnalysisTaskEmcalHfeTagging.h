@@ -162,10 +162,11 @@ protected:
 	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
 	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
 	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
+	static constexpr Int_t 				nbins_z = 20;			 // number of bins for momentum dispersion
 	static constexpr Int_t 				nbins_gsys = 6;			 // number of bins for angularity systematic
 	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
 	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
-    static constexpr Int_t 				nbranches = 17;		     // number of branches in output tree
+    static constexpr Int_t 				nbranches = 18;		     // number of branches in output tree
     static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
     static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
@@ -373,6 +374,7 @@ protected:
 	TH2F								*fptExtendedJetNoElectrons;
 	TH3F								*fAngJetNoElectrons;
 	TH3F								*fDispJetNoElectrons;
+	TH3F								*fZJetNoElectrons;
     
 	// Electron-tagged jets matching quality	
 	TH2F								*fDeltaRMatchedJetsWithElectrons;
