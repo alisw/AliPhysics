@@ -114,7 +114,7 @@ protected:
     Bool_t                              Run();
     Bool_t                              FillHistograms();
     
-    void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec);
+    void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec, AliVParticle* &onlyElec);
     void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec, Double_t &ptTrueHFElec);
     void                                GetWeightAndDecay(AliAODMCParticle *particle, Int_t &decay, Double_t &weight);
     Int_t                               GetNumberOfPairs(AliEmcalJet *jet,AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[],Int_t decay, Double_t weight);
@@ -138,6 +138,8 @@ protected:
 	Double_t 							AngularDifference(AliVParticle* jet1, AliVParticle* jet2);
 	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
 	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
+	AliEmcalJet*						GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Int_t trackbias);
+	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, AliVParticle* electron, Float_t &ElecMatchPt);
     
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent
