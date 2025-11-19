@@ -117,6 +117,8 @@ fMaxPtTPC(4.),
 fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
 fMinPtSemiInclusive(5.),
+fDistFactorUnbiasMatch(0.6),
+fDistFactorBiasMatch(1.5),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -367,6 +369,8 @@ fMaxPtTPC(4.),
 fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
 fMinPtSemiInclusive(5.),
+fDistFactorUnbiasMatch(0.6),
+fDistFactorBiasMatch(1.5),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -1582,7 +1586,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             	Float_t ptMatchSemi=-1, ptDMatchSemi=-1, massMatchSemi=-1, angulMatchSemi=-1;
 
 				for (int sibin = MaxPtBinForSemiInclusiveJet(jetbase, 0); sibin >= 0; sibin--) {
-					double distfac = (sibin == 0) ? 0.6 : 1.5;
+					double distfac = (sibin == 0) ? fDistFactorUnbiasMatch : fDistFactorBiasMatch;
 					jetpartlevel = GetJetMatchedWithLeadingTrackBias(jetbase, kMatched, distfac, sibin);
 
 					if (!jetpartlevel) continue;
@@ -1624,7 +1628,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             Float_t ptMatch=-1, ptDMatch=-1, massMatch=-1, angulMatch=-1, ElecPtMatch = -1;
             
             if (kMatched != 0 and veleccand != nullptr) {
-				jetpartlevelelectron = GetJetMatchedWithElectron(jetbase, kMatched, 1.5, veleccand, ElecPtMatch); 
+				jetpartlevelelectron = GetJetMatchedWithElectron(jetbase, kMatched, fDistFactorBiasMatch, veleccand, ElecPtMatch); 
 				if (jetpartlevelelectron) {
                 	ptMatch = jetpartlevelelectron -> Pt();
                 	ptDMatch = GetJetpTD(jetpartlevelelectron, kMatched);

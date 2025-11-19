@@ -108,6 +108,8 @@ public:
     void SetMinPtEMCal(Double_t d)                            { fMinPtEMCal = d;}
     void SetMaxPtEMCal(Double_t d)                            { fMaxPtEMCal = d;}
     void SetMinPtSemiInclusive(Double_t d)                    { fMinPtSemiInclusive = d;}
+    void SetDistFactorForUnbiasMatch(Double_t d)          	  { fDistFactorUnbiasMatch = d;}
+    void SetDistFactorForBiasMatch(Double_t d)          	  { fDistFactorBiasMatch = d;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -215,6 +217,8 @@ protected:
     Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
     Double_t                            fMaxPtEMCal;             // maximum pt for the EMCal analysis
     Double_t                            fMinPtSemiInclusive;     // minimum pt for constituent for semi-inclusive distributions
+    Double_t                            fDistFactorUnbiasMatch;  // angular distance factor on jet R for matching in unbias distributions
+    Double_t                            fDistFactorBiasMatch;    // angular distance factor on jet R for matching in biased distributions
     
     TH1F                                *fNeventV0;
     TH1F                                *fNeventT0;

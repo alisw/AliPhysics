@@ -7,7 +7,7 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
                                                        const char * ntracks,
                                                        const char * ntracksUS,
                                                        const char *ntracksPartLevel,
-                                                       const char * nclusters,
+                                                       const char * nclusters = "caloClusters",
                                                        const char * ntracksTrue,
                                                        const char *type,
                                                        const char *CentEst,
@@ -43,7 +43,9 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
                                                        Double_t MaxPtTPC = 4.,
                                                        Double_t MinPtEMCal = 4.,
                                                        Double_t MaxPtEMCal = 25.,
-                                                       Double_t MinPtSemiInclusive = 5.
+                                                       Double_t MinPtSemiInclusive = 5.,
+													   Double_t DistFactorUnbiasMatch = 0.6,
+													   Double_t DistFactorBiasMatch = 1.5,
                                                        ) {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -101,6 +103,8 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
     task->SetMinPtEMCal(MinPtEMCal);
     task->SetMaxPtEMCal(MaxPtEMCal);
     task->SetMinPtSemiInclusive(MinPtSemiInclusive);
+	task->SetDistFactorForUnbiasMatch(DistFactorUnbiasMatch);
+	task->SetDistFactorForBiasMatch(DistFactorBiasMatch);
     
     
     
