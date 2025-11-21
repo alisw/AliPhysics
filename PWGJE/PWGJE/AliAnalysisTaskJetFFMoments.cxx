@@ -173,6 +173,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fJetMatchedDistMax(0.3),
   fkUseJetFromInput(kFALSE),
   fNUsedJets(999),
+  fNUsedJetsBkg(1),
   fJetMinLTrackPt(-1),
   fJetMaxTrackPt(-1),
   fJetMinnTracks(0),
@@ -195,6 +196,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fkDoJetReco(kFALSE),
   fkUseBackgroundCalc(kFALSE),
   fRparam(0.4),
+  fBkgRparam(0.2),
   fAlgorithm(fastjet::antikt_algorithm),
   fBkgAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -375,6 +377,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fJetMatchedDistMax(0.3),
   fkUseJetFromInput(kFALSE),
   fNUsedJets(999),
+  fNUsedJetsBkg(1),
   fJetMinLTrackPt(-1),
   fJetMaxTrackPt(-1),
   fJetMinnTracks(0),
@@ -397,6 +400,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fkDoJetReco(kFALSE),
   fkUseBackgroundCalc(kFALSE),
   fRparam(0.4),
+  fBkgRparam(0.2),
   fAlgorithm(fastjet::antikt_algorithm),
   fBkgAlgorithm(fastjet::kt_algorithm),
   fStrategy(fastjet::Best),
@@ -921,7 +925,7 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
   // create what we need for the clustering and the background estimation and subtraction
   //----------------------------------------------------------
   fastjet::JetDefinition jet_def(fAlgorithm, fRparam, fRecombScheme, fStrategy);
-  fastjet::JetDefinition jet_def_for_rho(fBkgAlgorithm, fRparam,fRecombScheme, fStrategy);
+  fastjet::JetDefinition jet_def_for_rho(fBkgAlgorithm, fBkgRparam,fRecombScheme, fStrategy);
   fastjet::GhostedAreaSpec ghostSpec(fGhostEtaMax, fActiveAreaRepeats, fGhostArea);
   fastjet::AreaDefinition area_def = fastjet::AreaDefinition(fAreaType,ghostSpec);
   // NB explicit ghosts do not work for moments with N < 0 with FastJet versions < 3.1  
@@ -1156,9 +1160,20 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
 
         Double_t jetBkgPtRec = 0;
         Double_t jetBkgPtGen = 0;
-         if(ijet == 0 && fFFBckgMode) {
-           GetTracksTiltedwrpJetAxis(TMath::Pi()/2., &ParticleList[0],0x0,uGenJet,fRparam,jetBkgPtGen);
-           GetTracksTiltedwrpJetAxis(TMath::Pi()/2., &ParticleList[1],0x0,uRecJet,fRparam,jetBkgPtRec);
+         if(ijet < fNUsedJetsBkg && fFFBckgMode) {
+           if(fFFBckgMode<=2) GetTracksTiltedwrpJetAxis(TMath::Pi()/2., &ParticleList[0],0x0,uGenJet,fRparam,jetBkgPtGen);
+           if(fFFBckgMode<=2) GetTracksTiltedwrpJetAxis(TMath::Pi()/2., &ParticleList[1],0x0,uRecJet,fRparam,jetBkgPtRec);
+           
+           if(fFFBckgMode==3) {
+             fastjet::PseudoJet pseudoJetuGenJetUE;
+             int retGenUE = AliAODJetToPseudoJet(uGenJet, pseudoJetuGenJetUE);
+             if(!retGenUE) jetBkgPtGen = bge->rho(pseudoJetuGenJetUE)*pseudoJetuGenJetUE.area();
+
+             fastjet::PseudoJet pseudoJetuRecJetUE;
+             int retRecUE = AliAODJetToPseudoJet(uRecJet, pseudoJetuRecJetUE);
+             if(!retRecUE) jetBkgPtRec = bge->rho(pseudoJetuRecJetUE)*pseudoJetuRecJetUE.area();
+           }
+
            fh2MatchedJetsUE[0]->Fill(uGenJet->Pt(),jetBkgPtGen);
            fh2MatchedJetsUE[iJetBranch]->Fill(uRecJet->Pt(),jetBkgPtRec);
           }

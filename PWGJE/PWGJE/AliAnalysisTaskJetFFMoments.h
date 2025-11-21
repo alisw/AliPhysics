@@ -135,7 +135,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   void SetJetMatchingParams(Float_t x, Double_t f, Bool_t hm = kFALSE)  
       {fkDoJetMatching=kTRUE; fkFillMismatchHisto=hm; fJetMatchingFractionMin = x;fJetMatchedDistMax = f;} // Set jet matching parameters
   void SetUseAODInputJets(Bool_t b)                    {fkUseJetFromInput = b;}                            // Set Read jets from Input
-  void SetNUsedJets(Int_t f)                           {fNUsedJets = f;}                                   // Set number of used jet
+  void SetNUsedJets(Int_t f, Int_t b = 1)              {fNUsedJets = f;fNUsedJetsBkg = b;}                 // Set number of used (bkg) jet
   void SetUseTrackPtSumAsJetPt(Bool_t b)               {fkUseTrackPtSumAsJetPt =b;}                        // Use Track Pt Sum As Jet Pt
   void SetGenJetType(Bool_t f=0)                       {fkGenJetType = f;}                                 // Set Gen Jet type (0 = gen , 1 = rec)
   void SetEffJetType(Bool_t f=0)                       {fkEffJetType = f;}                                 // Set Eff Jet type (0 = gen , 1 = rec)
@@ -205,7 +205,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   // For jet reco
   void SetDoJetReco( Bool_t c = kFALSE)                {fkDoJetReco = c;}                                // Do jet reconstruction in this code (kTRUE) or read existing jet branch 
   void SetBackgroundCalc(Bool_t b)                     {fkUseBackgroundCalc = b;}                        // - 
-  void SetRparam(Double_t f)                           {fRparam = f;}                                    // Set jet radius
+  void SetRparam(Double_t f, Double_t b = 0.2)         {fRparam = f; fBkgRparam = b;}                    // Set jet (bkg) radius
   void SetAlgorithm(int f)                             {fAlgorithm = (fastjet::JetAlgorithm) f;}         // fj
   void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}                                 // fj
   void SetBkgAlgorithm(int f)                          {fBkgAlgorithm = (fastjet::JetAlgorithm) f;}      // fj
@@ -355,6 +355,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Double_t           fJetMatchedDistMax;     	    // Maximum distance in eta-phi space for matching
   Bool_t             fkUseJetFromInput;             // Read jets from input
   Int_t              fNUsedJets;                    // Number of jets used
+  Int_t              fNUsedJetsBkg;                 // Number of bkg jets used
   Float_t        fJetMinLTrackPt;   // Reject jets with leading track with pt smaller than this value
   Float_t        fJetMaxTrackPt;    // Reject jets containing any track with pt larger than this value
   Int_t            fJetMinnTracks;    // Reject jets with less tracks than this value
@@ -393,6 +394,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Bool_t                        fkDoJetReco;                   // Do jet reco in this code (kTRUE) or read jet input branch (kFALSE)
   Bool_t 	                  fkUseBackgroundCalc;	       // jet background subtraction 
   Double_t 			  fRparam;		       // fastjet distance parameter
+  Double_t                        fBkgRparam;                  // fastjet distance parameter (bkg)
   fastjet::JetAlgorithm   	  fAlgorithm;		       // fastjet::antikt_algorithm
   fastjet::JetAlgorithm   	  fBkgAlgorithm;	       // fastjet::kt_algorithm
   fastjet::Strategy 		  fStrategy;		       // fastjet::Best;
