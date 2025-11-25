@@ -236,6 +236,9 @@ protected:
     TH2F                                *fEtaJet;
     TH2F                                *fEtaPhiJet;
     TH2F                                *fAreaJet;
+    TH2F                                *fNumberOfConstituentsNoTag;
+    TH2F                                *fNumberOfConstituentsInclElecTag;
+    TH2F                                *fNumberOfConstituentsPhotElecTag;
     TH2F                                *fJetProbDensityDetPart;
     TH2F                                *fJetProbDensityPartDet;
     TH2F                                *fNbOfConstvspT;

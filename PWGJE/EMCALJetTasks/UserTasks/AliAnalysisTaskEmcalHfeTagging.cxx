@@ -134,6 +134,9 @@ fPhiJet(0x0),
 fEtaJet(0x0),
 fEtaPhiJet(0x0),
 fAreaJet(0x0),
+fNumberOfConstituentsNoTag(0x0),
+fNumberOfConstituentsInclElecTag(0x0),
+fNumberOfConstituentsPhotElecTag(0x0),
 fJetProbDensityDetPart(0x0),
 fJetProbDensityPartDet(0x0),
 fNbOfConstvspT(0x0),
@@ -389,6 +392,9 @@ fPhiJet(0x0),
 fEtaJet(0x0),
 fEtaPhiJet(0x0),
 fAreaJet(0x0),
+fNumberOfConstituentsNoTag(0x0),
+fNumberOfConstituentsInclElecTag(0x0),
+fNumberOfConstituentsPhotElecTag(0x0),
 fJetProbDensityDetPart(0x0),
 fJetProbDensityPartDet(0x0),
 fNbOfConstvspT(0x0),
@@ -664,6 +670,15 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fAreaJet= new TH2F("fAreaJet", "fAreaJet", 100, 0, 200, 100, 0,1.5);
     fOutput->Add(fAreaJet);
+    
+	fNumberOfConstituentsNoTag = new TH2F("fNumberOfConstituentsNoTag", "fNumberOfConstituentsNoTag", 24, 0, 120, 26, 0, 25);
+    fOutput->Add(fNumberOfConstituentsNoTag);
+	
+	fNumberOfConstituentsInclElecTag = new TH2F("fNumberOfConstituentsInclElecTag", "fNumberOfConstituentsInclElecTag", 24, 0, 120, 26, 0, 25);
+    fOutput->Add(fNumberOfConstituentsInclElecTag);
+	
+	fNumberOfConstituentsPhotElecTag = new TH2F("fNumberOfConstituentsPhotElecTag", "fNumberOfConstituentsPhotElecTag", 24, 0, 120, 26, 0, 25);
+    fOutput->Add(fNumberOfConstituentsPhotElecTag);
     
     fJetProbDensityDetPart=new TH2F("fJetProbDensityDetPart", "fJetProbDensityDetPart",100,-2,2,100, 0,200);
     fOutput->Add(fJetProbDensityDetPart);
@@ -1462,11 +1477,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			fAngChargPart->Fill(ptSubtracted, jetbaseang);
             fDispChargPart->Fill(ptSubtracted, jetbaseptd);
 
+			fNumberOfConstituentsNoTag -> Fill(ptSubtracted, jetbase -> GetNumberOfConstituents());
+
             fShapesVar[1] = ptSubtracted;
             fShapesVar[2] = jetbaseptd;
             /* fShapesVar[3] = GetJetMass(jetbase, 0); */
             fShapesVar[3] = jetbaseang;
-            
+
 			Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC= 0, nTrueHFElecMC= 0;
             Double_t pElec = 0., ptElec = 0.;
             Bool_t hasElectrons = kFALSE;
@@ -1478,6 +1495,12 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             if (nInclusiveElectrons == 1) {
                 fAngIncElec -> Fill(ptSubtracted, jetbaseang);
                 fDispIncElec -> Fill(ptSubtracted, jetbaseptd);
+				
+				fNumberOfConstituentsInclElecTag -> Fill(ptSubtracted, jetbase -> GetNumberOfConstituents());
+
+				if (nPhotonicElectrons == 1) {
+					fNumberOfConstituentsPhotElecTag -> Fill(ptSubtracted, jetbase -> GetNumberOfConstituents());
+				}
             }
             
             if (!hasElectrons) {
