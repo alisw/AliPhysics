@@ -1453,7 +1453,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             }
             
 			// Pt subtraction procedure
-            Double_t ptSubtracted = 0., jetbaseang = -1., jetbaseptd = -1.;
+            Double_t ptSubtracted = -1., jetbaseang = -1., jetbaseptd = -1.;
             if (fJetShapeSub == kConstSub) { 
 				ptSubtracted = jetbase -> Pt();
 
@@ -1484,8 +1484,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             /* fShapesVar[3] = GetJetMass(jetbase, 0); */
             fShapesVar[3] = jetbaseang;
 
-			Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC= 0, nTrueHFElecMC= 0;
-            Double_t pElec = 0., ptElec = 0.;
+			Int_t nInclusiveElectrons = -1, nPhotonicElectrons = -1, nTrueElectronsMC= -1, nTrueHFElecMC= -1;
+            Double_t pElec = -1., ptElec = -1.;
             Bool_t hasElectrons = kFALSE;
 			AliVParticle* veleccand = nullptr;
             
@@ -1553,7 +1553,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 
 				    pdgCode = mcparticle -> PdgCode();
                     
-                    if (TMath::Abs(pdgCode)==11) {
+                    if (TMath::Abs(pdgCode) == 11) {
 				    	elecCounter++;
 
 				    	if (nTrueElectronsMC == 1) {
@@ -1706,8 +1706,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             fShapesVar[8] = jetbase->Pt();
             fShapesVar[17] = ptElecMatch;
             
-			// Only fill tree if electron candidate or MC electron is found, ignore soft jets
-			if ((nInclusiveElectrons > 0 || nTrueElectronsMC > 0) && ptSubtracted > 5.) {
+			// Only fill tree if electron candidate or MC electron is found, don't ignore soft jets (for MC RM)
+			if (nInclusiveElectrons > 0 || nTrueElectronsMC > 0) {
             	fTreeObservableTagging->Fill();
 			}
         }//jet loop
