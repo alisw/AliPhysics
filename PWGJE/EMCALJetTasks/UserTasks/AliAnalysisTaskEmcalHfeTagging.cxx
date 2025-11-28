@@ -244,8 +244,9 @@ fptExtendedJetNoElectrons(0x0),
 fAngJetNoElectrons(0x0),
 fDispJetNoElectrons(0x0),
 fZJetNoElectrons(0x0),
+fAxisDistJetNoElectrons(0x0),
 fDeltaRMatchedJetsWithElectrons(0x0),
-fDeltaRElectrons(0x0),
+fDeltaRMatchedElectrons(0x0),
 fTreeObservableTagging(0)
 {
 	// Output tree
@@ -502,8 +503,9 @@ fptExtendedJetNoElectrons(0x0),
 fAngJetNoElectrons(0x0),
 fDispJetNoElectrons(0x0),
 fZJetNoElectrons(0x0),
+fAxisDistJetNoElectrons(0x0),
 fDeltaRMatchedJetsWithElectrons(0x0),
-fDeltaRElectrons(0x0),
+fDeltaRMatchedElectrons(0x0),
 fTreeObservableTagging(0)
 {
     // Standard constructor.
@@ -602,6 +604,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 									   0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
 	Double_t bin_z[nbins_z + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 
 								   0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+	Double_t bin_axisd[nbins_axisd + 1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 
+										   0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
     
     Double_t bin_ptauxiliary[nbins_ptauxiliary + 1] = {0.01,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,
         0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,
@@ -1111,14 +1115,18 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
 	fZJetNoElectrons = new TH3F("fZJetNoElectrons", "fZJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_z, bin_z);
 	fOutput -> Add(fZJetNoElectrons);
+	
+	fAxisDistJetNoElectrons = new TH3F("fAxisDistJetNoElectrons", "fAxisDistJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, 
+					                   bin_jetpt, nbins_axisd, bin_axisd);
+	fOutput -> Add(fAxisDistJetNoElectrons);
 
 	// Electron-tagged jet matching quality
 	fDeltaRMatchedJetsWithElectrons = new TH2F("fDeltaRMatchedJetsWithElectrons", "fDeltaRMatchedJetsWithElectrons", 
 											  25, -2., 2., 25, 0., 1.0);
 	fOutput -> Add(fDeltaRMatchedJetsWithElectrons);
 
-	fDeltaRElectrons = new TH2F("fDeltaRElectrons", "fDeltaRElectrons", 50, -0.25, 1.0, 25, 0., 0.05);
-	fOutput -> Add(fDeltaRElectrons);
+	fDeltaRMatchedElectrons = new TH2F("fDeltaRMatchedElectrons", "fDeltaRMatchedElectrons", 50, -0.25, 1.0, 25, 0., 0.05);
+	fOutput -> Add(fDeltaRMatchedElectrons);
     
 
     // =========== Switch on Sumw2 for all histos ===========
@@ -1164,6 +1172,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[15] = "nTrueHFElecMC";
     fShapesVarNames[16] = "pdgOnlyOneTrueElectron";
     fShapesVarNames[17] = "ptElecMatch";
+    fShapesVarNames[18] = "JetElectronDist";
+    fShapesVarNames[19] = "JetElectronDistMatched";
     
     
     for(Int_t ivar=0; ivar < nbranches; ivar++){
@@ -1485,7 +1495,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             fShapesVar[3] = jetbaseang;
 
 			Int_t nInclusiveElectrons = -1, nPhotonicElectrons = -1, nTrueElectronsMC= -1, nTrueHFElecMC= -1;
-            Double_t pElec = -1., ptElec = -1.;
+            Double_t pElec = -1., ptElec = -1., axisdist = -1.;
             Bool_t hasElectrons = kFALSE;
 			AliVParticle* veleccand = nullptr;
             
@@ -1502,6 +1512,10 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 					fNumberOfConstituentsPhotElecTag -> Fill(ptSubtracted, jetbase -> GetNumberOfConstituents());
 				}
             }
+
+			if (veleccand) {
+				axisdist = AngularDifference(jetbase, veleccand) / jetCont -> GetJetRadius();
+			}
             
             if (!hasElectrons) {
                 fptJetHadron -> Fill(ptSubtracted);
@@ -1517,6 +1531,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 					fAngJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseang);
 					fDispJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseptd);
 					fZJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, randomtagger -> Pt() / ptSubtracted);
+					fAxisDistJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, AngularDifference(jetbase, randomtagger));
 				}
             }
 				
@@ -1577,6 +1592,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             fShapesVar[14] = nTrueElectronsMC;
             fShapesVar[15] = nTrueHFElecMC;
             fShapesVar[16] = pdgMother;
+            fShapesVar[18] = axisdist;
 
 			// Do jet matching and fill RM at the end
 			// Jet matching
@@ -1668,7 +1684,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			}
 
            	// Matching for electron-tagged jets 
-            Float_t ptMatch=-1, ptDMatch=-1, massMatch=-1, angulMatch=-1, ptElecMatch = -1;
+            Float_t ptMatch=-1, ptDMatch=-1, massMatch=-1, angulMatch=-1, ptElecMatch = -1, axisdistMatch = -1;
 			AliVParticle* velecmc = nullptr;
             
             if (kMatched != 0 and veleccand != nullptr) {
@@ -1690,9 +1706,13 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 					ptElecMatch = velecmc -> Pt();
 					double releptdiff = (ptElecMatch - ptElec) / ptElecMatch;
 					double angularedist = AngularDifference(veleccand, velecmc);
-					fDeltaRElectrons -> Fill(releptdiff, angularedist);
+					fDeltaRMatchedElectrons -> Fill(releptdiff, angularedist);
 				} else {
-					fDeltaRElectrons -> Fill(-99, -99);
+					fDeltaRMatchedElectrons -> Fill(-99, -99);
+				}
+
+				if (jetpartlevelelectron && velecmc) {
+					axisdistMatch = AngularDifference(jetpartlevelelectron, velecmc) / jetCont -> GetJetRadius();
 				}
             }
             
@@ -1705,6 +1725,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             /* fShapesVar[11] = rhoMassVal; */
             fShapesVar[8] = jetbase->Pt();
             fShapesVar[17] = ptElecMatch;
+            fShapesVar[19] = axisdistMatch;
             
 			// Only fill tree if electron candidate or MC electron is found, don't ignore soft jets (for MC RM)
 			if (nInclusiveElectrons > 0 || nTrueElectronsMC > 0) {
