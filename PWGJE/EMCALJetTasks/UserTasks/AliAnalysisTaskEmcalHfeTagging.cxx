@@ -617,16 +617,16 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	Double_t bin_extendedjetpt[25] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 
 			                          65., 70., 75., 80., 85., 90., 95., 100., 105., 110., 115., 120.};
     
-	Int_t nbin_jetptRM[2] = {24, 24};
-	Double_t max_jetptRM[2] = {120., 120};
+	Int_t nbin_jetptRM[2] = {30, 30};
+	Double_t max_jetptRM[2] = {150., 150};
    	Double_t min_jetptRM[2] = {0., 0.};
 
-	Int_t nbin_gRM[4] = {24, 24, 20, 20};
-	Double_t max_gRM[4] = {120., 120., 1., 1.};
+	Int_t nbin_gRM[4] = {30, 30, 20, 20};
+	Double_t max_gRM[4] = {150., 150., 1., 1.};
 	Double_t min_gRM[4] = {0., 0., 0., 0.};
 	
-	Int_t nbin_ptdRM[4] = {24, 24, 20, 20};
-	Double_t max_ptdRM[4] = {120., 120., 1., 1.};
+	Int_t nbin_ptdRM[4] = {30, 30, 20, 20};
+	Double_t max_ptdRM[4] = {150., 150., 1., 1.};
 	Double_t min_ptdRM[4] = {0., 0., 0., 0.};
 
 
@@ -1531,7 +1531,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 					fAngJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseang);
 					fDispJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, jetbaseptd);
 					fZJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, randomtagger -> Pt() / ptSubtracted);
-					fAxisDistJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, AngularDifference(jetbase, randomtagger));
+					fAxisDistJetNoElectrons -> Fill(randomtagger -> Pt(), ptSubtracted, 
+									                AngularDifference(jetbase, randomtagger) / jetCont -> GetJetRadius());
 				}
             }
 				
