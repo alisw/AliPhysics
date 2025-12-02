@@ -108,13 +108,15 @@ public:
     void SetMinPtEMCal(Double_t d)                            { fMinPtEMCal = d;}
     void SetMaxPtEMCal(Double_t d)                            { fMaxPtEMCal = d;}
     void SetMinPtSemiInclusive(Double_t d)                    { fMinPtSemiInclusive = d;}
+    void SetDistFactorForUnbiasMatch(Double_t d)          	  { fDistFactorUnbiasMatch = d;}
+    void SetDistFactorForBiasMatch(Double_t d)          	  { fDistFactorBiasMatch = d;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
     Bool_t                              Run();
     Bool_t                              FillHistograms();
     
-    void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec);
+    void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec, AliVParticle* &onlyElec);
     void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec, Double_t &ptTrueHFElec);
     void                                GetWeightAndDecay(AliAODMCParticle *particle, Int_t &decay, Double_t &weight);
     Int_t                               GetNumberOfPairs(AliEmcalJet *jet,AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[],Int_t decay, Double_t weight);
@@ -138,6 +140,8 @@ protected:
 	Double_t 							AngularDifference(AliVParticle* jet1, AliVParticle* jet2);
 	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
 	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
+	AliEmcalJet*						GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Int_t trackbias);
+	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, AliVParticle* electron, AliVParticle* &matchedElectron);
     
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent
@@ -158,10 +162,12 @@ protected:
 	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
 	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
 	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
+	static constexpr Int_t 				nbins_z = 20;			 // number of bins for fragmentation function
+	static constexpr Int_t 				nbins_axisd = 20;	   	 // number of bins for jet axis distance
 	static constexpr Int_t 				nbins_gsys = 6;			 // number of bins for angularity systematic
 	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
 	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
-    static constexpr Int_t 				nbranches = 17;		     // number of branches in output tree
+    static constexpr Int_t 				nbranches = 20;		     // number of branches in output tree
     static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
     static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
@@ -213,6 +219,8 @@ protected:
     Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
     Double_t                            fMaxPtEMCal;             // maximum pt for the EMCal analysis
     Double_t                            fMinPtSemiInclusive;     // minimum pt for constituent for semi-inclusive distributions
+    Double_t                            fDistFactorUnbiasMatch;  // angular distance factor on jet R for matching in unbias distributions
+    Double_t                            fDistFactorBiasMatch;    // angular distance factor on jet R for matching in biased distributions
     
     TH1F                                *fNeventV0;
     TH1F                                *fNeventT0;
@@ -229,6 +237,9 @@ protected:
     TH2F                                *fEtaJet;
     TH2F                                *fEtaPhiJet;
     TH2F                                *fAreaJet;
+    TH2F                                *fNumberOfConstituentsNoTag;
+    TH2F                                *fNumberOfConstituentsInclElecTag;
+    TH2F                                *fNumberOfConstituentsPhotElecTag;
     TH2F                                *fJetProbDensityDetPart;
     TH2F                                *fJetProbDensityPartDet;
     TH2F                                *fNbOfConstvspT;
@@ -367,7 +378,13 @@ protected:
 	TH2F								*fptExtendedJetNoElectrons;
 	TH3F								*fAngJetNoElectrons;
 	TH3F								*fDispJetNoElectrons;
+	TH3F								*fZJetNoElectrons;
+	TH3F								*fAxisDistJetNoElectrons;
     
+	// Electron-tagged jets matching quality	
+	TH2F								*fDeltaRMatchedJetsWithElectrons;
+	TH2F								*fDeltaRMatchedElectrons;
+
 	TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
 
