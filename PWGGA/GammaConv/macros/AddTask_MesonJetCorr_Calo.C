@@ -319,9 +319,9 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("00010103", "4117900090eg0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   // Next trainConfig should be 86!!
   } else if (trainConfig == 86) {
-    cuts.AddCutCalo("00010103", "411790009fe00200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("00010103", "411790009fej0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig >= 87 && trainConfig <= 89) { // same as 80 but no TM
-    cuts.AddCutCalo("00010103", "4117900090e00200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("00010103", "4117900090ej0200000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   
 
   //---------------------------------------

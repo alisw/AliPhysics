@@ -382,7 +382,7 @@ void AliAnalysisTaskGammaJetsPureMC::UserCreateOutputObjects(){
 
 
   std::vector<double> vecParticleSpec;
-  for(int i = 0; i < 18; ++i){
+  for(int i = 0; i < GetParticleIndex(-1, -1) + 2; ++i){
     vecParticleSpec.push_back(i-0.5);
   }
   fHistJetPtPartPtVsPart = new TH3F("JetPtPartPtVsPart", "JetPtPartPtVsPart", vecParticleSpec.size()-1, vecParticleSpec.data(), vecPartPt.size()-1, vecPartPt.data(), vecJetPt.size()-1, vecJetPt.data());
@@ -682,7 +682,9 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
     AliVParticle* particle     = nullptr;
     particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
-    if(!particle->IsPhysicalPrimary()) continue; // Only consider primary particles
+    bool isNeutralMeson = false;
+    if(particle->PdgCode() == 111 || particle->PdgCode() == 221) isNeutralMeson = true;
+    if(!(particle->IsPhysicalPrimary() || isNeutralMeson)) continue; // Only consider primary particles
     if(std::abs(particle->Eta()) > 1.0) continue;
     int jetindex = -1;
     double minR = 10000;
@@ -698,20 +700,20 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
     }
     double jetPt = jetindex == -1 ? 0 : fVecJets_Std[jetindex].pt();
 
-    
-    fHistPrimaryParticles->Fill(particle->Pt());
+    if(particle->IsPhysicalPrimary()){
+      fHistPrimaryParticles->Fill(particle->Pt());
 
-    arrEnergyFracPart[0]+=particle->Pt();
-    if(jetindex>=0) vecArrEnergyFracPart[jetindex][0]+=particle->Pt();
-    int indexParticle = 0;
-    int pdg = std::abs(particle->PdgCode());
-    bool isNonMeas = IsNonMeasureable(pdg, particle->Charge());
-    if(isNonMeas) indexParticle = 1;
-    else if(particle->Charge() != 0) indexParticle = 2;
-    else indexParticle = 3;
-    arrEnergyFracPart[indexParticle] += particle->Pt();
-    if(jetindex>=0) vecArrEnergyFracPart[jetindex][indexParticle]+=particle->Pt();
-
+      arrEnergyFracPart[0]+=particle->Pt();
+      if(jetindex>=0) vecArrEnergyFracPart[jetindex][0]+=particle->Pt();
+      int indexParticle = 0;
+      int pdg = std::abs(particle->PdgCode());
+      bool isNonMeas = IsNonMeasureable(pdg, particle->Charge());
+      if(isNonMeas) indexParticle = 1;
+      else if(particle->Charge() != 0) indexParticle = 2;
+      else indexParticle = 3;
+      arrEnergyFracPart[indexParticle] += particle->Pt();
+      if(jetindex>=0) vecArrEnergyFracPart[jetindex][indexParticle]+=particle->Pt();
+    }
 
     int iMother = particle->GetMother();
     auto particleMother                    = (AliVParticle *)fMCEvent->GetTrack(iMother);
@@ -725,7 +727,7 @@ void AliAnalysisTaskGammaJetsPureMC::ProcessJets(){
     fHistJetPtPartPtVsPart->Fill(partIndex, particle->Pt(), jetPt);
     if(jetPt > 0)fHistJetPtPartFragVsPart->Fill(partIndex, particle->Pt()/jetPt, jetPt);
 
-    if(jetindex >= 0){
+    if(jetindex >= 0 && particle->IsPhysicalPrimary()){
       if(particle->P() > vecLeadingE[jetindex]){
         vecLeadingPDG[jetindex] = particle->PdgCode();
         vecLeadingMotherPDG[jetindex] = pdgMother;
@@ -837,9 +839,17 @@ int AliAnalysisTaskGammaJetsPureMC::GetParticleIndex(const int pdgcode, const in
     return 14;
   } else if(pdgcode == 12 || pdgcode == 14 || pdgcode == 16 ){ // Neutrinos
     return 15;
-  
+  } else if (pdgcode == 111){
+    if(motherpdg == 3122 || motherpdg == 310 || motherpdg == 130){
+      return 17;
+    }
+    else{
+      return 16;
+    }
+  } else if (pdgcode == 221){
+    return 18;  
   }
-  return 16;
+  return 19;
 }
 
 
