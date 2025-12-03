@@ -77,6 +77,10 @@ class AliAnalysisTaskGammaJetsPureMC : public AliAnalysisTaskSE {
     void SetParticlesMeas(TString strPart);
     bool IsNonMeasureable(int pdgCode, int charge) const;
     void SetJetEnergyShift(double shift) { fDoJetEnergyShift = true; fJetEnergyShift = shift; }
+    void SetJetR(double R) { fJetRadius = R; }
+    void SetJetEtaAcc(double eta) { fJetAccEta = eta; }
+    void SetEtaAccPartPtSpec(double eta) { fJetParticleAcc = eta; }
+    void SetEtaAccPartFF(double eta) { fJetParticleAccFF = eta; }
     
 
   protected:
