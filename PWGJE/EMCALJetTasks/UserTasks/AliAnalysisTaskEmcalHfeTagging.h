@@ -110,6 +110,7 @@ public:
     void SetMinPtSemiInclusive(Double_t d)                    { fMinPtSemiInclusive = d;}
     void SetDistFactorForUnbiasMatch(Double_t d)          	  { fDistFactorUnbiasMatch = d;}
     void SetDistFactorForBiasMatch(Double_t d)          	  { fDistFactorBiasMatch = d;}
+    void SetSharedPtFractionForMatch(Double_t d)          	  { fMinPtFractionMatch = d;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -140,8 +141,8 @@ protected:
 	Double_t 							AngularDifference(AliVParticle* jet1, AliVParticle* jet2);
 	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
 	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
-	AliEmcalJet*						GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Int_t trackbias);
-	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, AliVParticle* electron, AliVParticle* &matchedElectron);
+	AliEmcalJet*						GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Double_t ptfraction, Int_t trackbias);
+	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor,  Double_t ptfraction, AliVParticle* electron, AliVParticle* &matchedElectron);
     
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent
@@ -212,8 +213,8 @@ protected:
     Double_t                            fMinEoPcut;              // minimum value of the E/p cut
     Double_t                            fMaxEoPcut;              // maximum value of the E/p cut
     Double_t                            fM20cut;                 // maximum value of the M20 cut
-    Double_t                            fMinM02cut;                 // minimum value of the M02 cut
-    Double_t                            fMaxM02cut;                 // maximum value of the M02 cut
+    Double_t                            fMinM02cut;              // minimum value of the M02 cut
+    Double_t                            fMaxM02cut;              // maximum value of the M02 cut
     Double_t                            fMinPtTPC;               // minimum pt for the TPC analysis
     Double_t                            fMaxPtTPC;               // maximum pt for the TPC analysis
     Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
@@ -221,6 +222,7 @@ protected:
     Double_t                            fMinPtSemiInclusive;     // minimum pt for constituent for semi-inclusive distributions
     Double_t                            fDistFactorUnbiasMatch;  // angular distance factor on jet R for matching in unbias distributions
     Double_t                            fDistFactorBiasMatch;    // angular distance factor on jet R for matching in biased distributions
+    Double_t                            fMinPtFractionMatch;     // minimum shared pt fraction in jet matching 
     
     TH1F                                *fNeventV0;
     TH1F                                *fNeventT0;
