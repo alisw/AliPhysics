@@ -4089,20 +4089,20 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         // Fill the feed-down histograms
         if(bV0MCIsLambda) {
           if(bV0MCComesFromXi)
-            fhnV0LambdaInclMCFromXi[iCentIndex]->Fill(dPtV0Gen, particleMCMotherOfMother->Pt(), 0., fdCentrality);
+            fhnV0LambdaInclMCFromXi[iCentIndex]->Fill(dPtV0, particleMCMotherOfMother->Pt(), 0., fdCentrality);  //Detector level Lambda pt vs particle level xi pt
           if(bV0MCComesFromXi0)            
-            fhnV0LambdaInclMCFromXi0[iCentIndex]->Fill(dPtV0Gen, particleMCMotherOfMother->Pt(), 0., fdCentrality);
+            fhnV0LambdaInclMCFromXi0[iCentIndex]->Fill(dPtV0, particleMCMotherOfMother->Pt(), 0., fdCentrality);
           if(bV0MCComesFromXi || bV0MCComesFromXi0) {
             if(bIsInConeRnd) {
-              fhnV0LambdaBulkMCFD[iCentIndex]->Fill(dPtV0Gen, particleMCMotherOfMother->Pt(), 0., fdCentrality);
+              fhnV0LambdaBulkMCFD[iCentIndex]->Fill(dPtV0, particleMCMotherOfMother->Pt(), 0., fdCentrality);
             }
             if(bIsInConeJet) {
-              Double_t valueFDLInJets[4] = {dPtV0Gen, particleMCMotherOfMother->Pt(), jet->Pt(), fdCentrality};
+              Double_t valueFDLInJets[4] = {dPtV0, particleMCMotherOfMother->Pt(), jet->Pt(), fdCentrality};
               fhnV0LambdaInJetsMCFD[iCentIndex]->Fill(valueFDLInJets);
             }
           }
           if(!bPhysPrim && !bV0MCComesFromXi) {// not primary Lambda
-            fh1V0LambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0Gen);
+            fh1V0LambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0);
           }
         }
       }
@@ -4134,20 +4134,20 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         // Fill the feed-down histograms
         if(bV0MCIsALambda) {
           if(bV0MCComesFromAXi)
-            fhnV0ALambdaInclMCFromAXi[iCentIndex]->Fill(dPtV0Gen, particleMCMotherOfMother->Pt(), 0., fdCentrality);
+            fhnV0ALambdaInclMCFromAXi[iCentIndex]->Fill(dPtV0, particleMCMotherOfMother->Pt(), 0., fdCentrality);
           if(bV0MCComesFromAXi0)            
-            fhnV0ALambdaInclMCFromAXi0[iCentIndex]->Fill(dPtV0Gen, particleMCMotherOfMother->Pt(), 0., fdCentrality);
+            fhnV0ALambdaInclMCFromAXi0[iCentIndex]->Fill(dPtV0, particleMCMotherOfMother->Pt(), 0., fdCentrality);
           if(bV0MCComesFromAXi || bV0MCComesFromAXi0) {
             if(bIsInConeRnd) {
-              fhnV0ALambdaBulkMCFD[iCentIndex]->Fill(dPtV0Gen, particleMCMotherOfMother->Pt(), 0., fdCentrality);
+              fhnV0ALambdaBulkMCFD[iCentIndex]->Fill(dPtV0, particleMCMotherOfMother->Pt(), 0., fdCentrality);
             }
             if(bIsInConeJet) {
-              Double_t valueFDALInJets[4] = {dPtV0Gen, particleMCMotherOfMother->Pt(), jet->Pt(), fdCentrality};
+              Double_t valueFDALInJets[4] = {dPtV0, particleMCMotherOfMother->Pt(), jet->Pt(), fdCentrality};
               fhnV0ALambdaInJetsMCFD[iCentIndex]->Fill(valueFDALInJets);
             }
           }
           if(!bPhysPrim && !bV0MCComesFromAXi) {// not primary Lambda
-            fh1V0ALambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0Gen);
+            fh1V0ALambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0);
           }
         }
       }
