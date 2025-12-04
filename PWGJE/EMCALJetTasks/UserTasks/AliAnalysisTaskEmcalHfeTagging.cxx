@@ -3004,6 +3004,8 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEm
 //_________________________________________
 AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Int_t trackbias) {
     AliJetContainer* jetContMatch = GetJetContainer(jetContNb);
+	if (!jetContMatch) return nullptr;
+
     AliEmcalJet* matchedjet = nullptr;
 	AliEmcalJet* jet2 = nullptr;
 	double minpT[ncutssemiincl] = {0.15, 2.5, 4.0, fMinPtSemiInclusive};
@@ -3013,7 +3015,14 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(A
 
 	for (Int_t i = 0; i < jetContMatch -> GetNJets(); i++) {
 		jet2 = jetContMatch -> GetJet(i);
-		double leadingpt = jet2 -> GetLeadingTrack() -> Pt();
+		if (!jet2) cout << "null jet2" << endl;
+		/* if (!jet2) continue; */
+
+		AliVParticle* leadtrack = jet2 -> GetLeadingTrack();
+		if (!leadtrack) cout << "null leadtrack" << endl;
+		/* if (!leadtrack) continue; */
+
+		double leadingpt = leadtrack -> Pt();
 		double dist = AngularDifference(jet1, jet2);
 
 		if (dist < distmin and leadingpt > minpT[trackbias]) {
@@ -3033,6 +3042,10 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(A
 //_________________________________________
 AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, AliVParticle* electron, AliVParticle* &matchedElectron) {
     AliJetContainer* jetContMatch = GetJetContainer(jetContNb);
+	if (!jetContMatch) return nullptr;
+
+	if (!electron) return nullptr;
+
 	AliEmcalJet* jet2 = nullptr;
 
 	double distmin = distfactor * jetContMatch -> GetJetRadius();  
@@ -3040,11 +3053,15 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJ
 
 	for (Int_t i = 0; i < jetContMatch -> GetNJets(); i++) {
 		jet2 = jetContMatch -> GetJet(i);
+		if (!jet2) continue;
+
 		double dist = AngularDifference(jet1, jet2);
 		bool shareelec = false;
 
 		for (Int_t tr = 0; tr < jet2 -> GetNumberOfTracks(); tr++) {
 			AliVParticle* track = jet2 -> Track(tr);
+			if (!track) continue;
+
 			int tracklabel = track -> GetLabel();
 			if (tracklabel == eleclabel) {
 				shareelec = true;
