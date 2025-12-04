@@ -45,7 +45,8 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
                                                        Double_t MaxPtEMCal = 25.,
                                                        Double_t MinPtSemiInclusive = 5.,
 													   Double_t DistFactorUnbiasMatch = 0.6,
-													   Double_t DistFactorBiasMatch = 1.5
+													   Double_t DistFactorBiasMatch = 0.6,
+													   Double_t MinPtFractionMatch = 0.5
                                                        ) {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -105,6 +106,7 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
     task->SetMinPtSemiInclusive(MinPtSemiInclusive);
 	task->SetDistFactorForUnbiasMatch(DistFactorUnbiasMatch);
 	task->SetDistFactorForBiasMatch(DistFactorBiasMatch);
+	task->SetSharedPtFractionForMatch(MinPtFractionMatch);
     
     
     

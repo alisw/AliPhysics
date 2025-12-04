@@ -118,7 +118,8 @@ fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
 fMinPtSemiInclusive(5.),
 fDistFactorUnbiasMatch(0.6),
-fDistFactorBiasMatch(1.5),
+fDistFactorBiasMatch(0.6),
+fMinPtFractionMatch(0.5),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -377,7 +378,8 @@ fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
 fMinPtSemiInclusive(5.),
 fDistFactorUnbiasMatch(0.6),
-fDistFactorBiasMatch(1.5),
+fDistFactorBiasMatch(0.6),
+fMinPtFractionMatch(0.5),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -1647,7 +1649,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 
 				for (int sibin = MaxPtBinForSemiInclusiveJet(jetbase, 0); sibin >= 0; sibin--) {
 					double distfac = (sibin == 0) ? fDistFactorUnbiasMatch : fDistFactorBiasMatch;
-					jetpartlevel = GetJetMatchedWithLeadingTrackBias(jetbase, kMatched, distfac, sibin);
+					jetpartlevel = GetJetMatchedWithLeadingTrackBias(jetbase, kMatched, distfac, fMinPtFractionMatch, sibin);
 
 					if (!jetpartlevel) continue;
 
@@ -1689,7 +1691,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			AliVParticle* velecmc = nullptr;
             
             if (kMatched != 0 and veleccand != nullptr) {
-				jetpartlevelelectron = GetJetMatchedWithElectron(jetbase, kMatched, fDistFactorBiasMatch, veleccand, velecmc); 
+				jetpartlevelelectron = GetJetMatchedWithElectron(jetbase, kMatched, fDistFactorBiasMatch, fMinPtFractionMatch, veleccand, velecmc); 
 				if (jetpartlevelelectron) {
                 	ptMatch = jetpartlevelelectron -> Pt();
                 	ptDMatch = GetJetpTD(jetpartlevelelectron, kMatched);
@@ -3002,37 +3004,40 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetClosestOnOtherJetContainer(AliEm
 }
 	
 //_________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Int_t trackbias) {
+AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Double_t ptfraction, Int_t trackbias) {
     AliJetContainer* jetContMatch = GetJetContainer(jetContNb);
-    AliEmcalJet* matchedjet = nullptr;
+	if (!jetContMatch) return nullptr;
+
 	AliEmcalJet* jet2 = nullptr;
 	double minpT[ncutssemiincl] = {0.15, 2.5, 4.0, fMinPtSemiInclusive};
 
 	double distmin = distfactor * jetContMatch -> GetJetRadius();  
-	int njetspassed = 0;
 
 	for (Int_t i = 0; i < jetContMatch -> GetNJets(); i++) {
 		jet2 = jetContMatch -> GetJet(i);
-		double leadingpt = jet2 -> GetLeadingTrack() -> Pt();
+		if (!jet2) continue;
+
+		AliVParticle* leadtrack = jet2 -> GetLeadingTrack();
+		if (!leadtrack) continue;
+
+		double leadingpt = leadtrack -> Pt();
 		double dist = AngularDifference(jet1, jet2);
 
-		if (dist < distmin and leadingpt > minpT[trackbias]) {
-			matchedjet = jet2;
-			njetspassed++;
+		if (dist < distmin and leadingpt > minpT[trackbias] and GetFractionSharedPtBetweenJets(jet1, jet2) > ptfraction) {
+			return jet2;
 		}
 	}
-	
-	// Only allows matching if there only one MC jet that follows the conditions
-	if (njetspassed != 1) {
-		return nullptr;	
-	}
 
-	return matchedjet;
+	return nullptr;
 }
 
 //_________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, AliVParticle* electron, AliVParticle* &matchedElectron) {
+AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Double_t ptfraction, AliVParticle* electron, AliVParticle* &matchedElectron) {
     AliJetContainer* jetContMatch = GetJetContainer(jetContNb);
+	if (!jetContMatch) return nullptr;
+
+	if (!electron) return nullptr;
+
 	AliEmcalJet* jet2 = nullptr;
 
 	double distmin = distfactor * jetContMatch -> GetJetRadius();  
@@ -3040,19 +3045,24 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJ
 
 	for (Int_t i = 0; i < jetContMatch -> GetNJets(); i++) {
 		jet2 = jetContMatch -> GetJet(i);
+		if (!jet2) continue;
+
 		double dist = AngularDifference(jet1, jet2);
 		bool shareelec = false;
 
 		for (Int_t tr = 0; tr < jet2 -> GetNumberOfTracks(); tr++) {
 			AliVParticle* track = jet2 -> Track(tr);
+			if (!track) continue;
+
 			int tracklabel = track -> GetLabel();
 			if (tracklabel == eleclabel) {
 				shareelec = true;
 				matchedElectron = track;
+				break;
 			}
 		}
 
-		if (dist < distmin and shareelec == true) {
+		if (dist < distmin and shareelec == true and GetFractionSharedPtBetweenJets(jet1, jet2) > ptfraction) {
 			return jet2;
 		}
 	}
@@ -3063,7 +3073,7 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJ
 //_________________________________________
 Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched) {
 	// Similar to AliJetContainer::GetFractionSharedPt() but using any two jets instead of closest and geometric matching
-	// The angular distance threshold is set as 0.02 and 5% for pT matching
+	// The angular distance threshold is set as 0.02 and 20% for pT matching
 	
 	if (!jet1 || !jetmatched) return -1;
 	
@@ -3080,7 +3090,7 @@ Double_t AliAnalysisTaskEmcalHfeTagging::GetFractionSharedPtBetweenJets(AliEmcal
 			p1 = jet1 -> Track(ic1);
 			if (!p1) continue;
 
-			if (AngularDifference(p1, p2) < 0.02 && abs((p1 -> Pt() - p2 -> Pt()) / p2 -> Pt()) < 0.05) {
+			if (AngularDifference(p1, p2) < 0.02 && abs((p1 -> Pt() - p2 -> Pt()) / p2 -> Pt()) < 0.2) {
 				sumpt += p2 -> Pt();
 				break;
 			}
