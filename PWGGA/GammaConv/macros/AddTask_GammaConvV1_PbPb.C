@@ -39,7 +39,7 @@ void AddTask_GammaConvV1_PbPb(
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
 
-  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable' -> Machine learning Trees] 
+  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model] 
  
   TString   fileNameExternalInputs        = "",
   Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
@@ -4989,6 +4989,18 @@ void AddTask_GammaConvV1_PbPb(
     }
  }
 
+   // ======== HEADER DEBUG CODE ========
+  cout << "\n========== HEADER FILTERING VERIFICATION ==========" << endl;
+  cout << "acceptedAddedParticles = " << acceptedAddedParticles << endl;
+  cout << "Headers in list: " << HeaderList->GetEntries() << endl;
+  for (int j = 0; j < HeaderList->GetEntries(); j++) {
+    TString header = ((TObjString*)HeaderList->At(j))->GetString();
+    cout << "  [" << j << "] " << header.Data() << endl;
+  }
+  cout << "==================================================\n" << endl;
+  // ======== END DEBUG CODE ========
+
+  
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
