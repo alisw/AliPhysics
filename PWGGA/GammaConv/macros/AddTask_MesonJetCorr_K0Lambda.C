@@ -319,6 +319,7 @@ void AddTask_MesonJetCorr_K0Lambda(
   task->SetMesonKind(meson);
   task->SetMesonZPt(runOnlyZPt);
   if(meson < 2) task->SetIsConv(true);
+  if (enableQAK0Lambda) task->SetDoMesonQA(true);
   task->SetJetContainerAddName(nameJetFinder);
   task->SetEventCutList(numberOfCuts, EventCutList);
   task->SetK0LambdaCutList(numberOfCuts, K0LambdaCutList);
