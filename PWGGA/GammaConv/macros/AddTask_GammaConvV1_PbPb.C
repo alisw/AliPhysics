@@ -39,7 +39,7 @@ void AddTask_GammaConvV1_PbPb(
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
 
-  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model] 
+  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model] 
  
   TString   fileNameExternalInputs        = "",
   Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
@@ -91,9 +91,15 @@ void AddTask_GammaConvV1_PbPb(
   Float_t   meson_m2_range_right = 0.7;  
 
   if (fileNameMLR.CompareTo("") != 0){
-  if (fileNameMLR.Contains("enable")){
-    enablePhotonTree      =  kTRUE;
-    enableMesonTree       =  kTRUE;
+    if (fileNameMLR.Contains("enable")){
+        enablePhotonTree      =  kTRUE;
+        enableMesonTree       =  kTRUE;
+        if (fileNameMLR.Contains("P")){
+            enableMesonTree      =  kFALSE;
+          }
+        if (fileNameMLR.Contains("M")){
+            enablePhotonTree      =  kFALSE;
+          }      
     }
   else if(fileNameMLR.Contains(".yml")) {
     fApplyML = kTRUE;
