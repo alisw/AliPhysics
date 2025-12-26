@@ -8,6 +8,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TList.h"
+
 #include "AliAnalysisTaskMLTreeMaker2018.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -53,6 +54,10 @@
 #include "AliMultSelection.h"
 #include "TSystem.h"
 
+#include "AliKFParticleBase.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
+
 
 // Authors: Jerome Jung (IKF Frankfurt) - jerome.jung@cern.ch
 
@@ -87,8 +92,10 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018():
   fGeneratorULSSignalName(""),
   fGeneratorMCSignalHashs(0x0),
   fGeneratorULSSignalHashs(0x0),
+  eventNumber(0),
   runNumber(0),
   nTracks(0),
+  nPairsFilled(0),
   nPairs({0,0,0}),
   cent(0),
   man(0),
@@ -157,6 +164,7 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018():
   fTreePairSignals(0),
   fQAHistEvents(0),
   fQAHistTracks(0),
+  ID_tracks1({}),
   eta_tracks1({}),
   phi_tracks1({}),
   pt_tracks1({}),
@@ -171,9 +179,10 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018():
   dcaZ_tracks1({}),
   dcaXY_res_tracks1({}),
   dcaZ_res_tracks1({}),
-  verticesX_tracks1({}),
-  verticesY_tracks1({}),
-  verticesZ_tracks1({}),
+  X_tracks1({}),
+  Y_tracks1({}),
+  Z_tracks1({}),
+  ID_tracks2({}),
   eta_tracks2({}),
   phi_tracks2({}),
   pt_tracks2({}),
@@ -188,9 +197,9 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018():
   dcaZ_tracks2({}),
   dcaXY_res_tracks2({}),    
   dcaZ_res_tracks2({}),
-  verticesX_tracks2({}),
-  verticesY_tracks2({}),
-  verticesZ_tracks2({}),
+  X_tracks2({}),
+  Y_tracks2({}),
+  Z_tracks2({}),
   primVerticesX({}),
   primVerticesY({}),
   primVerticesZ({}),
@@ -198,12 +207,19 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018():
   pairPtees({}),
   pairOpAngs({}),
   pairDCAee({}),
+
+  pairPhiVs({}),
+  pairPsis({}),
  
-  //pairPhiV({}),
   pairCosPointAngs({}),
+  cosPointAng_tracks1({}),
+  cosPointAng_tracks2({}),
+
   pairDecayLengths({}),
   pairRs({}),
-  
+  pairChiSquares({}),
+  pairArmAlphas({}),
+
 
 
 
@@ -240,8 +256,10 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018(const char *name)
   fGeneratorULSSignalName(""),
   fGeneratorMCSignalHashs(0x0),
   fGeneratorULSSignalHashs(0x0),
+  eventNumber(0),
   runNumber(0),
   nTracks(0),
+  nPairsFilled(0),
   nPairs({0,0,0}),
   //nPairs(0),
   cent(0),
@@ -312,6 +330,8 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018(const char *name)
   fQAHistEvents(0),
   fQAHistTracks(0),
 
+
+  ID_tracks1({}),
   eta_tracks1({}),
   phi_tracks1({}),
   pt_tracks1({}),
@@ -326,9 +346,10 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018(const char *name)
   dcaZ_tracks1({}),
   dcaXY_res_tracks1({}),
   dcaZ_res_tracks1({}),
-  verticesX_tracks1({}),
-  verticesY_tracks1({}),
-  verticesZ_tracks1({}),
+  X_tracks1({}),
+  Y_tracks1({}),
+  Z_tracks1({}),
+  ID_tracks2({}),
   eta_tracks2({}),
   phi_tracks2({}),
   pt_tracks2({}),
@@ -343,9 +364,9 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018(const char *name)
   dcaZ_tracks2({}),
   dcaXY_res_tracks2({}),    
   dcaZ_res_tracks2({}),
-  verticesX_tracks2({}),
-  verticesY_tracks2({}),
-  verticesZ_tracks2({}),
+  X_tracks2({}),
+  Y_tracks2({}),
+  Z_tracks2({}),
   primVerticesX({}),
   primVerticesY({}),
   primVerticesZ({}),
@@ -354,9 +375,17 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018(const char *name)
   pairOpAngs({}),
   pairDCAee({}),
 
+  pairPhiVs({}),
+  pairPsis({}),
+
   pairCosPointAngs({}),
+  cosPointAng_tracks1({}),
+  cosPointAng_tracks2({}),
+
   pairDecayLengths({}),
   pairRs({}),
+  pairChiSquares({}),
+  pairArmAlphas({}),
 
   fFillPairSignalOffset(0)
 {
@@ -482,6 +511,7 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       primVerticesY.push_back({0});
       primVerticesZ.push_back({0});
 
+      ID_tracks1.push_back({0});
       pt_tracks1.push_back({0});
       eta_tracks1.push_back({0});
       phi_tracks1.push_back({0});
@@ -490,11 +520,11 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       dcaZ_tracks1.push_back({0});
       dcaXY_res_tracks1.push_back({0});
       dcaZ_res_tracks1.push_back({0});
-      verticesX_tracks1.push_back({0});
-      verticesY_tracks1.push_back({0});
-      verticesZ_tracks1.push_back({0});
+      X_tracks1.push_back({0});
+      Y_tracks1.push_back({0});
+      Z_tracks1.push_back({0});
 
-
+      ID_tracks2.push_back({0});
       pt_tracks2.push_back({0});
       eta_tracks2.push_back({0});
       phi_tracks2.push_back({0});
@@ -503,9 +533,9 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       dcaZ_tracks2.push_back({0});
       dcaXY_res_tracks2.push_back({0});
       dcaZ_res_tracks2.push_back({0});
-      verticesX_tracks2.push_back({0});
-      verticesY_tracks2.push_back({0});
-      verticesZ_tracks2.push_back({0});
+      X_tracks2.push_back({0});
+      Y_tracks2.push_back({0});
+      Z_tracks2.push_back({0});
   
       nPairs.push_back(0);
       pairMasses.push_back({0});
@@ -513,9 +543,17 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       pairOpAngs.push_back({0});
       pairDCAee.push_back({0});
 
+      pairPhiVs.push_back({0});
+      pairPsis.push_back({0});
+
       pairCosPointAngs.push_back({0});
+      cosPointAng_tracks1.push_back({0});
+      cosPointAng_tracks2.push_back({0});
+
       pairDecayLengths.push_back({0});
       pairRs.push_back({0});
+      pairChiSquares.push_back({0});
+      pairArmAlphas.push_back({0});
 
 
     }
@@ -549,6 +587,7 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
     for (int index=0; index<fTreePairs.size(); index++){
       fTreePairs.at(index)->Branch("#Pairs", &nPairs.at(index));    
 
+      fTreePairs.at(index)->Branch("ID_track1", &ID_tracks1.at(index));
       fTreePairs.at(index)->Branch("pt_track1", &pt_tracks1.at(index));
       fTreePairs.at(index)->Branch("eta_track1", &eta_tracks1.at(index));
       fTreePairs.at(index)->Branch("phi_track1", &phi_tracks1.at(index));
@@ -557,10 +596,11 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       fTreePairs.at(index)->Branch("DCAz_track1", &dcaZ_tracks1.at(index));
       fTreePairs.at(index)->Branch("DCAxy_res_track1", &dcaXY_res_tracks1.at(index));
       fTreePairs.at(index)->Branch("DCAz_res_track1", &dcaZ_res_tracks1.at(index));
-      fTreePairs.at(index)->Branch("vertx_track1", &verticesX_tracks1.at(index));
-      fTreePairs.at(index)->Branch("verty_track1", &verticesY_tracks1.at(index));
-      fTreePairs.at(index)->Branch("vertz_track1", &verticesZ_tracks1.at(index));
+      fTreePairs.at(index)->Branch("x_track1", &X_tracks1.at(index));
+      fTreePairs.at(index)->Branch("y_track1", &Y_tracks1.at(index));
+      fTreePairs.at(index)->Branch("z_track1", &Z_tracks1.at(index));
 
+      fTreePairs.at(index)->Branch("ID_track2", &ID_tracks2.at(index));
       fTreePairs.at(index)->Branch("pt_track2", &pt_tracks2.at(index));
       fTreePairs.at(index)->Branch("eta_track2", &eta_tracks2.at(index));
       fTreePairs.at(index)->Branch("phi_track2", &phi_tracks2.at(index));
@@ -569,19 +609,26 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       fTreePairs.at(index)->Branch("DCAz_track2", &dcaZ_tracks2.at(index));
       fTreePairs.at(index)->Branch("DCAxy_res_track2", &dcaXY_res_tracks2.at(index));
       fTreePairs.at(index)->Branch("DCAz_res_track2", &dcaZ_res_tracks2.at(index));
-      fTreePairs.at(index)->Branch("vertx_track2", &verticesX_tracks2.at(index));
-      fTreePairs.at(index)->Branch("verty_track2", &verticesY_tracks2.at(index));
-      fTreePairs.at(index)->Branch("vertz_track2", &verticesZ_tracks2.at(index));
+      fTreePairs.at(index)->Branch("x_track2", &X_tracks2.at(index));
+      fTreePairs.at(index)->Branch("y_track2", &Y_tracks2.at(index));
+      fTreePairs.at(index)->Branch("z_track2", &Z_tracks2.at(index));
 
       fTreePairs.at(index)->Branch("pairMass", &pairMasses.at(index));
       fTreePairs.at(index)->Branch("pairPtee", &pairPtees.at(index));
       fTreePairs.at(index)->Branch("pairOpAng", &pairOpAngs.at(index));
       fTreePairs.at(index)->Branch("pairDCAee", &pairDCAee.at(index));
 
+      fTreePairs.at(index)->Branch("pairPhiV", &pairPhiVs.at(index));
+      fTreePairs.at(index)->Branch("pairPsi", &pairPsis.at(index));
 
       fTreePairs.at(index)->Branch("pairCosPointAng", &pairCosPointAngs.at(index));
+      fTreePairs.at(index)->Branch("cosPointAng_track1", &cosPointAng_tracks1.at(index));
+      fTreePairs.at(index)->Branch("cosPointAng_track2", &cosPointAng_tracks2.at(index));
+
       fTreePairs.at(index)->Branch("pairDecayLength", &pairDecayLengths.at(index));
       fTreePairs.at(index)->Branch("pairR", &pairRs.at(index));
+      fTreePairs.at(index)->Branch("pairChiSquare", &pairChiSquares.at(index));
+      fTreePairs.at(index)->Branch("pairArmAlpha", &pairArmAlphas.at(index));
 
       fTreePairs.at(index)->Branch("primVertx", &primVerticesX.at(index));
       fTreePairs.at(index)->Branch("primVerty", &primVerticesY.at(index));
@@ -672,7 +719,8 @@ void AliAnalysisTaskMLTreeMaker2018::UserExec(Option_t * option) {
     return;
   }
   runNumber = event->GetRunNumber();
-
+  eventNumber++;
+  
 
   AliInputEventHandler *eventHandler = nullptr;
   AliInputEventHandler *eventHandlerMC = nullptr;
@@ -790,7 +838,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
   Double_t vert[3] = {0};
   event->GetPrimaryVertex()->GetXYZ(vert);
 
-
+  std::vector<Int_t> id_track1;
   std::vector<Float_t> eta_track1;
   std::vector<Float_t> phi_track1;
   std::vector<Float_t> pt_track1;
@@ -810,11 +858,11 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
   std::vector<Float_t> dcaXY_res_track1;    //DCA
   std::vector<Float_t> dcaZ_res_track1;
 
-  std::vector<Float_t> vertx_track1;
-  std::vector<Float_t> verty_track1;
-  std::vector<Float_t> vertz_track1;
+  std::vector<Float_t> x_track1;
+  std::vector<Float_t> y_track1;
+  std::vector<Float_t> z_track1;
 
-
+  std::vector<Int_t> id_track2;
   std::vector<Float_t> eta_track2;
   std::vector<Float_t> phi_track2;
   std::vector<Float_t> pt_track2;
@@ -834,9 +882,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
   std::vector<Float_t> dcaXY_res_track2;    //DCA
   std::vector<Float_t> dcaZ_res_track2;
 
-  std::vector<Float_t> vertx_track2;
-  std::vector<Float_t> verty_track2;
-  std::vector<Float_t> vertz_track2;
+  std::vector<Float_t> x_track2;
+  std::vector<Float_t> y_track2;
+  std::vector<Float_t> z_track2;
 
   std::vector<Float_t> primVertx;
   std::vector<Float_t> primVerty;
@@ -847,9 +895,17 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
   std::vector<Float_t> pairOpAng;
   std::vector<Float_t> pairDCA;
 
+  std::vector<Float_t> pairPhiV;
+  std::vector<Float_t> pairPsi;
+
   std::vector<Float_t> pairCosPointAng;
+  std::vector<Float_t> cosPointAng_track1;
+  std::vector<Float_t> cosPointAng_track2;
+
   std::vector<Float_t> pairDecayLength;
   std::vector<Float_t> pairR;
+  std::vector<Float_t> pairChiSquare;
+  std::vector<Float_t> pairArmAlpha;
 
 
   Int_t filledPairs = 0;
@@ -857,7 +913,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
     for (unsigned int pos_j = 0; pos_j < parts2.size(); ++pos_j){
 
       
-      //if(pos_i == pos_j && parts1[pos_i].fCharge == parts2[pos_j].fCharge ) continue;
+        std::vector<Float_t> pairPhiV;
+  std::vector<Float_t> pairPsi;
+//if(pos_i == pos_j && parts1[pos_i].fCharge == parts2[pos_j].fCharge ) continue;
       if( pos_j==0 && parts1[pos_i].fCharge == parts2[pos_j].fCharge ){
         pos_j = pos_i+1;
         if(pos_j >= parts2.size()) break;
@@ -868,12 +926,60 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
       candidate.SetTracks(static_cast<AliVTrack*>(event->GetTrack(parts1[pos_i].GetTrackID())), -11,
                           static_cast<AliVTrack*>(event->GetTrack(parts2[pos_j].GetTrackID())),  11);
 
-      // Fill AliDielectronPair specific information
-      const AliKFParticle &kfPair = candidate.GetKFParticle();
-      float DecayLength = kfPair.GetDecayLengthXY();
+
+      KFParticle kfElectron  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(event->GetTrack(parts1[pos_i].GetTrackID())), -11);
+      KFParticle kfPositron  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(event->GetTrack(parts2[pos_j].GetTrackID())),  11);
+
+
+      //KFParticle kfElectron_truth  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(fMCEvent->GetTrack(fNegPart[neg_i].GetTrackLabel())),  11);
+      //KFParticle kfPositron_truth  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(fMCEvent->GetTrack(fPosPart[pos_i].GetTrackLabel())), -11);
+
+
+      KFParticle kfPair;
+      kfPair.AddDaughter(kfElectron);
+      kfPair.AddDaughter(kfPositron);
+
+      //KFParticle kfPair_truth;
+      //kfPair.AddDaughter(kfElectron_truth);
+      //kfPair.AddDaughter(kfPositron_truth);
+      
+
+      KFPVertex pVertex;
+      Double_t pos[3],cov[6];
+      event->GetPrimaryVertex()->GetXYZ(pos);
+      event->GetPrimaryVertex()->GetCovarianceMatrix(cov);
+      pVertex.SetXYZ((Float_t)pos[0], (Float_t)pos[1], (Float_t)pos[2]);
+      Float_t covF[6];
+      for (Int_t i=0; i<6; i++) { covF[i] = (Float_t)cov[i]; }
+      pVertex.SetCovarianceMatrix(covF);
+      pVertex.SetChi2(event->GetPrimaryVertex()->GetChi2());
+      pVertex.SetNDF(event->GetPrimaryVertex()->GetNDF());
+      pVertex.SetNContributors(event->GetPrimaryVertex()->GetNContributors());
+
+      KFParticle PV(pVertex);
+      //kfPair.SetProductionVertex(PV);
+      //kfElectron.SetProductionVertex(kfPair);
+      //kfPositron.SetProductionVertex(kfPair);
+
+      float DecayLength = kfPair.GetDecayLength();
       float R = kfPair.GetR();
+      float ChiSquare = kfPair.GetChi2()/kfPair.GetNDF();
+      float armAlpha = candidate.GetArmAlpha();
+      float phiV = candidate.PhivPair(event->GetMagneticField());
+      float psi = candidate.PsiPair(event->GetMagneticField());
+
       //kfPair.GetChi2()/kfPair.GetNDF();
       float CosPointAng = event ? candidate.GetCosPointingAngle(event->GetPrimaryVertex()) : -1;
+      float CosPointAng_KF = CosPointingAngleFromKF(kfPair, PV);
+      float DecayLength_KF = DecayLengthFromKF(kfPair, PV);
+
+      //float CosPointAng_KF_truth = CosPointingAngleFromKF(kfPair_truth, PV);
+      float CosPointAng_KF_e1 = CosPointingAngleFromKF(kfElectron, kfPair);
+      float CosPointAng_KF_e2 = CosPointingAngleFromKF(kfPositron, kfPair);
+
+      float PtSum = parts1[pos_i].fPt + parts2[pos_j].fPt;
+
+      // Fill AliDielectronPair specific information
 
       //fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
       //fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
@@ -891,9 +997,10 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
 
       float dcaee = sqrt( (pow(parts1[pos_i].fDCAxy/sqrt(parts1[pos_i].fDCAxy_res),2) + pow(parts2[pos_j].fDCAxy/sqrt(parts2[pos_j].fDCAxy_res),2)) / 2  );
 
+      id_track1.push_back(parts1[pos_i].GetTrackNumber());
       eta_track1.push_back(parts1[pos_i].fEta);
       phi_track1.push_back(parts1[pos_i].fPhi);
-      pt_track1.push_back(parts1[pos_i].fPt);
+      pt_track1.push_back(parts1[pos_i].fPt / PtSum);
       charge_track1.push_back(parts1[pos_i].fCharge);
 
       dcaXY_track1.push_back(parts1[pos_i].fDCAxy);    //DCA
@@ -902,14 +1009,14 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
       dcaXY_res_track1.push_back(parts1[pos_i].fDCAxy_res);    //DCA
       dcaZ_res_track1.push_back(parts1[pos_i].fDCAz_res);
 
-      vertx_track1.push_back(parts1[pos_i].fXv);
-      verty_track1.push_back(parts1[pos_i].fYv);
-      vertz_track1.push_back(parts1[pos_i].fZv);
+      x_track1.push_back(kfElectron.GetX());  
+      y_track1.push_back(kfElectron.GetY());
+      z_track1.push_back(kfElectron.GetZ());
 
-
+      id_track2.push_back(parts2[pos_j].GetTrackNumber());
       eta_track2.push_back(parts2[pos_j].fEta);
       phi_track2.push_back(parts2[pos_j].fPhi);
-      pt_track2.push_back(parts2[pos_j].fPt);
+      pt_track2.push_back(parts2[pos_j].fPt / PtSum);
       charge_track2.push_back(parts2[pos_j].fCharge);
 
       dcaXY_track2.push_back(parts2[pos_j].fDCAxy);    //DCA
@@ -918,9 +1025,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
       dcaXY_res_track2.push_back(parts2[pos_j].fDCAxy_res);    //DCA
       dcaZ_res_track2.push_back(parts2[pos_j].fDCAz_res);
 
-      vertx_track2.push_back(parts2[pos_j].fXv);
-      verty_track2.push_back(parts2[pos_j].fYv);
-      vertz_track2.push_back(parts2[pos_j].fZv);
+      x_track2.push_back(kfPositron.GetX());  
+      y_track2.push_back(kfPositron.GetY());
+      z_track2.push_back(kfPositron.GetZ());
 
       primVertx.push_back((Float_t)vert[0]);
       primVerty.push_back((Float_t)vert[1]);
@@ -930,11 +1037,18 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
       pairPtee.push_back(pairpt);
       pairOpAng.push_back(opangle);
       pairDCA.push_back(dcaee);
-      
-      pairCosPointAng.push_back(CosPointAng);
-      pairDecayLength.push_back(DecayLength);
-      pairR.push_back(R);
+     
+      pairPhiV.push_back(phiV);
+      pairPsi.push_back(psi);
 
+      pairCosPointAng.push_back(CosPointAng_KF);
+      cosPointAng_track1.push_back(CosPointAng_KF_e1);
+      cosPointAng_track2.push_back(CosPointAng_KF_e2);
+
+      pairDecayLength.push_back(DecayLength_KF);
+      pairR.push_back(R);
+      pairChiSquare.push_back(ChiSquare);
+      pairArmAlpha.push_back(armAlpha);
 
 
       filledPairs++;
@@ -947,6 +1061,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
 
     nPairs[index] = filledPairs;
 
+    ID_tracks1[index] = id_track1;
     eta_tracks1[index] = eta_track1;
     phi_tracks1[index] = phi_track1;
     pt_tracks1[index] = pt_track1;
@@ -958,11 +1073,11 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
     dcaXY_res_tracks1[index] = dcaXY_res_track1;    //DCA
     dcaZ_res_tracks1[index] = dcaZ_res_track1;
 
-    verticesX_tracks1[index] = vertx_track1;
-    verticesY_tracks1[index] = verty_track1;
-    verticesZ_tracks1[index] = vertz_track1;
+    X_tracks1[index] = x_track1;
+    Y_tracks1[index] = y_track1;
+    Z_tracks1[index] = z_track1;
 
-
+    ID_tracks2[index] = id_track2;
     eta_tracks2[index] = eta_track2;
     phi_tracks2[index] = phi_track2;
     pt_tracks2[index] = pt_track2;
@@ -974,9 +1089,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
     dcaXY_res_tracks2[index] = dcaXY_res_track2;    //DCA
     dcaZ_res_tracks2[index] = dcaZ_res_track2;
 
-    verticesX_tracks2[index] = vertx_track2;
-    verticesY_tracks2[index] = verty_track2;
-    verticesZ_tracks2[index] = vertz_track2;
+    X_tracks2[index] = x_track2;
+    Y_tracks2[index] = y_track2;
+    Z_tracks2[index] = z_track2;
 
     primVerticesX[index] = primVertx;
     primVerticesY[index] = primVerty;
@@ -987,9 +1102,17 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
     pairOpAngs[index] = pairOpAng;
     pairDCAee[index] = pairDCA;
 
+    pairPhiVs[index] = pairPhiV;
+    pairPsis[index] = pairPsi;
+
     pairCosPointAngs[index] = pairCosPointAng;
+    cosPointAng_tracks1[index] = cosPointAng_track1;
+    cosPointAng_tracks2[index] = cosPointAng_track2;
+
     pairDecayLengths[index] = pairDecayLength;
     pairRs[index] = pairR;
+    pairChiSquares[index] = pairChiSquare;
+    pairArmAlphas[index] = pairArmAlpha;
 
   }
  
@@ -1018,6 +1141,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
 
 
   //leg1 variables
+  std::vector<std::vector<Int_t>> id_track1;
   std::vector<std::vector<Float_t>> eta_track1;
   std::vector<std::vector<Float_t>> phi_track1;
   std::vector<std::vector<Float_t>> pt_track1;
@@ -1029,13 +1153,14 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
   std::vector<std::vector<Float_t>> dcaZ_track1;
   std::vector<std::vector<Float_t>> dcaXY_res_track1;    //DCA
   std::vector<std::vector<Float_t>> dcaZ_res_track1;
-  std::vector<std::vector<Float_t>> vertx_track1;
-  std::vector<std::vector<Float_t>> verty_track1;
-  std::vector<std::vector<Float_t>> vertz_track1;
+  std::vector<std::vector<Float_t>> x_track1;
+  std::vector<std::vector<Float_t>> y_track1;
+  std::vector<std::vector<Float_t>> z_track1;
 
 
 
   //leg2 variables
+  std::vector<std::vector<Int_t>> id_track2;
   std::vector<std::vector<Float_t>> eta_track2;
   std::vector<std::vector<Float_t>> phi_track2;
   std::vector<std::vector<Float_t>> pt_track2;
@@ -1047,9 +1172,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
   std::vector<std::vector<Float_t>> dcaZ_track2;
   std::vector<std::vector<Float_t>> dcaXY_res_track2;    //DCA
   std::vector<std::vector<Float_t>> dcaZ_res_track2;
-  std::vector<std::vector<Float_t>> vertx_track2;
-  std::vector<std::vector<Float_t>> verty_track2;
-  std::vector<std::vector<Float_t>> vertz_track2;
+  std::vector<std::vector<Float_t>> x_track2;
+  std::vector<std::vector<Float_t>> y_track2;
+  std::vector<std::vector<Float_t>> z_track2;
 
 
   //pair variables
@@ -1059,9 +1184,17 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
   std::vector<std::vector<Float_t>> pairOpAng;
   std::vector<std::vector<Float_t>> pairDCA;
 
+  std::vector<std::vector<Float_t>> pairPhiV;
+  std::vector<std::vector<Float_t>> pairPsi;
+
   std::vector<std::vector<Float_t>> pairCosPointAng;
+  std::vector<std::vector<Float_t>> cosPointAng_track1;
+  std::vector<std::vector<Float_t>> cosPointAng_track2;
+
   std::vector<std::vector<Float_t>> pairDecayLength;
   std::vector<std::vector<Float_t>> pairR;
+  std::vector<std::vector<Float_t>> pairChiSquare;
+  std::vector<std::vector<Float_t>> pairArmAlpha;
 
 
   for(int signal=0; signal < fPairMCSignal.size(); signal++){
@@ -1070,6 +1203,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     primVerty.push_back({});
     primVertz.push_back({});
  
+    id_track1.push_back({});
     eta_track1.push_back({});
     phi_track1.push_back({});
     pt_track1.push_back({});
@@ -1078,10 +1212,11 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     dcaZ_track1.push_back({});   
     dcaXY_res_track1.push_back({});
     dcaZ_res_track1.push_back({});
-    vertx_track1.push_back({});
-    verty_track1.push_back({});
-    vertz_track1.push_back({});
-   
+    x_track1.push_back({});
+    y_track1.push_back({});
+    z_track1.push_back({});
+
+    id_track2.push_back({});
     eta_track2.push_back({});
     phi_track2.push_back({});
     pt_track2.push_back({});
@@ -1090,9 +1225,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     dcaZ_track2.push_back({});                  
     dcaXY_res_track2.push_back({});    
     dcaZ_res_track2.push_back({});
-    vertx_track2.push_back({});
-    verty_track2.push_back({});
-    vertz_track2.push_back({});
+    x_track2.push_back({});
+    y_track2.push_back({});
+    z_track2.push_back({});
    
                               
     filledPairMCSignal.push_back(0);                          
@@ -1101,9 +1236,17 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     pairOpAng.push_back({});
     pairDCA.push_back({});
 
+    pairPhiV.push_back({});
+    pairPsi.push_back({});
+
     pairCosPointAng.push_back({});
+    cosPointAng_track1.push_back({});
+    cosPointAng_track2.push_back({});
+
     pairDecayLength.push_back({});
     pairR.push_back({});
+    pairChiSquare.push_back({});
+    pairArmAlpha.push_back({});
 
   }
 
@@ -1112,20 +1255,86 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
       AliVParticle* mcPart1 = fMCEvent->GetTrack(fNegPart[neg_i].GetTrackLabel());
       AliVParticle* mcPart2 = fMCEvent->GetTrack(fPosPart[pos_i].GetTrackLabel());
 
+      AliVTrack* trackn = static_cast<AliVTrack*>(fMCEvent->GetTrack(fNegPart[neg_i].GetTrackID()));
+      AliVTrack* trackp = static_cast<AliVTrack*>(event->GetTrack(fPosPart[pos_i].GetTrackID()));
+
+
       AliDielectronPair candidate;
       candidate.SetKFUsage(kFALSE);
       candidate.SetTracks(static_cast<AliVTrack*>(event->GetTrack(fNegPart[neg_i].GetTrackID())), -11,
                           static_cast<AliVTrack*>(event->GetTrack(fPosPart[pos_i].GetTrackID())),  11);
 
       // Fill AliDielectronPair specific information
-      const AliKFParticle &kfPair = candidate.GetKFParticle();
+      //const AliKFParticle &kfPair = candidate.GetKFParticle();
+
+      KFParticle kfElectron  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(event->GetTrack(fNegPart[neg_i].GetTrackID())),  11);
+      KFParticle kfPositron  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(event->GetTrack(fPosPart[pos_i].GetTrackID())), -11);
+
+      //Magnetic Field
+      Float_t Bz = event->GetMagneticField();
+      //Set Magnetic field for ALL KFParticles
+      //KFParticle::SetField(Bz);
+      //kfElectron.SetField(Bz);
+      //kfPositron.SetField(Bz);
+
+
+
+      //KFParticle kfElectron_truth  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(fMCEvent->GetTrack(fNegPart[neg_i].GetTrackLabel())),  11);
+      //KFParticle kfPositron_truth  = CreateKFParticleFromAODtrack(static_cast<AliAODTrack*>(fMCEvent->GetTrack(fPosPart[pos_i].GetTrackLabel())), -11);
+
+
+      KFParticle kfPair;
+      //kfPair.SetField(Bz);
+
+      kfPair.AddDaughter(kfElectron);
+      kfPair.AddDaughter(kfPositron);
+
+      //KFParticle kfPair_truth;
+      //kfPair.AddDaughter(kfElectron_truth);
+      //kfPair.AddDaughter(kfPositron_truth);
+      
+
+
+     
+
+      KFPVertex pVertex;
+      Double_t pos[3],cov[6];
+      event->GetPrimaryVertex()->GetXYZ(pos);
+      event->GetPrimaryVertex()->GetCovarianceMatrix(cov);
+      pVertex.SetXYZ((Float_t)pos[0], (Float_t)pos[1], (Float_t)pos[2]);
+      Float_t covF[6];
+      for (Int_t i=0; i<6; i++) { covF[i] = (Float_t)cov[i]; }
+      pVertex.SetCovarianceMatrix(covF);
+      pVertex.SetChi2(event->GetPrimaryVertex()->GetChi2());
+      pVertex.SetNDF(event->GetPrimaryVertex()->GetNDF());
+      pVertex.SetNContributors(event->GetPrimaryVertex()->GetNContributors());
+
+      KFParticle PV(pVertex);
+      //kfPair.SetProductionVertex(PV);
+      //kfElectron.SetProductionVertex(kfPair);
+      //kfPositron.SetProductionVertex(kfPair);
+
       float DecayLength = kfPair.GetDecayLength();
       float R = kfPair.GetR();
+      float ChiSquare = kfPair.GetChi2()/kfPair.GetNDF();
+      float armAlpha = candidate.GetArmAlpha();
+      float phiV = candidate.PhivPair(event->GetMagneticField());
+      float psi = candidate.PsiPair(event->GetMagneticField());
+
+
       //kfPair.GetChi2()/kfPair.GetNDF();
       float CosPointAng = event ? candidate.GetCosPointingAngle(event->GetPrimaryVertex()) : -1;
+      float CosPointAng_KF = CosPointingAngleFromKF(kfPair, PV);
+      float DecayLength_KF = DecayLengthFromKF(kfPair, PV);
 
-      //fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
-      //fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+      //float CosPointAng_KF_truth = CosPointingAngleFromKF(kfPair_truth, PV);
+      float CosPointAng_KF_e1 = CosPointingAngleFromKF(kfElectron, kfPair);
+      float CosPointAng_KF_e2 = CosPointingAngleFromKF(kfPositron, kfPair);
+
+      float PtSum = fNegPart[neg_i].fPt + fPosPart[pos_i].fPt;
+
+      Float_t mass_KF, err_mass_KF;
+      kfPair.GetMass(mass_KF, err_mass_KF); // massCasc_Rej
 
 
       // Check if electrons are from MCSignal Generator
@@ -1133,7 +1342,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
 	continue;
       }
       // Apply MC signals
-      std::vector<Bool_t> mcSignal_acc(fPairMCSignal.size(), kTRUE); // vector which stores if track is accepted by [i]-th mcsignal
+      std::vector<Bool_t> mcSignal_acc(fPairMCSignal.size(), kTRUE); // vector which stores if pair is accepted by [i]-th mcsignal
 
       // Check if it according to mcsignals
       for (unsigned int i = 0; i < fPairMCSignal.size(); ++i){
@@ -1156,21 +1365,17 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
 
       float dcaee = sqrt( (pow(fNegPart[neg_i].fDCAxy/sqrt(fNegPart[neg_i].fDCAxy_res),2) + pow(fPosPart[pos_i].fDCAxy/sqrt(fPosPart[pos_i].fDCAxy_res),2)) / 2  );
 
-      //std::cout <<  " &&&&&& new pair: " << mass << "  " << candidate.M()  << std::endl;
-      //std::cout <<  " ------ pointing ang: " << candidate.GetCosPointingAngle(event->GetPrimaryVertex())  << std::endl;
-      //std::cout <<  " ------ radius: " << candidate.GetKFParticle().GetR()  << std::endl;
-      //std::cout <<  " ------ decay length: " << candidate.GetKFParticle().GetDecayLength()  << std::endl;
-
-
 
       for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
         if (mcSignal_acc[i] == kTRUE){
           filledPairMCSignal[i] = filledPairMCSignal[i] + 1;	
-          //pt_track1[i].push_back(mcPart1->Pt());
+	  nPairsFilled++;
+ 
 
+	  id_track1[i].push_back(fNegPart[neg_i].GetTrackNumber());
           eta_track1[i].push_back(fNegPart[neg_i].fEta);
           phi_track1[i].push_back(fNegPart[neg_i].fPhi);
-          pt_track1[i].push_back(fNegPart[neg_i].fPt);
+          pt_track1[i].push_back(fNegPart[neg_i].fPt / PtSum);
           charge_track1[i].push_back(fNegPart[neg_i].fCharge);
 
           dcaXY_track1[i].push_back(fNegPart[neg_i].fDCAxy);    //DCA
@@ -1179,14 +1384,18 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
           dcaXY_res_track1[i].push_back(fNegPart[neg_i].fDCAxy_res);    //DCA
           dcaZ_res_track1[i].push_back(fNegPart[neg_i].fDCAz_res);
 
-	  vertx_track1[i].push_back(fNegPart[neg_i].fXv);
-          verty_track1[i].push_back(fNegPart[neg_i].fYv);
-          vertz_track1[i].push_back(fNegPart[neg_i].fZv);
+	  //vertx_track1[i].push_back(fNegPart[neg_i].fXv);
+          //verty_track1[i].push_back(fNegPart[neg_i].fYv);
+          //vertz_track1[i].push_back(fNegPart[neg_i].fZv);
     
+	  x_track1[i].push_back(kfElectron.GetX());
+          y_track1[i].push_back(kfElectron.GetY());
+          z_track1[i].push_back(kfElectron.GetZ());
 
+	  id_track2[i].push_back(fPosPart[pos_i].GetTrackNumber());
           eta_track2[i].push_back(fPosPart[pos_i].fEta);
           phi_track2[i].push_back(fPosPart[pos_i].fPhi);
-          pt_track2[i].push_back(fPosPart[pos_i].fPt);
+          pt_track2[i].push_back(fPosPart[pos_i].fPt / PtSum);
           charge_track2[i].push_back(fPosPart[pos_i].fCharge);
 
           dcaXY_track2[i].push_back(fPosPart[pos_i].fDCAxy);    //DCA
@@ -1195,10 +1404,15 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
           dcaXY_res_track2[i].push_back(fPosPart[pos_i].fDCAxy_res);    //DCA
           dcaZ_res_track2[i].push_back(fPosPart[pos_i].fDCAz_res);
 
-          vertx_track2[i].push_back(fPosPart[pos_i].fXv);
-          verty_track2[i].push_back(fPosPart[pos_i].fYv);
-          vertz_track2[i].push_back(fPosPart[pos_i].fZv);
-    
+          //vertx_track2[i].push_back(fPosPart[pos_i].fXv);
+          //verty_track2[i].push_back(fPosPart[pos_i].fYv);
+          //vertz_track2[i].push_back(fPosPart[pos_i].fZv);
+   
+	  x_track2[i].push_back(kfPositron.GetX());
+          y_track2[i].push_back(kfPositron.GetY());
+          z_track2[i].push_back(kfPositron.GetZ());
+
+
           primVertx[i].push_back((Float_t)vert[0]);
           primVerty[i].push_back((Float_t)vert[1]);
           primVertz[i].push_back((Float_t)vert[2]);
@@ -1210,9 +1424,17 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
           pairOpAng[i].push_back(opangle);
 	  pairDCA[i].push_back(dcaee);
 
-          pairCosPointAng[i].push_back(CosPointAng);
-          pairDecayLength[i].push_back(DecayLength);
+          pairPhiV[i].push_back(phiV);
+          pairPsi[i].push_back(psi);
+
+          pairCosPointAng[i].push_back(CosPointAng_KF);
+	  cosPointAng_track1[i].push_back(CosPointAng_KF_e1);
+	  cosPointAng_track2[i].push_back(CosPointAng_KF_e2);
+
+          pairDecayLength[i].push_back(DecayLength_KF);
           pairR[i].push_back(R);
+          pairChiSquare[i].push_back(ChiSquare);
+          pairArmAlpha[i].push_back(armAlpha);
 
         }
       } // end of loop over all MCsignals
@@ -1227,6 +1449,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     primVerticesZ[signal] = primVertz[signal-fFillPairSignalOffset];
 
     //leg1 variables
+    ID_tracks1[signal] = id_track1[signal-fFillPairSignalOffset];
     eta_tracks1[signal] = eta_track1[signal-fFillPairSignalOffset];
     phi_tracks1[signal] = phi_track1[signal-fFillPairSignalOffset];
     pt_tracks1[signal] = pt_track1[signal-fFillPairSignalOffset];
@@ -1235,12 +1458,13 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     dcaZ_tracks1[signal] = dcaZ_track1[signal-fFillPairSignalOffset];
     dcaXY_res_tracks1[signal] = dcaXY_res_track1[signal-fFillPairSignalOffset];    //DCA
     dcaZ_res_tracks1[signal] = dcaZ_res_track1[signal-fFillPairSignalOffset];
-    verticesX_tracks1[signal] = vertx_track1[signal-fFillPairSignalOffset];
-    verticesY_tracks1[signal] = verty_track1[signal-fFillPairSignalOffset];
-    verticesZ_tracks1[signal] = vertz_track1[signal-fFillPairSignalOffset];
+    X_tracks1[signal] = x_track1[signal-fFillPairSignalOffset];
+    Y_tracks1[signal] = y_track1[signal-fFillPairSignalOffset];
+    Z_tracks1[signal] = z_track1[signal-fFillPairSignalOffset];
 
 
     //leg2 variables
+    ID_tracks2[signal] = id_track2[signal-fFillPairSignalOffset];
     eta_tracks2[signal] = eta_track2[signal-fFillPairSignalOffset];
     phi_tracks2[signal] = phi_track2[signal-fFillPairSignalOffset];
     pt_tracks2[signal] = pt_track2[signal-fFillPairSignalOffset];
@@ -1249,9 +1473,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     dcaZ_tracks2[signal] = dcaZ_track2[signal-fFillPairSignalOffset];
     dcaXY_res_tracks2[signal] = dcaXY_res_track2[signal-fFillPairSignalOffset];    //DCA
     dcaZ_res_tracks2[signal] = dcaZ_res_track2[signal-fFillPairSignalOffset];
-    verticesX_tracks2[signal] = vertx_track2[signal-fFillPairSignalOffset];
-    verticesY_tracks2[signal] = verty_track2[signal-fFillPairSignalOffset];
-    verticesZ_tracks2[signal] = vertz_track2[signal-fFillPairSignalOffset];
+    X_tracks2[signal] = x_track2[signal-fFillPairSignalOffset];
+    Y_tracks2[signal] = y_track2[signal-fFillPairSignalOffset];
+    Z_tracks2[signal] = z_track2[signal-fFillPairSignalOffset];
 
     //pair variables
     nPairs[signal] = filledPairMCSignal[signal-fFillPairSignalOffset];
@@ -1260,13 +1484,21 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     pairOpAngs[signal] = pairOpAng[signal-fFillPairSignalOffset];
     pairDCAee[signal] = pairDCA[signal-fFillPairSignalOffset];
 
+    pairPhiVs[signal] = pairPhiV[signal-fFillPairSignalOffset];
+    pairPsis[signal] = pairPsi[signal-fFillPairSignalOffset];
+
     pairCosPointAngs[signal] = pairCosPointAng[signal-fFillPairSignalOffset];
+    cosPointAng_tracks1[signal] = cosPointAng_track1[signal-fFillPairSignalOffset];
+    cosPointAng_tracks2[signal] = cosPointAng_track2[signal-fFillPairSignalOffset];
+
     pairDecayLengths[signal] = pairDecayLength[signal-fFillPairSignalOffset];
     pairRs[signal] = pairR[signal-fFillPairSignalOffset];
+    pairChiSquares[signal] = pairChiSquare[signal-fFillPairSignalOffset];
+
+    pairArmAlphas[signal] = pairArmAlpha[signal-fFillPairSignalOffset];
 
 
   }
-
 
   return 0;
 }
@@ -1294,6 +1526,7 @@ std::tuple<int, int, int> AliAnalysisTaskMLTreeMaker2018::GetAcceptedPairs(AliVE
     //MCverty_tracks2[i].clear();
     //MCvertz_tracks2[i].clear();
  
+    ID_tracks1[i].clear();
     eta_tracks1[i].clear();
     phi_tracks1[i].clear();
     pt_tracks1[i].clear();
@@ -1305,11 +1538,12 @@ std::tuple<int, int, int> AliAnalysisTaskMLTreeMaker2018::GetAcceptedPairs(AliVE
     dcaZ_tracks1[i].clear();
     dcaXY_res_tracks1[i].clear();
     dcaZ_res_tracks1[i].clear();
-    verticesX_tracks1[i].clear();
-    verticesY_tracks1[i].clear();
-    verticesZ_tracks1[i].clear();
+    X_tracks1[i].clear();
+    Y_tracks1[i].clear();
+    Z_tracks1[i].clear();
 
 
+    ID_tracks2[i].clear();
     eta_tracks2[i].clear();
     phi_tracks2[i].clear();
     pt_tracks2[i].clear();
@@ -1321,39 +1555,45 @@ std::tuple<int, int, int> AliAnalysisTaskMLTreeMaker2018::GetAcceptedPairs(AliVE
     dcaZ_tracks2[i].clear();
     dcaXY_res_tracks2[i].clear();
     dcaZ_res_tracks2[i].clear();
-    verticesX_tracks2[i].clear();
-    verticesY_tracks2[i].clear();
-    verticesZ_tracks2[i].clear();
+    X_tracks2[i].clear();
+    Y_tracks2[i].clear();
+    Z_tracks2[i].clear();
  
 
     pairMasses[i].clear();
     pairPtees[i].clear();
     pairOpAngs[i].clear();
+    pairDCAee[i].clear();
+
+    pairPhiVs[i].clear();
+    pairPsis[i].clear();
+
 
     pairCosPointAngs[i].clear();
+    cosPointAng_tracks1[i].clear();
+    cosPointAng_tracks2[i].clear();
+
     pairDecayLengths[i].clear();
     pairRs[i].clear();
+    pairChiSquares[i].clear();
+
+    pairArmAlphas[i].clear();
 
   }
 
-  //std::cout << "+++ Pairs +++" << std::endl;
 
   Int_t numberPairsULS = 0;
   Int_t numberPairsLSmm = 0;
   Int_t numberPairsLSpp = 0;
   if(doULS){
-    //std::cout << "Filling ULS pairs" << std::endl;
     numberPairsULS = FillSimplePairs(fNegPart, fPosPart, event, 0);
   }
   if(doLS){
-    //std::cout << "Filling LSmm pairs" << std::endl;
     numberPairsLSmm = FillSimplePairs(fNegPart, fNegPart, event, 1);
     
-    //std::cout << "Filling LSmm pairs" << std::endl;
     numberPairsLSpp = FillSimplePairs(fPosPart, fPosPart, event, 2);
   }
   if(fPairMCSignal.size() > 0){
-    //std::cout << "Filling MCsignal pairs" << std::endl;
     Int_t check =  FillSignalPairs(event);
   }
 
@@ -1371,6 +1611,7 @@ AliAnalysisTaskMLTreeMaker2018::Particle AliAnalysisTaskMLTreeMaker2018::CreateP
   float x1 = mcPart1->Xv();
   float y1 = mcPart1->Yv();
   float z1 = mcPart1->Zv();
+
 
   Particle part(pt1, eta1, phi1, charge1, x1, y1, z1);
   part.DielectronPairFromSameMother.resize(fDielectronPairNotFromSameMother.size(), false);
@@ -1507,7 +1748,6 @@ Int_t AliAnalysisTaskMLTreeMaker2018::GetAcceptedTracks(AliVEvent *event, Double
       continue;
     }
 
-    //std::cout << "Track issue: " << track->GetLabel() << "  " << iTracks << "  " <<  event->GetNumberOfTracks() << std::endl;
 
     if(!isAOD) fQAHistTracks->Fill("Not AOD track",1);
     else       fQAHistTracks->Fill("Is AOD track",1);
@@ -1519,7 +1759,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::GetAcceptedTracks(AliVEvent *event, Double
       mcEvent = MCEvent();
       if (!mcEvent) {
         AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
-	std::cout << "Could not receive MC -> hasMC set to kFALSE!!" << std::endl;
+	//std::cout << "Could not receive MC -> hasMC set to kFALSE!!" << std::endl;
 
         hasMC=kFALSE;
         continue;
@@ -1784,7 +2024,7 @@ Int_t AliAnalysisTaskMLTreeMaker2018::GetAcceptedTracks(AliVEvent *event, Double
 //      part.SetTrackID(fabs(track->GetLabel())); //iTracks
       part.SetTrackID(iTracks); //iTracks
       part.SetTrackLabel(fabs(track->GetLabel())); //iTracks
-
+      part.SetTrackNumber(fabs(track->GetLabel())+eventNumber*10000);
       part.SetMotherID(motherID);
       part.SetULSSignalPair(generatorForULSSignal);
       part.SetMCSignalPair(generatorForMCSignal);
@@ -1910,4 +2150,198 @@ void AliAnalysisTaskMLTreeMaker2018::CheckSingleLegMCsignals(std::vector<Bool_t>
     vec.at(i) = AliDielectronMC::Instance()->IsMCTruth(tracklabel, &(fSingleLegMCSignal[i]), 1);
   }
 }
+
+
+
+//______________________________________________________________________
+KFParticle AliAnalysisTaskMLTreeMaker2018::CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg)
+{
+  Double_t trackParam[6];
+  Double_t covMatrix[21];
+
+  Bool_t IsDCA = track->GetXYZ(trackParam);
+//  if (IsDCA) cout << "track position is at DCA" << endl;
+//  if (!IsDCA) cout << "track position is at first point" << endl;
+//  track->XvYvZv(trackParam);
+  track->GetPxPyPz(&trackParam[3]);
+  track->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpt;
+  kfpt.SetParameters(trackParam);
+  kfpt.SetCovarianceMatrix(covMatrix);
+  kfpt.SetCharge(track->Charge());
+  kfpt.SetNDF(1);
+  kfpt.SetChi2(track->Chi2perNDF());
+
+  KFParticle kfp(kfpt, pdg);
+
+  return kfp;
+}
+
+//______________________________________________________________________
+KFParticle AliAnalysisTaskMLTreeMaker2018::CreateKFParticle(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg)
+{
+  // Interface to KFParticle
+  KFPTrack kfpTrk;
+  // Set the values
+  kfpTrk.SetParameters((Float_t) param[0],(Float_t) param[1],(Float_t) param[2],
+                       (Float_t) param[3],(Float_t) param[4],(Float_t) param[5]);
+  kfpTrk.SetCharge(charge);
+  Float_t covF[21];
+  for (Int_t i = 0; i<21;i++) { covF[i] = (Float_t) cov[i]; }
+  kfpTrk.SetCovarianceMatrix(covF);
+  kfpTrk.SetNDF(1);
+  kfpTrk.SetChi2(Chi2perNDF);
+
+  // Build KFParticle
+  KFParticle kfp(kfpTrk, pdg);
+  return kfp;
+}
+
+
+//______________________________________________________________________
+KFVertex AliAnalysisTaskMLTreeMaker2018::CreateKFVertex(Double_t *param, Double_t *cov)
+{
+  KFPVertex kfpVtx;
+  // Set the values
+  Float_t paramF[3] = {(Float_t) param[0],(Float_t) param[1],(Float_t) param[2]};
+  kfpVtx.SetXYZ(paramF);
+  Float_t covF[6] = {(Float_t) cov[0],(Float_t) cov[1],(Float_t) cov[2],
+                     (Float_t) cov[3],(Float_t) cov[4],(Float_t) cov[5]};
+  kfpVtx.SetCovarianceMatrix(covF);
+
+  return kfpVtx;
+}
+
+
+//______________________________________________________________________
+KFParticle AliAnalysisTaskMLTreeMaker2018::CreateKFParticleV0(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2)
+{
+  Double_t trackParam[6];
+  Double_t covMatrix[21];
+
+  track1->GetXYZ(trackParam);
+  track1->GetPxPyPz(&trackParam[3]);
+  track1->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpt1;
+  kfpt1.SetParameters(trackParam);
+  kfpt1.SetCovarianceMatrix(covMatrix);
+  kfpt1.SetCharge(track1->Charge());
+  kfpt1.SetNDF(1);
+  kfpt1.SetChi2(track1->Chi2perNDF());
+
+  track2->GetXYZ(trackParam);
+  track2->GetPxPyPz(&trackParam[3]);
+  track2->GetCovarianceXYZPxPyPz(covMatrix);
+
+  KFPTrack kfpt2;
+  kfpt2.SetParameters(trackParam);
+  kfpt2.SetCovarianceMatrix(covMatrix);
+  kfpt2.SetCharge(track2->Charge());
+  kfpt2.SetNDF(1);
+  kfpt2.SetChi2(track2->Chi2perNDF());
+
+  // now we have all info to create the KFParticle version of the daughters
+  KFParticle kfpDaughter1(kfpt1, pdg1);
+  KFParticle kfpDaughter2(kfpt2, pdg2);
+
+  KFParticle kfpMother(kfpDaughter1, kfpDaughter2);
+
+  return kfpMother;
+}
+
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMLTreeMaker2018::DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMLTreeMaker2018::DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMLTreeMaker2018::ldlFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
+  Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + (PV.GetCovariance(5)+kfpParticle.GetCovariance(5))*dz_particle*dz_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle + (PV.GetCovariance(3)+kfpParticle.GetCovariance(3))*dx_particle*dz_particle + (PV.GetCovariance(4)+kfpParticle.GetCovariance(4))*dy_particle*dz_particle );
+  if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
+  dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
+  if ( dl_particle==0. ) return 9999.;
+  return l_particle/dl_particle;
+}
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMLTreeMaker2018::ldlXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle );
+  if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
+  dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
+  if ( dl_particle==0. ) return 9999.;
+  return l_particle/dl_particle;
+}
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMLTreeMaker2018::CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother)
+{
+  Double_t v[3];
+  v[0] = kfp.GetX() - kfpmother.GetX();
+  v[1] = kfp.GetY() - kfpmother.GetY();
+  v[2] = kfp.GetZ() - kfpmother.GetZ();
+
+  Double_t p[3];
+  p[0] = kfp.GetPx();
+  p[1] = kfp.GetPy();
+  p[2] = kfp.GetPz();
+
+  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1]+p[2]*p[2])*(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+
+  if ( ptimesv2<=0 ) return 0.0;
+  else {
+    Double_t cos = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2]) / TMath::Sqrt(ptimesv2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
+}
+
+//______________________________________________________________________
+Double_t AliAnalysisTaskMLTreeMaker2018::CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother)
+{
+  Double_t v[2];
+  v[0] = kfp.GetX() - kfpmother.GetX();
+  v[1] = kfp.GetY() - kfpmother.GetY();
+
+  Double_t p[2];
+  p[0] = kfp.GetPx();
+  p[1] = kfp.GetPy();
+
+  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1])*(v[0]*v[0]+v[1]*v[1]);
+
+  if ( ptimesv2<=0 ) return 0.0;
+  else {
+    Double_t cos = (v[0]*p[0]+v[1]*p[1]) / TMath::Sqrt(ptimesv2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
+}
+
 
