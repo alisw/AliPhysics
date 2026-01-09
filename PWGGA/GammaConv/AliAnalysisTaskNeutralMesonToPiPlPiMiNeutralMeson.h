@@ -370,13 +370,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoMCHNMInAccVsNDMPt;                            //!<!
     // reconstructed particles MC validated
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 //!<! histos with reconstructed validated HNM, inv mass, pT
-    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass
-    TH2F**                          fHistoDoubleCountTrueHNMInvMassPt;                    //!<! array of histos with double;           //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! array of histos with double;           //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM;       //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubLambda;        //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM; //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass, only additionally found HNM
     
-    TH2F**                          fHistoDoubleCountTruePi0InvMassPt;                    //!<! array of histos with doubl counted etas, invMass, pT
+    TH2F**                          fHistoDoubleCountTruePi0InvMassPt;                    //!<! histos with reconstructed validated HNM, inv mass, pT fixed NDM mass
+    TH2F**                          fHistoDoubleCountTrueHNMInvMassPt;                    //!<! array of histos with doubl counted etas, invMass, pT
     TH2F**                          fHistoDoubleCountTrueConvGammaRPt;                    //!<! array of histos with double counted photons, R, pT
 
     TH2F**                          fHistoTrueHNMInAccVsNDMPt;                            //!<!              
@@ -385,7 +385,11 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  //!<! histos with reconstructed validated NDM, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           //!<! histos with reconstructed validated NDM, inv mass, pT
-    TH2F**                          fHistoTrueGammaGammaAlphaVsPt;                        //!<! histos with reconstructed validated NDM, alpha, pT
+    TH2F**                          fHistoTrueMotherGammaGammaInvMassEta;                 //!<! histos with reconstructed validated NDM, inv mass, eta
+    TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassEta;          //!<! histos with reconstructed validated NDM, inv mass, eta
+    TH2F**                          fHistoTruePi0InvMassPt;                               //!<! histos with reconstructed validated pi0, inv mass, pT
+    TH2F**                          fHistoTruePi0InvMassEta;                              //!<! histos with reconstructed validated pi0, inv mass, eta
+    TH2F**                          fHistoTrueGammaGammaAlphaVsPt;                        //!<! histos with reconstructed validated N, alpha, pT
     TH2F**                          fHistoTrueGammaGammaFromHNMAlphaVsPt;                        //!<! histos with reconstructed validated NDM, alpha, pT
     TH1F**                          fHistoTrueConvGammaPt;                                //!<! histos with reconstructed validated conv gamma, pT
     TH1F**                          fHistoTrueConvGammaFromNeutralMesonPt;                //!<! histos with reconstructed validated conv gamma from HNM via NDM, pT
@@ -704,7 +708,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 42);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 43);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

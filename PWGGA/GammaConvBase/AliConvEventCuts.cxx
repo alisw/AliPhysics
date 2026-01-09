@@ -1005,7 +1005,7 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
     if(fFitDataPi0_inv_temp){
       fFitDataPi0_inv = new TF1(*fFitDataPi0_inv_temp);
       AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
-    } else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameFitDataPi0.Data() ));
+    } else AliWarning(Form("%s not found in %s",fNameFitDataPi0.Data(), fPathTrFReweighting.Data() ));
   }
 
   if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
@@ -3257,6 +3257,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC19i3c1 :
     case kLHC19i3c2 :
     case kLHC17HERJJ :
+    case kLHC23a4 :
     case kLHC23a4b :
     case kLHC24j3:
     // pPb 5 TeV
@@ -8379,8 +8380,6 @@ Float_t AliConvEventCuts::GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent,
       fPeriodEnum == kLHC20j6a || fPeriodEnum == kLHC20j6b ||  fPeriodEnum == kLHC20j6c ||  fPeriodEnum == kLHC20j6d  ) // LHC15o pass2 MCs  
     kCaseGen = 2;  // regular MC
 
-
-
   if (kCaseGen == 0) return 1.;
   // !IsParticleFromBGEvent() means the particle shall not be used. Here, 1. is returned but somewhere else it will get rejected.
   if(kCaseGen==1 && !IsParticleFromBGEvent(index, mcEvent, event)) return 1.;
@@ -8535,6 +8534,63 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
   return weight;
 }
 
+
+///________________________________________________________________________
+Float_t AliConvEventCuts::GetWeightForHeavyNeutralMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event){
+  // AliInfo("AliConvEventCuts::GetWeightForHeavyNeutralMeson(): INFO: Starting function\n");
+  if(index < 0) return 0; // No Particle
+
+  // check if MC production should be weighted 
+  Int_t kCaseGen = 0;
+  if( fPeriodEnum == kLHC23a4 || fPeriodEnum == kLHC23a4b || fPeriodEnum == kLHC24j3 ) kCaseGen = 1;   // eta prime biased MC productions
+  if (kCaseGen == 0) return 1.;
+
+  // get pT and pdg code
+  Double_t mesonPt = 0;
+  //Double_t mesonMass = 0;
+  Int_t PDGCode = 0;
+  if(!event || event->IsA()==AliESDEvent::Class()){
+    mesonPt = ((AliMCParticle*) mcEvent->GetTrack(index))->Pt();
+    //mesonMass = ((AliMCParticle*)mcEvent->GetTrack(index))->GetCalcMass();
+    PDGCode = ((AliMCParticle*) mcEvent->GetTrack(index))->PdgCode();
+  } else if(event->IsA()==AliAODEvent::Class()){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
+      mesonPt = aodMCParticle->Pt();
+      //mesonMass = aodMCParticle->GetCalcMass();
+      PDGCode = aodMCParticle->GetPdgCode();
+    } else {
+      return 1;
+    }
+  }
+
+  if( !(PDGCode == 223 || PDGCode == 221 || PDGCode == 331)){
+    AliInfo(Form("AliConvEventCuts::GetWeightForMeson(): Called for meson with PDG code = %d\n",
+                 PDGCode));
+    return 1.;    
+  }
+
+  // get MC value
+  // reuse the histogram and fit from the regular gammaV1 task for heavy meson task - but we only need one at a time
+  Float_t functionResultMC = 1.;
+  functionResultMC = hReweightMCHistPi0_inv->Interpolate(mesonPt);
+
+  // get data value
+  Float_t functionResultData = 1;
+  functionResultData = fFitDataPi0_inv->Eval(mesonPt);
+
+  // calculate weight from data and MC
+  Double_t weight = 1;
+  if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
+    weight = functionResultData/functionResultMC;
+    if (!isfinite(functionResultData)) weight = 1.;
+    if (!isfinite(weight)) weight = 1.;
+  }
+  
+  //AliInfo("AliConvEventCuts::GetWeightForMesonOld(): INFO: end of function\n");
+  return weight;
+}
 
 ///________________________________________________________________________
 void AliConvEventCuts::GetCorrectEtaShiftFromPeriod(){
@@ -9660,6 +9716,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   // 13 TeV eta prime biased JJ Pythia 8, LHC161718, 7 pT-hard bins
   } else if( periodName.CompareTo("LHC24j3") == 0){
     fPeriodEnum = kLHC24j3;
+    fEnergyEnum = k13TeV;
+  // 13 TeV eta prime biased Pythia 8, LHC161718
+  } else if( periodName.CompareTo("LHC23a4") == 0){
+    fPeriodEnum = kLHC23a4;
     fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors low field JJ Pythia 8 MB
   } else if ( periodName.CompareTo("LHC16P1JJLowB") == 0 || periodName.CompareTo("LHC17f8b") == 0  ){
