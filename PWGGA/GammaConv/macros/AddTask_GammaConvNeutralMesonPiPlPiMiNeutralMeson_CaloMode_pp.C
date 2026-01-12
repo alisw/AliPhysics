@@ -1959,8 +1959,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
       analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
     }
 
-
-
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
@@ -2026,6 +2024,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     }
   }
 
+  task->SetMesonWeights(doWeighting);
   task->SetNDMRecoMode(neutralPionMode);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetClusterCutList(ClusterCutList);

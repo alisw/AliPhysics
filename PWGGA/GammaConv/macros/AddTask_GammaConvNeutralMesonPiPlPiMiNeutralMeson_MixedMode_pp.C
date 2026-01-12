@@ -2635,6 +2635,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
   }
 
+  task->SetMesonWeights(doWeighting);
   task->SetNDMRecoMode(neutralPionMode);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(ConvCutList);

@@ -132,6 +132,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground(kFALSE),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   fEnableAsymmetryPlot_NotAccepted(kFALSE),
+  fEnableMesonWeights(kFALSE),
   enableDalitzAllPt(kFALSE),
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
@@ -223,7 +224,10 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMCPosPionsFromNeutralMesonPt(nullptr),
   fHistoMCNegPionsFromNeutralMesonPt(nullptr),
   fHistoMCHNMPiPlPiMiNDMPt(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPt_FineBinning(nullptr),
   fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPt_WOWeights(nullptr),
   fHistoMCHNMPiPlPiMiNDMEta(nullptr),
   fHistoMCHNMPiPlPiMiNDMPhi(nullptr),
   fHistoMCAllPosPionsPt(nullptr),
@@ -582,6 +586,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground(kFALSE),
   fEnableAsymmetryPlotCombCPionVsNPion(kFALSE),
   fEnableAsymmetryPlot_NotAccepted(kFALSE),
+  fEnableMesonWeights(kFALSE),
   enableDalitzAllPt(kFALSE),
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
@@ -673,7 +678,10 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoMCPosPionsFromNeutralMesonPt(nullptr),
   fHistoMCNegPionsFromNeutralMesonPt(nullptr),
   fHistoMCHNMPiPlPiMiNDMPt(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPt_FineBinning(nullptr),
   fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights(nullptr),
+  fHistoMCHNMPiPlPiMiNDMPt_WOWeights(nullptr),
   fHistoMCHNMPiPlPiMiNDMEta(nullptr),
   fHistoMCHNMPiPlPiMiNDMPhi(nullptr),
   fHistoMCAllPosPionsPt(nullptr),
@@ -2273,7 +2281,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     }
 
     fHistoMCHNMPiPlPiMiNDMPt                     = new TH1F*[fnCuts];
+    fHistoMCHNMPiPlPiMiNDMPt_FineBinning         = new TH1F*[fnCuts];
     fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights      = new TH1F*[fnCuts];
+    fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights      = new TH1F*[fnCuts];
+    fHistoMCHNMPiPlPiMiNDMPt_WOWeights           = new TH1F*[fnCuts];
     fHistoMCHNMPiPlPiMiNDMInAccPt                = new TH1F*[fnCuts];
     if (fEnableNDMInputSpectrum){
       fHistoMCNDMFromHNMInputPt                  = new TH1F*[fnCuts];
@@ -2750,12 +2761,35 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoMCHNMPiPlPiMiNDMPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMPt[iCut]);
 
+
+      fHistoMCHNMPiPlPiMiNDMPt_FineBinning[iCut]         = new TH1F("MC_HNM_Pt_FineBinning","MC_HNM_Pt_FineBinning", 300, 0., 60.);
+      fHistoMCHNMPiPlPiMiNDMPt_FineBinning[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoMCHNMPiPlPiMiNDMPt_FineBinning[iCut]->GetYaxis()->SetTitle("N_{HNM}");
+      fHistoMCHNMPiPlPiMiNDMPt_FineBinning[iCut]->Sumw2();
+      fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMPt_FineBinning[iCut]);
+
       if( fIsMC > 1){
         fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[iCut]         = new TH1F("MC_HNM_WOEventWeights_Pt","MC_HNM_WOEventWeights_Pt", HistoNPtBins, arrPtBinning);
         fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[iCut]->GetYaxis()->SetTitle("N_{HNM}");
         fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[iCut]);
+      }
+
+      if( fEnableMesonWeights ){
+        fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[iCut]         = new TH1F("MC_HNM_WOMesonWeights_Pt","MC_HNM_WOMesonWeights_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[iCut]->GetYaxis()->SetTitle("N_{HNM}");
+        fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[iCut]);
+
+        if( fIsMC > 1) {
+          fHistoMCHNMPiPlPiMiNDMPt_WOWeights[iCut]         = new TH1F("MC_HNM_WOWeights_Pt","MC_HNM_WOWeights_Pt", HistoNPtBins, arrPtBinning);
+          fHistoMCHNMPiPlPiMiNDMPt_WOWeights[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoMCHNMPiPlPiMiNDMPt_WOWeights[iCut]->GetYaxis()->SetTitle("N_{HNM}");
+          fHistoMCHNMPiPlPiMiNDMPt_WOWeights[iCut]->Sumw2();
+          fMCList[iCut]->Add(fHistoMCHNMPiPlPiMiNDMPt_WOWeights[iCut]);
+        }
       }
 
       fHistoMCHNMPiPlPiMiNDMInAccPt[iCut]    = new TH1F("MC_HNMInAcc_Pt","MC_HNMInAcc_Pt", HistoNPtBins, arrPtBinning);
@@ -2989,12 +3023,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTrueMotherGammaGammaFromHNMInvMassEta[iCut]->GetYaxis()->SetTitle("#eta");
         fHistoTrueMotherGammaGammaFromHNMInvMassEta[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueMotherGammaGammaFromHNMInvMassEta[iCut]);
-        fHistoTruePi0InvMassPt[iCut]           = new TH2F("ESD_TruePi0_InvMass_Pt","ESD_TruePi0_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
+        fHistoTruePi0InvMassPt[iCut]           = new TH2F("ESD_TruePi0_InvMass_Pt","ESD_TruePi0_InvMass_Pt",225,0,0.45, HistoNPtBins, arrPtBinning);
         fHistoTruePi0InvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
         fHistoTruePi0InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePi0InvMassPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTruePi0InvMassPt[iCut]);
-        fHistoTruePi0InvMassEta[iCut]    = new TH2F("ESD_TruePi0_InvMass_Eta","ESD_TruePi0_InvMass_Eta",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], 100,-1,1);
+        fHistoTruePi0InvMassEta[iCut]    = new TH2F("ESD_TruePi0_InvMass_Eta","ESD_TruePi0_InvMass_Eta",225,0.0,0.45, 100,-1,1);
         fHistoTruePi0InvMassEta[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
         fHistoTruePi0InvMassEta[iCut]->GetYaxis()->SetTitle("#eta");
         fHistoTruePi0InvMassEta[iCut]->Sumw2();
@@ -7007,7 +7041,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
         Float_t weighted= 1.;
         if (particle->Pt()>0.005){
           weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(i, fMCEvent,fInputEvent);
-
         }
         // if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) {
         //   if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent,fInputEvent)){
@@ -7017,10 +7050,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
         //   }
         // }
 
-
         if(particle->PdgCode() == fPDGCodeAnalyzedMeson){
-          fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight); 	// All MC eta, omega OR eta prime in respective decay channel
-          if( fIsMC > 1) fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[fiCut]->Fill(particle->Pt());  // All MC eta, omega OR eta prime in respective decay channel, without weights
+          fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight); 	            // All MC eta, omega OR eta prime in respective decay channel
+          fHistoMCHNMPiPlPiMiNDMPt_FineBinning[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight);  // All MC eta, omega or eta prime in respective decay channel
+          if( fIsMC > 1) fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[fiCut]->Fill(particle->Pt(), weighted);    // All MC eta, omega OR eta prime in respective decay channel, without event weights
+          if( fEnableMesonWeights ) {
+            fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[fiCut]->Fill(particle->Pt(), tempParticleWeight);       // All MC eta, omega OR eta prime in respective decay channel, without meson weights
+            if( fIsMC > 1) fHistoMCHNMPiPlPiMiNDMPt_WOWeights[fiCut]->Fill(particle->Pt());                 // All MC eta, omega OR eta prime in respective decay channel, without weights (meson or event)
+          }
           if(fEnableNDMInputSpectrum){
             for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
               AliVParticle *daughter = fMCEvent->GetTrack(idaug);
@@ -7373,7 +7410,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
         if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMCPiPlPiMiPiZero(particle,AODMCTrackArray,labelNegPion,labelPosPion,labelNDM,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()) ||   ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMCPiPlPiMiEta(particle,AODMCTrackArray,labelNegPion,labelPosPion,labelNDM,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
           Float_t weighted= 1.;          
           if (particle->Pt()>0.005){
-            weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(i, 0x0,fInputEvent);
+            weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(i, fMCEvent,fInputEvent);
           }
 
           // if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) {        // this doesn't seem to be implemented in the PrimaryPionCuts
@@ -7384,11 +7421,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
           //   }
           // }
 
-
-
           if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
-            fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight); 	// All MC eta, omega OR eta prime in respective decay channel
-            if( fIsMC > 1 ) fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[fiCut]->Fill(particle->Pt());
+            fHistoMCHNMPiPlPiMiNDMPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight); 	            // All MC eta, omega OR eta prime in respective decay channel
+            fHistoMCHNMPiPlPiMiNDMPt_FineBinning[fiCut]->Fill(particle->Pt(), weighted*tempParticleWeight);   // All MC eta, omega OR eta prime in respective decay channel, finer binning
+            if( fIsMC > 1 ) fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights[fiCut]->Fill(particle->Pt());             // All MC eta, omega OR eta prime in respective decay channel, no event weights
+            if( fEnableMesonWeights ) {
+              fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights[fiCut]->Fill(particle->Pt(), tempParticleWeight);       // All MC eta, omega OR eta prime in respective decay channel, without meson weights
+              if( fIsMC > 1) fHistoMCHNMPiPlPiMiNDMPt_WOWeights[fiCut]->Fill(particle->Pt());                 // All MC eta, omega OR eta prime in respective decay channel, without weights (meson or event)
+            }
             if(fEnableNDMInputSpectrum){
               for(int idaug = particle->GetDaughterFirst(); idaug <= particle->GetDaughterLast(); idaug++) {
                 AliAODMCParticle *daughter = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(idaug));
@@ -8869,8 +8909,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   // Do things for each case
   if(isTrueMeson){
     // neutral meson was found
-
-    Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(i, fMCEvent,fInputEvent);
+    Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(mesoncand->GetMCLabel(), fMCEvent,fInputEvent);
     weighted*=mesonWeight;
 
     if(fEnableNoCorrOutput) fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
@@ -9214,8 +9253,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   // Do things for each case
   if(isTrueMeson){
     // neutral meson was found
-
-    Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(i, fMCEvent,fInputEvent);
+    Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(mesoncand->GetMCLabel(), fMCEvent,fInputEvent);
     weighted*=mesonWeight;
 
     if(fEnableNoCorrOutput) fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);

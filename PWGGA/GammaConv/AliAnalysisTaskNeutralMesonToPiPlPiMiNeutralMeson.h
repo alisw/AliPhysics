@@ -61,6 +61,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
       fEnableSubLambdaOutput        = unsmearingoutputs.Contains("3") ? kTRUE : kFALSE;
       fEnablePCMEMCUnsmearing       = unsmearingoutputs.Contains("4") ? kTRUE : kFALSE;
       }
+    void SetMesonWeights(Bool_t doWeights ) {  fEnableMesonWeights=doWeights; }
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
       fEventCutArray = CutArray;
@@ -243,6 +244,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                            fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground;    ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;               ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlot_NotAccepted;                   ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableMesonWeights;                                ///< Turn on or off if the meson weights are applied
     Bool_t                            enableDalitzAllPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
@@ -358,7 +360,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoMCPosPionsFromNeutralMesonPt;                 //!<! array of histos of all produced positive pions from HNM via pi+pi-NDM in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPt;                 //!<! array of histos of all produced negative pions from HNM via pi+pi-NDM in the specified y range/
     TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced NNM via pi+pi-NDM in the specified y range
-    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights;            //!<! array of histos of produced NNM via pi+pi-neutral meson in the specified y range, no weights, for JJ MC
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt_FineBinning;               //!<! array of histos of produced HNM via pi+pi-NDM, finer binning 
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights;            //!<! array of histos of produced NNM via pi+pi-neutral meson in the specified y range, no event weights, for JJ MC
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt_WOMesonWeights;            //!<! array of histos of produced NNM via pi+pi-neutral meson in the specified y range, no meson weights
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt_WOWeights;                 //!<! array of histos of produced NNM via pi+pi-neutral meson in the specified y range, no meson weights
     TH1F**                            fHistoMCHNMPiPlPiMiNDMEta;                          //!<! array of histos of produced HNM via pi+pi-NDM in the specified y range
     TH1F**                            fHistoMCHNMPiPlPiMiNDMPhi;                          //!<! array of histos of produced HNM via pi+pi-NDM in the specified y range
     TH1F**                            fHistoMCAllPosPionsPt;                              //!<! array of histos with all produced primary positive pions in the specified y range

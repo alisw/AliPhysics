@@ -8539,6 +8539,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
 Float_t AliConvEventCuts::GetWeightForHeavyNeutralMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event){
   // AliInfo("AliConvEventCuts::GetWeightForHeavyNeutralMeson(): INFO: Starting function\n");
   if(index < 0) return 0; // No Particle
+  if( !fDoReweightHistoMCPi0 ) return 1.;   // weighting not set
 
   // check if MC production should be weighted 
   Int_t kCaseGen = 0;
@@ -8565,11 +8566,14 @@ Float_t AliConvEventCuts::GetWeightForHeavyNeutralMeson(Int_t index, AliMCEvent 
     }
   }
 
+  if( mesonPt > hReweightMCHistPi0_inv->GetXaxis()->GetXmax() )     return 1.;
+  
   if( !(PDGCode == 223 || PDGCode == 221 || PDGCode == 331)){
     AliInfo(Form("AliConvEventCuts::GetWeightForMeson(): Called for meson with PDG code = %d\n",
                  PDGCode));
     return 1.;    
   }
+
 
   // get MC value
   // reuse the histogram and fit from the regular gammaV1 task for heavy meson task - but we only need one at a time
