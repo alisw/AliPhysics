@@ -377,9 +377,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18P1Pyt8NomB,     //!LHC18x Pythia8 MB productions nom B anchored to LHC18x
         kLHC18P1Pyt8LowB,     //!LHC18x Pythia8 MB productions low B anchored to LHC18c
 
-        // pp 13TeV eta prime biased JJ MC
-        kLHC23a4b,
-        kLHC24j3,
+        // pp 13TeV eta prime biased productions:
+        kLHC23a4,              //! LHC16-18 anch. eta prime biased min. biased production
+        kLHC23a4b,            //! LHC16-18 anch. eta prime biased JJ MC
+        kLHC24j3,             //! LHC16-18 anch. eta prime biased JJ MC
 
         kUnknownPeriod//!< kUnknownPeriod
       };
@@ -637,6 +638,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetWeightForHeavyNeutralMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
       Bool_t    GetUseNewMultiplicityFramework();
@@ -853,10 +855,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1F*                       hTriggerClass;                          ///< fired offline trigger class
       TH1F*                       hTriggerClassSelected;                  ///< selected fired offline trigger class
       TH1F*                       hTriggerClassesCorrelated;              ///< selected trigger class correlation with others
-      TH1D*                       hReweightMCHistPi0_inv;                 ///< histogram input for reweighting Pi0 in pt invariant form
+      TH1D*                       hReweightMCHistPi0_inv;                 ///< histogram input for reweighting Pi0 in pt invariant form, or in HNM task: heavy neutral meson
       TH1D*                       hReweightMCHistEta_inv;                 ///< histogram input for reweighting Eta in pt invariant form
       TH1D*                       hReweightMCHistK0s_inv;                 ///< histogram input for reweighting K0s in pt invariant form
-      TF1*                        fFitDataPi0_inv;                        ///< fit to pi0 spectrum in Data
+      TF1*                        fFitDataPi0_inv;                        ///< fit to pi0 spectrum in Data, or in HNM task: heavy neutral meson
       TF1*                        fFitDataEta_inv;                        ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s_inv;                        ///< fit to K0s spectrum in Data
       TF1*                        fReweightMCHist_interpolate_Pi0;        ///< a tf1 that interpolates the MC Pi0 spectrum

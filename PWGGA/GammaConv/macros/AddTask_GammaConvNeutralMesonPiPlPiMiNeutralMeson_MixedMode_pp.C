@@ -911,23 +911,23 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
   
   // -------- AliPrimaryPionCuts
-  // ITS cluster requirement variations
+  // ITS cluster requirement variations, default: 2, "first or second SPD cluster required";
   } else if(trainConfig == 321) { 
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","34c510796","h000643600000000","j453503000000000"); // 4: min 3 ITS clusters
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","34c510796","h000643600000000","j453503000000000"); // 4: + min 3 ITS clusters
   } else if(trainConfig == 322){
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","34c510796","h0006c3600000000","j453503000000000"); 
   } else if(trainConfig == 323)  { 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","34c510796","h0006d3600000000","j453503000000000"); 
 
-  // TPC cluster requirement variations
+  // TPC cluster requirement variations, default: 80 + refit
   } else if(trainConfig == 324) { 
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32e510796","h000643600000000","j453503000000000"); // e: no shared cluster
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32e510796","h000643600000000","j453503000000000"); // e: + no shared cluster
   } else if(trainConfig == 325){
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32e510796","h0006c3600000000","j453503000000000"); 
   } else if(trainConfig == 326)  { 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32e510796","h0006d3600000000","j453503000000000"); 
 
-  // charged pion DCA
+  // charged pion DCA, default 5, xy < 2.4, z < 3.2
   } else if(trainConfig == 327) { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c010796","h000643600000000","j453503000000000"); // 0: no cut
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c310796","h000643600000000","j453503000000000"); // 3: z<3.0, pT dep xy cut
@@ -941,7 +941,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c310796","h0006d3600000000","j453503000000000"); 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c610796","h0006d3600000000","j453503000000000"); 
 
-  // min pT cut
+  // min pT cut, default 1 - 0.1
   } else if(trainConfig == 330) { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c500796","h000643600000000","j453503000000000"); // 0: pT > 0.075 GeV
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c520796","h000643600000000","j453503000000000"); // 2: pT > 0.125 GeV
@@ -955,7 +955,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c520796","h0006d3600000000","j453503000000000"); 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c530796","h0006d3600000000","j453503000000000"); 
 
-  // TPC dEdx sigma
+  // TPC dEdx sigma, default 7: -3, 3
   } else if(trainConfig == 333) { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510b96","h000643600000000","j453503000000000"); // b: -2,2
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510996","h000643600000000","j453503000000000"); // 9: -2.5, 2.5
@@ -989,7 +989,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510766","h0006d3600000000","j453503000000000"); 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510726","h0006d3600000000","j453503000000000"); 
 
-  // pion pair mass cut
+  // pion pair mass cut, default 6: 0.65 GeV/c
   } else if(trainConfig == 339) { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510795","h000643600000000","j453503000000000"); // 5: cut at 0.50 GeV
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079k","h000643600000000","j453503000000000"); // k: cut at 0.48 GeV, using 4vector
@@ -1010,7 +1010,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006d3600000000","j453503000000000"); 
 
     // ---- AliConversionMesonCuts
-    // eta mass selection window variations
+    // eta mass selection window variations, default: 6
   } else if(trainConfig == 342) { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643500000000","j453503000000000"); // 5: 1 sigma
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000643700000000","j453503000000000"); // 7: 3 sigma
@@ -1030,7 +1030,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d3g00000000","j453503000000000");
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","00006d3l00000000","j453503000000000"); 
 
-    // eta assymetry variation
+    // eta assymetry variation, default: 3 0  - 1
   } else if(trainConfig == 345) { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000645600000000","j453503000000000"); // 5:  alpha < 0.75
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h000646600000000","j453503000000000"); // 6:  alpha < 0.80
@@ -1044,7 +1044,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d6600000000","j453503000000000"); 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006d7600000000","j453503000000000"); 
 
-    // eta minimum pT cut variations
+    // eta minimum pT cut variations, default: 
   } else if(trainConfig == 348){      // EG2, default at 4.6 GeV
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006o3600000000","j453503000000000"); // o: pT > 4.0 GeV
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c510796","h0006p3600000000","j453503000000000"); // p: pT > 4.2 GeV
@@ -2488,6 +2488,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
+    TString   reweightingFitName      = "Fit_Data";
+    TString   reweightingMCInputName  = "MC_InputHisto";
+
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
@@ -2495,6 +2498,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     if(fileNameCustomTriggerMimicOADB.CompareTo("") != 0)
       analysisEventCuts[i]->SetCustomTriggerMimicOADBFile(fileNameCustomTriggerMimicOADB);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+    if( doWeighting )
+      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNamePtWeights, reweightingMCInputName, "", "",reweightingFitName);
     if(fMinPtHardSet)
       analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
     if(fMaxPtHardSet)
@@ -2511,7 +2516,12 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     EventCutList->Add(analysisEventCuts[i]);
-    analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+    // analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+    if( runLightOutput ){
+      analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+    } else {
+      analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
+    }
 
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
@@ -2556,7 +2566,11 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       return ;
     } else {
       ConvCutList->Add(analysisCuts[i]);
-      analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+      if( runLightOutput ){
+        analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+      } else {
+        analysisCuts[i]->SetFillCutHistograms("",kTRUE);
+      }
     }
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
@@ -2621,6 +2635,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
   }
 
+  task->SetMesonWeights(doWeighting);
   task->SetNDMRecoMode(neutralPionMode);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(ConvCutList);
