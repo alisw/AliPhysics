@@ -8910,7 +8910,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   // Do things for each case
   if(isTrueMeson){
     // neutral meson was found
-    Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(mesoncand->GetMCLabel(), fMCEvent,fInputEvent);
+    Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(NDMMotherLabel, fMCEvent,fInputEvent);
     weighted  = weighted * mesonWeight;
 
     if(fEnableNoCorrOutput) fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
