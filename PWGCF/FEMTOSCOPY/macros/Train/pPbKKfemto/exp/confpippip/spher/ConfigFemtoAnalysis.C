@@ -17,9 +17,11 @@
 #include "AliFemtoVertexMultAnalysis.h"
 //#include "AliFemtoBasicEventCut.h" //w/o sphericity
 #include "AliFemtoSphericityEventCut.h" //w/ sphericity
-#include "AliFemtoKpm45TrackCut.h"
+//#include "AliFemtoKpm45TrackCut.h"
+#include "AliFemtoESDTrackCut.h"
 #include "AliFemtoCutMonitorParticlePID.h"
-#include "AliFemtoPairCutRadialDistanceKKdist.h"
+//#include "AliFemtoPairCutRadialDistanceKKdist.h"
+#include "AliFemtoShareQualityPairCut.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -84,7 +86,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorEventVertex     *vmon[2][iz];//vertex monitor
   AliFemtoCutMonitorEventMult       *mul_[2][iz];//multiplicity
   AliFemtoESDTrackCut             *pid_[iz];// pid_[2][iz] in K+K- case
-  AliFemtoPairCutRadialDistanceKKdist  *ttc[iz];
+  //AliFemtoPairCutRadialDistanceKKdist  *ttc[iz];
+  AliFemtoShareQualityPairCut  *ttc[iz];
   AliFemtoQinvCorrFctn                 *cqi[iz*cKt];//1d CF(Qinv): all kT + cKt bins
 
   AliFemtoCutMonitorParticleYPt *mdca[2][iz];//[pass-fail][iz]
