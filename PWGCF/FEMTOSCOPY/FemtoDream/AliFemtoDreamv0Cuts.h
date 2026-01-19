@@ -224,6 +224,14 @@ public:
     fInvMassCutSBOffset = offset;
     fInvMassCutSBWidth = width;
   }
+
+  void FillMCGenKinem(double pt, double eta, double phi) {
+    if (fMCHist) fMCHist->FillMCGenKinem(pt, eta, phi);
+  }
+  void FillMCRecoKinem(double pt, double eta, double phi) {
+    if (fMCHist) fMCHist->FillMCRecoKinem(pt, eta, phi);
+  }
+
   void Init();
   void SetName(TString OutputName)
   {

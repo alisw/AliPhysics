@@ -362,6 +362,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
             continue;
           }
         }
+        fLambdaCuts->FillMCRecoKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
       }
 
       Lambdas.push_back(*fLambda);
@@ -384,6 +385,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
             continue;
           }
         }
+        fAntiLambdaCuts->FillMCRecoKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
       }
 
       AntiLambdas.push_back(*fLambda);
@@ -579,10 +581,12 @@ fNegPionCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         else if (mcPart->GetPdgCode() == fLambdaCuts->GetPDGv0())
         {
           fLambdaCuts->FillGenerated(mcPart->Pt());
+          fLambdaCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         }
         else if (mcPart->GetPdgCode() == fAntiLambdaCuts->GetPDGv0())
         {
           fAntiLambdaCuts->FillGenerated(mcPart->Pt());
+          fAntiLambdaCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         }
       }
     }

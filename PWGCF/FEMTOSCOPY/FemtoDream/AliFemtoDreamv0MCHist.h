@@ -140,6 +140,18 @@ class AliFemtoDreamv0MCHist {
 	fHistMCMotherPDG->Fill(std::abs(pdg));
   }
 
+  void FillMCGenKinem(float pT, float eta, float phi) {
+    ((TH1F *) fMCList->FindObject("hGenPt"))->Fill(pT);
+    ((TH1F *) fMCList->FindObject("hGenEta"))->Fill(eta);
+    ((TH1F *) fMCList->FindObject("hGenPhi"))->Fill(phi);
+  }
+
+  void FillMCRecoKinem(float pT, float eta, float phi) {
+    ((TH1F *) fMCList->FindObject("hRecoPt"))->Fill(pT);
+    ((TH1F *) fMCList->FindObject("hRecoEta"))->Fill(eta);
+    ((TH1F *) fMCList->FindObject("hRecoPhi"))->Fill(phi);
+  }
+
   void SetName(TString name) {
     fMCList->SetName(name.Data());
   }
