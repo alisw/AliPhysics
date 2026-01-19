@@ -117,6 +117,16 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
   fPhiResolution->GetYaxis()->SetTitle("#Phi_{T,True}-#Phi_{T,Reco}");
   fMCList->Add(fPhiResolution);
 
+
+  // Kinematic variables (Pt Eta and Phi)
+  fMCList->Add(new TH1F("hGenPt", ";#it{p}_{T}^{gen} (GeV/#it{c});Counts", 5000, 0, 5));
+  fMCList->Add(new TH1F("hGenEta", ";#eta^{gen};Counts", 1000, -1, 1));
+  fMCList->Add(new TH1F("hGenPhi", ";#phi^ {gen} (rad);Counts", 1000, 0, 2*TMath::Pi()));
+
+  fMCList->Add(new TH1F("hRecoPt", ";#it{p}_{T}^{reco} (GeV/#it{c});Counts", 5000, 0, 5));
+  fMCList->Add(new TH1F("hRecoEta", ";#eta^{reco};Counts", 1000, -1, 1));
+  fMCList->Add(new TH1F("hRecoPhi", ";#phi^ {reco} (rad);Counts", 1000, 0, 2*TMath::Pi()));
+
   if (checkMother) {
     fHistMCMother = new TH2F("fHistMCMother",
                              "; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother",
