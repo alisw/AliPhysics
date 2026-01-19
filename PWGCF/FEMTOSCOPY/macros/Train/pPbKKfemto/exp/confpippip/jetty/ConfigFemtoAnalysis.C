@@ -20,8 +20,8 @@
 //#include "AliFemtoKpm45TrackCut.h"
 #include "AliFemtoESDTrackCut.h"
 #include "AliFemtoCutMonitorParticlePID.h"
-//#include "AliFemtoPairCutRadialDistanceKKdist.h"
-#include "AliFemtoShareQualityPairCut.h"
+#include "AliFemtoPairCutRadialDistanceKKdist.h"
+//#include "AliFemtoShareQualityPairCut.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -86,8 +86,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorEventVertex     *vmon[2][iz];//vertex monitor
   AliFemtoCutMonitorEventMult       *mul_[2][iz];//multiplicity
   AliFemtoESDTrackCut             *pid_[iz];// pid_[2][iz] in K+K- case
-  //AliFemtoPairCutRadialDistanceKKdist  *ttc[iz];
-  AliFemtoShareQualityPairCut  *ttc[iz];
+  AliFemtoPairCutRadialDistanceKKdist  *ttc[iz];
+  //AliFemtoShareQualityPairCut  *ttc[iz];
   AliFemtoQinvCorrFctn                 *cqi[iz*cKt];//1d CF(Qinv): all kT + cKt bins
 
   AliFemtoCutMonitorParticleYPt *mdca[2][iz];//[pass-fail][iz]
@@ -166,10 +166,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	pid_[ix]->AddCutMonitor(mpid[0][ix],mpid[1][ix]);
 
 	//}//for(int pa=0;pa<1;pa++) {
-      ttc[ix] = new AliFemtoShareQualityPairCut(); //pion two track cuts -->
+      ttc[ix] = new AliFemtoPairCutRadialDistanceKKdist();
+      //ttc[ix] = new AliFemtoShareQualityPairCut(); //pion two track cuts -->
       ttc[ix]->SetShareQualityMax(1.0);                    //
       ttc[ix]->SetShareFractionMax(0.05);                  //
-      //ttc[ix]->SetAverageSeparation(3.0);                  //
+      ttc[ix]->SetAverageSeparation(0.0);                  //
       ttc[ix]->SetRemoveSameLabel(kFALSE);                 //K+K- two track cuts --<
 	  
 	  
