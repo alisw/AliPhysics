@@ -42,6 +42,7 @@ public:
   void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
   void SetGeneratorName(TString name) {fsGeneratorName = name;}
   Bool_t IsFromGoodGenerator(Int_t index); // True if the MC particle with the given index comes from the selected generator
+  void SetQAPlots(Bool_t val = kFALSE) {fbQAPlots = val;}
 
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;}
@@ -211,6 +212,7 @@ private:
   Bool_t fbMCAnalysis; // switch: simulated / real data
   TString fsGeneratorName; // pattern for selecting only V0s from a specific MC generator
   TString fCentEstimator;  //Centrality estimator
+  Bool_t fbQAPlots;
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
@@ -305,8 +307,6 @@ private:
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
-  TH1D* fh1NMedConeCent; //! number of found median-cluster cones in centrality bins
-  TH2D* fh2EtaPhiMedCone[fgkiNBinsCent]; //! median-cluster cone eta-phi
   TH1D* fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
   TH1D* fh1DistanceJets[fgkiNBinsCent]; //! distance in eta-phi between jets within events
   TH1D* fh1DistanceV0JetsK0s[fgkiNBinsCent]; //! distance in eta-phi between V0 and the closest jet
@@ -348,7 +348,6 @@ private:
   THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
   THnSparse* fhnV0InPerpK0s[fgkiNBinsCent]; //! V0 in perpendicular cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
   THnSparse* fhnV0InRndK0s[fgkiNBinsCent]; //! V0 in random cones, in a centrality bin, m_V0; pt_V0; eta_V0
-  THnSparse* fhnV0InMedK0s[fgkiNBinsCent]; //! V0 in medium cones, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0OutJetK0s[fgkiNBinsCent]; //! V0 outside jet cones, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0NoJetK0s[fgkiNBinsCent]; //! V0 in no-jet events, in a centrality bin, m_V0; pt_V0; eta_V0
 
@@ -400,7 +399,6 @@ private:
   THnSparse* fhnV0InJetLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0InPerpLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0InRndLambda[fgkiNBinsCent]; //!
-  THnSparse* fhnV0InMedLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0OutJetLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0NoJetLambda[fgkiNBinsCent]; //!
 
@@ -459,7 +457,6 @@ private:
   THnSparse* fhnV0InJetALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0InPerpALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0InRndALambda[fgkiNBinsCent]; //!
-  THnSparse* fhnV0InMedALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0OutJetALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0NoJetALambda[fgkiNBinsCent]; //!
 
@@ -522,7 +519,7 @@ private:
 
   // Cut tuning
   // crossed/findable, daughter pt, dca, cpa, r, pseudorapidity, y, decay length, PID sigma
-  TH2D* fh2CutTPCRowsK0s[fgkiNQAIndeces]; //! inv mass vs TPC rows
+  /*TH2D* fh2CutTPCRowsK0s[fgkiNQAIndeces]; //! inv mass vs TPC rows
   TH2D* fh2CutTPCRowsLambda[fgkiNQAIndeces]; //!
   TH2D* fh2CutPtPosK0s[fgkiNQAIndeces]; //! inv mass vs pt of positive daughter
   TH2D* fh2CutPtNegK0s[fgkiNQAIndeces]; //! inv mass vs pt of negative daughter
@@ -543,7 +540,7 @@ private:
   TH2D* fh2CutPIDPosLambda[fgkiNQAIndeces]; //!
   TH2D* fh2CutPIDNegLambda[fgkiNQAIndeces]; //!
   TH2D* fh2Tau3DVs2D[fgkiNQAIndeces]; //! pt vs ratio 3D lifetime / 2D lifetime
-
+  */
 //New private parameters and histograms for the Xi selection
 //------------------------------------------------------------------------------------------
   Double_t fdCutDCACascadeBachToPrimVtxMin; // [cm] min DCA of bachelor track to the prim vtx
@@ -598,7 +595,6 @@ private:
   THnSparse* fhnCascadeInJetXiMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInPerpXiMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInRndXiMinus[fgkiNBinsCent]; //!
-  THnSparse* fhnCascadeInMedXiMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeOutJetXiMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeNoJetXiMinus[fgkiNBinsCent]; //!
   TH2D* fh2CascadePtJetAngleXiMinus[fgkiNBinsCent]; //!
@@ -650,7 +646,6 @@ private:
   THnSparse* fhnCascadeInJetXiPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInPerpXiPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInRndXiPlus[fgkiNBinsCent]; //!
-  THnSparse* fhnCascadeInMedXiPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeOutJetXiPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeNoJetXiPlus[fgkiNBinsCent]; //!
   TH2D* fh2CascadePtJetAngleXiPlus[fgkiNBinsCent]; //!
@@ -720,7 +715,6 @@ private:
   THnSparse* fhnCascadeInJetOmegaMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInPerpOmegaMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInRndOmegaMinus[fgkiNBinsCent]; //!
-  THnSparse* fhnCascadeInMedOmegaMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeOutJetOmegaMinus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeNoJetOmegaMinus[fgkiNBinsCent]; //!
   TH2D* fh2CascadePtJetAngleOmegaMinus[fgkiNBinsCent]; //!
@@ -772,7 +766,6 @@ private:
   THnSparse* fhnCascadeInJetOmegaPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInPerpOmegaPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeInRndOmegaPlus[fgkiNBinsCent]; //!
-  THnSparse* fhnCascadeInMedOmegaPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeOutJetOmegaPlus[fgkiNBinsCent]; //!
   THnSparse* fhnCascadeNoJetOmegaPlus[fgkiNBinsCent]; //!
   TH2D* fh2CascadePtJetAngleOmegaPlus[fgkiNBinsCent]; //!
@@ -817,7 +810,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 33) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 34) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
