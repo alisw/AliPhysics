@@ -196,6 +196,9 @@ void AddTask_MesonJetCorr_K0Lambda(
   } else if (trainConfig == 6) { // default cuts, loose armenteros
     cuts.AddCutPCM("000fb103", "10200011500000001000000000", "2r52103l00000000"); 
 
+  } else if (trainConfig == 7) { // default cuts but no armenteros, offline V0 reader
+    cuts.AddCutPCM("00010103", "00200011500000000000000000", "2r52103l00000000");
+
   } else if (trainConfig == 10) { // default cuts with cut around armenteros of expected position within 0.02
     cuts.AddCutPCM("00010103", "1020001150000000b000000000", "2r52103l00000000");
   } else if (trainConfig == 11) { // default cuts with cut around armenteros of expected position within 0.02
