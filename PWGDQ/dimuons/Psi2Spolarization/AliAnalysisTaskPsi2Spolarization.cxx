@@ -60,26 +60,21 @@ class AliAnalysisTaskPsi2Spolarization;    // your analysis class
 using namespace std;            // std namespace: so you can do things like 'cout'
 
 ClassImp(AliAnalysisTaskPsi2Spolarization) // classimp: necessary for root
-Float_t invm,invpt,invy,zvertexf, costhetacs, costhetahe, phihe, phics;
+Float_t invm, invm0, invpt,invy,zvertexf, costhetacs, costhetahe, phihe, phics;
 Int_t ntracks;
-Int_t ntracklet;
+Int_t ntracklet,cmultrigger, dimuons;
 
 
-void AliAnalysisTaskPsi2Spolarization::NotifyRun()
-{
-  fMuonTrackCuts->SetRun(fInputHandler);
-}
 
-
-AliAnalysisTaskPsi2Spolarization::AliAnalysisTaskPsi2Spolarization() : AliAnalysisTaskSE(), 
-						 fAOD(0), fOutputList(0), fVertexZ(0), fHistInvMass(0), fHistPtDimu(0), fHistRap(0), fHistCosThetaCSDimu(0),fHistPhiHEDimu(0), fHistCosThetaHEDimu(0),fHistPhiCSDimu(0), tree(0), tree1(0), fMuonTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts"))
+AliAnalysisTaskPsi2Spolarization::AliAnalysisTaskPsi2Spolarization() : AliAnalysisTaskSE(),
+						 fAOD(0), fOutputList(0), tree(0), tree1(0), tree2(0), tree3(0), fMuonTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts"))
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPsi2Spolarization::AliAnalysisTaskPsi2Spolarization(const char* name) : AliAnalysisTaskSE(name),
-								 fAOD(0), fOutputList(0), fVertexZ(0), fHistInvMass(0), fHistPtDimu(0), fHistRap(0), fHistCosThetaCSDimu(0), fHistCosThetaHEDimu(0),tree(0),fHistPhiCSDimu(0),fHistPhiHEDimu(0), tree1(0), fMuonTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts"))
+								 fAOD(0), fOutputList(0), tree(0), tree1(0), tree2(0), tree3(0), fMuonTrackCuts(new AliMuonTrackCuts("stdMuonCuts","stdMuonCuts"))
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -89,9 +84,11 @@ AliAnalysisTaskPsi2Spolarization::AliAnalysisTaskPsi2Spolarization(const char* n
                                         // you can add more output objects by calling DefineOutput(2, classname::Class())
                                         // if you add more output objects, make sure to call PostData for all of them, and to
                                         // make changes to your AddTask macro!
-    
-    fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuMatchLpt | AliMuonTrackCuts::kMuMatchHpt |AliMuonTrackCuts::kMuPdca);
-    fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
+  
+  //fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuMatchLpt | AliMuonTrackCuts::kMuMatchHpt |AliMuonTrackCuts::kMuPdca);
+
+   fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca);
+   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPsi2Spolarization::~AliAnalysisTaskPsi2Spolarization()
@@ -102,6 +99,19 @@ AliAnalysisTaskPsi2Spolarization::~AliAnalysisTaskPsi2Spolarization()
     }
 }
 //_____________________________________________________________________________
+
+void AliAnalysisTaskPsi2Spolarization::NotifyRun()
+{
+    fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
+    fMuonTrackCuts->SetRun((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()));
+    
+  //  fMuonTrackCuts->SetRun(fInputHandler);
+}
+
+
+
+
+
 void AliAnalysisTaskPsi2Spolarization::UserCreateOutputObjects()
 {
     // create output objects
@@ -115,23 +125,9 @@ void AliAnalysisTaskPsi2Spolarization::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     
-    fVertexZ = new TH1F("fVertexZ", "Event Counter",160,-40,40);
-    
-    fHistPtDimu  = new TH1F("fHistPtDimu","PtDimu;p_{T} (GeV/c)",10000,0.0,20.0);
-    fHistPtDimu->GetXaxis()->SetTitle("P (GeV/c)");
-    fHistPtDimu->GetYaxis()->SetTitle("dN/dP (c/GeV)");
-    fHistPtDimu->SetMarkerStyle(kFullCircle);
-    
-    fHistInvMass = new TH1F("fHistInvMass", "M_{#mu#mu} dist",10000,0.0,10.0);
-    fHistInvMass->GetXaxis()->SetTitle("M_{#mu#mu} (GeV/c^{2})");
-    fHistInvMass->GetYaxis()->SetTitle("dN/dM_{#mu#mu} (GeV/c^{2})^{-1}");
-    fHistInvMass->SetMarkerStyle(kFullCircle);
-    
-    fHistRap = new TH1F("fHistRap", "fHistRap", 1000, -4.0, -2.5);
-    fHistCosThetaCSDimu  = new TH1F("fHistCosThetaCSDimu","CosThetaCSDimu;cos#theta_{CS}",100,-1.,1.);
-    fHistCosThetaHEDimu  = new TH1F("fHistCosThetaHEDimu","CosThetaHEDimu;cos#theta_{HE}",100,-1.,1.);
-    fHistPhiCSDimu  = new TH1F("fHistPhiCSDimu","PhiCSDimu;#phi_{CS}",100,-5.,5.);
-    fHistPhiHEDimu  = new TH1F("fHistPhiHEDimu","PhiHEDimu;#phi_{HE}",100,-5.,5.);
+
+      TTree  *tree2= new TTree("tree2","trigger");
+    tree2->Branch("cmultrigger",&cmultrigger,"cmultrigger/I");
     
     
     TTree *tree= new TTree("tree","Invmumu");
@@ -149,15 +145,8 @@ void AliAnalysisTaskPsi2Spolarization::UserCreateOutputObjects()
        
     TTree *tree1= new TTree("tree1","trackletinfo");
     tree1->Branch("ntracklet",&ntracklet,"ntracklet/I");
-    
-    fOutputList->Add(fVertexZ);
-    fOutputList->Add(fHistPtDimu);
-    fOutputList->Add(fHistInvMass);
-    fOutputList->Add(fHistRap);
-    fOutputList->Add(fHistCosThetaCSDimu);
-    fOutputList->Add(fHistCosThetaHEDimu);
-    fOutputList->Add(fHistPhiCSDimu);
-    fOutputList->Add(fHistPhiHEDimu);
+
+    fOutputList->Add(tree2);
     fOutputList->Add(tree);
     fOutputList->Add(tree1);
     fOutputList->ls();
@@ -169,12 +158,6 @@ void AliAnalysisTaskPsi2Spolarization::UserCreateOutputObjects()
 void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
 {
     
- 
-
-  UInt_t fSelectMask= fInputHandler->IsEventSelected();
-  Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
-
-    if (!isINT7selected) return;
     
   AliVVertex* vertex = NULL;
   AliAODVertex* vertexSPD = NULL;
@@ -187,11 +170,24 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
   vertexSPD = const_cast<AliAODVertex *>(fAOD->GetPrimaryVertexSPD());
   double zVertex = vertexSPD->GetZ();
     
+    
+    UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t IsPhysSelected = fSelectMask & (AliVEvent::kMuonUnlikeLowPt7 | AliVEvent::kMuonLikeLowPt7 | AliVEvent::kMuonSingleLowPt7 |   AliVEvent::kMuonSingleHighPt7  | AliVEvent::kINT7inMUON  | AliVEvent::kINT7);
+    
+
+ if (!IsPhysSelected) return;
+    
+    
   if(!fAOD) return;
     
   TString trigger = fAOD->GetFiredTriggerClasses();
   if (trigger.Contains("CMUL7-B-NOPF-MUFAST"))
     {
+
+      cmultrigger=1;
+        ((TTree*)(fOutputList->FindObject("tree2")))->Fill();
+
+	
       Int_t iTracks(fAOD->GetNumberOfTracks());                                    // see how many tracks there are in the event
 
     
@@ -234,33 +230,33 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
 		    Float_t Pt2=TMath::Sqrt(pxr2*pxr2+pyr2*pyr2);
 		    Float_t rap2=Rap(er2,pzr2);
 		    Float_t Rabs2=AliAnalysisMuonUtility::GetRabs(track2);
-
-		     if(Rabs1 <= 17.6 || Rabs1 >= 89.5) continue;
-		     if(Rabs2 <= 17.6 || Rabs2 >= 89.5) continue;
-		     if(matchmu1<1 || matchmu2<1) continue;
-		     if(eta1 > -2.5 || eta1 < -4.0) continue;
-		     if(eta2 > -2.5 || eta2 < -4.0) continue;
-		        if( TMath::Abs( zVertex ) > 10 ) continue;
-
-            Float_t ptdimu = TMath::Sqrt((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2));
-            Float_t raprec = Rap((er1+er2),(pzr1+pzr2));
-            Float_t imassrec = TMath::Sqrt((er1+er2)*(er1+er2)-((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2)+(pzr1+pzr2)*(pzr1+pzr2)));
-            Double_t costhetaCSdimu = CostCS(track, track2);
-            Double_t costhetaHEdimu = CostHE(track, track2);
-            Double_t phiCSdimu = PhiCS(track, track2);
-            Double_t phiHEdimu = PhiHE(track, track2);
               
-	     if(raprec> -2.5 || raprec < -4.0) continue;
-
-            fVertexZ->Fill(zVertex);
-            fHistPtDimu->Fill(ptdimu);
-            fHistRap->Fill(raprec);
-            fHistInvMass->Fill(imassrec);
-            fHistCosThetaCSDimu->Fill(costhetaCSdimu);
-            fHistCosThetaHEDimu->Fill(costhetaHEdimu);
-            fHistPhiCSDimu->Fill(phiCSdimu);
-            fHistPhiHEDimu->Fill(phiHEdimu);
               
+
+                if(Rabs1 <= 17.6 || Rabs1 >= 89.5) continue;
+                if(Rabs2 <= 17.6 || Rabs2 >= 89.5) continue;
+                if(matchmu1<1 || matchmu2<1) continue;
+                if(eta1 > -2.5 || eta1 < -4.0) continue;
+                if(eta2 > -2.5 || eta2 < -4.0) continue;
+                if( TMath::Abs( zVertex ) > 10 ) continue;
+                  
+                  Float_t raprec = Rap((er1+er2),(pzr1+pzr2));
+                  
+                  
+                 if(raprec> -2.5 || raprec < -4.0) continue;
+
+
+                Float_t ptdimu = TMath::Sqrt((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2));
+
+                Float_t imassrec = TMath::Sqrt((er1+er2)*(er1+er2)-((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2)+(pzr1+pzr2)*(pzr1+pzr2)));
+                Double_t costhetaCSdimu = CostCS(track, track2);
+                Double_t costhetaHEdimu = CostHE(track, track2);
+                Double_t phiCSdimu = PhiCS(track, track2);
+                Double_t phiHEdimu = PhiHE(track, track2);
+
+              
+
+
             invm=imassrec;
             invpt=ptdimu;
             invy=raprec;
@@ -269,10 +265,6 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
             costhetahe = costhetaHEdimu;
             phics = phiCSdimu;
             phihe = phiHEdimu;
-
-	    
-
-
               
             ((TTree*)(fOutputList->FindObject("tree")))->Fill();
 
