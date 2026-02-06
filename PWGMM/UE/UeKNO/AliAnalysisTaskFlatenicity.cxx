@@ -118,19 +118,23 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
-      hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
-      hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
-      hEtamc(0), hEtamcAlice(0), hCounter(0), hCountProduV0m(0),
-      hCountAuthV0m(0), hCountProdu_FlatMC(0), hCountAuth_FlatMC(0),
-      hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0),
-      hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0),
-      hChgProdu_All_pt(0), hChgAuth_All_pt(0), hChgProdu_pt_V0(0),
-      hChgAuth_pt_V0(0), hChgProdu_pt_Flat(0), hChgAuth_pt_Flat(0) {
+      hRecFlatVsPtMC(0), hActivityV0DataSectBefore(0), hActivityV0DataSect(0),
+      hV0vsVtxz(0), hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0),
+      hFlatMCVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0),
+      hCountProduV0m(0), hCountAuthV0m(0), hCountProdu_FlatMC(0),
+      hCountAuth_FlatMC(0), hMultMCmVsV0M(0), hMultMCaVsV0M(0),
+      hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0),
+      hMultcVsV0M(0), hV0MBadruns(0), hChgProdu_All_pt(0), hChgAuth_All_pt(0),
+      hChgProdu_pt_V0(0), hChgAuth_pt_V0(0), hChgProdu_pt_Flat(0),
+      hChgAuth_pt_Flat(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0MMC[i_c] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hRecFlatVsPtV0MMC[i_c] = 0;
   }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
@@ -168,14 +172,15 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
-      hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
-      hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
-      hEtamc(0), hEtamcAlice(0), hCounter(0), hCountProduV0m(0),
-      hCountAuthV0m(0), hCountProdu_FlatMC(0), hCountAuth_FlatMC(0),
-      hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0),
-      hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0),
-      hChgProdu_All_pt(0), hChgAuth_All_pt(0), hChgProdu_pt_V0(0),
-      hChgAuth_pt_V0(0), hChgProdu_pt_Flat(0), hChgAuth_pt_Flat(0)
+      hRecFlatVsPtMC(0), hActivityV0DataSectBefore(0), hActivityV0DataSect(0),
+      hV0vsVtxz(0), hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0),
+      hFlatMCVsV0M(0), hEtamc(0), hEtamcAlice(0), hCounter(0),
+      hCountProduV0m(0), hCountAuthV0m(0), hCountProdu_FlatMC(0),
+      hCountAuth_FlatMC(0), hMultMCmVsV0M(0), hMultMCaVsV0M(0),
+      hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0),
+      hMultcVsV0M(0), hV0MBadruns(0), hChgProdu_All_pt(0), hChgAuth_All_pt(0),
+      hChgProdu_pt_V0(0), hChgAuth_pt_V0(0), hChgProdu_pt_Flat(0),
+      hChgAuth_pt_Flat(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -183,6 +188,9 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
   }
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0MMC[i_c] = 0;
+  }
+  for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+    hRecFlatVsPtV0MMC[i_c] = 0;
   }
   for (Int_t i_d = 0; i_d < nDet; ++i_d) {
     hComponentsMult[i_d] = 0;
@@ -352,6 +360,11 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                             min_flat, max_flat, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchMC);
 
+    hRecFlatVsPtMC = new TH2D("hRecFlatVsPtMC",
+                              "MC rec; Flatenicity; #it{p}_{T} (GeV/#it{c})",
+                              nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+    fOutputList->Add(hRecFlatVsPtMC);
+
     for (Int_t i_d = 0; i_d < nDet; ++i_d) {
       hComponentsMultmc[i_d] = new TH2D(Form("hTrueMult_%s", DetName[i_d]), "",
                                         600, -0.5, 599.0, 200, -0.5, 199.5);
@@ -369,6 +382,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                    499.5, 500, -0.5, 499.5);
       fOutputList->Add(hRmCombinedMult[i_c]);
     }
+
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
       hFlatVsPtV0MMC[i_c] =
           new TH2D(Form("hFlatVsPtV0MMC_c%d", i_c),
@@ -377,6 +391,15 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                         centClass[i_c], centClass[i_c + 1]),
                    nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
       fOutputList->Add(hFlatVsPtV0MMC[i_c]);
+    }
+    for (Int_t i_c = 0; i_c < nCent; ++i_c) {
+      hRecFlatVsPtV0MMC[i_c] =
+          new TH2D(Form("hRecFlatVsPtV0MMC_c%d", i_c),
+                   Form("Measured %1.0f-%1.0f%%V0M; rec Flatenicity; "
+                        "#it{p}_{T} (GeV/#it{c})",
+                        centClass[i_c], centClass[i_c + 1]),
+                   nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+      fOutputList->Add(hRecFlatVsPtV0MMC[i_c]);
     }
 
     hFlatMCVsV0M = new TH2D("hFlatMCVsV0M", "", nCent, centClass, nbins_flat,
@@ -581,6 +604,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   vector<Float_t> ptRecon;
   vector<Int_t> idRecon;
   vector<Int_t> isprimRecon;
+
   fnRecon = FillArray(ptRecon, idRecon, isprimRecon);
 
   // Trigger selection
@@ -606,6 +630,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
 
   vector<Float_t> ptDetMC;
   vector<Int_t> idDetMC;
+
   if (isGoodVtxPosMC) {
     fnDetec = FillMCarray(ptDetMC, idDetMC);
     GetMCchargedDetDists(fnDetec, ptDetMC, idDetMC);
@@ -820,10 +845,13 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
     if (esdtrack->Pt() < fPtMin)
       continue;
     hPtOut->Fill(esdtrack->Pt());
+
     Int_t mcLabel = -1;
     mcLabel = TMath::Abs(esdtrack->GetLabel());
     if (fMC->IsPhysicalPrimary(mcLabel)) {
       hPtPrimOut->Fill(esdtrack->Pt());
+      hRecFlatVsPtMC->Fill(fFlatMC, esdtrack->Pt());
+      hRecFlatVsPtV0MMC[fV0Mindex]->Fill(fFlatMC, esdtrack->Pt());
     } else {
       hPtSecOut->Fill(esdtrack->Pt());
     }
@@ -1205,7 +1233,6 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   }
   sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
-
   if (mRho > 0) {
     if (fRemoveTrivialScaling) {
       flatenicity = TMath::Sqrt(1.0 * nMult) * sRho / mRho;
@@ -1600,7 +1627,6 @@ void AliAnalysisTaskFlatenicity::GetMCchargedTrueDists(
 
   if (multGen < 1)
     return;
-  //! ap   The INEL>0 condition
 
   //  hCountEvent->Fill(1.0);
   hCountProduV0m->Fill(fv0mpercentile);
@@ -1619,7 +1645,6 @@ void AliAnalysisTaskFlatenicity::GetMCchargedDetDists(
 
   if (multRec < 1)
     return;
-  //! ap   The INEL>0 condition
   hCountAuthV0m->Fill(fv0mpercentile);
   hCountAuth_FlatMC->Fill(fFlatAltMC);
 
