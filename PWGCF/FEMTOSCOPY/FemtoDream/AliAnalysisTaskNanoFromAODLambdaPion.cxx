@@ -581,12 +581,10 @@ fNegPionCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         else if (mcPart->GetPdgCode() == fLambdaCuts->GetPDGv0())
         {
           fLambdaCuts->FillGenerated(mcPart->Pt());
-          fLambdaCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         }
         else if (mcPart->GetPdgCode() == fAntiLambdaCuts->GetPDGv0())
         {
           fAntiLambdaCuts->FillGenerated(mcPart->Pt());
-          fAntiLambdaCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         }
       }
     }
@@ -621,6 +619,91 @@ fNegPionCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
       return;
     }
   } 
+
+  // Compute pT, eta, phi distributions at generated and reconstructed level for Lambda
+  if (fIsMC) {
+    double PV[3] = {fEvent->GetXVertex(), fEvent->GetYVertex(),fEvent->GetZVertex()};
+
+    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(iPart);
+
+			if (!mcPart) continue;
+
+			// Select only Lambdas
+			if (std::abs(mcPart->GetPdgCode()) != 3122) continue;          
+      
+      // topo selections on daughters
+      int dau1Idx = mcPart->GetDaughterFirst();
+      int dau2Idx = mcPart->GetDaughterLast();
+      
+      // Remove particles that have broken daughter indices
+      if (dau1Idx == dau2Idx) {
+        continue;
+      }
+
+      AliAODMCParticle *d1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
+      AliAODMCParticle *d2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+
+      // Check correct decay channel
+      if (d1->GetPdgCode() * d2->GetPdgCode() != -211 * 2212) {
+        continue;
+      }
+    
+      // Kinem selections on daughters:
+      if (std::abs(d1->Eta()) > 0.8 || std::abs(d2->Eta()) > 0.8) continue; 
+
+      // DCA selection on daughters ignored for now due to complications of magnetic field bending
+
+      // Kinem selections on Lambda
+      if (mcPart->Pt() < 0.3) continue;
+
+      // Selections on Lambda decay vertex are neglected as they are very loose: vertex_Lambda < 100 cm, 0.2 < vertexXY_lambda < 100cm
+
+      // CPA selection:
+      double SV[3] = {d1->Xv(), d1->Yv(), d1->Zv()};
+      double d[3] = {SV[0] - PV[0], SV[1] - PV[1], SV[2] - PV[2]};
+      double P[3] = {mcPart->Px(), mcPart->Py(), mcPart->Pz()};
+      double cpa = P[0] * d[0] + P[1] * d[1] + P[2] * d[2];
+      cpa /= pow(P[0] * P[0] + P[1] * P[1] + P[2] * P[2], 0.5);
+      cpa /= pow(d[0] * d[0] + d[1] * d[1] + d[2] * d[2], 0.5);
+      if (cpa < 0.99) {
+        continue;
+      }
+
+      // std::cout << "selected: d1: " << d1->GetPdgCode()
+      //           << "  i1: " << dau1Idx
+      //           << "  d2: " << d2-> GetPdgCode()
+      //           << "  i2: " << dau2Idx
+      //           << "  physical prim: " <<  mcPart->IsPhysicalPrimary()
+      //           << "  secondary: " <<  mcPart->IsSecondaryFromWeakDecay()
+      //           << "  material: " <<  mcPart->IsSecondaryFromMaterial()
+      //           << "  CPA: " <<  cpa
+      //           << "  (" <<  mcPart->Xv()
+      //           << "," <<  mcPart->Yv()
+      //           << "," <<  mcPart->Zv()
+      //           << ")"
+      //           << "  d1(" <<  d1->Xv()
+      //           << "," <<  d1->Yv()
+      //           << "," <<  d1->Zv()
+      //           << ")"
+      //           << "  d2(" <<  d2->Xv()
+      //           << "," <<  d2->Yv()
+      //           << "," <<  d2->Zv()
+      //           << ")"
+      //           << "  p(" <<  mcPart->Px()
+      //           << "," <<  mcPart->Py()
+      //           << "," <<  mcPart->Pz()
+      //           << ")"
+      //           << std::endl;
+         
+			if (mcPart->GetPdgCode() == 3122) {
+        fLambdaCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
+      } else {
+        fAntiLambdaCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
+      }
+    }
+  }
+
   fPairCleaner->StoreParticle(PionPlus);
   fPairCleaner->StoreParticle(PionMinus);
   fPairCleaner->StoreParticle(Lambdas);
