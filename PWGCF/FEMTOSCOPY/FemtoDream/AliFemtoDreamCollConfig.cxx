@@ -17,6 +17,9 @@ ClassImp(AliFemtoDreamCollConfig)
       fkTandMultPtBinning(false),
       fkTandMultMCTrueBinning(false),
       fMinvKtandRelativeKBinning(false),
+      fMinvKtandRelativeKBinningInvMassN(1250), // Same defaults as pho-proton analysis
+      fMinvKtandRelativeKBinningInvMassInvMin(0), // u.m. = GeV; Same defaults as pho-proton analysis
+      fMinvKtandRelativeKBinningInvMassInvMax(2.5), // u.m. = GeV; Same defaults as pho-proton analysis
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -73,6 +76,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fkTandMultPtBinning(config.fkTandMultPtBinning),
       fkTandMultMCTrueBinning(config.fkTandMultMCTrueBinning),
       fMinvKtandRelativeKBinning(config.fMinvKtandRelativeKBinning),
+      fMinvKtandRelativeKBinningInvMassN(config.fMinvKtandRelativeKBinningInvMassN),
+      fMinvKtandRelativeKBinningInvMassInvMin(config.fMinvKtandRelativeKBinningInvMassInvMin),
+      fMinvKtandRelativeKBinningInvMassInvMax(config.fMinvKtandRelativeKBinningInvMassInvMax),
       fPtQA(config.fPtQA),
       fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
@@ -129,6 +135,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fkTandMultPtBinning(false),
       fkTandMultMCTrueBinning(false),
       fMinvKtandRelativeKBinning(false),
+      fMinvKtandRelativeKBinningInvMassN(1250), // Same defaults as pho-proton analysis
+      fMinvKtandRelativeKBinningInvMassInvMin(0), // u.m. = GeV; Same defaults as pho-proton analysis
+      fMinvKtandRelativeKBinningInvMassInvMax(2.5), // u.m. = GeV; Same defaults as pho-proton analysis
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -185,6 +194,9 @@ AliFemtoDreamCollConfig &AliFemtoDreamCollConfig::operator=(
     this->fkTandMultBinning = config.fkTandMultBinning;
     this->fkTandMultPtBinning = config.fkTandMultPtBinning;
     this->fMinvKtandRelativeKBinning = config.fMinvKtandRelativeKBinning;
+    this->fMinvKtandRelativeKBinningInvMassN = config.fMinvKtandRelativeKBinningInvMassN;
+    this->fMinvKtandRelativeKBinningInvMassInvMin = config.fMinvKtandRelativeKBinningInvMassInvMin;
+    this->fMinvKtandRelativeKBinningInvMassInvMax = config.fMinvKtandRelativeKBinningInvMassInvMax;
     this->fkTandMultMCTrueBinning = config.fkTandMultMCTrueBinning;
     this->fPtQA = config.fPtQA;
     this->fMassQA = config.fMassQA;
