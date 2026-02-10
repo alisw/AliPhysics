@@ -842,7 +842,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fSameEventMinvKtandRelativeKDist[Counter] = new TH2F(SameEventMinvKtandRelativeKName.Data(),
                                                              SameEventMinvKtandRelativeKName.Data(),
                                                              250, 0, 1,
-                                                             1250, 0, 2.5);
+                                                             conf->GetMinvKtandRelativeKBinningInvMassN(),
+                                                             conf->GetMinvKtandRelativeKBinningInvMassInvMin(),
+                                                             conf->GetMinvKtandRelativeKBinningInvMassInvMax());
         std::cout << "Object histogram is made for " << Counter << "  /n" << std::endl;
 
         fPairs[Counter]->Add(fSameEventMinvKtandRelativeKDist[Counter]);
@@ -853,7 +855,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fMixedEventMinvKtandRelativeKDist[Counter] = new TH2F(MixedEventMinvKtandRelativeKName.Data(),
                                                               MixedEventMinvKtandRelativeKName.Data(),
                                                               250, 0, 1,
-                                                              1250, 0, 2.5);
+                                                             conf->GetMinvKtandRelativeKBinningInvMassN(),
+                                                             conf->GetMinvKtandRelativeKBinningInvMassInvMin(),
+                                                             conf->GetMinvKtandRelativeKBinningInvMassInvMax());
         fPairs[Counter]->Add(fMixedEventMinvKtandRelativeKDist[Counter]);
       }
       // kT Binning for different multbins

@@ -60,6 +60,12 @@ public:
   {
     fMinvKtandRelativeKBinning = doIt;
   };
+  void SetMinvKtandRelativeKBinningInvMassBinning(int n, double mInvMin, double mInvMax)
+  {
+    fMinvKtandRelativeKBinningInvMassN = n;
+    fMinvKtandRelativeKBinningInvMassInvMin = mInvMin;
+    fMinvKtandRelativeKBinningInvMassInvMax = mInvMax;
+  };
   void SetPtQA(bool doIt)
   {
     fPtQA = doIt;
@@ -194,6 +200,18 @@ public:
   bool GetMinvKtandRelativeKBinning()
   {
     return fMinvKtandRelativeKBinning;
+  }
+  int GetMinvKtandRelativeKBinningInvMassN()
+  {
+    return fMinvKtandRelativeKBinningInvMassN;
+  }
+  double GetMinvKtandRelativeKBinningInvMassInvMin()
+  {
+    return fMinvKtandRelativeKBinningInvMassInvMin;
+  }
+  double GetMinvKtandRelativeKBinningInvMassInvMax()
+  {
+    return fMinvKtandRelativeKBinningInvMassInvMax;
   }
   bool GetDoPtQA()
   {
@@ -384,6 +402,9 @@ private:
   bool fkTandMultPtBinning;                        //
   bool fkTandMultMCTrueBinning;                    //
   bool fMinvKtandRelativeKBinning;                 //
+  int fMinvKtandRelativeKBinningInvMassN;          //
+  double fMinvKtandRelativeKBinningInvMassInvMin;  //
+  double fMinvKtandRelativeKBinningInvMassInvMax;  //
   bool fPtQA;                                      //
   bool fMassQA;                                    //
   bool fMomentumResolution;                        //
@@ -425,7 +446,7 @@ private:
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig, 23);
+  ClassDef(AliFemtoDreamCollConfig, 24);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */
