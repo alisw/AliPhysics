@@ -247,7 +247,14 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     {
       // float RelativeK_V0 = RelativePairMomentumV0(&part1, &part2, PDGPart2);
       // float RelativePairMt_V0 = RelativePairmTV0(&part1, &part2, PDGPart2);
-      fHists->FillSameEventMinvKtandRelativeKDist(iHC, RelativeK, part1.GetInvMass());
+
+      // Determine which particle is reconstructed via decay products. WARNING: assuming that one particle is stable
+      std::vector<int> pdgUnstable= {113, 3122}; // rho, Lambda
+      if (int pdg1 = std::abs(part1.GetPDGCode()); std::find(pdgUnstable.begin(), pdgUnstable.end(), pdg1) != pdgUnstable.end()) {
+        fHists->FillSameEventMinvKtandRelativeKDist(iHC, RelativeK, part1.GetInvMass());
+      } else if (int pdg2 = std::abs(part2.GetPDGCode()); std::find(pdgUnstable.begin(), pdgUnstable.end(), pdg2) != pdgUnstable.end()) {
+        fHists->FillSameEventMinvKtandRelativeKDist(iHC, RelativeK, part2.GetInvMass());
+      }
     }
     if (fHists->GetDoMultBinning())
     {
@@ -460,7 +467,13 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   {
     // float RelativeK_V0 = RelativePairMomentumV0(&part1, &part2, PDGPart2);
     // float RelativePairMt_V0 = RelativePairmTV0(&part1, &part2, PDGPart2);
-    fHists->FillMixedEventMinvKtandRelativeKDist(iHC, RelativeK, part1.GetInvMass());
+    // Determine which particle is reconstructed via decay products. WARNING: assuming that one particle is stable
+    std::vector<int> pdgUnstable= {113, 3122}; // rho, Lambda
+    if (int pdg1 = std::abs(part1.GetPDGCode()); std::find(pdgUnstable.begin(), pdgUnstable.end(), pdg1) != pdgUnstable.end()) {
+      fHists->FillMixedEventMinvKtandRelativeKDist(iHC, RelativeK, part1.GetInvMass());
+    } else if (int pdg2 = std::abs(part2.GetPDGCode()); std::find(pdgUnstable.begin(), pdgUnstable.end(), pdg2) != pdgUnstable.end()) {
+      fHists->FillMixedEventMinvKtandRelativeKDist(iHC, RelativeK, part2.GetInvMass());
+    }  
   }
   if (fHists->GetDoMultBinning())
   {

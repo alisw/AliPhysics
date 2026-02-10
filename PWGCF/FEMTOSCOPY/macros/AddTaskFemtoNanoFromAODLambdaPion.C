@@ -219,6 +219,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   config->SetmTBins(mTBins);
   config->SetDomTMultBinning(true);
   config->SetmTBinning(true);
+  config->SetMinvKtandRelativeKBinning(true);
+  config->SetMinvKtandRelativeKBinningInvMassBinning(250, 1.09, 1.14);
 
   if (IsSystematics)
   {
@@ -1211,7 +1213,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
     v0Cuts->SetCutWindow(1.124, 1.135);
     Antiv0Cuts->SetCutWindow(1.124, 1.135);
   }
-
+  if (suffix == "60") {
+    // Take everything: signal and sidebands. For purity vs k*
+    v0Cuts->SetCutWindow(1.09, 1.14);
+    Antiv0Cuts->SetCutWindow(1.09, 1.14);
+  }
   // now we create the task
   AliAnalysisTaskNanoFromAODLambdaPion *task =
       new AliAnalysisTaskNanoFromAODLambdaPion(
