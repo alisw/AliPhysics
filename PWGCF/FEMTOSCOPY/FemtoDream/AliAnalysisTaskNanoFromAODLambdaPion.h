@@ -45,6 +45,11 @@ public:
   {
     fAntiLambdaCuts = cuts;
   }
+  void SetLambdaInvMassWindow(double mInvMin, double mInvMax)
+  {
+    fLambdaCuts->SetCutWindow(mInvMin, mInvMax);
+    fAntiLambdaCuts->SetCutWindow(mInvMin, mInvMax);
+  }
   void SetPosPionCuts(AliFemtoDreamTrackCuts *trkCuts)
   {
     fPosPionCuts = trkCuts;
