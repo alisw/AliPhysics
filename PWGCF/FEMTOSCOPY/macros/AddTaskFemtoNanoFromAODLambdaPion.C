@@ -1218,6 +1218,20 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
     v0Cuts->SetCutWindow(1.09, 1.14);
     Antiv0Cuts->SetCutWindow(1.09, 1.14);
   }
+  if (suffix == "61") {
+    // Take everything: signal and sidebands. For purity vs k*
+    v0Cuts->SetCutWindow(1.09, 1.14);
+    Antiv0Cuts->SetCutWindow(1.09, 1.14);
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+  }
+  if (suffix == "62") {
+    // Take everything: signal and sidebands. For purity vs k*
+    v0Cuts->SetCutWindow(1.09, 1.14);
+    Antiv0Cuts->SetCutWindow(1.09, 1.14);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+  }
   // now we create the task
   AliAnalysisTaskNanoFromAODLambdaPion *task =
       new AliAnalysisTaskNanoFromAODLambdaPion(
