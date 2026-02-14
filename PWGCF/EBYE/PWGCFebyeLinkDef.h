@@ -160,7 +160,7 @@
 #pragma link C++ class AliAnalysisTaskNetProtonCumulants_pp+;
 #pragma link C++ class AliAnalysisTaskEffCalc_MC+;
 
-#pragma link C++ class AliAnalysisTaskNFactorialMoments+;
+#pragma link C++ class AliAnalysisTaskFM_moments+;
 #pragma link C++ class AliAnalysisTaskNFactorialMomentsPID+;
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
