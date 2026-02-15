@@ -170,7 +170,7 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_test.cxx
-  IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
+  IntermittencyAnalysis/AliAnalysisTaskFM_moments.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMomentsPID.cxx
   )
 
