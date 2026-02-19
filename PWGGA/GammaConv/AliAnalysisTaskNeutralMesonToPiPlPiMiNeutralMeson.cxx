@@ -8913,6 +8913,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(NDMMotherLabel, fMCEvent,fInputEvent);
     weighted  = weighted * mesonWeight;
 
+
     if(fEnableNoCorrOutput) fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
 
     // Subtract mass of used NDM candidate and then add PDG mass
@@ -9256,7 +9257,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   if(isTrueMeson){
     // neutral meson was found
     Double_t mesonWeight = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForHeavyNeutralMeson(NDMMotherLabel, fMCEvent,fInputEvent);
+    std::cout << "weight before mesonWeight " << weighted << std::endl;
+    std::cout << "mesonWeight " << mesonWeight << std::endl;
     weighted  = weighted * mesonWeight;
+    std::cout << "weight after mesonWeight" << weighted << std::endl;
+    std::cout << "fEnableMesonWeights " << fEnableMesonWeights << std::endl;
+    std::cout << "mesoncand->M() " << mesoncand->M() << std::endl;
+    
+    // weighted  = weighted * mesonWeight;
 
     if(fEnableNoCorrOutput) fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
 
