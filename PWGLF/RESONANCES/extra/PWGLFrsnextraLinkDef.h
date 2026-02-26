@@ -31,6 +31,7 @@
 #pragma link C++ class AliAnalysisTaskAODTrackPair+;
 #pragma link C++ class AliAnalysisTaskAODTrackPairMC+;
 #pragma link C++ class AliAnalysisTaskResonanceDP+;
-
+#pragma link C++ class AliAnalysisTaskPhiSAR.cxx;
+#pragma link C++ class Aliresonance.cxx
 
 #endif
