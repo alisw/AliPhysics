@@ -459,6 +459,22 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("000fb103", "411790009f030230000", "2s631034000000d0"); // no exotics
     cuts.AddCutCalo("000fb103", "411790009fb30230000", "2s631034000000d0"); // F+ < 0.95
 
+
+
+    //---------------------------------------
+    // configs for 8 TeV data
+     //---------------------------------------
+  } else if (trainConfig == 200) {
+    cuts.AddCutCalo("00010113", "111110009fe30230000", "0s631031000000d0"); // MB
+  } else if (trainConfig == 201) {
+    cuts.AddCutCalo("00052113", "111110009fe30230000", "0s631031000000d0"); // EMC7
+  } else if (trainConfig == 202) {
+    cuts.AddCutCalo("00095113", "111110009fe30230000", "0s631031000000d0"); // EJ2
+  } else if (trainConfig == 203) {
+    cuts.AddCutCalo("00093113", "111110009fe30230000", "0s631031000000d0"); // EJ1
+  }
+    //---------------------------------------
+
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
