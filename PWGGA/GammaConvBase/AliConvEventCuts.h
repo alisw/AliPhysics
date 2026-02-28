@@ -29,6 +29,7 @@ class AliESDEvent;
 class AliAODEvent;
 class TH1F;
 class TH2F;
+class TProfile;
 class TF1;
 class AliAnalysisCuts;
 class iostream;
@@ -446,7 +447,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kInvariant,          // 1
         kVariant,            // 2
         kInvariant_expInter, // 3
-        kVariant_expInter    // 4
+        kVariant_expInter,   // 4
+        kInvariant_binWise,  // 5  calc weights as fData integrated / histo bin count 
+        kVariant_binWise     // 6  same with fData and hMC multiplied by x first
       };
 
       /**
@@ -459,6 +462,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         TF1 const *fData;
         TH1 const *hMC;
         TF1 const *fMC;
+        TProfile const *hWeights;
       };
       // ============ END section for pt weights in variant calculation form =====
 
@@ -928,7 +932,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,101)
+      ClassDef(AliConvEventCuts,102)
       /// \endcond
 };
 

@@ -33,6 +33,7 @@
 #include "AliAODHandler.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TProfile.h"
 #include "TF1.h"
 #include "TObjString.h"
 #include "AliMCEvent.h"
@@ -460,6 +461,15 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   if (hReweightMCHistGamma){
     hReweightMCHistGamma->SetName("MCInputForWeightingGamma");
     fHistograms->Add(hReweightMCHistGamma);
+  }
+
+  // Persist precomputed bin-wise meson weights (if available).
+  for (auto const &lEntry : fMapPtWeightsAccessObjects)
+  {
+    TProfile const *lProfile = lEntry.second.hWeights;
+    if (!lProfile) continue;
+    if (fHistograms->FindObject(lProfile->GetName())) continue;
+    fHistograms->Add(const_cast<TProfile *>(lProfile));
   }
 
   if (hReweightMCHistPi0_inv || hReweightMCHistEta_inv){
@@ -1109,7 +1119,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 
   auto calculateVariantSpectraAndInsert = [&](int thePDGCode,
                                               EnumPtWeights theWhich,
-                                              TF1 const *theDataTF1_inv,
+                                              TF1 *theDataTF1_inv,
                                               TH1D const *theMCTH1_inv)
   { 
     AliInfo(Form("calculateVariantSpectraAndInsert(): called with:\n"
@@ -1147,33 +1157,75 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                     theMCTH1_inv ? theMCTH1_inv->GetName() : "nullptr"));
       return false;
     }
-    
+
     // done with checks on arguments. Prepare data for insertion into the map
-    TF1 const *lDataTF1 = nullptr;
+    TF1 *lDataTF1 = nullptr;
+    TProfile *lWeightsProfile = nullptr;
     TH1 const *lMCTH1 = nullptr;
+    TF1 *lMCTF1_exp_inter = nullptr;
 
     bool lIsVar = !(theWhich % 2); // kInvariant = 1, kInvariant_expInter = 3;
     lDataTF1 = lIsVar ?  multiplyTF1ByX(*theDataTF1_inv) : theDataTF1_inv;
     lMCTH1   = lIsVar ? &multiplyTH1ByBinCenters(*theMCTH1_inv) : theMCTH1_inv;
-    
-    TF1 *lMCTF1_exp_inter = lMCTH1
-      ?  fUtils_TH1.utils_TH1::InitGlobalPieceWiseExponentialInterpolationTF1(
+
+    if (theWhich == kInvariant_expInter || theWhich == kVariant_expInter)
+    {
+      lMCTF1_exp_inter = lMCTH1
+        ?  fUtils_TH1.utils_TH1::InitGlobalPieceWiseExponentialInterpolationTF1(
             Form("%s_exp_inter", lMCTH1->GetName()), 
             *lMCTH1,
             lIsVar /*theIntegrate*/,    // integration is only correct if the spectrum is in variant form
             lIsVar /*theUseXtimesExp*/) // since the shape is exponential only in invariant form, we need x*exp(x) for the variant form
-      : nullptr;
-    
-    if (!lMCTF1_exp_inter){
+        : nullptr;
+
+      if (!lMCTF1_exp_inter){
         AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects():\n"
                       "\tRetrieved nullptr for lMCTF1_exp_inter which was tried to create for histo %s:\n"
                       "\tParameters: theIntegrate = %d, theUseXtimesExp = %d\n\n",
                       lMCTH1->GetName(), lIsVar, lIsVar));
         return false;
+      }
+    }
+
+    if (theWhich == kInvariant_binWise || theWhich == kVariant_binWise)
+    {
+      auto createProfileWithHistoBinning = [](TH1 const &theH, const TString &theName) -> TProfile *
+      {
+        const TAxis *lAxis = theH.GetXaxis();
+        if (lAxis->GetXbins()->GetSize() > 0)
+        {
+          return new TProfile(theName.Data(), theName.Data(), lAxis->GetNbins(), lAxis->GetXbins()->GetArray());
+        }
+        return new TProfile(theName.Data(), theName.Data(), lAxis->GetNbins(), lAxis->GetXmin(), lAxis->GetXmax());
+      };
+
+      lWeightsProfile = createProfileWithHistoBinning(*lMCTH1, Form("%s_binWiseWeights", lDataTF1->GetName()));
+      if (!lWeightsProfile)
+      {
+        AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): failed to create weight profile for PDG %d.", thePDGCode));
+        return false;
+      }
+      lWeightsProfile->SetDirectory(nullptr);
+      for (int iBin = 1; iBin <= lWeightsProfile->GetNbinsX(); ++iBin)
+      {
+        double const lowEdge = lWeightsProfile->GetXaxis()->GetBinLowEdge(iBin);
+        double const upEdge = lWeightsProfile->GetXaxis()->GetBinUpEdge(iBin);
+        double const binWidth = lWeightsProfile->GetBinWidth(iBin);
+        double const integral = lDataTF1->Integral(lowEdge, upEdge);
+        double const hMC = lMCTH1->GetBinContent(iBin);
+        double const denom = hMC * binWidth;
+        double const weight = denom ? (integral / denom) : 1.;
+        lWeightsProfile->Fill(lWeightsProfile->GetXaxis()->GetBinCenter(iBin), (weight >= 0 && isfinite(weight)) ? weight : 1.);
+      }
+
+      if (fHistograms && !fHistograms->FindObject(lWeightsProfile->GetName()))
+      {
+        fHistograms->Add(lWeightsProfile);
+      }
     }
 
     // preparation done, insert into the map
-    PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1, lMCTF1_exp_inter});
+    PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1, lMCTF1_exp_inter, lWeightsProfile});
     const auto [it, success] =  fMapPtWeightsAccessObjects.insert(std::pair{thePDGCode, lBundle});
     if (!success)
     {
@@ -1196,11 +1248,13 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
              "\tthePDGCode: %d\n"
              "\teWhich: %d\n"
              "\tfData: %s\n"
+             "\thWeights: %s\n"
              "\thMC: %s\n"
              "\tfMC: %s\n",
              it->first, 
              static_cast<int>(lBundle.eWhich), 
              lBundle.fData->GetName(), 
+             lBundle.hWeights ? lBundle.hWeights->GetName() : "nullptr",
              lBundle.hMC->GetName(),
              lNameF.data()));
       AliInfo(lMessage.data());
@@ -8230,11 +8284,9 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   return (lWeightNew != -1.) ? lWeightNew : lWeightOld;
 }
 
-// todo: thinkg of using the return value of this function for more signaling purposes.
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
 {
-  // todo: check why I need to capture everything in order for it work
   // returns 1 if function evaluation is to be continued
   auto return_1_early = [&]()
   {
@@ -8333,10 +8385,21 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   }
 
   auto const &lBundle = lConstIt->second;
-  Double_t lNomData = lBundle.fData->Eval(mesonPt);
-  Double_t lDenomMC = (lBundle.eWhich > kVariant) // leaves kInvariant_expInter, kVariant_expInter 
-    ? lBundle.fMC->Eval(mesonPt)
-    : lBundle.hMC->Interpolate(mesonPt);
+  Double_t lNomData = 0.;
+  Double_t lDenomMC = 0.;
+  if (lBundle.hWeights)
+  {
+    int const iBinWeight = lBundle.hWeights->GetXaxis()->FindBin(mesonPt);
+    if (iBinWeight < 1 || iBinWeight > lBundle.hWeights->GetNbinsX()) return 1.;
+    return lBundle.hWeights->GetBinContent(iBinWeight);
+  }
+  else
+  {
+    lNomData = lBundle.fData->Eval(mesonPt);
+    lDenomMC = (lBundle.eWhich > kVariant) // leaves kInvariant_expInter, kVariant_expInter
+      ? lBundle.fMC->Eval(mesonPt)
+      : lBundle.hMC->Interpolate(mesonPt);
+  }
 
   auto calcWeight = [&PDGCode, &checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
