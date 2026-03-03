@@ -687,10 +687,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 247)  { 
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe329v0000","32c510796","h0006a3100000000","j453503000000000"); // EG1, pT cut on one eta daugher
 
-    // PCM-PHOS
+    // PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
-    cuts.AddCutHeavyMesonCalo("00010113","24466190wa01cc00000","32c510700","0103603l00000010","0453503000000010"); // INT7
-    cuts.AddCutHeavyMesonCalo("00062113","24466190wa01cc00000","32c510700","0103603l00000010","0453503000000010"); // PHI7
+    cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c510796","h000603100000000","j453503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00062113","24466190sa01cc00000","32c510796","h000603100000000","j453503000000000"); // PHI7
 
   // pp 5 TeV
   } else if( trainConfig == 260 ) {
