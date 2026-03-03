@@ -1792,25 +1792,26 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
             fESDList[iCut]->Add(fHistoLowerContrGammaPt[iCut]);
           }
         }
-
-        fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
-        fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
-        fHistoGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-        fHistoGammaGammaInvMassPt[iCut]->Sumw2();
-        fESDList[iCut]->Add(fHistoGammaGammaInvMassPt[iCut]);
-        fHistoGammaGammaInvMassPtBeforeCuts[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt_Before_Cuts","ESD_GammaGamma_InvMass_Pt_Before_Cuts",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
-        fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
-        fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-        fHistoGammaGammaInvMassPtBeforeCuts[iCut]->Sumw2();
-        fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
-
-
-        fHistoGammaGammaAlphaVsPt[iCut]               = new TH2F("ESD_GammaGamma_Alpha_Pt","ESD_GammaGamma_Alpha_Pt",200,-1.0,1.0, HistoNPtBins, arrPtBinning);
-        fHistoGammaGammaAlphaVsPt[iCut]->GetXaxis()->SetTitle("#alpha");
-        fHistoGammaGammaAlphaVsPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-        fHistoGammaGammaAlphaVsPt[iCut]->Sumw2();
-        fESDList[iCut]->Add(fHistoGammaGammaAlphaVsPt[iCut]);
       }
+
+      fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
+      fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
+      fHistoGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoGammaGammaInvMassPt[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoGammaGammaInvMassPt[iCut]);
+      fHistoGammaGammaInvMassPtBeforeCuts[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt_Before_Cuts","ESD_GammaGamma_InvMass_Pt_Before_Cuts",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1], HistoNPtBins, arrPtBinning);
+      fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
+      fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoGammaGammaInvMassPtBeforeCuts[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
+
+
+      fHistoGammaGammaAlphaVsPt[iCut]               = new TH2F("ESD_GammaGamma_Alpha_Pt","ESD_GammaGamma_Alpha_Pt",200,-1.0,1.0, HistoNPtBins, arrPtBinning);
+      fHistoGammaGammaAlphaVsPt[iCut]->GetXaxis()->SetTitle("#alpha");
+      fHistoGammaGammaAlphaVsPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoGammaGammaAlphaVsPt[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoGammaGammaAlphaVsPt[iCut]);
+      
     }
 
     if( fEnableAdvancedMesonQA ){
@@ -4809,7 +4810,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA ) {
         fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
-    } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111){   // all true pi0 for eta prime analysis
+    } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 && fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
     }
@@ -4966,7 +4967,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
         fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       }
-    } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111){   // all true pi0 for eta prime analysis
+    } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 && fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
     }
@@ -5100,7 +5101,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
           if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
             fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
           }
-        } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111){   // all true pi0 for eta prime analysis
+        } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
           fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
           fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
         }
@@ -5242,7 +5243,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         }
-      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111){   // all true pi0 for eta prime analysis
+      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
       }
@@ -5525,7 +5526,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         }
-      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111){   // all true pi0 for eta prime analysis
+      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
       }
@@ -5682,7 +5683,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         }
-      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111){   // all true pi0 for eta prime analysis
+      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
       }
