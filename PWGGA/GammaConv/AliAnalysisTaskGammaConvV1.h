@@ -202,12 +202,14 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCPi0PtNotTriggered;                       //!
     TH1F**                            fHistoMCPi0PtNoVertex;                           //!
     TH1F**                            fHistoMCPi0WOWeightPt;                           //! array of histos with unweighted pi0, pT
+    TH1F**                            fHistoMCPi0WOWeightPtFineBinning;                //! array of histos with unweighted pi0, pT, finer binning
     TH1F**                            fHistoMCPi0WOEvtWeightPt;                        //! array of histos without event weights pi0, pT
     TH1F**                            fHistoMCEtaWOEvtWeightPt;                        //! array of histos without event weights eta, pT
     TH1F**                            fHistoMCEtaPt;                                   //!
     TH1F**                            fHistoMCEtaPtNotTriggered;                       //!
     TH1F**                            fHistoMCEtaPtNoVertex;                           //!
     TH1F**                            fHistoMCEtaWOWeightPt;                           //!
+    TH1F**                            fHistoMCEtaWOWeightPtFineBinning;                //! array of histos with unweighted eta, pT, finer binning
     TH1F**                            fHistoMCPi0WOWeightInAccPt;                      //!
     TH1F**                            fHistoMCEtaWOWeightInAccPt;                      //!
     TH1F**                            fHistoMCPi0InAccPt;                              //!
@@ -240,6 +242,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TProfile2D**                      pESDTruePrimaryMotherWeightsInvMassPt;        //!
     TH2F**                            fHistoTruePrimaryPi0MCPtResolPt;              //!
     TH2F**                            fHistoTruePrimaryEtaMCPtResolPt;              //!
+    TH2F**                            fHistoTruePrimaryPi0MCPtPtFine;               //!
+    TH2F**                            fHistoTruePrimaryEtaMCPtPtFine;               //!
     TH2F**                            fHistoTrueSecondaryMotherInvMassPt;           //!
     TH2F**                            fHistoTrueSecondaryMotherFromK0sInvMassPt;    //!
     TH1F**                            fHistoTrueK0sWithPi0DaughterMCPt;             //!
@@ -520,7 +524,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 72);
+    ClassDef(AliAnalysisTaskGammaConvV1, 73);
 };
 
 #endif

@@ -145,12 +145,14 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoMCPi0PtNotTriggered(NULL),
   fHistoMCPi0PtNoVertex(NULL),
   fHistoMCPi0WOWeightPt(NULL),
+  fHistoMCPi0WOWeightPtFineBinning(NULL),
   fHistoMCPi0WOEvtWeightPt(NULL),
   fHistoMCEtaWOEvtWeightPt(NULL),
   fHistoMCEtaPt(NULL),
   fHistoMCEtaPtNotTriggered(NULL),
   fHistoMCEtaPtNoVertex(NULL),
   fHistoMCEtaWOWeightPt(NULL),
+  fHistoMCEtaWOWeightPtFineBinning(NULL),
   fHistoMCPi0WOWeightInAccPt(NULL),
   fHistoMCEtaWOWeightInAccPt(NULL),
   fHistoMCPi0InAccPt(NULL),
@@ -183,6 +185,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   pESDTruePrimaryMotherWeightsInvMassPt(NULL),
   fHistoTruePrimaryPi0MCPtResolPt(NULL),
   fHistoTruePrimaryEtaMCPtResolPt(NULL),
+  fHistoTruePrimaryPi0MCPtPtFine(NULL),
+  fHistoTruePrimaryEtaMCPtPtFine(NULL),
   fHistoTrueSecondaryMotherInvMassPt(NULL),
   fHistoTrueSecondaryMotherFromK0sInvMassPt(NULL),
   fHistoTrueK0sWithPi0DaughterMCPt(NULL),
@@ -509,12 +513,14 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoMCPi0PtNotTriggered(NULL),
   fHistoMCPi0PtNoVertex(NULL),
   fHistoMCPi0WOWeightPt(NULL),
+  fHistoMCPi0WOWeightPtFineBinning(NULL),
   fHistoMCPi0WOEvtWeightPt(NULL),
   fHistoMCEtaWOEvtWeightPt(NULL),
   fHistoMCEtaPt(NULL),
   fHistoMCEtaPtNotTriggered(NULL),
   fHistoMCEtaPtNoVertex(NULL),
   fHistoMCEtaWOWeightPt(NULL),
+  fHistoMCEtaWOWeightPtFineBinning(NULL),
   fHistoMCPi0WOWeightInAccPt(NULL),
   fHistoMCEtaWOWeightInAccPt(NULL),
   fHistoMCPi0InAccPt(NULL),
@@ -547,6 +553,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   pESDTruePrimaryMotherWeightsInvMassPt(NULL),
   fHistoTruePrimaryPi0MCPtResolPt(NULL),
   fHistoTruePrimaryEtaMCPtResolPt(NULL),
+  fHistoTruePrimaryPi0MCPtPtFine(NULL),
+  fHistoTruePrimaryEtaMCPtPtFine(NULL),
   fHistoTrueSecondaryMotherInvMassPt(NULL),
   fHistoTrueSecondaryMotherFromK0sInvMassPt(NULL),
   fHistoTrueK0sWithPi0DaughterMCPt(NULL),
@@ -963,6 +971,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   Float_t minClusterPt        = 0;
   Float_t maxClusterPt        = 50;
   Double_t *arrPtBinning      = new Double_t[1200];
+  Int_t nBinsPtFine           = 152;
+  Double_t *arrPtBinningFine  = new Double_t[nBinsPtFine+1];
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
 
@@ -1114,6 +1124,19 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<175) arrQAPtBinning[i]        = 20.+1*(i-170);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
+  }
+
+  for (Int_t i = 0; i <= 80; ++i) {
+    arrPtBinningFine[i] = 0.0 + 0.05*i;
+  }
+  for (Int_t i = 1; i <= 50; ++i) {
+    arrPtBinningFine[80+i] = 4.0 + 0.1*i;
+  }
+  for (Int_t i = 1; i <= 12; ++i) {
+    arrPtBinningFine[130+i] = 9.0 + 0.5*i;
+  }
+  for (Int_t i = 1; i <= 10; ++i) {
+    arrPtBinningFine[142+i] = 15.0 + 1.0*i;
   }
 
   if (fIsMC == 2){
@@ -1880,6 +1903,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoMCEtaInAccPt               = new TH1F*[fnCuts];
       fHistoMCEtaInAccPtNotTriggered   = new TH1F*[fnCuts];
       fHistoMCEtaInAccPtNoVertex       = new TH1F*[fnCuts];
+      if (fDoMesonQA > 0 && fIsMC < 2){
+        fHistoMCPi0WOWeightPtFineBinning = new TH1F*[fnCuts];
+        fHistoMCEtaWOWeightPtFineBinning = new TH1F*[fnCuts];
+      }
 
       if(fIsMC > 1){
         fHistoMCPi0WOEvtWeightPt       = new TH1F*[fnCuts];
@@ -1926,6 +1953,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
           fHistoMCEtaPtY               = new TH2F*[fnCuts];
           fHistoTruePrimaryPi0MCPtResolPt         = new TH2F*[fnCuts];
           fHistoTruePrimaryEtaMCPtResolPt         = new TH2F*[fnCuts];
+          if (fDoMesonQA == 4){
+            fHistoTruePrimaryPi0MCPtPtFine        = new TH2F*[fnCuts];
+            fHistoTruePrimaryEtaMCPtPtFine        = new TH2F*[fnCuts];
+          }
           fHistoTrueK0sWithPi0DaughterMCPt        = new TH1F*[fnCuts];
           fHistoTrueK0lWithPi0DaughterMCPt        = new TH1F*[fnCuts];
           fHistoTrueEtaWithPi0DaughterMCPt        = new TH1F*[fnCuts];
@@ -2143,16 +2174,22 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
           fHistoMCSecEtaPt[iCut]->Sumw2();
         }
 
-        if (fDoMesonQA > 0){
-          fHistoMCPi0PtAlpha[iCut]         = new TH2F("MC_Pi0_Pt_Alpha", "MC_Pi0_Pt_Alpha", nBinsQAPt, arrQAPtBinning, 100, 0, 1);
-          fMCList[iCut]->Add(fHistoMCPi0PtAlpha[iCut]);
-          fHistoMCEtaPtAlpha[iCut]         = new TH2F("MC_Eta_Pt_Alpha", "MC_Eta_Pt_Alpha", nBinsQAPt, arrQAPtBinning, 100, 0, 1);
-          fMCList[iCut]->Add(fHistoMCEtaPtAlpha[iCut]);
+      if (fDoMesonQA > 0){
+        fHistoMCPi0PtAlpha[iCut]         = new TH2F("MC_Pi0_Pt_Alpha", "MC_Pi0_Pt_Alpha", nBinsQAPt, arrQAPtBinning, 100, 0, 1);
+        fMCList[iCut]->Add(fHistoMCPi0PtAlpha[iCut]);
+        fHistoMCEtaPtAlpha[iCut]         = new TH2F("MC_Eta_Pt_Alpha", "MC_Eta_Pt_Alpha", nBinsQAPt, arrQAPtBinning, 100, 0, 1);
+        fMCList[iCut]->Add(fHistoMCEtaPtAlpha[iCut]);
 
-          if (fIsMC < 2){
-            fHistoMCPi0PtY[iCut]           = new TH2F("MC_Pi0_Pt_Y", "MC_Pi0_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
-            fHistoMCPi0PtY[iCut]->Sumw2();
-            fMCList[iCut]->Add(fHistoMCPi0PtY[iCut]);
+        if (fIsMC < 2){
+          fHistoMCPi0WOWeightPtFineBinning[iCut] = new TH1F("MC_Pi0_WOWeights_Pt_FineBinning", "MC_Pi0_WOWeights_Pt_FineBinning", nBinsPtFine, arrPtBinningFine);
+          fHistoMCPi0WOWeightPtFineBinning[iCut]->Sumw2();
+          fMCList[iCut]->Add(fHistoMCPi0WOWeightPtFineBinning[iCut]);
+          fHistoMCEtaWOWeightPtFineBinning[iCut] = new TH1F("MC_Eta_WOWeights_Pt_FineBinning", "MC_Eta_WOWeights_Pt_FineBinning", nBinsPtFine, arrPtBinningFine);
+          fHistoMCEtaWOWeightPtFineBinning[iCut]->Sumw2();
+          fMCList[iCut]->Add(fHistoMCEtaWOWeightPtFineBinning[iCut]);
+          fHistoMCPi0PtY[iCut]           = new TH2F("MC_Pi0_Pt_Y", "MC_Pi0_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
+          fHistoMCPi0PtY[iCut]->Sumw2();
+          fMCList[iCut]->Add(fHistoMCPi0PtY[iCut]);
             fHistoMCEtaPtY[iCut]           = new TH2F("MC_Eta_Pt_Y", "MC_Eta_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
             fHistoMCEtaPtY[iCut]->Sumw2();
             fMCList[iCut]->Add(fHistoMCEtaPtY[iCut]);
@@ -2372,6 +2409,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
             fHistoTruePrimaryEtaMCPtResolPt[iCut]   = new TH2F("ESD_TruePrimaryEta_MCPt_ResolPt", "ESD_TruePrimaryEta_ResolPt_MCPt", nBinsPt, arrPtBinning, 1000, -1., 1.);
             fHistoTruePrimaryEtaMCPtResolPt[iCut]->Sumw2();
             fTrueList[iCut]->Add(fHistoTruePrimaryEtaMCPtResolPt[iCut]);
+            if (fDoMesonQA == 4){
+              fHistoTruePrimaryPi0MCPtPtFine[iCut] = new TH2F("ESD_TruePrimaryPi0_MCPt_Pt_Fine", "ESD_TruePrimaryPi0_Pt_MCPt_Fine", nBinsPtFine, arrPtBinningFine, nBinsPtFine, arrPtBinningFine);
+              fHistoTruePrimaryPi0MCPtPtFine[iCut]->Sumw2();
+              fTrueList[iCut]->Add(fHistoTruePrimaryPi0MCPtPtFine[iCut]);
+              fHistoTruePrimaryEtaMCPtPtFine[iCut] = new TH2F("ESD_TruePrimaryEta_MCPt_Pt_Fine", "ESD_TruePrimaryEta_Pt_MCPt_Fine", nBinsPtFine, arrPtBinningFine, nBinsPtFine, arrPtBinningFine);
+              fHistoTruePrimaryEtaMCPtPtFine[iCut]->Sumw2();
+              fTrueList[iCut]->Add(fHistoTruePrimaryEtaMCPtPtFine[iCut]);
+            }
             fHistoTrueBckGGInvMassPt[iCut]          = new TH2F("ESD_TrueBckGG_InvMass_Pt", "ESD_TrueBckGG_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
             fTrueList[iCut]->Add(fHistoTrueBckGGInvMassPt[iCut]);
             fHistoTrueBckContInvMassPt[iCut]        = new TH2F("ESD_TrueBckCont_InvMass_Pt", "ESD_TrueBckCont_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
@@ -3688,6 +3733,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
                 fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
               }
               fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+              if (fDoMesonQA > 0 && fIsMC < 2) fHistoMCPi0WOWeightPtFineBinning[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
               if ( fIsMC > 1 ) fHistoMCPi0WOEvtWeightPt[fiCut]->Fill(particle->Pt());
               if (fDoMesonQA > 0){
                 if ( fIsMC < 2 )fHistoMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
@@ -3703,6 +3749,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
               }
             
               fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+              if (fDoMesonQA > 0 && fIsMC < 2) fHistoMCEtaWOWeightPtFineBinning[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
               if ( fIsMC > 1 ) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
               if (fDoMesonQA > 0){
                 if ( fIsMC < 2 )fHistoMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
@@ -3962,6 +4009,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles(int isCurrentEventSelected)
               fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             }
             fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+            if (fDoMesonQA > 0 && fIsMC < 2) fHistoMCPi0WOWeightPtFineBinning[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (fIsMC > 1) fHistoMCPi0WOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0){
               if (fIsMC < 2)fHistoMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
@@ -3976,6 +4024,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles(int isCurrentEventSelected)
               fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             }
             fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+            if (fDoMesonQA > 0 && fIsMC < 2) fHistoMCEtaWOWeightPtFineBinning[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (fIsMC > 1) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0){
               if (fIsMC < 2)fHistoMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted); // All MC Pi0
@@ -4883,12 +4932,20 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
             fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(lMotherMCPt,
                                                          (Pi0Candidate->Pt()-lMotherMCPt)/lMotherMCPt,
                                                          weighted*weightMatBudget);
+            if (fDoMesonQA == 4) {
+              fHistoTruePrimaryPi0MCPtPtFine[fiCut]->Fill(lMotherMCPt,
+                                                          Pi0Candidate->Pt());
+            }
 
           }
           if (isTrueEta){ // Only primary eta for resolution
             fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(lMotherMCPt,
                                                          (Pi0Candidate->Pt()-lMotherMCPt)/lMotherMCPt,
                                                          weighted*weightMatBudget);
+            if (fDoMesonQA == 4) {
+              fHistoTruePrimaryEtaMCPtPtFine[fiCut]->Fill(lMotherMCPt,
+                                                          Pi0Candidate->Pt());
+            }
           }
         }
       }
