@@ -161,7 +161,7 @@ fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
 fNsigmaDaughters(5.0),
-fMinCosPointingAngle(0.998),
+fMinCosPointingAngle(0.995),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
 fElectronReject(kTRUE),
@@ -252,7 +252,7 @@ fMinV0Radius(5.0),
 
 // --- Existing V0 cut settings ---
 fNsigmaDaughters(5.0),
-fMinCosPointingAngle(0.998),
+fMinCosPointingAngle(0.995),
 fInvMassWindow(0.015),
 fMinDCAToPrimVtx(0.1),
 fElectronReject(kTRUE),
