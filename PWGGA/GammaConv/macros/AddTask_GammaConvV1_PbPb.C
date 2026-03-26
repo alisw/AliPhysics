@@ -5465,7 +5465,7 @@ void AddTask_GammaConvV1_PbPb(
       }
       nContainer++;
     }
-    if(enableQAMesonTask>1){
+    if(enableQAMesonTask == 2){
       if (initializedMatBudWeigths_existing) {
 	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }else{
