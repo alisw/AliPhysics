@@ -563,7 +563,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       if((Int_t)track->GetUniqueID() == (Int_t)trackAss->GetUniqueID()) {continue;}
 
       //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
-      if(fPtRefMin<trigPt<fPtRefMax && fPtRefMin<assPt<fPtRefMax && trigPt>assPt){
+      if((fPtRefMin<trigPt) && (trigPt<fPtRefMax) && (fPtRefMin<assPt) && (assPt<fPtRefMax) && trigPt>assPt){
         if(fUseEfficiency) {
           assEff = GetEff(assPt, 0, assEta);
           if(assEff < 0.001) continue;
@@ -671,7 +671,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           Double_t assEff = 1.0;
 
           //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
-          if(fPtRefMin<trigPt<fPtRefMax && fPtRefMin<assPt<fPtRefMax && trigPt>assPt){
+          if((fPtRefMin<trigPt) && (trigPt<fPtRefMax) && (fPtRefMin<assPt) && (assPt<fPtRefMax) && trigPt>assPt){
             if(fUseEfficiency) {
               assEff = GetEff(assPt, 0, assEta);
               if(assEff < 0.001) continue;
