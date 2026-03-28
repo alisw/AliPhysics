@@ -1289,8 +1289,8 @@ void AliAnalysisTaskKaon2PC::RunData() {
             fPIDK->Fill(track->Pt(),track->GetTPCsignal());
             fNsigmaKaon->Fill(track->Pt(), nSigmakaon);
             fEnergyCuts->Fill(track->GetTPCsignal()); }
-        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt< 2.0)) {hPt->Fill(kchPt);}
-        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt< 2.0) && (charge > 0)) {hPt_kPos->Fill(kchPt);}
+        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt) && (kchPt< 2.0)) {hPt->Fill(kchPt);}
+        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt) && (kchPt < 2.0) && (charge > 0)) {hPt_kPos->Fill(kchPt);}
         if (fabs(nSigmakaon) < 20.0 ) {fnsigmakaon->Fill(track->Pt(), nSigmakaon);}
         fNsigmaTOFK->Fill(track->Pt(), nSigmaTOFkaon);
         if (fabs(nSigmaTOFkaon)<3.0) {fNsigmaTOFKaon->Fill(track->Pt(), nSigmaTOFkaon);}
@@ -1688,7 +1688,7 @@ Int_t nSelectedK0s = fSelectedK0s->GetEntries();
         if (deltaPhi < 0.5*Pi) {fHistDPhi->Fill(-deltaPhi);}
         else {fHistDPhi->Fill(2*Pi-deltaPhi);}
 
-        if (0 < deltaPhi < 0.5*Pi) {    
+        if ((0 < deltaPhi) && (deltaPhi < 0.5*Pi)) {
             fHistCFEta->Fill(deltaEta,CentV0M);
             fHistCFEta->Fill(-deltaEta,CentV0M);  
         }                                  
@@ -2513,8 +2513,8 @@ void AliAnalysisTaskKaon2PC::RunMCReconstructed() {
             fPIDK->Fill(track->Pt(),track->GetTPCsignal());
             fNsigmaKaon->Fill(track->Pt(), nSigmakaon);
             fEnergyCuts->Fill(track->GetTPCsignal()); }
-        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt< 2.0)) {hPt->Fill(kchPt);}
-        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt< 2.0) && (charge > 0)) {hPt_kPos->Fill(kchPt);}
+        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt) && (kchPt < 2.0)) {hPt->Fill(kchPt);}
+        if ((fabs(nSigmakaon)<2.0) && (0.0 < kchPt) && (kchPt < 2.0) && (charge > 0)) {hPt_kPos->Fill(kchPt);}
         if (fabs(nSigmakaon) < 20.0 ) {fnsigmakaon->Fill(track->Pt(), nSigmakaon);}
         fNsigmaTOFK->Fill(track->Pt(), nSigmaTOFkaon);
         if (fabs(nSigmaTOFkaon)<3.0) {fNsigmaTOFKaon->Fill(track->Pt(), nSigmaTOFkaon);}
@@ -2931,7 +2931,7 @@ Int_t nSelectedK0s = fSelectedK0s->GetEntries();
         if (deltaPhi < 0.5*Pi) {fHistDPhi->Fill(-deltaPhi);}
         else {fHistDPhi->Fill(2*Pi-deltaPhi);}
 
-        if (0 < deltaPhi < 0.5*Pi) {    
+        if ((0 < deltaPhi) && (deltaPhi < 0.5*Pi)) {
             fHistCFEta->Fill(deltaEta,CentV0M);
             fHistCFEta->Fill(-deltaEta,CentV0M);  
         }                                  
