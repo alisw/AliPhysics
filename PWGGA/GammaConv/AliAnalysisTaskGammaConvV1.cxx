@@ -971,6 +971,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   Float_t minClusterPt        = 0;
   Float_t maxClusterPt        = 50;
   Double_t *arrPtBinning      = new Double_t[1200];
+  Int_t nBinsPtHalf           = 2*nBinsPt;
+  Double_t *arrPtBinningHalf  = new Double_t[2401];
   Int_t nBinsPtFine           = 152;
   Double_t *arrPtBinningFine  = new Double_t[nBinsPtFine+1];
   Double_t *arrQAPtBinning    = new Double_t[1200];
@@ -1088,6 +1090,18 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<=36)      arrPtBinning[i]  = 9.0   + 1.0*(i-30);        // 1.0 GeV                 15 GeV
       else /*i<=nBinsPt*/ arrPtBinning[i]  = 15.0  + 5.0*(i-36);        // 5.0 GeV                 25 GeV
     }
+    if (fDoMesonQA == 4) {
+      nBinsPtHalf = 2*nBinsPt;
+      arrPtBinningHalf[0] = arrPtBinning[0];
+      for (Int_t i = 0; i < nBinsPt; ++i) {
+        arrPtBinningHalf[2*i+1] = 0.5*(arrPtBinning[i] + arrPtBinning[i+1]);
+        arrPtBinningHalf[2*i+2] = arrPtBinning[i+1];
+      }
+      nBinsPt = nBinsPtHalf;
+      for (Int_t i = 0; i <= nBinsPt; ++i) {
+        arrPtBinning[i] = arrPtBinningHalf[i];
+      }
+    }
 
     nBinsQAPt = 38;
     maxQAPt   = 25.0;
@@ -1138,7 +1152,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   for (Int_t i = 1; i <= 10; ++i) {
     arrPtBinningFine[142+i] = 15.0 + 1.0*i;
   }
-
   if (fIsMC == 2){
     fDoPhotonQA           = 0;
     fDoTHnSparse          = kFALSE;
