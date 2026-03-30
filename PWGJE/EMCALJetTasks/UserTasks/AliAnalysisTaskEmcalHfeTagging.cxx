@@ -248,6 +248,7 @@ fZJetNoElectrons(0x0),
 fAxisDistJetNoElectrons(0x0),
 fDeltaRMatchedJetsWithElectrons(0x0),
 fDeltaRMatchedElectrons(0x0),
+fTruePtHFEJet(0x0),
 fTreeObservableTagging(0)
 {
 	// Output tree
@@ -312,6 +313,7 @@ fTreeObservableTagging(0)
 		fRMUWPtSemiInclJet[i] = NULL; 
 		fRMUWAngSemiInclJet[i] = NULL; 
 		fRMUWDispSemiInclJet[i] = NULL; 
+        fTruePtSemiInclJet[i] = NULL;
     }
     
     SetMakeGeneralHistograms(kTRUE);
@@ -508,6 +510,7 @@ fZJetNoElectrons(0x0),
 fAxisDistJetNoElectrons(0x0),
 fDeltaRMatchedJetsWithElectrons(0x0),
 fDeltaRMatchedElectrons(0x0),
+fTruePtHFEJet(0x0),
 fTreeObservableTagging(0)
 {
     // Standard constructor.
@@ -573,6 +576,7 @@ fTreeObservableTagging(0)
 		fRMUWPtSemiInclJet[i] = NULL; 
 		fRMUWAngSemiInclJet[i] = NULL; 
 		fRMUWDispSemiInclJet[i] = NULL; 
+        fTruePtSemiInclJet[i] = NULL;
     }
     
     SetMakeGeneralHistograms(kTRUE);
@@ -1100,6 +1104,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fDispSemiInclJet[i]);
         fOutput->Add(fRMDispSemiInclJet[i]);
         fOutput->Add(fRMUWDispSemiInclJet[i]);
+        
+		fTruePtSemiInclJet[i] = new TH1F(Form("fTruePtSemiInclJet%d",i), Form("fTruePtSemiInclJet%d",i), 24, 0., 120.);
+        fOutput->Add(fTruePtSemiInclJet[i]);
     }
 
 	// No electrons 3D methodology
@@ -1129,6 +1136,10 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
 	fDeltaRMatchedElectrons = new TH2F("fDeltaRMatchedElectrons", "fDeltaRMatchedElectrons", 50, -0.25, 1.0, 25, 0., 0.05);
 	fOutput -> Add(fDeltaRMatchedElectrons);
+
+	// Missed HFe-jets on matching 
+	fTruePtHFEJet = new TH1F("fTruePtHFEJet", "fTruePtHFEJet", 24, 0., 120.);
+	fOutput -> Add(fTruePtHFEJet);
     
 
     // =========== Switch on Sumw2 for all histos ===========
