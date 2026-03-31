@@ -389,6 +389,7 @@ protected:
 
 	// Jet reconstructrion correction
 	TH1F								*fTruePtSemiInclJet[ncutssemiincl];
+	TH1F								*fMatchedPtSemiInclJet[ncutssemiincl];
 	TH1F								*fTruePtHFEJet;
 
 	TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw

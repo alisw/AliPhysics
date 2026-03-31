@@ -314,6 +314,7 @@ fTreeObservableTagging(0)
 		fRMUWAngSemiInclJet[i] = NULL; 
 		fRMUWDispSemiInclJet[i] = NULL; 
         fTruePtSemiInclJet[i] = NULL;
+        fMatchedPtSemiInclJet[i] = NULL;
     }
     
     SetMakeGeneralHistograms(kTRUE);
@@ -577,6 +578,7 @@ fTreeObservableTagging(0)
 		fRMUWAngSemiInclJet[i] = NULL; 
 		fRMUWDispSemiInclJet[i] = NULL; 
         fTruePtSemiInclJet[i] = NULL;
+        fMatchedPtSemiInclJet[i] = NULL;
     }
     
     SetMakeGeneralHistograms(kTRUE);
@@ -1079,11 +1081,15 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 	// Inclusive and semi-inclusive histograms
     for(Int_t i = 0; i < ncutssemiincl; i++){
         fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 24, 0., 120.);
+		fTruePtSemiInclJet[i] = new TH1F(Form("fTruePtSemiInclJet%d",i), Form("fTruePtSemiInclJet%d",i), 24, 0., 120.);
+		fMatchedPtSemiInclJet[i] = new TH1F(Form("fMatchedPtSemiInclJet%d",i), Form("fMatchedPtSemiInclJet%d",i), 24, 0., 120.);
 		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
 		fRMUWPtSemiInclJet[i] = new THnSparseF(Form("fRMUWPtSemiInclJet%d", i), Form("fRMUWPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
         fOutput->Add(fPtSemiInclJet[i]);
+        fOutput->Add(fTruePtSemiInclJet[i]);
+        fOutput->Add(fMatchedPtSemiInclJet[i]);
         fOutput->Add(fRMPtSemiInclJet[i]);
         fOutput->Add(fRMUWPtSemiInclJet[i]);
 
@@ -1105,8 +1111,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         fOutput->Add(fRMDispSemiInclJet[i]);
         fOutput->Add(fRMUWDispSemiInclJet[i]);
         
-		fTruePtSemiInclJet[i] = new TH1F(Form("fTruePtSemiInclJet%d",i), Form("fTruePtSemiInclJet%d",i), 24, 0., 120.);
-        fOutput->Add(fTruePtSemiInclJet[i]);
     }
 
 	// No electrons 3D methodology
@@ -1663,37 +1667,39 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 					jetpartlevel = GetJetMatchedWithLeadingTrackBias(jetbase, kMatched, distfac, fMinPtFractionMatch, sibin);
 
 					if (!jetpartlevel) continue;
-
-					ptMatchSemi = jetpartlevel -> Pt();
-                	ptDMatchSemi = GetJetpTD(jetpartlevel, kMatched);
-					massMatchSemi = GetJetMass(jetpartlevel, kMatched);
-                	angulMatchSemi = GetJetAngularity(jetpartlevel, kMatched);
-
-					Double_t ptRMvalues[2] = {ptSubtracted, ptMatchSemi};
-					Double_t angRMvalues[4] = {ptSubtracted, ptMatchSemi, jetbaseang, angulMatchSemi};
-					Double_t ptdRMvalues[4] = {ptSubtracted, ptMatchSemi, jetbaseptd, ptDMatchSemi};
-
-					fRMPtSemiInclJet[sibin] -> Fill(ptRMvalues, kWeight);
-					fRMUWPtSemiInclJet[sibin] -> Fill(ptRMvalues, 1.);
 					
-					fRMAngSemiInclJet[sibin] -> Fill(angRMvalues, kWeight);
-					fRMUWAngSemiInclJet[sibin] -> Fill(angRMvalues, 1.);
-					
-					fRMDispSemiInclJet[sibin] -> Fill(ptdRMvalues, kWeight);
-					fRMUWDispSemiInclJet[sibin] -> Fill(ptdRMvalues, 1.);
+					/* ptMatchSemi = jetpartlevel -> Pt(); */
+                	/* ptDMatchSemi = GetJetpTD(jetpartlevel, kMatched); */
+					/* massMatchSemi = GetJetMass(jetpartlevel, kMatched); */
+                	/* angulMatchSemi = GetJetAngularity(jetpartlevel, kMatched); */
 
-					// Fill general RM and prob density for unbiased
-					if (sibin == 0) {
-                		fh2ResponseUW->Fill(jetbase->Pt(),jetpartlevel->Pt());
+					/* Double_t ptRMvalues[2] = {ptSubtracted, ptMatchSemi}; */
+					/* Double_t angRMvalues[4] = {ptSubtracted, ptMatchSemi, jetbaseang, angulMatchSemi}; */
+					/* Double_t ptdRMvalues[4] = {ptSubtracted, ptMatchSemi, jetbaseptd, ptDMatchSemi}; */
+				
+					/* fMatchedPtSemiInclJet[sibin] -> Fill(ptMatchSemi); */
+
+					/* fRMPtSemiInclJet[sibin] -> Fill(ptRMvalues, kWeight); */
+					/* fRMUWPtSemiInclJet[sibin] -> Fill(ptRMvalues, 1.); */
+					
+					/* fRMAngSemiInclJet[sibin] -> Fill(angRMvalues, kWeight); */
+					/* fRMUWAngSemiInclJet[sibin] -> Fill(angRMvalues, 1.); */
+					
+					/* fRMDispSemiInclJet[sibin] -> Fill(ptdRMvalues, kWeight); */
+					/* fRMUWDispSemiInclJet[sibin] -> Fill(ptdRMvalues, 1.); */
+
+					/* // Fill general RM and prob density for unbiased */
+					/* if (sibin == 0) { */
+                		/* fh2ResponseUW->Fill(jetbase->Pt(),jetpartlevel->Pt()); */
                 		
-                		Double_t probDensDetPart = -999., probDensPartDet = -999.;
+                		/* Double_t probDensDetPart = -999., probDensPartDet = -999.; */
                 		
-                		if (jetbase->Pt()>0) probDensPartDet = (jetpartlevel->Pt()-jetbase->Pt())/jetbase->Pt();
-                		if (jetpartlevel->Pt()>0) probDensDetPart = (jetbase->Pt()-jetpartlevel->Pt())/jetpartlevel->Pt();
+                		/* if (jetbase->Pt()>0) probDensPartDet = (jetpartlevel->Pt()-jetbase->Pt())/jetbase->Pt(); */
+                		/* if (jetpartlevel->Pt()>0) probDensDetPart = (jetbase->Pt()-jetpartlevel->Pt())/jetpartlevel->Pt(); */
                 		
-                		fJetProbDensityDetPart->Fill(probDensDetPart,jetpartlevel->Pt());
-                		fJetProbDensityPartDet->Fill(probDensPartDet,jetbase->Pt());
-					}
+                		/* fJetProbDensityDetPart->Fill(probDensDetPart,jetpartlevel->Pt()); */
+                		/* fJetProbDensityPartDet->Fill(probDensPartDet,jetbase->Pt()); */
+					/* } */
 				}	
 			}
 
@@ -1747,6 +1753,70 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			}
         }//jet loop
     }
+
+	// In the case of particle-level container, true distributions for jet piT will be filled
+	// For semi-inclusive results (histograms), the previous loop already fills the RM and detector-level distribution,
+	// hence this loop will fill true pT entries (Fakes: det - match, Miss: true - match)
+	// For HFe-jets (tree), the previous loop already fills the RM and detector-level too, but true and matched is
+	// already considered as a tree entry, hence we just need to fill the misses (true and not matched)
+	if (jetContPartLevel) {
+        jetContPartLevel -> ResetCurrentID();
+        AliEmcalJet* jetpartall = nullptr;  // True particle-level jet
+        AliEmcalJet* jetmatch = nullptr;    // Matched detector-level jet
+        while ((jetpartall = jetContPartLevel -> GetNextAcceptJet())) {
+            if (!jetpartall) continue;
+
+            if ((fCentSelectOn == kFALSE) && (jetpartall -> GetNumberOfTracks() <= 1)) continue;
+
+			double truejetpt = jetpartall -> Pt();
+			double truejetang = GetJetAngularity(jetpartall, kMatched);
+			double truejetptd = GetJetpTD(jetpartall, kMatched);
+            double ptMatchSemi=-1, ptDMatchSemi=-1, angulMatchSemi=-1;
+
+			// True semi-inclusive baseline
+			for (int sibin = MaxPtBinForSemiInclusiveJet(jetpartall, kMatched); sibin >= 0; sibin--) {
+				fTruePtSemiInclJet[sibin] -> Fill(truejetpt);
+
+				double distfac = (sibin == 0) ? fDistFactorUnbiasMatch : fDistFactorBiasMatch;
+				jetmatch = GetJetMatchedWithLeadingTrackBias(jetpartall, 0, distfac, fMinPtFractionMatch, sibin);
+
+				if (!jetmatch) continue;
+				fMatchedPtSemiInclJet[sibin] -> Fill(truejetpt);
+
+				ptMatchSemi = jetmatch -> Pt();
+                ptDMatchSemi = GetJetpTD(jetmatch, 0);
+                angulMatchSemi = GetJetAngularity(jetmatch, 0);
+
+				Double_t ptRMvalues[2] = {truejetpt, ptMatchSemi};
+				Double_t angRMvalues[4] = {ptMatchSemi, truejetpt, angulMatchSemi, truejetang};
+				Double_t ptdRMvalues[4] = {ptMatchSemi, truejetpt, ptDMatchSemi, truejetptd};
+				
+				fRMPtSemiInclJet[sibin] -> Fill(ptRMvalues, kWeight);
+				fRMUWPtSemiInclJet[sibin] -> Fill(ptRMvalues, 1.);
+				
+				fRMAngSemiInclJet[sibin] -> Fill(angRMvalues, kWeight);
+				fRMUWAngSemiInclJet[sibin] -> Fill(angRMvalues, 1.);
+				
+				fRMDispSemiInclJet[sibin] -> Fill(ptdRMvalues, kWeight);
+				fRMUWDispSemiInclJet[sibin] -> Fill(ptdRMvalues, 1.);
+
+				// Fill general RM and prob density for unbiased
+				if (sibin == 0) {
+                	fh2ResponseUW->Fill(ptMatchSemi, truejetpt);
+                	
+                	Double_t probDensDetPart = -999., probDensPartDet = -999.;
+                	
+                	if (ptMatchSemi > 0) probDensPartDet = (truejetpt - ptMatchSemi) / ptMatchSemi;
+                	if (truejetpt > 0) probDensDetPart = (ptMatchSemi - truejetpt) / truejetpt;
+                	
+                	fJetProbDensityDetPart -> Fill(probDensDetPart, truejetpt);
+                	fJetProbDensityPartDet -> Fill(probDensPartDet, ptMatchSemi);
+				}
+			}
+
+		}
+	}
+
     return kTRUE;
 }
 
@@ -3024,8 +3094,8 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(A
 
 	double distmin = distfactor * jetContMatch -> GetJetRadius();  
 
-	for (Int_t i = 0; i < jetContMatch -> GetNJets(); i++) {
-		jet2 = jetContMatch -> GetJet(i);
+	jetContMatch -> ResetCurrentID();
+    while ((jet2 = jetContMatch -> GetNextAcceptJet())) {
 		if (!jet2) continue;
 
 		AliVParticle* leadtrack = jet2 -> GetLeadingTrack();
@@ -3035,6 +3105,8 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(A
 		double dist = AngularDifference(jet1, jet2);
 
 		if (dist < distmin and leadingpt > minpT[trackbias] and GetFractionSharedPtBetweenJets(jet1, jet2) > ptfraction) {
+		/* if (dist < distmin and GetFractionSharedPtBetweenJets(jet1, jet2) > ptfraction) { */
+		/* 	cout << "leading track of matched: " << leadingpt << ", cut: " << minpT[trackbias] << endl; */
 			return jet2;
 		}
 	}
@@ -3054,8 +3126,8 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJ
 	double distmin = distfactor * jetContMatch -> GetJetRadius();  
 	int eleclabel = electron -> GetLabel();
 
-	for (Int_t i = 0; i < jetContMatch -> GetNJets(); i++) {
-		jet2 = jetContMatch -> GetJet(i);
+	jetContMatch -> ResetCurrentID();
+    while ((jet2 = jetContMatch -> GetNextAcceptJet())) {
 		if (!jet2) continue;
 
 		double dist = AngularDifference(jet1, jet2);
