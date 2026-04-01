@@ -620,8 +620,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
         3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,
         9,10,11,12,13,14,15,16,18,20};
 
-	Double_t bin_extendedjetpt[25] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 
-			                          65., 70., 75., 80., 85., 90., 95., 100., 105., 110., 115., 120.};
+	Double_t bin_extendedjetpt[nbins_extjetpt + 1] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 
+													  55., 60., 65., 70., 75., 80., 85., 90., 95., 100., 
+													  105., 110., 115., 120., 125., 130., 135., 140., 145., 150.};
     
 	Int_t nbin_jetptRM[2] = {30, 30};
 	Double_t max_jetptRM[2] = {150., 150};
@@ -780,7 +781,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fptJetHFE= new TH1F("fptJetHFE", "fptJetHFE", 100, 0, 200);
     fOutput->Add(fptJetHFE);
 	
-	fptJetHadron = new TH1F("fptJetHadron", "fptJetHadron", 24, 0., 120.);
+	fptJetHadron = new TH1F("fptJetHadron", "fptJetHadron", nbins_extjetpt, bin_extendedjetpt);
     fOutput -> Add(fptJetHadron);
     
     fptRecPE= new TH1F("fptRecPE", "fptRecPE", nbins_ept,bin_ept);
@@ -1078,9 +1079,9 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
 
 	// Inclusive and semi-inclusive histograms
     for(Int_t i = 0; i < ncutssemiincl; i++){
-        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), 24, 0., 120.);
-		fTruePtSemiInclJet[i] = new TH1F(Form("fTruePtSemiInclJet%d",i), Form("fTruePtSemiInclJet%d",i), 24, 0., 120.);
-		fMatchedPtSemiInclJet[i] = new TH1F(Form("fMatchedPtSemiInclJet%d",i), Form("fMatchedPtSemiInclJet%d",i), 24, 0., 120.);
+        fPtSemiInclJet[i] = new TH1F(Form("fPtSemiInclJet%d",i), Form("fPtSemiInclJet%d",i), nbins_extjetpt, bin_extendedjetpt);
+		fTruePtSemiInclJet[i] = new TH1F(Form("fTruePtSemiInclJet%d",i), Form("fTruePtSemiInclJet%d",i), nbins_extjetpt, bin_extendedjetpt);
+		fMatchedPtSemiInclJet[i] = new TH1F(Form("fMatchedPtSemiInclJet%d",i), Form("fMatchedPtSemiInclJet%d",i), nbins_extjetpt, bin_extendedjetpt);
 		fRMPtSemiInclJet[i] = new THnSparseF(Form("fRMPtSemiInclJet%d", i), Form("fRMPtSemiInclJet%d", i), 2, 
 						                    nbin_jetptRM, min_jetptRM, max_jetptRM);
 		fRMUWPtSemiInclJet[i] = new THnSparseF(Form("fRMUWPtSemiInclJet%d", i), Form("fRMUWPtSemiInclJet%d", i), 2, 
@@ -1115,7 +1116,8 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fptJetNoElectrons = new TH2F("fptJetNoElectrons", "fptJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt);
 	fOutput -> Add(fptJetNoElectrons);
 
-    fptExtendedJetNoElectrons = new TH2F("fptExtendedJetNoElectrons", "fptExtendedJetNoElectrons", nbins_ept, bin_ept, 24, bin_extendedjetpt);
+    fptExtendedJetNoElectrons = new TH2F("fptExtendedJetNoElectrons", "fptExtendedJetNoElectrons", nbins_ept, bin_ept, 
+					                     nbins_extjetpt, bin_extendedjetpt);
 	fOutput -> Add(fptExtendedJetNoElectrons);
 
     fAngJetNoElectrons = new TH3F("fAngJetNoElectrons", "fAngJetNoElectrons", nbins_ept, bin_ept, nbins_jetpt, bin_jetpt, nbins_g, bin_g);
@@ -1744,7 +1746,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                 ptDMatchSemi = GetJetpTD(jetmatch, 0);
                 angulMatchSemi = GetJetAngularity(jetmatch, 0);
 
-				Double_t ptRMvalues[2] = {truejetpt, ptMatchSemi};
+				Double_t ptRMvalues[2] = {ptMatchSemi, truejetpt};
 				Double_t angRMvalues[4] = {ptMatchSemi, truejetpt, angulMatchSemi, truejetang};
 				Double_t ptdRMvalues[4] = {ptMatchSemi, truejetpt, ptDMatchSemi, truejetptd};
 				

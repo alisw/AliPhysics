@@ -161,6 +161,7 @@ protected:
 	static constexpr Int_t 				nbins_ept = 19;			 // number of bins for electron pt
 	static constexpr Int_t				nbins_eptTPC = 4;        // number of bins for electron pt using TPC
 	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
+	static constexpr Int_t 				nbins_extjetpt = 30;     // number of bins for jet spectrum
 	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
 	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
 	static constexpr Int_t 				nbins_z = 20;			 // number of bins for fragmentation function
