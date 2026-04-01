@@ -142,7 +142,7 @@ protected:
 	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
 	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
 	AliEmcalJet*						GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Double_t ptfraction, Int_t trackbias);
-	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor,  Double_t ptfraction, AliVParticle* electron, AliVParticle* &matchedElectron);
+	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, AliVParticle* electron, AliVParticle* &matchedElectron);
     
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent

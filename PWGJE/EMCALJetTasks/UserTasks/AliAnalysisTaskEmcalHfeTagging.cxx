@@ -118,7 +118,7 @@ fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
 fMinPtSemiInclusive(5.),
 fDistFactorUnbiasMatch(0.6),
-fDistFactorBiasMatch(0.6),
+fDistFactorBiasMatch(1.0),
 fMinPtFractionMatch(0.5),
 fNeventV0(0),
 fNeventT0(0),
@@ -380,7 +380,7 @@ fMinPtEMCal(4.),
 fMaxPtEMCal(25.),
 fMinPtSemiInclusive(5.),
 fDistFactorUnbiasMatch(0.6),
-fDistFactorBiasMatch(0.6),
+fDistFactorBiasMatch(1.0),
 fMinPtFractionMatch(0.5),
 fNeventV0(0),
 fNeventT0(0),
@@ -1661,7 +1661,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			AliVParticle* velecmc = nullptr;
             
             if (kMatched != 0 and veleccand != nullptr) {
-				jetpartlevelelectron = GetJetMatchedWithElectron(jetbase, kMatched, fDistFactorBiasMatch, fMinPtFractionMatch, veleccand, velecmc); 
+				jetpartlevelelectron = GetJetMatchedWithElectron(jetbase, kMatched, veleccand, velecmc); 
 				if (jetpartlevelelectron) {
                 	ptMatch = jetpartlevelelectron -> Pt();
                 	ptDMatch = GetJetpTD(jetpartlevelelectron, kMatched);
@@ -1812,8 +1812,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
 			}
 
 			if (ntruehfe == 1) {
-				jetmatch = GetJetMatchedWithElectron(jetpartall, 0, fDistFactorBiasMatch, fMinPtFractionMatch, vlasthfe, vmatchedelec);
-				if (jetmatch) {
+				jetmatch = GetJetMatchedWithElectron(jetpartall, 0, vlasthfe, vmatchedelec);
+				if (jetmatch and vmatchedelec) {
 					dethfejetpt = jetmatch -> Pt();
 					dethfejetang = GetJetAngularity(jetmatch, 0);
 					dethfejetptd = GetJetpTD(jetmatch, 0);
@@ -3147,7 +3147,7 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithLeadingTrackBias(A
 }
 
 //_________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Double_t ptfraction, AliVParticle* electron, AliVParticle* &matchedElectron) {
+AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, AliVParticle* electron, AliVParticle* &matchedElectron) {
     AliJetContainer* jetContMatch = GetJetContainer(jetContNb);
 	if (!jetContMatch) return nullptr;
 
@@ -3155,14 +3155,12 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJ
 
 	AliEmcalJet* jet2 = nullptr;
 
-	double distmin = distfactor * jetContMatch -> GetJetRadius();  
 	int eleclabel = electron -> GetLabel();
 
 	jetContMatch -> ResetCurrentID();
     while ((jet2 = jetContMatch -> GetNextAcceptJet())) {
 		if (!jet2) continue;
 
-		double dist = AngularDifference(jet1, jet2);
 		bool shareelec = false;
 
 		for (Int_t tr = 0; tr < jet2 -> GetNumberOfTracks(); tr++) {
@@ -3177,7 +3175,7 @@ AliEmcalJet* AliAnalysisTaskEmcalHfeTagging::GetJetMatchedWithElectron(AliEmcalJ
 			}
 		}
 
-		if (dist < distmin and shareelec == true and GetFractionSharedPtBetweenJets(jet1, jet2) > ptfraction) {
+		if (shareelec == true) {
 			return jet2;
 		}
 	}
