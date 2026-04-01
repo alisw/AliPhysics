@@ -9,6 +9,7 @@
 
 class TH1D;
 class TH2D;
+class TH3D;
 class THnSparse;
 class TClonesArray;
 class TRandom;
@@ -42,8 +43,8 @@ public:
   void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
   void SetGeneratorName(TString name) {fsGeneratorName = name;}
   Bool_t IsFromGoodGenerator(Int_t index); // True if the MC particle with the given index comes from the selected generator
-  void SetQAPlots(Bool_t val = kFALSE) {fbQAPlots = val;}
-
+  void SetQAPlots(Bool_t val = kFALSE) {fbQAPlots = val;} 
+  void SetDoEmbedding(Bool_t val = kFALSE) {fDoEmbedding = val;}
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;}
   void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
@@ -180,6 +181,18 @@ public:
   static const Double_t fgkdMassOmegaMax; // maximum  
 //------------------------------------------------------------------------------------------
 
+//From jet extractor task
+  void   SetJetMatchingRadius(Double_t val)                  { fJetMatchingRadius = val; }
+  void   SetTruthLabelRange(Int_t min, Int_t max)            { fTruthMinLabel = min; fTruthMaxLabel = max; }
+  void   SetJetMatchingSharedPtFraction(Double_t val)        { fJetMatchingSharedPtFraction = val; }
+
+  //void   SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
+  
+  Double_t  GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
+  {
+    Double_t deltaPhi = TMath::Min(TMath::Abs(phi1-phi2),TMath::TwoPi() - TMath::Abs(phi1-phi2));
+    return TMath::Sqrt((eta1-eta2)*(eta1-eta2) + deltaPhi*deltaPhi);
+  }
 
 protected:
   void ExecOnce();
@@ -188,6 +201,13 @@ protected:
   virtual Bool_t IsEventSelected();  // override EMCal base method
 
 private:
+  
+  void DoJetMatching();
+  bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
+  void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
+  void GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance);
+
+
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
   AliMCEvent* fEventMC; //! MC event
@@ -213,6 +233,7 @@ private:
   TString fsGeneratorName; // pattern for selecting only V0s from a specific MC generator
   TString fCentEstimator;  //Centrality estimator
   Bool_t fbQAPlots;
+  Bool_t fDoEmbedding;      //Switch for jet pt response matrix computation
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
@@ -280,6 +301,8 @@ private:
   // EMCal containers
   AliJetContainer* fJetsCont; //! Signal Jets
   AliJetContainer* fJetsBgCont; //! Background Jets
+  AliJetContainer* fJetsMCGenCont; //! MC generated Jets
+  AliJetContainer* fJetsMCDetCont; //! MC detector level Jets
   AliTrackContainer* fTracksCont; //! Tracks
 
   // event histograms
@@ -805,12 +828,31 @@ private:
   //parametric BacBarCosPA cut for Cascades (depending on pt)
   Bool_t fbParametricBacBarCosPA;                           //
   TH1D* fh1PtBacBarCosPA;                                //
-//-------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------------
+
+  //From jet extractor task
+  Bool_t              fDoPartLevelMatching;
+  Bool_t              fDoDetLevelMatching;
+  Double_t            fJetMatchingRadius;       ///< Matching radius for geometrically matching jets
+  Bool_t              fIsEmbeddedEvent;
+  TString             fMCParticleArrayName;     ///< Array name of MC particles in event (mcparticles)
+  TClonesArray*       fMCParticleArray;         //!<! Array of MC particles in event (usually mcparticles)
+  Int_t               fTruthMinLabel;           ///< min track label to consider it as true particle
+  Int_t               fTruthMaxLabel;           ///< max track label to consider it as true particle
+  Double_t            fJetMatchingSharedPtFraction; ///< Shared pT fraction required in matching
+
+  TH3D* fh3TrueJetPtFraction;  //! fHist_TrueJetPtFraction
+  TH3D* fh3MatchJetPts; //! fHist_MatchJetPts
+  TH3D* fh3MatchJetEtas; //! fHist_MatchJetEtas
+  TH3D* fh3MatchJetDeltaRs; //! fHist_MatchJetDeltaRs
+  TH1D* fh1UnMatchJetPts;  //!  
+
+ 
 
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 34) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 35) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

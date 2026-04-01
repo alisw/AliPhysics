@@ -5,11 +5,16 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   Double_t dRadiusBg = 0.2,
   TString outputFile = "output.root",
   Bool_t bIsMC = kFALSE,
-  TString tracksName = "PicoTracks",
+  TString tracksName = "tracks",
   TString clustersCorrName = "CaloClustersCorr",
   TString rhoName = "Rho",
   TString sType = "TPC",
-  TString label = ""
+  TString label = "",
+  Bool_t bEmb = "kFALSE",
+  TString jetMCGenBranchName = "",
+  TString tracksMCGenName = "mcparticles",
+  TString jetMCRecBranchName = "",
+  TString tracksMCRecName = "tracks"  
 )
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -56,6 +61,46 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
     jetContBg->ConnectClusterContainer(clusterCont);
   }
 
+  //embedding containers
+  AliParticleContainer *trackContMCGen = 0x0;
+  AliParticleContainer *trackContMCRec = 0x0;
+  AliJetContainer* jetContMCGen = 0x0;
+  AliJetContainer* jetContMCRec = 0x0;
+  
+  if(jetMCGenBranchName.Length())
+    taskName += Form("_%s", jetMCGenBranchName.Data());
+  if(jetMCRecBranchName.Length())
+    taskName += Form("_%s", jetMCRecBranchName.Data());
+
+
+  if(bEmb) {
+    trackContMCGen = mytask->AddMCParticleContainer(tracksMCGenName);
+    if(trackContMCGen) trackContMCGen->SetIsEmbedding(kTRUE);
+    trackContMCRec = mytask->AddTrackContainer(tracksMCRecName);
+    if(trackContMCRec) trackContMCRec->SetIsEmbedding(kTRUE);
+    
+    if(jetCont) jetCont->SetName("hybridLevelJets");
+
+    jetContMCGen = mytask->AddJetContainer(jetMCGenBranchName, sType, dRadius);
+    if(jetContMCGen)
+    {
+      jetContMCGen->SetRhoName(rhoName);
+      jetContMCGen->SetLeadingHadronType(0);
+      jetContMCGen->ConnectParticleContainer(trackContMCGen);
+      jetContMCGen->ConnectClusterContainer(clusterCont);
+      jetContMCGen->SetName("partLevelJets");
+    }
+    jetContMCRec = mytask->AddJetContainer(jetMCRecBranchName, sType, dRadius);
+    if(jetContMCRec)
+    {
+      jetContMCRec->SetRhoName(rhoName);
+      jetContMCRec->SetLeadingHadronType(0);
+      jetContMCRec->ConnectParticleContainer(trackContMCRec);
+      jetContMCRec->ConnectClusterContainer(clusterCont);
+      jetContMCRec->SetName("detLevelJets");
+    }
+  }
+  
   // Add task
   mgr->AddTask(mytask);
 
