@@ -2457,7 +2457,8 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListMC->Add(fh1DetJetPt);
     fOutputListMC->Add(fh1PartJetPt);
     fOutputListMC->Add(fh1DetFakeJetPts);
-    fOutputListMC->Add(fh1FakeJetPts);  
+    fOutputListMC->Add(fh1FakeJetPts); 
+    fOutputListMC->Add(fh1JES);  
     fOutputListMC->Add(fh3TrueJetPtFraction); 
     fOutputListMC->Add(fh3MatchJetPts); 
     fOutputListMC->Add(fh3MatchJetEtas); 
@@ -3166,8 +3167,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fh3MatchJetPts->Fill(dPtJetCorr, matchedJetPt_Det, matchedJetPt_Part);
         fh3MatchJetEtas->Fill(dEtaJetCorr, matchedJetEta_Det, matchedJetEta_Part);
         fh3MatchJetDeltaRs->Fill(dPtJetCorr, matchedJetDistance_Det, matchedJetDistance_Part);
-
-        fh1JES->Fill((matchedJetPt_Part-dPtJetCorr)/matchedJetPt_Part);
+        
+        if(matchedJetPt_Part!=-0.1)
+          fh1JES->Fill((matchedJetPt_Part-dPtJetCorr)/matchedJetPt_Part);
 
         if(matchedJetPt_Det==-0.1)
           fh1DetFakeJetPts->Fill(dPtJetCorr);
@@ -3177,7 +3179,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if (matchedJetPt_Det==-0.1 || matchedJetPt_Part==-0.1) {
           if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "THIS JET WASNT MATCHED");
           fh1UnMatchJetPts->Fill(dPtJetCorr);
-          continue;
         }
       }
 
