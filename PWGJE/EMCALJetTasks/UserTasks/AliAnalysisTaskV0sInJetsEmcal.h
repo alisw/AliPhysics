@@ -840,7 +840,31 @@ private:
   Int_t               fTruthMinLabel;           ///< min track label to consider it as true particle
   Int_t               fTruthMaxLabel;           ///< max track label to consider it as true particle
   Double_t            fJetMatchingSharedPtFraction; ///< Shared pT fraction required in matching
+  
+  TH1D* fh1V0K0sESPt; //!
+  TH2D* fh2V0K0DeltaEtaVsPt; //!
+  TH2D* fh2V0K0DeltaPhiVsPt; //!
+  TH2D* fh2V0K0DeltaRVsPt; //!
+  TH1D* fh1V0K0DeltaR; //!
+  
+  TH1D* fh1V0LESPt; //!
+  TH2D* fh2V0LDeltaEtaVsPt; //!
+  TH2D* fh2V0LDeltaPhiVsPt; //!
+  TH2D* fh2V0LDeltaRVsPt; //!
+  TH1D* fh1V0LDeltaR; //!
 
+  TH1D* fh1V0ALESPt; //!
+  TH2D* fh2V0ALDeltaEtaVsPt; //!
+  TH2D* fh2V0ALDeltaPhiVsPt; //!
+  TH2D* fh2V0ALDeltaRVsPt; //!
+  TH1D* fh1V0ALDeltaR; //!
+
+  TH1D* fh1EmbJetPt; //!
+  TH1D* fh1DetJetPt; //!
+  TH1D* fh1PartJetPt; //!
+  TH1D* fh1DetFakeJetPts; //!
+  TH1D* fh1FakeJetPts; //!
+  TH1D* fh1JES; //!
   TH3D* fh3TrueJetPtFraction;  //! fHist_TrueJetPtFraction
   TH3D* fh3MatchJetPts; //! fHist_MatchJetPts
   TH3D* fh3MatchJetEtas; //! fHist_MatchJetEtas
@@ -849,10 +873,12 @@ private:
 
  
 
+
+
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 35) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 36) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
