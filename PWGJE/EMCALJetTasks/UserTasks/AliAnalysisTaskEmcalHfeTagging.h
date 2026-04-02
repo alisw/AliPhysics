@@ -142,7 +142,7 @@ protected:
 	AliEmcalJet*						GetClosestOnOtherJetContainer(AliEmcalJet* jet1, AliJetContainer* othercontainer);
 	Double_t							GetFractionSharedPtBetweenJets(AliEmcalJet* jet1, AliEmcalJet* jetmatched);
 	AliEmcalJet*						GetJetMatchedWithLeadingTrackBias(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor, Double_t ptfraction, Int_t trackbias);
-	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, Double_t distfactor,  Double_t ptfraction, AliVParticle* electron, AliVParticle* &matchedElectron);
+	AliEmcalJet*						GetJetMatchedWithElectron(AliEmcalJet* jet1, Int_t jetContNb, AliVParticle* electron, AliVParticle* &matchedElectron);
     
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent
@@ -161,6 +161,7 @@ protected:
 	static constexpr Int_t 				nbins_ept = 19;			 // number of bins for electron pt
 	static constexpr Int_t				nbins_eptTPC = 4;        // number of bins for electron pt using TPC
 	static constexpr Int_t 				nbins_jetpt = 6;   		 // number of bins for jet pt for substructure
+	static constexpr Int_t 				nbins_extjetpt = 30;     // number of bins for jet spectrum
 	static constexpr Int_t 				nbins_g = 14;			 // number of bins for angularity
 	static constexpr Int_t 				nbins_ptd = 14;			 // number of bins for momentum dispersion
 	static constexpr Int_t 				nbins_z = 20;			 // number of bins for fragmentation function
@@ -168,7 +169,7 @@ protected:
 	static constexpr Int_t 				nbins_gsys = 6;			 // number of bins for angularity systematic
 	static constexpr Int_t 				nbins_ptdsys = 7;		 // number of bins for momentum dispersion systematic
 	static constexpr Int_t 				nbins_ptauxiliary = 59;  // number of bins for auxiliary pt
-    static constexpr Int_t 				nbranches = 20;		     // number of branches in output tree
+    static constexpr Int_t 				nbranches = 21;		     // number of branches in output tree
     static constexpr Int_t				ncutsefflowpt = 5;		 // cuts for HFE efficiency calculation for TPC + TOF
     static constexpr Int_t				ncutseffhighpt = 7;		 // cuts for HFE efficiency calculation for EMCal + TPC
     static constexpr Int_t				ncutseffsubs = 2;	     // cuts for HFE efficiency calculation for substructure
@@ -386,6 +387,10 @@ protected:
 	// Electron-tagged jets matching quality	
 	TH2F								*fDeltaRMatchedJetsWithElectrons;
 	TH2F								*fDeltaRMatchedElectrons;
+
+	// Jet reconstructrion correction
+	TH1F								*fTruePtSemiInclJet[ncutssemiincl];
+	TH1F								*fMatchedPtSemiInclJet[ncutssemiincl];
 
 	TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
