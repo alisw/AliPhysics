@@ -1762,7 +1762,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     
     if ( fEnableBasicMesonQA ) {
       if (fNDMRecoMode < 2){
-        fHistoConvGammaPt[iCut]     = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoConvGammaPt[iCut]     = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
         fHistoConvGammaPt[iCut]->Sumw2();
@@ -1774,13 +1774,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
       }
 
-      fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt", HistoNPtBins, arrPtBinningFine);
+      fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
       fHistoNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
       fHistoNegPionPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoNegPionPt[iCut]);
 
-      fHistoPosPionPt[iCut]         = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt", HistoNPtBins, arrPtBinningFine);
+      fHistoPosPionPt[iCut]         = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
       fHistoPosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoPosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
       fHistoPosPionPt[iCut]->Sumw2();
@@ -2488,39 +2488,39 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fCutFolder[iCut]->Add(fMCList[iCut]);
 
       if( fEnableBasicMesonQA ){
-        fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCAllGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma}");
         fHistoMCAllGammaPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
         if (fNDMRecoMode < 2){
-          fHistoMCConvGammaPt[iCut]       = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt", HistoNPtBins, arrPtBinningFine);
+          fHistoMCConvGammaPt[iCut]       = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
           fHistoMCConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoMCConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
           fHistoMCConvGammaPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCConvGammaPt[iCut]);
         }
-        fHistoMCGammaFromNeutralMesonPt[iCut]     = new TH1F("MC_GammaFromNeutralMeson_Pt","MC_GammaFromNeutralMeson_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoMCGammaFromNeutralMesonPt[iCut]     = new TH1F("MC_GammaFromNeutralMeson_Pt","MC_GammaFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma}");
         fHistoMCGammaFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCGammaFromNeutralMesonPt[iCut]);
-        fHistoMCAllPosPionsPt[iCut]               = new TH1F("MC_AllPosPions_Pt","MC_AllPosPions_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoMCAllPosPionsPt[iCut]               = new TH1F("MC_AllPosPions_Pt","MC_AllPosPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCAllPosPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllPosPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoMCAllPosPionsPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllPosPionsPt[iCut]);
-        fHistoMCAllNegPionsPt[iCut]               = new TH1F("MC_AllNegPions_Pt","MC_AllNegPions_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoMCAllNegPionsPt[iCut]               = new TH1F("MC_AllNegPions_Pt","MC_AllNegPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCAllNegPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllNegPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoMCAllNegPionsPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllNegPionsPt[iCut]);
-        fHistoMCNegPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Pt","MC_NegPionsFromNeutralMeson_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoMCNegPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Pt","MC_NegPionsFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonPt[iCut]);
-        fHistoMCPosPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Pt","MC_PosPionsFromNeutralMeson_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoMCPosPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Pt","MC_PosPionsFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->Sumw2();
@@ -2868,12 +2868,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
       if (fNDMRecoMode < 2){
         if( fEnableBasicMesonQA ){
-          fHistoTrueConvGammaPt[iCut]                 = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt", HistoNPtBins, arrPtBinningFine);
+          fHistoTrueConvGammaPt[iCut]                 = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
           fHistoTrueConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
           fHistoTrueConvGammaPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
-          fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt", HistoNPtBins, arrPtBinningFine);
+          fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->Sumw2();
@@ -2901,23 +2901,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTrueClusterGammaFromNeutralMesonPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueClusterGammaFromNeutralMesonPt[iCut]);
         }
-        fHistoTruePosPionPt[iCut]                       = new TH1F("ESD_TruePosPion_Pt","ESD_TruePosPion_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoTruePosPionPt[iCut]                       = new TH1F("ESD_TruePosPion_Pt","ESD_TruePosPion_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTruePosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoTruePosPionPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTruePosPionPt[iCut]);
-        fHistoTrueNegPionPt[iCut]                       = new TH1F("ESD_TrueNegPion_Pt","ESD_TrueNegPion_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoTrueNegPionPt[iCut]                       = new TH1F("ESD_TrueNegPion_Pt","ESD_TrueNegPion_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTrueNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoTrueNegPionPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueNegPionPt[iCut]);
 
-        fHistoTrueNegPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TrueNegPionFromNeutralMeson_Pt","ESD_TrueNegPionFromNeutralMeson_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoTrueNegPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TrueNegPionFromNeutralMeson_Pt","ESD_TrueNegPionFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueNegPionFromNeutralMesonPt[iCut]);
-        fHistoTruePosPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TruePosPionFromNeutralMeson_Pt","ESD_TruePosPionFromNeutralMeson_Pt", HistoNPtBins, arrPtBinningFine);
+        fHistoTruePosPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TruePosPionFromNeutralMeson_Pt","ESD_TruePosPionFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTruePosPionFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePosPionFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoTruePosPionFromNeutralMesonPt[iCut]->Sumw2();
