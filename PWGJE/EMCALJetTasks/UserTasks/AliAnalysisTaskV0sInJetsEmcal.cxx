@@ -49,6 +49,8 @@
 //#include "AliClusterContainer.h"
 //#include "AliPicoTrack.h"
 
+#include <TSystem.h>
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliAnalysisTaskV0sInJetsEmcal.h"
 
 ClassImp(AliAnalysisTaskV0sInJetsEmcal)
@@ -1292,7 +1294,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fTracksCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
     }
 
-    if(fDoEmbedding && fbMCAnalysis) {
+    if(fDoEmbedding) {
       fJetsMCGenCont =  GetJetContainer("partLevelJets"); 
       if(fJetsMCGenCont)
         fDoPartLevelMatching = kTRUE;  //set the particle level matching
@@ -2401,7 +2403,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     deltaR_bins[i] = 0.0 + i*0.01;
   }
   Int_t n_deltaR_bins = sizeof(deltaR_bins)/sizeof(Double_t) - 1;
-  if(fbMCAnalysis) {
+   if(fbMCAnalysis){
     fh1V0K0sESPt = new TH1D("fh1V0K0sESPt", "Gen vs Part K0s pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 100, -1.0, 1.0);
     fh2V0K0DeltaEtaVsPt = new TH2D("fh2V0K0DeltaEtaVsPt", "K0s pt spectrumvs delta eta", 200, 0, 20, 200, -0.1, 0.1);
     fh2V0K0DeltaPhiVsPt = new TH2D("fh2V0K0DeltaPhiVsPt", "K0s pt spectrumvs delta phi", 200, 0, 20, 200, -0.1, 0.1);
@@ -2440,7 +2442,6 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   }
 
   if(fDoEmbedding){
-    
     fh1EmbJetPt = new TH1D("fh1EmbJetPt", "Embedded Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
     fh1DetJetPt = new TH1D("fh1DetJetPt", "Detector level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
     fh1PartJetPt = new TH1D("fh1PartJetPt", "Particle level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
@@ -2615,7 +2616,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
       if(fTracksCont && fTracksCont->GetArray() == 0)
         fTracksCont = 0;
     }
-    if(fDoEmbedding && fbMCAnalysis) {
+    if(fDoEmbedding) {
       if(fJetsMCGenCont && fJetsMCGenCont->GetArray() == 0)
         fJetsMCGenCont = 0; 
       if(fJetsMCDetCont && fJetsMCDetCont->GetArray() == 0)
@@ -2775,7 +2776,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsEventSelected()
 
 Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
 {
-// Run analysis code here, if needed. It will be executed before FillHistograms().
 
   return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
 }
@@ -2807,28 +2807,54 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   // Simulation info
   if(fbMCAnalysis) {
-    fEventMC = MCEvent();
-    arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC || !fEventMC) {
-      AliError("No MC array/event found!");
-      return kFALSE;
+    if(fDoEmbedding && fIsEmbeddedEvent) {
+      
+      AliAODEvent* aodMC = dynamic_cast<AliAODEvent*>(AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent());
+      if (!aodMC) {
+        AliError("No external embedded event!");
+        return kFALSE;
+      }
+
+      arrayMC = dynamic_cast<TClonesArray*>(aodMC->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(!arrayMC) {
+        AliError("No MC embedded array found!");
+        return kFALSE;
+      }
+      
+      headerMC = dynamic_cast<AliAODMCHeader*>(aodMC->FindListObject(AliAODMCHeader::StdBranchName()));
+      if(!headerMC) {
+        AliWarning("No MC embedded header found!");
+      }
+      fEventMC = nullptr;  // important: do not use MCEvent in embedding
+
+    } 
+    else {
+      fEventMC = MCEvent();
+      arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
+      if(!arrayMC || !fEventMC) {
+        AliError("No MC array/event found!");
+        return kFALSE;
+      }
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
+      headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
+      if(!headerMC) {
+        AliError("No MC header found!");
+        return kFALSE;
+      }  
     }
-    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
+
     iNTracksMC = arrayMC->GetEntriesFast();
     if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d MC tracks in this event", iNTracksMC));
-    headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
-    if(!headerMC) {
-      AliError("No MC header found!");
-      return kFALSE;
-    }
     // get position of the MC primary vertex
-    dPrimVtxMCX = headerMC->GetVtxX();
-    dPrimVtxMCY = headerMC->GetVtxY();
-    dPrimVtxMCZ = headerMC->GetVtxZ();
-    if (TMath::Abs(dPrimVtxMCZ) > 10.0){
+    if (headerMC) {
+       dPrimVtxMCX = headerMC->GetVtxX();
+      dPrimVtxMCY = headerMC->GetVtxY();
+      dPrimVtxMCZ = headerMC->GetVtxZ();
+      if (TMath::Abs(dPrimVtxMCZ) > 10.0){
       if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Z vertex is > 10, rejecting. \n");
-      return kFALSE;
-    }   
+        return kFALSE;
+      } 
+    }  
   }
 
   AliMultSelection* MultSelection = 0x0;
@@ -2870,7 +2896,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   if(fbUseIonutCut){
     if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
       return kFALSE;
-    if (fbMCAnalysis) {
+    if (fbMCAnalysis && !fDoEmbedding) {
       if(AliAnalysisUtils::IsPileupInGeneratedEvent(headerMC, "ijing")) 
         return kFALSE;
     }
@@ -3291,15 +3317,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
 
       //Particles from out ot bunch pile up rejection: 
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
-        continue; 
+      if(!fDoEmbedding) {
+        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
+          continue; 
+      }
       if(!particleMC->IsPhysicalPrimary())
         continue;
   
       // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iPartMC))
-        continue;
-
+      if(!fDoEmbedding) {
+        if(!IsFromGoodGenerator(iPartMC))
+          continue;
+      }
       // Get identity of MC particle
       Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
 
@@ -4182,6 +4211,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
     //===== End of filling V0 spectra =====
 
+    if(fDoEmbedding) {
+      //here add reconstruction V0 part for emb
+    }
 
     //===== Association of reconstructed V0 candidates with MC particles =====
     if(fbMCAnalysis) {
@@ -4260,8 +4292,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
 
       // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iIndexMotherPos))
-        continue;
+      if(!fDoEmbedding) {
+        if(!IsFromGoodGenerator(iIndexMotherPos))
+          continue;
+      }
 
       // Get the MC mother particle of the MC mother particle
       Int_t iIndexMotherOfMother = particleMCMother->GetMother();
@@ -4286,6 +4320,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
       */
+      
       Bool_t bPhysPrim = particleMCMother->IsPhysicalPrimary();
       // phi, eta resolution for V0-reconstruction
       // Double_t dResolutionV0Eta = particleMCMother->Eta()-v0->Eta();
@@ -4461,7 +4496,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   //------------------------------------------------------------------------------------------
 
   //===== Start of loop over Cascade candidates =====
-  if(fDebug > 2) printf("TaskV0sInJets: Start of Cascade loop\n");
+  if(fDebug > 2) printf("TaskV0sInJets: Start of Cascade loop\n");  
   for(Int_t iXi = 0; iXi < iNCascades; iXi++) {
     Cascade = fAODIn->GetCascade(iXi);   // get next candidate from the list in AOD 
 	  if(!Cascade)
@@ -5278,9 +5313,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           continue;
       }
       // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iIndexMotherBach))
-        continue;
-      
+      if(!fDoEmbedding) {
+        if(!IsFromGoodGenerator(iIndexMotherBach))
+          continue;
+      }
       Bool_t bPhysPrim = particleMCMother->IsPhysicalPrimary();
       // Get the distance between production point of the MC mother particle and the primary vertex
       /*Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
@@ -5289,6 +5325,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bCascadeMCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
       */
+      
       //XiMinus
       if(bIsCandidateXiMinus) {// selected candidates with any mass
         if(bCascadeMCIsXiMinus && bPhysPrim) {// well reconstructed candidates
@@ -5409,7 +5446,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1CascadeCandPerEventCentOmegaPlus[iCentIndex]->Fill(iNCascadeCandOmegaPlus);
 
   if(fDebug > 2) printf("TaskV0sInJets: End of Cascade loop\n");
-   
+  
   arrayJetSel->Delete();
   delete arrayJetSel;
   arrayJetPerp->Delete();
