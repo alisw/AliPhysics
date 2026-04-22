@@ -19,6 +19,7 @@
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoSphericityEventCut.h"
 #include "AliFemtoESDTrackCut.h"
+#include "AliFemtoKpm45TrackCut.h"
 #include "AliFemtoKKTrackCut.h"
 #include "AliFemtoKKTrackCutTest.h"
 #include "AliFemtoCorrFctn.h"
@@ -126,8 +127,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorCollections   *cutFailColletaphitpc[20];
   //AliFemtoKKTrackCut           *dtc1etaphitpc[20];
   //AliFemtoKKTrackCut           *dtc2etaphitpc[20];
-  AliFemtoESDTrackCut           *dtc1etaphitpc[20];
-  AliFemtoESDTrackCut           *dtc2etaphitpc[20];
+  //AliFemtoESDTrackCut           *dtc1etaphitpc[20];
+  //AliFemtoESDTrackCut           *dtc2etaphitpc[20];
+  AliFemtoKpm45TrackCut        *dtc1etaphitpc[20];
+  AliFemtoKpm45TrackCut        *dtc2etaphitpc[20];
   //AliFemtoKKTrackCutTest        *dtc1etaphitpc[20];
   //AliFemtoKKTrackCutTest        *dtc2etaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[20];
@@ -195,9 +198,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           cutFailColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutFail%stpcM%i", chrgs[ichg], imult));
           mecetaphitpc[aniter]->AddCutMonitor(cutPassColletaphitpc[aniter], cutFailColletaphitpc[aniter]);
 
-	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
+	  //dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  //dtc1etaphitpc[aniter] = new AliFemtoKKTrackCut();
 	  //dtc1etaphitpc[aniter] = new AliFemtoKKTrackCutTest();
+	  dtc1etaphitpc[aniter] = new AliFemtoKpm45TrackCut();
 
 	  if (ichg == 0)
 	    dtc1etaphitpc[aniter]->SetCharge(1.0);
@@ -208,23 +212,23 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	   dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 
 	  //PID method
-	   dtc1etaphitpc[aniter]->SetMass(PionMass);
-	   //dtc1etaphitpc[aniter]->SetMass(KaonMass);
-	   dtc1etaphitpc[aniter]->SetMostProbablePion();
-	   //dtc1etaphitpc[aniter]->SetMostProbableKaon();
+	   //dtc1etaphitpc[aniter]->SetMass(PionMass);
+	   dtc1etaphitpc[aniter]->SetMass(KaonMass);
+	   //dtc1etaphitpc[aniter]->SetMostProbablePion();
+	   dtc1etaphitpc[aniter]->SetMostProbableKaon();
 	   //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
 //------------------- November 2013 -----------------------------------< 
 	  // new cuts to remove electron (do not take into analysis if 400<p<500) 
-	   /*dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
-	     dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	     dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
-	     dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
-	     dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);    
-	     // new cuts are stronger, better separation of pion in TOF 
-	     // when momentum is greater then 800 MeV/c
-	     dtc1etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
-	     dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
-	     dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);*/
+	   dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
+	   // new cuts are stronger, better separation of pion in TOF
+	   // when momentum is greater then 800 MeV/c
+	   dtc1etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
+	   dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
 	  //------------------- November 2013 ----------------------------------->
 	  //Track quality cuts
 	 //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
@@ -233,7 +237,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 
 	  dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-	  //dtc1etaphitpc[aniter]->SetMaxITSChiNdof(36);	  
+	  //dtc1etaphitpc[aniter]->SetMaxITSChiNdof(36);
 	  dtc1etaphitpc[aniter]->SetLabel(kFALSE);
 	  
 	  //primary particles: hits in ITS + DCA cut
@@ -302,12 +306,12 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //sqpcetaphitpc[aniter]->SetRadialDistanceMinimum(1.2, 0.045);
 	  //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.016);
 	  //sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.02);
-	  
+
 	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
-	  
+
 	  //Correlation functions
 
 	  //Spherical harmonics (without kT bins)
@@ -323,9 +327,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    //cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
 	    /*cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
 	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);*/
-	    
+
 	  }
-	  
+
 	  // cqinvnclstpc[aniter] = new AliFemtoCorrFctnTPCNcls(Form("cqinvncls%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax);
 	  // anetaphitpc[aniter]->AddCorrFctn(cqinvnclstpc[aniter]);
 
@@ -337,12 +341,12 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    for (int ikt=0; ikt<2; ikt++) {
 	      ktm = aniter*2 + ikt;
 	      ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
-	      
+
   	      //cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3,
 	      //							     nbinssh, 0.0, shqmax, runshlcms);
 	    //cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	    //anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
-	      
+
 	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
 	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
@@ -365,11 +369,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      }
 	    }
 	  }
-	  
 	  /*cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),39, 39);
 	    anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);*/
-	  
-	  Manager->AddAnalysis(anetaphitpc[aniter]);	
+	  Manager->AddAnalysis(anetaphitpc[aniter]);
 	}
       }
     }
@@ -377,5 +379,4 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   // *** End pion-pion analysis
 
   return Manager;
-}                         
-                      
+}
