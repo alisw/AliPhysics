@@ -49,6 +49,8 @@
 //#include "AliClusterContainer.h"
 //#include "AliPicoTrack.h"
 
+#include <TSystem.h>
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliAnalysisTaskV0sInJetsEmcal.h"
 
 ClassImp(AliAnalysisTaskV0sInJetsEmcal)
@@ -235,7 +237,31 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fJetMatchingSharedPtFraction(0.5),
+  
+  fh1V0K0sESPt(0),
+  fh2V0K0DeltaEtaVsPt(0),
+  fh2V0K0DeltaPhiVsPt(0),
+  fh2V0K0DeltaRVsPt(0),
+  fh1V0K0DeltaR(0),
+  
+  fh1V0LESPt(0),
+  fh2V0LDeltaEtaVsPt(0),
+  fh2V0LDeltaPhiVsPt(0),
+  fh2V0LDeltaRVsPt(0),
+  fh1V0LDeltaR(0),
 
+  fh1V0ALESPt(0),
+  fh2V0ALDeltaEtaVsPt(0),
+  fh2V0ALDeltaPhiVsPt(0),
+  fh2V0ALDeltaRVsPt(0),
+  fh1V0ALDeltaR(0),
+
+  fh1EmbJetPt(0),
+  fh1DetJetPt(0),
+  fh1PartJetPt(0),
+  fh1DetFakeJetPts(0),
+  fh1FakeJetPts(0),
+  fh1JES(0),
   fh3TrueJetPtFraction(0),
   fh3MatchJetPts(0),
   fh3MatchJetEtas(0),
@@ -793,6 +819,30 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fTruthMaxLabel(100000),
   fJetMatchingSharedPtFraction(0.5),
 
+  fh1V0K0sESPt(0),
+  fh2V0K0DeltaEtaVsPt(0),
+  fh2V0K0DeltaPhiVsPt(0),
+  fh2V0K0DeltaRVsPt(0),
+  fh1V0K0DeltaR(0),
+  
+  fh1V0LESPt(0),
+  fh2V0LDeltaEtaVsPt(0),
+  fh2V0LDeltaPhiVsPt(0),
+  fh2V0LDeltaRVsPt(0),
+  fh1V0LDeltaR(0),
+
+  fh1V0ALESPt(0),
+  fh2V0ALDeltaEtaVsPt(0),
+  fh2V0ALDeltaPhiVsPt(0),
+  fh2V0ALDeltaRVsPt(0),
+  fh1V0ALDeltaR(0),
+
+  fh1EmbJetPt(0),
+  fh1DetJetPt(0),
+  fh1PartJetPt(0),
+  fh1DetFakeJetPts(0),
+  fh1FakeJetPts(0),
+  fh1JES(0),
   fh3TrueJetPtFraction(0),
   fh3MatchJetPts(0),
   fh3MatchJetEtas(0),
@@ -1244,7 +1294,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fTracksCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
     }
 
-    if(fDoEmbedding && fbMCAnalysis) {
+    if(fDoEmbedding) {
       fJetsMCGenCont =  GetJetContainer("partLevelJets"); 
       if(fJetsMCGenCont)
         fDoPartLevelMatching = kTRUE;  //set the particle level matching
@@ -2320,12 +2370,12 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStdCascade->Add(fh1CascadeInvMassOmegaPlusAll[i]);
   }
   
-  Double_t jet_pT_bins[49] = {};
-  for (int i=0; i < (48+1); i++){
-    if (i< 15) jet_pT_bins[i] = -300.0 + i*20.0;
-    else if (i< 39) jet_pT_bins[i] = 0.0 + (i-15)*5.0;
-    else jet_pT_bins[i] = 120.0 + (i-39)*20.0; 
-    //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
+  Double_t jet_pT_bins[66] = {};
+  for (int i=0; i < 66; i++){
+    if (i< 10) jet_pT_bins[i] = -100.0 + i*10.0;
+    else if (i< 60) jet_pT_bins[i] = 0.0 + (i-10)*2.0;
+    else jet_pT_bins[i] = 100.0 + (i-60)*10.0; 
+    //size 10 GeV bins from -100 to 0, size 2 GeV bins from 0 to 100, size 10 GeV bins from 100 to 150
   }
   Int_t n_jet_pT_bins = sizeof(jet_pT_bins)/sizeof(Double_t) - 1;
 
@@ -2335,9 +2385,9 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   }
   Int_t n_true_frac_bins = sizeof(true_frac_bins)/sizeof(Double_t) - 1;
 
-  Double_t jet_pT_bins2[25] = {};
-  for (int i=0; i < (24+1); i++){
-    jet_pT_bins2[i] = 0.0 + 5.0*i;
+  Double_t jet_pT_bins2[76] = {};
+  for (int i=0; i < 76; i++){
+    jet_pT_bins2[i] = 0.0 + 2.0*i;
   }
   Int_t n_jet_pT_bins2 = sizeof(jet_pT_bins2)/sizeof(Double_t) - 1;
   
@@ -2353,15 +2403,63 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     deltaR_bins[i] = 0.0 + i*0.01;
   }
   Int_t n_deltaR_bins = sizeof(deltaR_bins)/sizeof(Double_t) - 1;
+   if(fbMCAnalysis){
+    fh1V0K0sESPt = new TH1D("fh1V0K0sESPt", "Gen vs Part K0s pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 100, -1.0, 1.0);
+    fh2V0K0DeltaEtaVsPt = new TH2D("fh2V0K0DeltaEtaVsPt", "K0s pt spectrumvs delta eta", 200, 0, 20, 200, -0.1, 0.1);
+    fh2V0K0DeltaPhiVsPt = new TH2D("fh2V0K0DeltaPhiVsPt", "K0s pt spectrumvs delta phi", 200, 0, 20, 200, -0.1, 0.1);
+    fh2V0K0DeltaRVsPt   = new TH2D("fh2V0K0DeltaRVsPt", "K0s pt spectrumvs delta R", 200, 0, 20, 200, 0, 0.2); 
+    fh1V0K0DeltaR = new TH1D("fh1V0K0DeltaR", "K0s delta R", 200, 0, 0.2);  
+    
+    fh1V0LESPt = new TH1D("fh1V0LESPt", "Gen vs Part Lambda pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 100, -1.0, 1.0);
+    fh2V0LDeltaEtaVsPt = new TH2D("fh2V0LDeltaEtaVsPt", "Lambda pt spectrumvs delta eta", 200, 0, 20, 200, -0.1, 0.1);
+    fh2V0LDeltaPhiVsPt = new TH2D("fh2V0LDeltaPhiVsPt", "Lambda pt spectrumvs delta phi", 200, 0, 20, 200, -0.1, 0.1);
+    fh2V0LDeltaRVsPt   = new TH2D("fh2V0LDeltaRVsPt", "Lambda pt spectrumvs delta R", 200, 0, 20, 200, 0, 0.2); 
+    fh1V0LDeltaR = new TH1D("fh1V0LDeltaR", "Lambda delta R", 200, 0, 0.2); 
+
+    fh1V0ALESPt = new TH1D("fh1V0ALESPt", "Gen vs Part ALambda pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 100, -1.0, 1.0);
+    fh2V0ALDeltaEtaVsPt = new TH2D("fh2V0ALDeltaEtaVsPt", "ALambda pt spectrumvs delta eta", 200, 0, 20, 200, -0.1, 0.1);
+    fh2V0ALDeltaPhiVsPt = new TH2D("fh2V0ALDeltaPhiVsPt", "ALambda pt spectrumvs delta phi", 200, 0, 20, 200, -0.1, 0.1);
+    fh2V0ALDeltaRVsPt   = new TH2D("fh2V0ALDeltaRVsPt", "ALambda pt spectrumvs delta R", 200, 0, 20, 200, 0, 0.2); 
+    fh1V0ALDeltaR = new TH1D("fh1V0ALDeltaR", "ALambda delta R", 200, 0, 0.2); 
+
+    fOutputListMC->Add(fh1V0K0sESPt);
+    fOutputListMC->Add(fh2V0K0DeltaEtaVsPt);
+    fOutputListMC->Add(fh2V0K0DeltaPhiVsPt);
+    fOutputListMC->Add(fh2V0K0DeltaRVsPt);
+    fOutputListMC->Add(fh1V0K0DeltaR);  
+
+    fOutputListMC->Add(fh1V0LESPt);
+    fOutputListMC->Add(fh2V0LDeltaEtaVsPt);
+    fOutputListMC->Add(fh2V0LDeltaPhiVsPt);
+    fOutputListMC->Add(fh2V0LDeltaRVsPt);
+    fOutputListMC->Add(fh1V0LDeltaR);  
+
+    fOutputListMC->Add(fh1V0ALESPt);
+    fOutputListMC->Add(fh2V0ALDeltaEtaVsPt);
+    fOutputListMC->Add(fh2V0ALDeltaPhiVsPt);
+    fOutputListMC->Add(fh2V0ALDeltaRVsPt);
+    fOutputListMC->Add(fh1V0ALDeltaR);  
+  }
 
   if(fDoEmbedding){
-
+    fh1EmbJetPt = new TH1D("fh1EmbJetPt", "Embedded Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1DetJetPt = new TH1D("fh1DetJetPt", "Detector level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1PartJetPt = new TH1D("fh1PartJetPt", "Particle level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1DetFakeJetPts = new TH1D("fh1DetFakeJetPts", "Detector level FAKE Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1FakeJetPts = new TH1D("fh1FakeJetPts", "FAKE Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1JES =  new TH1D("fh1JES", " JES ", 200, -3.0, 1.0);
     fh3TrueJetPtFraction = new TH3D("fh3TrueJetPtFraction", "Jet pt fraction from truth particles", n_jet_pT_bins, jet_pT_bins, n_true_frac_bins, true_frac_bins, n_true_frac_bins, true_frac_bins);
-    fh3MatchJetPts = new TH3D("fh3MatchJetPts", "Jet pts of matched jets", n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins2,jet_pT_bins2,n_jet_pT_bins2,jet_pT_bins2);
-    fh3MatchJetEtas = new TH3D("fh3MatchJetEtas", "Jet etas of matched jets", n_eta_bins,eta_bins,n_eta_bins,eta_bins,n_eta_bins,eta_bins);
-    fh3MatchJetDeltaRs = new TH3D("fh3MatchJetDeltaRs", "Jet distances of matched jets", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
-    fh1UnMatchJetPts = new TH1D("fh1UnMatchJetPts", "Jet pts of unmatched jets", n_jet_pT_bins,jet_pT_bins);
+    fh3MatchJetPts = new TH3D("fh3MatchJetPts", "Jet pts of matched jets; emb; det; part", n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins2,jet_pT_bins2,n_jet_pT_bins2,jet_pT_bins2);
+    fh3MatchJetEtas = new TH3D("fh3MatchJetEtas", "Jet etas of matched jets; emb; det; part", n_eta_bins,eta_bins,n_eta_bins,eta_bins,n_eta_bins,eta_bins);
+    fh3MatchJetDeltaRs = new TH3D("fh3MatchJetDeltaRs", "Jet distances of matched jets; emb pt; det; part", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
+    fh1UnMatchJetPts = new TH1D("fh1UnMatchJetPts", "Unmatched Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
 
+    fOutputListMC->Add(fh1EmbJetPt);
+    fOutputListMC->Add(fh1DetJetPt);
+    fOutputListMC->Add(fh1PartJetPt);
+    fOutputListMC->Add(fh1DetFakeJetPts);
+    fOutputListMC->Add(fh1FakeJetPts); 
+    fOutputListMC->Add(fh1JES);  
     fOutputListMC->Add(fh3TrueJetPtFraction); 
     fOutputListMC->Add(fh3MatchJetPts); 
     fOutputListMC->Add(fh3MatchJetEtas); 
@@ -2518,7 +2616,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
       if(fTracksCont && fTracksCont->GetArray() == 0)
         fTracksCont = 0;
     }
-    if(fDoEmbedding && fbMCAnalysis) {
+    if(fDoEmbedding) {
       if(fJetsMCGenCont && fJetsMCGenCont->GetArray() == 0)
         fJetsMCGenCont = 0; 
       if(fJetsMCDetCont && fJetsMCDetCont->GetArray() == 0)
@@ -2678,7 +2776,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsEventSelected()
 
 Bool_t AliAnalysisTaskV0sInJetsEmcal::Run()
 {
-// Run analysis code here, if needed. It will be executed before FillHistograms().
 
   return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
 }
@@ -2710,28 +2807,54 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   // Simulation info
   if(fbMCAnalysis) {
-    fEventMC = MCEvent();
-    arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC || !fEventMC) {
-      AliError("No MC array/event found!");
-      return kFALSE;
+    if(fDoEmbedding && fIsEmbeddedEvent) {
+      
+      AliAODEvent* aodMC = dynamic_cast<AliAODEvent*>(AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent());
+      if (!aodMC) {
+        AliError("No external embedded event!");
+        return kFALSE;
+      }
+
+      arrayMC = dynamic_cast<TClonesArray*>(aodMC->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(!arrayMC) {
+        AliError("No MC embedded array found!");
+        return kFALSE;
+      }
+      
+      headerMC = dynamic_cast<AliAODMCHeader*>(aodMC->FindListObject(AliAODMCHeader::StdBranchName()));
+      if(!headerMC) {
+        AliWarning("No MC embedded header found!");
+      }
+      fEventMC = nullptr;  // important: do not use MCEvent in embedding
+
+    } 
+    else {
+      fEventMC = MCEvent();
+      arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
+      if(!arrayMC || !fEventMC) {
+        AliError("No MC array/event found!");
+        return kFALSE;
+      }
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
+      headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
+      if(!headerMC) {
+        AliError("No MC header found!");
+        return kFALSE;
+      }  
     }
-    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
+
     iNTracksMC = arrayMC->GetEntriesFast();
     if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d MC tracks in this event", iNTracksMC));
-    headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
-    if(!headerMC) {
-      AliError("No MC header found!");
-      return kFALSE;
-    }
     // get position of the MC primary vertex
-    dPrimVtxMCX = headerMC->GetVtxX();
-    dPrimVtxMCY = headerMC->GetVtxY();
-    dPrimVtxMCZ = headerMC->GetVtxZ();
-    if (TMath::Abs(dPrimVtxMCZ) > 10.0){
+    if (headerMC) {
+       dPrimVtxMCX = headerMC->GetVtxX();
+      dPrimVtxMCY = headerMC->GetVtxY();
+      dPrimVtxMCZ = headerMC->GetVtxZ();
+      if (TMath::Abs(dPrimVtxMCZ) > 10.0){
       if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Z vertex is > 10, rejecting. \n");
-      return kFALSE;
-    }   
+        return kFALSE;
+      } 
+    }  
   }
 
   AliMultSelection* MultSelection = 0x0;
@@ -2773,7 +2896,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   if(fbUseIonutCut){
     if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
       return kFALSE;
-    if (fbMCAnalysis) {
+    if (fbMCAnalysis && !fDoEmbedding) {
       if(AliAnalysisUtils::IsPileupInGeneratedEvent(headerMC, "ijing")) 
         return kFALSE;
     }
@@ -2973,6 +3096,32 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   if(fDoEmbedding) {
     if(fDoDetLevelMatching) DoJetMatching(); //this matches by R
     fJetsCont->ResetCurrentID();
+    
+    fJetsMCDetCont->ResetCurrentID();
+    fJetsMCGenCont->ResetCurrentID();
+    Int_t iNJetDet = fJetsMCDetCont->GetNJets();
+    for(Int_t i = 0; i < iNJetDet; i++) {
+      AliEmcalJet* jetDet = (AliEmcalJet*)(fJetsMCDetCont->GetAcceptJet(i)); // load a jet in the list
+      if(!jetDet) continue;
+      Double_t RhoDet = fJetsMCDetCont->GetRhoVal();
+      Double_t PtDet = jetDet->Pt();
+      PtDet = jetDet->PtSub(RhoDet);
+      if(fdCutPtJetMin > 0. && PtDet < fdCutPtJetMin)// selection of high-pt jets, needs to be applied on the pt after bg subtraction
+        continue;
+      fh1DetJetPt->Fill(PtDet);
+    }  
+
+    Int_t iNJetPart = fJetsMCGenCont->GetNJets();
+    for(Int_t i = 0; i < iNJetPart; i++) {
+      AliEmcalJet* jetPart = (AliEmcalJet*)(fJetsMCGenCont->GetAcceptJet(i)); // load a jet in the list
+      if(!jetPart) continue;
+      Double_t RhoPart = fJetsMCGenCont->GetRhoVal();
+      Double_t PtPart = jetPart->Pt();
+      PtPart = jetPart->PtSub(RhoPart);
+      if(fdCutPtJetMin > 0. && PtPart < fdCutPtJetMin)// selection of high-pt jets, needs to be applied on the pt after bg subtraction
+        continue;
+      fh1PartJetPt->Fill(PtPart);
+     } 
   }
 
   // select good jets and copy them to another array
@@ -3021,6 +3170,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet %d with pt %g passed selection", iJet, dPtJetCorr));
 
       if(fDoEmbedding){
+        
+        fh1EmbJetPt->Fill(dPtJetCorr);
         Double_t matchedJetDistance_Det = -0.1;
         Double_t matchedJetPt_Det = -0.1;
         Double_t matchedJetEta_Det = -1.1;
@@ -3043,10 +3194,17 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fh3MatchJetEtas->Fill(dEtaJetCorr, matchedJetEta_Det, matchedJetEta_Part);
         fh3MatchJetDeltaRs->Fill(dPtJetCorr, matchedJetDistance_Det, matchedJetDistance_Part);
         
+        if(matchedJetPt_Part!=-0.1)
+          fh1JES->Fill((matchedJetPt_Part-dPtJetCorr)/matchedJetPt_Part);
+
+        if(matchedJetPt_Det==-0.1)
+          fh1DetFakeJetPts->Fill(dPtJetCorr);
+        if(matchedJetPt_Part==-0.1)
+          fh1FakeJetPts->Fill(dPtJetCorr);
+
         if (matchedJetPt_Det==-0.1 || matchedJetPt_Part==-0.1) {
           if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "THIS JET WASNT MATCHED");
           fh1UnMatchJetPts->Fill(dPtJetCorr);
-          continue;
         }
       }
 
@@ -3159,15 +3317,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         continue;
 
       //Particles from out ot bunch pile up rejection: 
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
-        continue; 
+      if(!fDoEmbedding) {
+        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPartMC, headerMC, arrayMC))
+          continue; 
+      }
       if(!particleMC->IsPhysicalPrimary())
         continue;
   
       // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iPartMC))
-        continue;
-
+      if(!fDoEmbedding) {
+        if(!IsFromGoodGenerator(iPartMC))
+          continue;
+      }
       // Get identity of MC particle
       Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
 
@@ -4050,6 +4211,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
     //===== End of filling V0 spectra =====
 
+    if(fDoEmbedding) {
+      //here add reconstruction V0 part for emb
+    }
 
     //===== Association of reconstructed V0 candidates with MC particles =====
     if(fbMCAnalysis) {
@@ -4112,7 +4276,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dPtV0Gen = particleMCMother->Pt();
       Double_t dRapV0Gen = particleMCMother->Y();
       Double_t dEtaV0Gen = particleMCMother->Eta();
-      //Double_t dPhiV0Gen = particleMCMother->Phi();
+      Double_t dPhiV0Gen = particleMCMother->Phi();
 
       // V0 pseudorapidity cut applied on generated particles
       if(fdCutEtaV0Max > 0.) {
@@ -4128,8 +4292,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       }
 
       // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iIndexMotherPos))
-        continue;
+      if(!fDoEmbedding) {
+        if(!IsFromGoodGenerator(iIndexMotherPos))
+          continue;
+      }
 
       // Get the MC mother particle of the MC mother particle
       Int_t iIndexMotherOfMother = particleMCMother->GetMother();
@@ -4154,10 +4320,18 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bV0MCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
       */
+      
       Bool_t bPhysPrim = particleMCMother->IsPhysicalPrimary();
       // phi, eta resolution for V0-reconstruction
       // Double_t dResolutionV0Eta = particleMCMother->Eta()-v0->Eta();
       // Double_t dResolutionV0Phi = particleMCMother->Phi()-v0->Phi();
+      
+       Double_t dDeltaEta = dEtaV0Gen - dEtaV0;
+       Double_t dDeltaPhi = dPhiV0Gen - dPhiV0;
+       while (dDeltaPhi > TMath::Pi())  dDeltaPhi -= TMath::TwoPi();
+       while (dDeltaPhi < -TMath::Pi()) dDeltaPhi += TMath::TwoPi();
+
+      Double_t ddeltaR = TMath::Sqrt(dDeltaEta*dDeltaEta + dDeltaPhi*dDeltaPhi);
 
       // K0s
       // if (bIsCandidateK0s && bIsInPeakK0s) // selected candidates in peak
@@ -4182,6 +4356,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             fhnV0K0sInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDKJCNeg);
             Double_t valueEtaDKJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
             fhnV0K0sInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDKJCPos);
+          
+  
+            fh1V0K0sESPt->Fill((dPtV0Gen-dPtV0)/dPtV0Gen);
+            fh2V0K0DeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
+            fh2V0K0DeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
+            fh2V0K0DeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
+            fh1V0K0DeltaR->Fill(ddeltaR);
           }
         }
         if(bV0MCIsK0s && !bPhysPrim) {// not primary K0s
@@ -4212,6 +4393,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             fhnV0LambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDLJCNeg);
             Double_t valueEtaDLJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
             fhnV0LambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDLJCPos);
+          
+            fh1V0LESPt->Fill((dPtV0Gen-dPtV0)/dPtV0Gen);
+            fh2V0LDeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
+            fh2V0LDeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
+            fh2V0LDeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
+            fh1V0LDeltaR->Fill(ddeltaR);
           }
         }
         // Fill the feed-down histograms
@@ -4257,6 +4444,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDALJCNeg);
             Double_t valueEtaDALJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
             fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDALJCPos);
+            
+            fh1V0ALESPt->Fill((dPtV0Gen-dPtV0)/dPtV0Gen);
+            fh2V0ALDeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
+            fh2V0ALDeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
+            fh2V0ALDeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
+            fh1V0ALDeltaR->Fill(ddeltaR);
           }
         }
         // Fill the feed-down histograms
@@ -4303,7 +4496,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   //------------------------------------------------------------------------------------------
 
   //===== Start of loop over Cascade candidates =====
-  if(fDebug > 2) printf("TaskV0sInJets: Start of Cascade loop\n");
+  if(fDebug > 2) printf("TaskV0sInJets: Start of Cascade loop\n");  
   for(Int_t iXi = 0; iXi < iNCascades; iXi++) {
     Cascade = fAODIn->GetCascade(iXi);   // get next candidate from the list in AOD 
 	  if(!Cascade)
@@ -5120,9 +5313,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           continue;
       }
       // Select only particles from a specific generator
-      if(!IsFromGoodGenerator(iIndexMotherBach))
-        continue;
-      
+      if(!fDoEmbedding) {
+        if(!IsFromGoodGenerator(iIndexMotherBach))
+          continue;
+      }
       Bool_t bPhysPrim = particleMCMother->IsPhysicalPrimary();
       // Get the distance between production point of the MC mother particle and the primary vertex
       /*Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
@@ -5131,6 +5325,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
       Bool_t bCascadeMCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
       */
+      
       //XiMinus
       if(bIsCandidateXiMinus) {// selected candidates with any mass
         if(bCascadeMCIsXiMinus && bPhysPrim) {// well reconstructed candidates
@@ -5251,7 +5446,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fh1CascadeCandPerEventCentOmegaPlus[iCentIndex]->Fill(iNCascadeCandOmegaPlus);
 
   if(fDebug > 2) printf("TaskV0sInJets: End of Cascade loop\n");
-   
+  
   arrayJetSel->Delete();
   delete arrayJetSel;
   arrayJetPerp->Delete();

@@ -10,7 +10,7 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   TString rhoName = "Rho",
   TString sType = "TPC",
   TString label = "",
-  Bool_t bEmb = "kFALSE",
+  Bool_t bEmb = kFALSE,
   TString jetMCGenBranchName = "",
   TString tracksMCGenName = "mcparticles",
   TString jetMCRecBranchName = "",
@@ -67,13 +67,8 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   AliJetContainer* jetContMCGen = 0x0;
   AliJetContainer* jetContMCRec = 0x0;
   
-  if(jetMCGenBranchName.Length())
-    taskName += Form("_%s", jetMCGenBranchName.Data());
-  if(jetMCRecBranchName.Length())
-    taskName += Form("_%s", jetMCRecBranchName.Data());
-
-
   if(bEmb) {
+    taskName += "_Emb";
     trackContMCGen = mytask->AddMCParticleContainer(tracksMCGenName);
     if(trackContMCGen) trackContMCGen->SetIsEmbedding(kTRUE);
     trackContMCRec = mytask->AddTrackContainer(tracksMCRecName);
