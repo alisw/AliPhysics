@@ -185,8 +185,8 @@ public:
   void   SetJetMatchingRadius(Double_t val)                  { fJetMatchingRadius = val; }
   void   SetTruthLabelRange(Int_t min, Int_t max)            { fTruthMinLabel = min; fTruthMaxLabel = max; }
   void   SetJetMatchingSharedPtFraction(Double_t val)        { fJetMatchingSharedPtFraction = val; }
-
-  //void   SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
+  void   SetCutMaxEmbV0DeltaR(Double_t val)                  { fdCutMaxEmbV0DeltaR = val; }
+  void   SetCutMaxEmbV0RelPt(Double_t val)                   { fdCutMaxEmbV0RelPt = val; }
   
   Double_t  GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
   {
@@ -206,7 +206,7 @@ private:
   bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
   void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
   void GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance);
-
+  AliAODMCParticle* FindMatchedGeneratedV0(AliAODv0* v0, TClonesArray* arrayMC, Int_t pdgWanted, Double_t& dPtV0Gen, Double_t& dDeltaEta, Double_t& dDeltaPhi, Double_t& ddeltaR);
 
   AliAODEvent* fAODIn; //! Input AOD event
   AliAODEvent* fAODOut; //! Output AOD event
@@ -840,7 +840,9 @@ private:
   Int_t               fTruthMinLabel;           ///< min track label to consider it as true particle
   Int_t               fTruthMaxLabel;           ///< max track label to consider it as true particle
   Double_t            fJetMatchingSharedPtFraction; ///< Shared pT fraction required in matching
-  
+  Double_t            fdCutMaxEmbV0DeltaR;      ///< Max Delta R between matched V0s cut
+  Double_t            fdCutMaxEmbV0RelPt;       ///< Max relative Pt between matched V0s cut
+
   TH1D* fh1V0K0sESPt; //!
   TH2D* fh2V0K0DeltaEtaVsPt; //!
   TH2D* fh2V0K0DeltaPhiVsPt; //!
@@ -878,7 +880,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 36) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 37) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
