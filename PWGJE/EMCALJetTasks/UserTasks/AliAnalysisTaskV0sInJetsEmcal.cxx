@@ -237,7 +237,9 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fJetMatchingSharedPtFraction(0.5),
-  
+  fdCutMaxEmbV0DeltaR(0.03),
+  fdCutMaxEmbV0RelPt(1.),
+
   fh1V0K0sESPt(0),
   fh2V0K0DeltaEtaVsPt(0),
   fh2V0K0DeltaPhiVsPt(0),
@@ -818,6 +820,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fJetMatchingSharedPtFraction(0.5),
+  fdCutMaxEmbV0DeltaR(0.03),
+  fdCutMaxEmbV0RelPt(1.),
 
   fh1V0K0sESPt(0),
   fh2V0K0DeltaEtaVsPt(0),
@@ -2403,7 +2407,31 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     deltaR_bins[i] = 0.0 + i*0.01;
   }
   Int_t n_deltaR_bins = sizeof(deltaR_bins)/sizeof(Double_t) - 1;
-   if(fbMCAnalysis){
+  if(fDoEmbedding){
+    fh1EmbJetPt = new TH1D("fh1EmbJetPt", "Embedded Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1DetJetPt = new TH1D("fh1DetJetPt", "Detector level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1PartJetPt = new TH1D("fh1PartJetPt", "Particle level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1DetFakeJetPts = new TH1D("fh1DetFakeJetPts", "Detector level FAKE Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1FakeJetPts = new TH1D("fh1FakeJetPts", "FAKE Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1JES =  new TH1D("fh1JES", " JES ", 200, -3.0, 1.0);
+    fh3TrueJetPtFraction = new TH3D("fh3TrueJetPtFraction", "Jet pt fraction from truth particles", n_jet_pT_bins, jet_pT_bins, n_true_frac_bins, true_frac_bins, n_true_frac_bins, true_frac_bins);
+    fh3MatchJetPts = new TH3D("fh3MatchJetPts", "Jet pts of matched jets; emb; det; part", n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins2,jet_pT_bins2,n_jet_pT_bins2,jet_pT_bins2);
+    fh3MatchJetEtas = new TH3D("fh3MatchJetEtas", "Jet etas of matched jets; emb; det; part", n_eta_bins,eta_bins,n_eta_bins,eta_bins,n_eta_bins,eta_bins);
+    fh3MatchJetDeltaRs = new TH3D("fh3MatchJetDeltaRs", "Jet distances of matched jets; emb pt; det; part", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
+    fh1UnMatchJetPts = new TH1D("fh1UnMatchJetPts", "Unmatched Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+
+    fOutputListMC->Add(fh1EmbJetPt);
+    fOutputListMC->Add(fh1DetJetPt);
+    fOutputListMC->Add(fh1PartJetPt);
+    fOutputListMC->Add(fh1DetFakeJetPts);
+    fOutputListMC->Add(fh1FakeJetPts); 
+    fOutputListMC->Add(fh1JES);  
+    fOutputListMC->Add(fh3TrueJetPtFraction); 
+    fOutputListMC->Add(fh3MatchJetPts); 
+    fOutputListMC->Add(fh3MatchJetEtas); 
+    fOutputListMC->Add(fh3MatchJetDeltaRs); 
+    fOutputListMC->Add(fh1UnMatchJetPts); 
+
     fh1V0K0sESPt = new TH1D("fh1V0K0sESPt", "Gen vs Part K0s pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 100, -1.0, 1.0);
     fh2V0K0DeltaEtaVsPt = new TH2D("fh2V0K0DeltaEtaVsPt", "K0s pt spectrumvs delta eta", 200, 0, 20, 200, -0.1, 0.1);
     fh2V0K0DeltaPhiVsPt = new TH2D("fh2V0K0DeltaPhiVsPt", "K0s pt spectrumvs delta phi", 200, 0, 20, 200, -0.1, 0.1);
@@ -2439,33 +2467,6 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListMC->Add(fh2V0ALDeltaPhiVsPt);
     fOutputListMC->Add(fh2V0ALDeltaRVsPt);
     fOutputListMC->Add(fh1V0ALDeltaR);  
-  }
-
-  if(fDoEmbedding){
-    fh1EmbJetPt = new TH1D("fh1EmbJetPt", "Embedded Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
-    fh1DetJetPt = new TH1D("fh1DetJetPt", "Detector level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
-    fh1PartJetPt = new TH1D("fh1PartJetPt", "Particle level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
-    fh1DetFakeJetPts = new TH1D("fh1DetFakeJetPts", "Detector level FAKE Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
-    fh1FakeJetPts = new TH1D("fh1FakeJetPts", "FAKE Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
-    fh1JES =  new TH1D("fh1JES", " JES ", 200, -3.0, 1.0);
-    fh3TrueJetPtFraction = new TH3D("fh3TrueJetPtFraction", "Jet pt fraction from truth particles", n_jet_pT_bins, jet_pT_bins, n_true_frac_bins, true_frac_bins, n_true_frac_bins, true_frac_bins);
-    fh3MatchJetPts = new TH3D("fh3MatchJetPts", "Jet pts of matched jets; emb; det; part", n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins2,jet_pT_bins2,n_jet_pT_bins2,jet_pT_bins2);
-    fh3MatchJetEtas = new TH3D("fh3MatchJetEtas", "Jet etas of matched jets; emb; det; part", n_eta_bins,eta_bins,n_eta_bins,eta_bins,n_eta_bins,eta_bins);
-    fh3MatchJetDeltaRs = new TH3D("fh3MatchJetDeltaRs", "Jet distances of matched jets; emb pt; det; part", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
-    fh1UnMatchJetPts = new TH1D("fh1UnMatchJetPts", "Unmatched Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
-
-    fOutputListMC->Add(fh1EmbJetPt);
-    fOutputListMC->Add(fh1DetJetPt);
-    fOutputListMC->Add(fh1PartJetPt);
-    fOutputListMC->Add(fh1DetFakeJetPts);
-    fOutputListMC->Add(fh1FakeJetPts); 
-    fOutputListMC->Add(fh1JES);  
-    fOutputListMC->Add(fh3TrueJetPtFraction); 
-    fOutputListMC->Add(fh3MatchJetPts); 
-    fOutputListMC->Add(fh3MatchJetEtas); 
-    fOutputListMC->Add(fh3MatchJetDeltaRs); 
-    fOutputListMC->Add(fh1UnMatchJetPts); 
-
   }
   // Event cuts with strong anti-pile-up cuts
   if(fbUseIonutCut == 1) {
@@ -2806,42 +2807,49 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
 
   // Simulation info
-  if(fbMCAnalysis) {
-    if(fDoEmbedding && fIsEmbeddedEvent) {
-      
-      AliAODEvent* aodMC = dynamic_cast<AliAODEvent*>(AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent());
-      if (!aodMC) {
-        AliError("No external embedded event!");
-        return kFALSE;
-      }
-
-      arrayMC = dynamic_cast<TClonesArray*>(aodMC->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(!arrayMC) {
-        AliError("No MC embedded array found!");
-        return kFALSE;
-      }
-      
-      headerMC = dynamic_cast<AliAODMCHeader*>(aodMC->FindListObject(AliAODMCHeader::StdBranchName()));
-      if(!headerMC) {
-        AliWarning("No MC embedded header found!");
-      }
-      fEventMC = nullptr;  // important: do not use MCEvent in embedding
-
-    } 
-    else {
-      fEventMC = MCEvent();
-      arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
-      if(!arrayMC || !fEventMC) {
-        AliError("No MC array/event found!");
-        return kFALSE;
-      }
-      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
-      headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
-      if(!headerMC) {
-        AliError("No MC header found!");
-        return kFALSE;
-      }  
+  if(fDoEmbedding && fIsEmbeddedEvent) {
+    AliAODEvent* aodMC = dynamic_cast<AliAODEvent*>(AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent());
+    if (!aodMC) {
+      AliError("No external embedded event!");
+      return kFALSE;
     }
+    arrayMC = dynamic_cast<TClonesArray*>(aodMC->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!arrayMC) {
+      AliError("No MC embedded array found!");
+      return kFALSE;
+    }
+    headerMC = dynamic_cast<AliAODMCHeader*>(aodMC->FindListObject(AliAODMCHeader::StdBranchName()));
+    if(!headerMC) {
+      AliWarning("No MC embedded header found!");
+    }
+    fEventMC = nullptr; 
+
+    iNTracksMC = arrayMC->GetEntriesFast();
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d MC tracks in this event", iNTracksMC));
+    // get position of the MC primary vertex
+    if (headerMC) {
+      dPrimVtxMCX = headerMC->GetVtxX();
+      dPrimVtxMCY = headerMC->GetVtxY();
+      dPrimVtxMCZ = headerMC->GetVtxZ();
+      if (TMath::Abs(dPrimVtxMCZ) > 10.0){
+        if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Z vertex is > 10, rejecting. \n");
+          return kFALSE;
+      } 
+    } 
+  } 
+  else if(fbMCAnalysis) {
+    fEventMC = MCEvent();
+    arrayMC = (TClonesArray*)fAODIn->FindListObject(AliAODMCParticle::StdBranchName());
+    if(!arrayMC || !fEventMC) {
+      AliError("No MC array/event found!");
+      return kFALSE;
+    }
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "MC array found");
+    headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
+    if(!headerMC) {
+      AliError("No MC header found!");
+      return kFALSE;
+    }  
 
     iNTracksMC = arrayMC->GetEntriesFast();
     if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d MC tracks in this event", iNTracksMC));
@@ -2851,8 +2859,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       dPrimVtxMCY = headerMC->GetVtxY();
       dPrimVtxMCZ = headerMC->GetVtxZ();
       if (TMath::Abs(dPrimVtxMCZ) > 10.0){
-      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Z vertex is > 10, rejecting. \n");
-        return kFALSE;
+        if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Z vertex is > 10, rejecting. \n");
+          return kFALSE;
       } 
     }  
   }
@@ -4212,8 +4220,63 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     //===== End of filling V0 spectra =====
 
     if(fDoEmbedding) {
-      //here add reconstruction V0 part for emb
+      if(bIsCandidateLambda) {
+        Double_t dPtV0Gen = -1.;
+        Double_t dDeltaEta = 999.;
+        Double_t dDeltaPhi = 999.;
+        Double_t ddeltaR = 999.;
+
+        AliAODMCParticle* partGen = FindMatchedGeneratedV0(v0, arrayMC, 3122, dPtV0Gen, dDeltaEta, dDeltaPhi, ddeltaR);
+
+        if(partGen) {
+          const Double_t dPtV0 = v0->Pt();
+
+          fh1V0LESPt->Fill((dPtV0Gen - dPtV0)/dPtV0Gen);
+          fh2V0LDeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
+          fh2V0LDeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
+          fh2V0LDeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
+          fh1V0LDeltaR->Fill(ddeltaR);
+        }
+      }
+      if(bIsCandidateALambda) {
+        Double_t dPtV0Gen = -1.;
+        Double_t dDeltaEta = 999.;
+        Double_t dDeltaPhi = 999.;
+        Double_t ddeltaR = 999.;
+
+        AliAODMCParticle* partGen = FindMatchedGeneratedV0(v0, arrayMC, -3122, dPtV0Gen, dDeltaEta, dDeltaPhi, ddeltaR);
+
+        if(partGen) {
+          const Double_t dPtV0 = v0->Pt();
+
+          fh1V0ALESPt->Fill((dPtV0Gen - dPtV0)/dPtV0Gen);
+          fh2V0ALDeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
+          fh2V0ALDeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
+          fh2V0ALDeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
+          fh1V0ALDeltaR->Fill(ddeltaR);
+        }
+      }
+      if(bIsCandidateK0s) {
+        Double_t dPtV0Gen = -1.;
+        Double_t dDeltaEta = 999.;
+        Double_t dDeltaPhi = 999.;
+        Double_t ddeltaR = 999.;
+
+        AliAODMCParticle* partGen = FindMatchedGeneratedV0(v0, arrayMC, 310, dPtV0Gen, dDeltaEta, dDeltaPhi, ddeltaR);
+
+        if(partGen) {
+          const Double_t dPtV0 = v0->Pt();
+
+          fh1V0K0sESPt->Fill((dPtV0Gen - dPtV0)/dPtV0Gen);
+          fh2V0K0DeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
+          fh2V0K0DeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
+          fh2V0K0DeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
+          fh1V0K0DeltaR->Fill(ddeltaR);
+        }
+      }
+      //go through jet container, matched jet, Gen V0 in matched gen jet 
     }
+
 
     //===== Association of reconstructed V0 candidates with MC particles =====
     if(fbMCAnalysis) {
@@ -4355,14 +4418,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             Double_t valueEtaDKJCNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
             fhnV0K0sInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDKJCNeg);
             Double_t valueEtaDKJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
-            fhnV0K0sInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDKJCPos);
-          
-  
-            fh1V0K0sESPt->Fill((dPtV0Gen-dPtV0)/dPtV0Gen);
-            fh2V0K0DeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
-            fh2V0K0DeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
-            fh2V0K0DeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
-            fh1V0K0DeltaR->Fill(ddeltaR);
+            fhnV0K0sInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDKJCPos);         
           }
         }
         if(bV0MCIsK0s && !bPhysPrim) {// not primary K0s
@@ -4393,12 +4449,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             fhnV0LambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDLJCNeg);
             Double_t valueEtaDLJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
             fhnV0LambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDLJCPos);
-          
-            fh1V0LESPt->Fill((dPtV0Gen-dPtV0)/dPtV0Gen);
-            fh2V0LDeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
-            fh2V0LDeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
-            fh2V0LDeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
-            fh1V0LDeltaR->Fill(ddeltaR);
           }
         }
         // Fill the feed-down histograms
@@ -4443,13 +4493,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             Double_t valueEtaDALJCNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
             fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDALJCNeg);
             Double_t valueEtaDALJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, jet->Pt()};
-            fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDALJCPos);
-            
-            fh1V0ALESPt->Fill((dPtV0Gen-dPtV0)/dPtV0Gen);
-            fh2V0ALDeltaEtaVsPt->Fill(dPtV0Gen, dDeltaEta);
-            fh2V0ALDeltaPhiVsPt->Fill(dPtV0Gen, dDeltaPhi);
-            fh2V0ALDeltaRVsPt->Fill(dPtV0Gen, ddeltaR);
-            fh1V0ALDeltaR->Fill(ddeltaR);
+            fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDALJCPos);           
           }
         }
         // Fill the feed-down histograms
@@ -4471,9 +4515,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
             fh1V0ALambdaPtMCRecFalse[iCentIndex]->Fill(dPtV0);
           }
         }
-      }
-      if(fDoEmbedding){
-        //go through jet container, matched jet, Gen V0 in matched gen jet 
       }
     }
     //===== End Association of reconstructed V0 candidates with MC particles =====
@@ -6310,6 +6351,69 @@ void AliAnalysisTaskV0sInJetsEmcal::GetMatchedJetObservables(AliEmcalJet* jet, D
   return;
 }
 
+AliAODMCParticle* AliAnalysisTaskV0sInJetsEmcal::FindMatchedGeneratedV0(AliAODv0* v0, TClonesArray* arrayMC, Int_t pdgWanted, Double_t& dPtV0Gen, Double_t& dDeltaEta,  Double_t& dDeltaPhi, Double_t& ddeltaR)
+{
+  dPtV0Gen  = -1.;
+  dDeltaEta = 999.;
+  dDeltaPhi = 999.;
+  ddeltaR   = 999.;
 
+  if(!v0 || !arrayMC)
+    return nullptr;
+
+  const Double_t etaRec = v0->Eta();
+  const Double_t phiRec = v0->Phi();
+  const Double_t ptRec  = v0->Pt();
+
+  AliAODMCParticle* best = nullptr;
+  Double_t bestDR = 999.;
+
+  const Int_t nMC = arrayMC->GetEntriesFast();
+
+  for(Int_t iMC = 0; iMC < nMC; ++iMC) {
+    AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iMC));
+    if(!part)
+      continue;
+
+    if(part->GetPdgCode() != pdgWanted)
+      continue;
+
+    if(!part->IsPhysicalPrimary())
+      continue;
+
+    if(TMath::Abs(part->Y()) > 0.5)
+      continue;
+
+    const Double_t etaGen = part->Eta();
+    const Double_t phiGen = part->Phi();
+    const Double_t ptGen  = part->Pt();
+
+    const Double_t deta = etaGen - etaRec;
+    const Double_t dphi = TVector2::Phi_mpi_pi(phiGen - phiRec);
+    const Double_t dR   = TMath::Sqrt(deta*deta + dphi*dphi);
+
+    // optional loose pt consistency to avoid accidental matches
+    const Double_t relPt = (ptGen > 1e-10) ? TMath::Abs(ptGen - ptRec)/ptGen : 999.;
+
+    if(relPt > fdCutMaxEmbV0RelPt)
+      continue; 
+
+    if(dR < bestDR) {
+      bestDR = dR;
+      best = part;
+      dPtV0Gen  = ptGen;
+      dDeltaEta = deta;
+      dDeltaPhi = dphi;
+      ddeltaR   = dR;
+    }
+  }
+  if(!best)
+    return nullptr;
+
+  if(ddeltaR > fdCutMaxEmbV0DeltaR)
+    return nullptr;
+
+  return best;
+}
 
 
