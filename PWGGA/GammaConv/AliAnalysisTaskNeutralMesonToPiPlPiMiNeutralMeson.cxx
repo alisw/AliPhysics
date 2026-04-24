@@ -1081,6 +1081,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   Double_t HistoNMassBinsSub                          = 600;
   Double_t HistoMassRangeSub[2]                       = {0.4,1.0};
   Double_t HistoNPtBins                               = 800;
+  Double_t HistoNPtBinsFine                           = 800;
   Double_t HistoPtRange[2]                            = {0.,80.};
   Double_t HistoCaloNPtBins                           = 800;
   Double_t HistoCaloPtRange[2]                        = {0.,80.};
@@ -1096,6 +1097,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   Double_t HistoMassRangeDalitz                       = 3.0;
   Double_t *arrPtBinning                              = new Double_t[1200];
   Double_t *arrCaloPtBinning                          = new Double_t[1200];
+  Double_t *arrPtBinningFine                          = new Double_t[1200];
   // Set other histogram ranges 
   Double_t  HistoNEtaBins                              = 600;
   Double_t  HistoEtaRange[2]                           = {-1.5, 1.5};
@@ -1274,6 +1276,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     for(Int_t i=0; i<HistoNPtBins+1;i++){
       arrPtBinning[i]         = ((HistoPtRange[1]-HistoPtRange[0])/HistoNPtBins)*i;
     }
+    HistoNPtBinsFine                                  = HistoNPtBins;
+    arrPtBinningFine                                  = arrPtBinning;
     arrCaloPtBinning                                  = arrPtBinning;
     break;
   case 1: // OMEGA MESON
@@ -1304,6 +1308,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       else if(i<=183) arrPtBinning[i]          = 60.+5.00*(i-180);      //65.00 - 75.00
       else arrPtBinning[i]                     = HistoPtRange[1];       //80.00
     }
+    HistoNPtBinsFine                                  = HistoNPtBins;
+    arrPtBinningFine                                  = arrPtBinning;
     arrCaloPtBinning                                  = arrPtBinning;
     break;
   case 2: // ETA PRIME MESON
@@ -1334,6 +1340,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       if (i <= 34)          arrPtBinning[i]           = 3.0 + 0.50*(i-1);      //  3.00 - 20.00, 0.5 spacing
       else if(i <= 45)      arrPtBinning[i]           = 20. + 1.00*(i-35);     //  20.0 - 30.00, 1.0 spacing
       else if(i <= 51)      arrPtBinning[i]           = 30. + 5.00*(i-45);     //  30.0 - 60.00, 5.0 spacing
+    }
+    // fine binning for conv gammas, charged pions for purity / effi 
+    HistoNPtBinsFine                                  = 57;
+    arrPtBinningFine[0]                               = 0.;
+    for(Int_t i=1; i<HistoNPtBinsFine+1;i++){
+      if (i <= 40)          arrPtBinningFine[i]           = 0.0 + 0.50*(i-1);      //  0.00 - 20.00, 0.5 spacing
+      else if(i <= 51)      arrPtBinningFine[i]           = 20. + 1.00*(i-41);     //  20.0 - 30.00, 1.0 spacing
+      else if(i <= 57)      arrPtBinningFine[i]           = 30. + 5.00*(i-51);     //  30.0 - 60.00, 5.0 spacing
     }
     // fine binning for calo cluster histograms 
     HistoCaloNPtBins                                      = 800;
@@ -1383,6 +1397,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     for(Int_t i=0; i<HistoNPtBins+1;i++){
       arrPtBinning[i]         = ((HistoPtRange[1]-HistoPtRange[0])/HistoNPtBins)*i;
     }
+    HistoNPtBinsFine                                  = HistoNPtBins;
+    arrPtBinningFine                                  = arrPtBinning;
     arrCaloPtBinning                                  = arrPtBinning;
     break;
   default:
@@ -1746,7 +1762,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     
     if ( fEnableBasicMesonQA ) {
       if (fNDMRecoMode < 2){
-        fHistoConvGammaPt[iCut]     = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt", HistoNPtBins, arrPtBinning);
+        fHistoConvGammaPt[iCut]     = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
         fHistoConvGammaPt[iCut]->Sumw2();
@@ -1758,13 +1774,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
       }
 
-      fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt", HistoNPtBins, arrPtBinning);
+      fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
       fHistoNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
       fHistoNegPionPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoNegPionPt[iCut]);
 
-      fHistoPosPionPt[iCut]         = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt", HistoNPtBins, arrPtBinning);
+      fHistoPosPionPt[iCut]         = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
       fHistoPosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoPosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
       fHistoPosPionPt[iCut]->Sumw2();
@@ -2472,39 +2488,39 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fCutFolder[iCut]->Add(fMCList[iCut]);
 
       if( fEnableBasicMesonQA ){
-        fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCAllGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma}");
         fHistoMCAllGammaPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
         if (fNDMRecoMode < 2){
-          fHistoMCConvGammaPt[iCut]       = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt", HistoNPtBins, arrPtBinning);
+          fHistoMCConvGammaPt[iCut]       = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
           fHistoMCConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoMCConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
           fHistoMCConvGammaPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCConvGammaPt[iCut]);
         }
-        fHistoMCGammaFromNeutralMesonPt[iCut]     = new TH1F("MC_GammaFromNeutralMeson_Pt","MC_GammaFromNeutralMeson_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCGammaFromNeutralMesonPt[iCut]     = new TH1F("MC_GammaFromNeutralMeson_Pt","MC_GammaFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma}");
         fHistoMCGammaFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCGammaFromNeutralMesonPt[iCut]);
-        fHistoMCAllPosPionsPt[iCut]               = new TH1F("MC_AllPosPions_Pt","MC_AllPosPions_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCAllPosPionsPt[iCut]               = new TH1F("MC_AllPosPions_Pt","MC_AllPosPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCAllPosPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllPosPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoMCAllPosPionsPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllPosPionsPt[iCut]);
-        fHistoMCAllNegPionsPt[iCut]               = new TH1F("MC_AllNegPions_Pt","MC_AllNegPions_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCAllNegPionsPt[iCut]               = new TH1F("MC_AllNegPions_Pt","MC_AllNegPions_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCAllNegPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllNegPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoMCAllNegPionsPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllNegPionsPt[iCut]);
-        fHistoMCNegPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Pt","MC_NegPionsFromNeutralMeson_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCNegPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Pt","MC_NegPionsFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonPt[iCut]);
-        fHistoMCPosPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Pt","MC_PosPionsFromNeutralMeson_Pt", HistoNPtBins, arrPtBinning);
+        fHistoMCPosPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Pt","MC_PosPionsFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->Sumw2();
@@ -2852,12 +2868,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
       if (fNDMRecoMode < 2){
         if( fEnableBasicMesonQA ){
-          fHistoTrueConvGammaPt[iCut]                 = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt", HistoNPtBins, arrPtBinning);
+          fHistoTrueConvGammaPt[iCut]                 = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt", HistoNPtBinsFine, arrPtBinningFine);
           fHistoTrueConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
           fHistoTrueConvGammaPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
-          fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt", HistoNPtBins, arrPtBinning);
+          fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->Sumw2();
@@ -2885,23 +2901,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTrueClusterGammaFromNeutralMesonPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueClusterGammaFromNeutralMesonPt[iCut]);
         }
-        fHistoTruePosPionPt[iCut]                       = new TH1F("ESD_TruePosPion_Pt","ESD_TruePosPion_Pt", HistoNPtBins, arrPtBinning);
+        fHistoTruePosPionPt[iCut]                       = new TH1F("ESD_TruePosPion_Pt","ESD_TruePosPion_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTruePosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoTruePosPionPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTruePosPionPt[iCut]);
-        fHistoTrueNegPionPt[iCut]                       = new TH1F("ESD_TrueNegPion_Pt","ESD_TrueNegPion_Pt", HistoNPtBins, arrPtBinning);
+        fHistoTrueNegPionPt[iCut]                       = new TH1F("ESD_TrueNegPion_Pt","ESD_TrueNegPion_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTrueNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoTrueNegPionPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueNegPionPt[iCut]);
 
-        fHistoTrueNegPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TrueNegPionFromNeutralMeson_Pt","ESD_TrueNegPionFromNeutralMeson_Pt", HistoNPtBins, arrPtBinning);
+        fHistoTrueNegPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TrueNegPionFromNeutralMeson_Pt","ESD_TrueNegPionFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueNegPionFromNeutralMesonPt[iCut]);
-        fHistoTruePosPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TruePosPionFromNeutralMeson_Pt","ESD_TruePosPionFromNeutralMeson_Pt", HistoNPtBins, arrPtBinning);
+        fHistoTruePosPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TruePosPionFromNeutralMeson_Pt","ESD_TruePosPionFromNeutralMeson_Pt", HistoNPtBinsFine, arrPtBinningFine);
         fHistoTruePosPionFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePosPionFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
         fHistoTruePosPionFromNeutralMesonPt[iCut]->Sumw2();
@@ -4810,7 +4826,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA ) {
         fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
-    } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 && fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
+    } else if((((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111) && fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
     }
@@ -4967,7 +4983,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
       if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
         fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       }
-    } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 && fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
+    } else if((((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111) && fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
       fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
     }
@@ -5101,7 +5117,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
           if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
             fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
           }
-        } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
+        } else if((((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111) & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
           fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
           fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
         }
@@ -5243,7 +5259,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         }
-      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
+      } else if((((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111) & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
       }
@@ -5526,7 +5542,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         }
-      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
+      } else if((((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111) & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
       }
@@ -5683,7 +5699,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel) && fEnableAdvancedMesonQA) {
           fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         }
-      } else if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111 & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
+      } else if((((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == 111) & fEnableBasicMesonQA){   // all true pi0 for eta prime analysis
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
         fHistoTruePi0InvMassEta[fiCut]->Fill(Pi0Candidate->M(), Pi0Candidate->Eta(), fWeightJetJetMC*weightMatBudget);
       }
