@@ -16,6 +16,7 @@ class AliFemtoKink;
 class AliFemtoPair;
 class TH1D;
 class TH2D;
+class TH3F;
 class TList;
 //#include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
@@ -50,6 +51,7 @@ class AliFemtoCutMonitorPairBetaT : public AliFemtoCutMonitor {
   TH2D *fHistBetaTpT2;  //BetaT vs pT of part2  
   TH2D *fHistBetaTPairpT;  //BetaT vs pT of pair  
   TH2D *fHistBetaTPairmT;  //BetaT vs mT of pair  
+  TH3F *fHistBetaTmT1mT2;  //3D histogram of BetaT vs mT1 vs mT2
 
   int fBinsBetaT;        // Number of bins in betaT plot
   double fMinBetaT;      // Minimum betaT
