@@ -1,10 +1,10 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskFM_moments.h"
 
-AliAnalysisTaskFM_moments *AddTaskFM_moments(Int_t _YEAR_ = 2015, Bool_t _IS_MC_ = kFALSE, const char *suffix = "") {
+AliAnalysisTaskFM_moments *AddTaskFM_moments(Int_t _YEAR_ = 2015, Bool_t _IS_MC_ = kFALSE, Float_t _BIN_LOW_ = 0.4, Float_t _BIN_UP_ = 2.0, const char *suffix = "") {
   // Initialize variables
   Int_t _n_pt_bins = 1;
-  Double_t _pt_bins[10] = {0.4, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  Double_t _pt_bins[10] = {_BIN_LOW_, _BIN_UP_, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   Int_t _max_m_bins = 82;
   Int_t _bField = 0;
   Int_t _cent_min = 0, _cent_max = 5;
