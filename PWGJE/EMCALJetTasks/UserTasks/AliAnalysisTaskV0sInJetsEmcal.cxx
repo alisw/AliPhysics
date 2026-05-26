@@ -239,6 +239,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fJetMatchingSharedPtFraction(0.5),
   fdCutMaxEmbV0DeltaR(0.03),
   fdCutMaxEmbV0RelPt(1.),
+  fbSubtrRhoFromPartJet(kTRUE),
 
   fh1V0K0sESPt(0),
   fh2V0K0DeltaEtaVsPt(0),
@@ -268,7 +269,14 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fh3MatchJetPts(0),
   fh3MatchJetEtas(0),
   fh3MatchJetDeltaRs(0),
-  fh1UnMatchJetPts(0)
+  fh1UnMatchJetPts(0),
+
+  fh2K0sMiss(0), 
+  fh3K0sRespMtx(0),
+  fh2LMiss(0), 
+  fh3LRespMtx(0),
+  fh2ALMiss(0),
+  fh3ALRespMtx(0)
 
 {
   for(Int_t i = 0; i < fgkiNQAIndeces; i++)
@@ -822,6 +830,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fJetMatchingSharedPtFraction(0.5),
   fdCutMaxEmbV0DeltaR(0.03),
   fdCutMaxEmbV0RelPt(1.),
+  fbSubtrRhoFromPartJet(kTRUE),
 
   fh1V0K0sESPt(0),
   fh2V0K0DeltaEtaVsPt(0),
@@ -851,7 +860,14 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fh3MatchJetPts(0),
   fh3MatchJetEtas(0),
   fh3MatchJetDeltaRs(0),
-  fh1UnMatchJetPts(0)
+  fh1UnMatchJetPts(0),
+
+  fh2K0sMiss(0), 
+  fh3K0sRespMtx(0),
+  fh2LMiss(0), 
+  fh3LRespMtx(0),
+  fh2ALMiss(0),
+  fh3ALRespMtx(0)
 {
   for(Int_t i = 0; i < fgkiNQAIndeces; i++)
   {
@@ -2374,12 +2390,11 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListStdCascade->Add(fh1CascadeInvMassOmegaPlusAll[i]);
   }
   
-  Double_t jet_pT_bins[66] = {};
-  for (int i=0; i < 66; i++){
-    if (i< 10) jet_pT_bins[i] = -100.0 + i*10.0;
-    else if (i< 60) jet_pT_bins[i] = 0.0 + (i-10)*2.0;
-    else jet_pT_bins[i] = 100.0 + (i-60)*10.0; 
-    //size 10 GeV bins from -100 to 0, size 2 GeV bins from 0 to 100, size 10 GeV bins from 100 to 150
+  Double_t jet_pT_bins[56] = {};
+  for (int i=0; i < 56; i++){
+    if (i< 50) jet_pT_bins[i] = 0.0 + i*2.0;
+    else jet_pT_bins[i] = 100.0 + (i-50)*10.0; 
+    // size 2 GeV bins from 0 to 100, size 10 GeV bins from 100 to 150
   }
   Int_t n_jet_pT_bins = sizeof(jet_pT_bins)/sizeof(Double_t) - 1;
 
@@ -2407,6 +2422,13 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     deltaR_bins[i] = 0.0 + i*0.01;
   }
   Int_t n_deltaR_bins = sizeof(deltaR_bins)/sizeof(Double_t) - 1;
+
+  Double_t v0_jet_pT_bins[151] = {};
+  for (int i=0; i < 151; i++){
+    v0_jet_pT_bins[i] = 0.0 + 0.1*i;
+  }
+  Int_t n_v0_jet_pT_bins = sizeof(v0_jet_pT_bins)/sizeof(Double_t) - 1;
+
   if(fDoEmbedding){
     fh1EmbJetPt = new TH1D("fh1EmbJetPt", "Embedded Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
     fh1DetJetPt = new TH1D("fh1DetJetPt", "Detector level Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
@@ -2420,6 +2442,13 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh3MatchJetDeltaRs = new TH3D("fh3MatchJetDeltaRs", "Jet distances of matched jets; emb pt; det; part", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
     fh1UnMatchJetPts = new TH1D("fh1UnMatchJetPts", "Unmatched Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
 
+    fh2K0sMiss = new TH2D("fh2K0sMiss", "Miss: Part level K0 in part level jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet (GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2); 
+    fh3K0sRespMtx = new TH3D("fh3K0sRespMtx", "Part level K0 vs part level jet vs matched emb jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet gen (GeV/#it{c}); #it{p}_{T} jet emb(GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_jet_pT_bins, jet_pT_bins); 
+    fh2LMiss = new TH2D("fh2LMiss", "Miss: Part level Lambda in part level jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet (GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2); 
+    fh3LRespMtx = new TH3D("fh3LRespMtx", "Part level Lambda vs part level jet vs matched emb jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet gen (GeV/#it{c}); #it{p}_{T} jet emb(GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_jet_pT_bins, jet_pT_bins); 
+    fh2ALMiss = new TH2D("fh2ALMiss", "Miss: Part level ALambda in part level jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet (GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2); 
+    fh3ALRespMtx = new TH3D("fh3ALRespMtx", "Part level ALambda vs part level jet vs matched emb jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet gen (GeV/#it{c}); #it{p}_{T} jet emb(GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_jet_pT_bins, jet_pT_bins); 
+
     fOutputListMC->Add(fh1EmbJetPt);
     fOutputListMC->Add(fh1DetJetPt);
     fOutputListMC->Add(fh1PartJetPt);
@@ -2431,6 +2460,12 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListMC->Add(fh3MatchJetEtas); 
     fOutputListMC->Add(fh3MatchJetDeltaRs); 
     fOutputListMC->Add(fh1UnMatchJetPts); 
+    fOutputListMC->Add(fh2K0sMiss);
+    fOutputListMC->Add(fh3K0sRespMtx); 
+    fOutputListMC->Add(fh2LMiss); 
+    fOutputListMC->Add(fh3LRespMtx); 
+    fOutputListMC->Add(fh2ALMiss);  
+    fOutputListMC->Add(fh3ALRespMtx); 
 
     fh1V0K0sESPt = new TH1D("fh1V0K0sESPt", "Gen vs Part K0s pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 100, -1.0, 1.0);
     fh2V0K0DeltaEtaVsPt = new TH2D("fh2V0K0DeltaEtaVsPt", "K0s pt spectrumvs delta eta", 200, 0, 20, 200, -0.1, 0.1);
@@ -2736,6 +2771,9 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     if(fbCorrelations) printf("max |delta-eta_V0-jet|: %g\n", fdDeltaEtaMax);
     printf("pt correlations of jets with trigger tracks: %s\n", fbCompareTriggers ? "yes" : "no");
     printf("-------------------------------------------------------\n");
+    if(fDoEmbedding && fbSubtrRhoFromPartJet)
+      printf("fbSubtrRhoFromPartJet is on, rho will be subtracted from the particle level jet pt in V0-jet matching");
+      
     if(fJetsCont) {
       printf("Signal jet container parameters\n");
       printf("Jet R = %g\n", fJetsCont->GetJetRadius());
@@ -3198,13 +3236,13 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         //HERE is where the pT matching condition comes in
         GetMatchedJetObservables(jetSel, matchedJetPt_Det, matchedJetPt_Part, matchedJetPhi_Det, matchedJetEta_Det, matchedJetPhi_Part, matchedJetEta_Part, matchedJetDistance_Det, matchedJetDistance_Part);
 
-        fh3MatchJetPts->Fill(dPtJetCorr, matchedJetPt_Det, matchedJetPt_Part);
-        fh3MatchJetEtas->Fill(dEtaJetCorr, matchedJetEta_Det, matchedJetEta_Part);
-        fh3MatchJetDeltaRs->Fill(dPtJetCorr, matchedJetDistance_Det, matchedJetDistance_Part);
         
-        if(matchedJetPt_Part!=-0.1)
+        if(matchedJetPt_Part!=-0.1){
+          fh3MatchJetPts->Fill(dPtJetCorr, matchedJetPt_Det, matchedJetPt_Part);
+          fh3MatchJetEtas->Fill(dEtaJetCorr, matchedJetEta_Det, matchedJetEta_Part);
+          fh3MatchJetDeltaRs->Fill(dPtJetCorr, matchedJetDistance_Det, matchedJetDistance_Part);
           fh1JES->Fill((matchedJetPt_Part-dPtJetCorr)/matchedJetPt_Part);
-
+        }  
         if(matchedJetPt_Det==-0.1)
           fh1DetFakeJetPts->Fill(dPtJetCorr);
         if(matchedJetPt_Part==-0.1)
@@ -3398,6 +3436,55 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(!bV0MCIsPrimaryDist)
         continue;
       */
+
+      if(fDoEmbedding) {
+
+        AliEmcalJet* jetGen = 0;
+        for(Int_t iJet = 0; iJet < fJetsMCGenCont->GetNJets(); iJet++) {
+          jetGen = (AliEmcalJet*)(fJetsMCGenCont->GetAcceptJet(iJet));
+          if(!jetGen) continue;
+          Double_t dRhoGen = fJetsMCGenCont->GetRhoVal();
+          Double_t dpTGenSub = 0;
+          if(fbSubtrRhoFromPartJet)
+            dpTGenSub = jetGen->PtSub(dRhoGen); 
+          else   
+            dpTGenSub = jetGen->Pt();
+
+          if(IsParticleInCone(particleMC, jetGen, fdDistanceV0JetMax)) {
+
+            Double_t matchedJetPt_Det = -0.1;
+            Double_t matchedJetPt_Emb = -0.1;
+            Double_t matchedJetPhi_Det = -0.1;
+            Double_t matchedJetEta_Det = -1.1;
+            Double_t matchedJetPhi_Emb = -0.1;
+            Double_t matchedJetEta_Emb = -1.1;  
+            Double_t matchedJetDistance_Det = -0.1;
+            Double_t matchedJetDistance_Emb = -0.1;
+        
+            GetRevMatchedJetObservables(jetGen, matchedJetPt_Det, matchedJetPt_Emb, matchedJetPhi_Det, matchedJetEta_Det, matchedJetPhi_Emb, matchedJetEta_Emb, matchedJetDistance_Det, matchedJetDistance_Emb);
+
+            if(bV0MCIsK0s) {
+              if(matchedJetPt_Emb == -0.1)    
+                fh2K0sMiss->Fill(dPtV0Gen, dpTGenSub);   
+              else  
+                fh3K0sRespMtx->Fill(dPtV0Gen, dpTGenSub, matchedJetPt_Emb);   
+            }
+            if(bV0MCIsLambda) {
+              if(matchedJetPt_Emb == -0.1) 
+                fh2LMiss->Fill(dPtV0Gen, dpTGenSub);
+              else
+                fh3LRespMtx->Fill(dPtV0Gen, dpTGenSub, matchedJetPt_Emb); 
+            }
+            if(bV0MCIsALambda) {
+              if(matchedJetPt_Emb == -0.1) 
+                fh2ALMiss->Fill(dPtV0Gen, dpTGenSub);
+              else 
+                fh3ALRespMtx->Fill(dPtV0Gen, dpTGenSub, matchedJetPt_Emb);  
+            }
+            break;
+          }   
+        }
+      }
 
       // Check whether the MC V0 particle is in a MC jet
       AliAODJet* jetMC = 0;
@@ -6350,6 +6437,52 @@ void AliAnalysisTaskV0sInJetsEmcal::GetMatchedJetObservables(AliEmcalJet* jet, D
 
   return;
 }
+
+void AliAnalysisTaskV0sInJetsEmcal::GetRevMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& embJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& embJetPhi, Double_t& embJetEta, Double_t& detJetDistance, Double_t& embJetDistance)
+{
+  // inverted matching:
+  // particle -> detector -> hybrid
+  AliJetContainer * hybridJetCont = GetJetContainer("hybridLevelJets");
+  AliJetContainer * detJetCont    = GetJetContainer("detLevelJets");
+  AliJetContainer * partJetCont   = GetJetContainer("partLevelJets");
+
+  // particle to detector level matching
+  AliEmcalJet * jet2 = jet->ClosestJet();
+  if (!jet2) { return; }
+
+  Double_t ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
+
+  //Double_t fraction = partJetCont->GetFractionSharedPt(jet);
+  //if (fraction < fJetMatchingSharedPtFraction) { return; }
+
+  // detector to hybrid level matching
+  AliEmcalJet* jet3 = nullptr;
+
+  for(auto hybridJet : hybridJetCont->accepted()) {
+    if(!hybridJet) continue;
+    AliEmcalJet* detFromHybrid = hybridJet->ClosestJet();
+    if(detFromHybrid == jet2) {
+      jet3 = hybridJet;
+      break;
+    }
+  }
+  if(!jet3) return;
+
+  Double_t ptJet3 = jet3->Pt() - hybridJetCont->GetRhoVal() * jet3->Area();
+
+  // fill observables
+  detJetPt  = ptJet2;
+  embJetPt   = ptJet3;
+  detJetPhi = jet2->Phi();
+  embJetPhi  = jet3->Phi();
+  detJetEta = jet2->Eta();
+  embJetEta  = jet3->Eta();
+  detJetDistance = jet->DeltaR(jet2);
+  embJetDistance  = jet2->DeltaR(jet3);
+
+  return;
+}
+
 
 AliAODMCParticle* AliAnalysisTaskV0sInJetsEmcal::FindMatchedGeneratedV0(AliAODv0* v0, TClonesArray* arrayMC, Int_t pdgWanted, Double_t& dPtV0Gen, Double_t& dDeltaEta,  Double_t& dDeltaPhi, Double_t& ddeltaR)
 {
