@@ -184,6 +184,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     THnSparseF**                      sPtRDeltaROpenAngle;                          //!
     TH1I**                            fHistoMCHeaders;                                 //!
     TH1F**                            fHistoMCAllGammaPt;                              //!
+    TH2F**                            fHistoMCAllGammaMCPtMCEta;                       //!
     TH1F**                            fHistoMCAllGammaPtNotTriggered;                  //!
     TH1F**                            fHistoMCAllGammaPtNoVertex;                      //!
     TH2F**                            fHistoMCAllSecondaryGammaPt;                     //!
@@ -195,6 +196,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCDecayGammaPhiPt;                         //!
     TH1F**                            fHistoMCDecayGammaSigmaPt;                       //!
     TH1F**                            fHistoMCConvGammaPt;                             //!
+    TH2F**                            fHistoMCConvGammaMCPtMCEta;                      //!
     TH2F**                            fHistoMCSecondaryConvGammaPt;                    //!
     TH1F**                            fHistoMCConvGammaR;                              //!
     TH1F**                            fHistoMCConvGammaEta;                            //!
@@ -278,6 +280,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoCombinatorialPtDeltaPhi_pik;            //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_pip;            //!
     TH1F**                            fHistoTruePrimaryConvGammaPt;                 //!
+    TH2F**                            fHistoTruePrimaryConvGammaMCPtMCEta;          //!
     TH2F**                            fHistoTrueSecondaryConvGammaPt;                       //!
     TH2F**                            fHistoTrueSecondaryConvGammaMCPt;                     //!
     TH2F**                            fHistoTruePrimaryConvGammaESDPtMCPt;                  //!
