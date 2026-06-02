@@ -87,6 +87,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void UpdateEventByEventData();
     void SetLogBinningXTH2(TH2* histoRebin);
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
+    Float_t GetPhotonWeightFromMeson(AliAODMCParticle* photon);
+    Float_t GetPhotonWeightFromMeson(AliMCParticle* photon);
 
     // Additional functions
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
