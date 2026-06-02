@@ -309,6 +309,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fWeightCentrality(NULL),
   fEnableClusterCutsForTrigger(kFALSE),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoPhotonWeightsFromMesons(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
   fFileWasAlreadyReported(kFALSE),
@@ -680,6 +681,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fWeightCentrality(NULL),
   fEnableClusterCutsForTrigger(kFALSE),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoPhotonWeightsFromMesons(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
   fFileWasAlreadyReported(kFALSE),
@@ -5731,6 +5733,7 @@ void AliAnalysisTaskGammaConvV1::SetLogBinningXTH2(TH2* histoRebin){
 //_________________________________________________________________________________
 Float_t AliAnalysisTaskGammaConvV1::GetPhotonWeightFromMeson(AliAODMCParticle* photon)
 {
+  if (!fDoPhotonWeightsFromMesons) return 1.;
   if (!photon || !fAODMCTrackArray || !fMCEvent) return 1.;
 
   const AliVVertex* primVtxMC = fMCEvent->GetPrimaryVertex();
@@ -5757,6 +5760,7 @@ Float_t AliAnalysisTaskGammaConvV1::GetPhotonWeightFromMeson(AliAODMCParticle* p
 //_________________________________________________________________________________
 Float_t AliAnalysisTaskGammaConvV1::GetPhotonWeightFromMeson(AliMCParticle* photon)
 {
+  if (!fDoPhotonWeightsFromMesons) return 1.;
   if (!photon || !fMCEvent) return 1.;
 
   const AliVVertex* primVtxMC = fMCEvent->GetPrimaryVertex();

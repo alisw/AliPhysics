@@ -77,6 +77,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                                                   fClusterCutArray              = CutArray  ;}
 
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    void SetDoPhotonWeightsFromMesons(Bool_t flag) {fDoPhotonWeightsFromMesons = flag;}
 
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
@@ -376,6 +377,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
+    Bool_t                            fDoPhotonWeightsFromMesons;                 // enable photon weights from primary pi0/eta mothers
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
