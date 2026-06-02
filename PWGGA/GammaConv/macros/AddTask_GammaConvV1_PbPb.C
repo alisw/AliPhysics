@@ -211,6 +211,7 @@ void AddTask_GammaConvV1_PbPb(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(enableLightOutput);
+  task->SetDoPhotonWeightsFromMesons(theUseGetMesonWeightNew);
   if(enableBDT) task->SetFileNameBDT(fileNameBDT.Data());
 
   //****************************************************************************************************
