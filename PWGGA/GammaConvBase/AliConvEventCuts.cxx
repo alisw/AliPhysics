@@ -156,6 +156,9 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fPathTrFGammaReweighting(""),
   fNameHistoReweightingGamma(""),
   fNameDataHistoReweightingGamma(""),
+  fDoPhotonPtEtaWeighting(kFALSE),
+  fPathPhotonPtEtaWeights(""),
+  fNamePhotonPtEtaWeights(""),
   fLabelNamePileupCutTPC(""),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
@@ -182,6 +185,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fReweightMCHist_interpolate_Eta(NULL),
   hReweightMCHistGamma(NULL),
   hReweightDataHistGamma(NULL),
+  hPhotonPtEtaWeights(NULL),
   fAddedSignalPDGCode(0),
   fPreSelCut(kFALSE),
   fTriggerSelectedManually(kFALSE),
@@ -314,6 +318,9 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fPathTrFGammaReweighting(ref.fPathTrFGammaReweighting),
   fNameHistoReweightingGamma(ref.fNameHistoReweightingGamma),
   fNameDataHistoReweightingGamma(ref.fNameDataHistoReweightingGamma),
+  fDoPhotonPtEtaWeighting(ref.fDoPhotonPtEtaWeighting),
+  fPathPhotonPtEtaWeights(ref.fPathPhotonPtEtaWeights),
+  fNamePhotonPtEtaWeights(ref.fNamePhotonPtEtaWeights),
   fLabelNamePileupCutTPC(ref.fLabelNamePileupCutTPC),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
@@ -340,6 +347,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fReweightMCHist_interpolate_Eta(ref.fReweightMCHist_interpolate_Eta),
   hReweightMCHistGamma(ref.hReweightMCHistGamma),
   hReweightDataHistGamma(ref.hReweightDataHistGamma),
+  hPhotonPtEtaWeights(ref.hPhotonPtEtaWeights),
   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
   fPreSelCut(ref.fPreSelCut),
   fTriggerSelectedManually(ref.fTriggerSelectedManually),
@@ -461,6 +469,13 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   if (hReweightMCHistGamma){
     hReweightMCHistGamma->SetName("MCInputForWeightingGamma");
     fHistograms->Add(hReweightMCHistGamma);
+  }
+  if (hPhotonPtEtaWeights){
+    hPhotonPtEtaWeights->SetName(Form("UsedPhotonPtEtaWeights_%s", GetCutNumber().Data()));
+    hPhotonPtEtaWeights->SetTitle(Form("Used photon pT/eta weights from %s:%s",
+                                       fPathPhotonPtEtaWeights.Data(),
+                                       fNamePhotonPtEtaWeights.Data()));
+    fHistograms->Add(hPhotonPtEtaWeights);
   }
 
   // Persist precomputed bin-wise meson weights (if available).
@@ -1092,6 +1107,53 @@ void AliConvEventCuts::LoadGammaPtReweightingHistosMCFromFile() {
   delete f;
 }
 
+///________________________________________________________________________
+void AliConvEventCuts::LoadPhotonPtEtaWeightsFromFile() {
+
+  AliInfo("Entering loading of photon pT/eta weights");
+  if (!fDoPhotonPtEtaWeighting) return;
+  if (fPathPhotonPtEtaWeights.CompareTo("") == 0 || fNamePhotonPtEtaWeights.CompareTo("") == 0) {
+    AliError("Photon pT/eta weighting enabled, but file path or object name is empty");
+    return;
+  }
+
+  TFile *f = TFile::Open(fPathPhotonPtEtaWeights.Data());
+  if(!f || f->IsZombie()){
+    AliError(Form("file for photon pT/eta weighting %s not found", fPathPhotonPtEtaWeights.Data()));
+    if (f) {
+      f->Close();
+      delete f;
+    }
+    return;
+  }
+
+  TObject *objectPhotonPtEtaWeights = f->Get(fNamePhotonPtEtaWeights.Data());
+  if (!objectPhotonPtEtaWeights) {
+    AliError(Form("%s not found in %s", fNamePhotonPtEtaWeights.Data(), fPathPhotonPtEtaWeights.Data()));
+    f->Close();
+    delete f;
+    return;
+  }
+
+  if (!objectPhotonPtEtaWeights->InheritsFrom(TH2::Class())) {
+    AliError(Form("%s in %s is not a TH2", fNamePhotonPtEtaWeights.Data(), fPathPhotonPtEtaWeights.Data()));
+    f->Close();
+    delete f;
+    return;
+  }
+
+  hPhotonPtEtaWeights = static_cast<TH2*>(objectPhotonPtEtaWeights->Clone(
+      Form("%s_%s", fNamePhotonPtEtaWeights.Data(), GetCutNumber().Data())));
+  if (hPhotonPtEtaWeights) {
+    hPhotonPtEtaWeights->SetDirectory(0);
+    AliInfo(Form("%s has been loaded from %s as TH2 photon pT/eta weights",
+                 fNamePhotonPtEtaWeights.Data(), fPathPhotonPtEtaWeights.Data()));
+  }
+
+  f->Close();
+  delete f;
+}
+
 //________________________________________________________________________
 int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 {
@@ -1320,6 +1382,16 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
   if(fDoReweightHistoMCGamma) {
     AliInfo("Gamma pT Weighting was enabled");
     LoadGammaPtReweightingHistosMCFromFile();
+  }
+
+  if(fDoPhotonPtEtaWeighting) {
+    AliInfo("Photon pT/eta Weighting was enabled");
+    LoadPhotonPtEtaWeightsFromFile();
+    if (!hPhotonPtEtaWeights) {
+      AliError(Form("Photon pT/eta weighting was requested, but %s could not be loaded as TH2 from %s",
+                    fNamePhotonPtEtaWeights.Data(), fPathPhotonPtEtaWeights.Data()));
+      return kFALSE;
+    }
   }
 
   AliInfo(Form("Set Event Cut Number: %s",analysisCutSelection.Data()));
@@ -8213,6 +8285,33 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
   }
 
   return weightMult;
+}
+
+//_________________________________________________________________________
+Float_t AliConvEventCuts::GetPhotonPtEtaWeightForFlatInjectedMesons(Double_t photonPt, Double_t photonEta) const {
+
+  if (!fDoPhotonPtEtaWeighting) return 1.;
+
+  if (!hPhotonPtEtaWeights) return 1.;
+
+  const TAxis *axisPt = hPhotonPtEtaWeights->GetXaxis();
+  const TAxis *axisEta = hPhotonPtEtaWeights->GetYaxis();
+  if (!axisPt || !axisEta) return 1.;
+  if (photonPt < axisPt->GetXmin() || photonPt > axisPt->GetXmax() ||
+      photonEta < axisEta->GetXmin() || photonEta > axisEta->GetXmax()) return 1.;
+
+  Double_t weight = hPhotonPtEtaWeights->Interpolate(photonPt, photonEta);
+  if (weight <= 0.) {
+    const Int_t binPt = axisPt->FindBin(photonPt);
+    const Int_t binEta = axisEta->FindBin(photonEta);
+    if (binPt >= 1 && binPt <= axisPt->GetNbins() &&
+        binEta >= 1 && binEta <= axisEta->GetNbins()) {
+      weight = hPhotonPtEtaWeights->GetBinContent(binPt, binEta);
+    }
+  }
+
+  if (weight <= 0. || !isfinite(weight)) return 1.;
+  return static_cast<Float_t>(weight);
 }
 
 //_________________________________________________________________________

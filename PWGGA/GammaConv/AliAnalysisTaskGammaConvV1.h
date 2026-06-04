@@ -77,7 +77,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                                                   fClusterCutArray              = CutArray  ;}
 
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
-    void SetDoPhotonWeightsFromMesons(Bool_t flag) {fDoPhotonWeightsFromMesons = flag;}
+    void SetDoPhotonWeights(Int_t mode) {fDoPhotonWeights = mode;}
 
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
@@ -88,8 +88,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void UpdateEventByEventData();
     void SetLogBinningXTH2(TH2* histoRebin);
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
+    Float_t GetPhotonWeight(AliAODMCParticle* photon);
     Float_t GetPhotonWeightFromMeson(AliAODMCParticle* photon);
-    Float_t GetPhotonWeightFromMeson(AliMCParticle* photon);
+    Float_t GetPhotonPtEtaWeightForFlatInjectedMesons(AliAODMCParticle* photon);
 
     // Additional functions
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
@@ -377,7 +378,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
-    Bool_t                            fDoPhotonWeightsFromMesons;                 // enable photon weights from primary pi0/eta mothers
+    Int_t                             fDoPhotonWeights;                          // 0 off, 1 meson weights only, 2 current gamma-from-meson weights, 3 photon pt-eta weights for flat injected mesons
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
@@ -531,7 +532,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 74);
+    ClassDef(AliAnalysisTaskGammaConvV1, 75);
 };
 
 #endif

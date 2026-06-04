@@ -39,7 +39,7 @@ void AddTask_GammaConvV1_PbPb(
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
 
-  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model] 
+  // FPTW:fileNamePtWeights, FGAW:fileNameGammaPtEtaWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model]
  
   TString   fileNameExternalInputs        = "",
   Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
@@ -58,7 +58,7 @@ void AddTask_GammaConvV1_PbPb(
   Bool_t    enableChargedPrimary          = kFALSE,
   Bool_t    enablePlotVsCentrality        = kFALSE,
   Bool_t    processAODcheckForV0s         = kFALSE,   // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
-  bool      theUseGetMesonWeightNew       = false,
+  Int_t     theUseGetMesonWeightNew       = 0,        // 0 = off, 1 = new meson weights only, 2 = current gamma-from-meson weights, 3 = photon pt-eta weights for flat injected mesons
   // subwagon config
   TString   additionalTrainConfig         = "0")       // additional counter for trainconfig + special settings
   {
@@ -67,6 +67,7 @@ void AddTask_GammaConvV1_PbPb(
 
   Int_t isHeavyIon                    = 1;
   TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameGammaPtEtaWeights   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FGAW:");
   TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
   TString fileNameMatBudWeights       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
   TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
@@ -202,6 +203,31 @@ void AddTask_GammaConvV1_PbPb(
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
 
+  if (theUseGetMesonWeightNew == 3) {
+    const Bool_t isAllowedPhotonPtEtaWeightProduction =
+        periodNameV0Reader.BeginsWith("LHC20g10") ||
+        periodNameV0Reader.BeginsWith("LHC24a2")  ||
+        generatorName.BeginsWith("LHC20g10")      ||
+        generatorName.BeginsWith("LHC24a2");
+    if (!isAllowedPhotonPtEtaWeightProduction) {
+      Error(Form("AddTask_GammaConvV1_PbPb_%i", trainConfig),
+            "theUseGetMesonWeightNew=3 is only supported for LHC20g10 and LHC24a2 AddedSignal productions");
+      return;
+    }
+    if (fileNameGammaPtEtaWeights.CompareTo("") == 0) {
+      cout << "ERROR: theUseGetMesonWeightNew=3 requires FGAW:<file> in fileNameExternalInputs" << endl;
+      Error(Form("AddTask_GammaConvV1_PbPb_%i", trainConfig),
+            "theUseGetMesonWeightNew=3 requires FGAW:<file> in fileNameExternalInputs");
+      return;
+    }
+    if (gSystem->AccessPathName(fileNameGammaPtEtaWeights.Data())) {
+      cout << "ERROR: FGAW file not found: " << fileNameGammaPtEtaWeights.Data() << endl;
+      Error(Form("AddTask_GammaConvV1_PbPb_%i", trainConfig),
+            "FGAW file not found: %s", fileNameGammaPtEtaWeights.Data());
+      return;
+    }
+  }
+
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
@@ -211,7 +237,7 @@ void AddTask_GammaConvV1_PbPb(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(enableLightOutput);
-  task->SetDoPhotonWeightsFromMesons(theUseGetMesonWeightNew);
+  task->SetDoPhotonWeights(theUseGetMesonWeightNew);
   if(enableBDT) task->SetFileNameBDT(fileNameBDT.Data());
 
   //****************************************************************************************************
@@ -5352,7 +5378,14 @@ void AddTask_GammaConvV1_PbPb(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
-    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+    if (theUseGetMesonWeightNew == 3) {
+      analysisEventCuts[i]->SetUsePhotonPtEtaWeightsFromFile(kTRUE, fileNameGammaPtEtaWeights, "hPhotonPtEtaWeight");
+    }
+    if (!analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data())) {
+      Error(Form("AddTask_GammaConvV1_PbPb_%i", trainConfig),
+            "Event cut initialization failed for cut %s", (cuts.GetEventCut(i)).Data());
+      return;
+    }
     if (generatorName.CompareTo("LHC14a1b") ==0 || generatorName.CompareTo("LHC14a1c") ==0 ){
       if (acceptedAddedParticles == 1 || acceptedAddedParticles == 4 || acceptedAddedParticles == 12 ) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
       if (acceptedAddedParticles == 2 || acceptedAddedParticles == 5 || acceptedAddedParticles == 13 ) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
