@@ -239,7 +239,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fJetMatchingSharedPtFraction(0.5),
   fdCutMaxEmbV0DeltaR(0.03),
   fdCutMaxEmbV0RelPt(1.),
-  fbSubtrRhoFromPartJet(kTRUE),
+  fbSubtrRhoFromMCJets(kFALSE),
 
   fh1V0K0sESPt(0),
   fh2V0K0DeltaEtaVsPt(0),
@@ -269,7 +269,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fh3MatchJetPts(0),
   fh3MatchJetEtas(0),
   fh3MatchJetDeltaRs(0),
-  fh1UnMatchJetPts(0),
+  fh1MissJetPt(0),
 
   fh2K0sMiss(0), 
   fh3K0sRespMtx(0),
@@ -830,7 +830,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fJetMatchingSharedPtFraction(0.5),
   fdCutMaxEmbV0DeltaR(0.03),
   fdCutMaxEmbV0RelPt(1.),
-  fbSubtrRhoFromPartJet(kTRUE),
+  fbSubtrRhoFromMCJets(kFALSE),
 
   fh1V0K0sESPt(0),
   fh2V0K0DeltaEtaVsPt(0),
@@ -860,7 +860,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fh3MatchJetPts(0),
   fh3MatchJetEtas(0),
   fh3MatchJetDeltaRs(0),
-  fh1UnMatchJetPts(0),
+  fh1MissJetPt(0),
 
   fh2K0sMiss(0), 
   fh3K0sRespMtx(0),
@@ -2440,7 +2440,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh3MatchJetPts = new TH3D("fh3MatchJetPts", "Jet pts of matched jets; emb; det; part", n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins2,jet_pT_bins2,n_jet_pT_bins2,jet_pT_bins2);
     fh3MatchJetEtas = new TH3D("fh3MatchJetEtas", "Jet etas of matched jets; emb; det; part", n_eta_bins,eta_bins,n_eta_bins,eta_bins,n_eta_bins,eta_bins);
     fh3MatchJetDeltaRs = new TH3D("fh3MatchJetDeltaRs", "Jet distances of matched jets; emb pt; det; part", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
-    fh1UnMatchJetPts = new TH1D("fh1UnMatchJetPts", "Unmatched Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
+    fh1MissJetPt = new TH1D("fh1MissJetPt", "Miss Jet pt spectrum;#it{p}_{T} jet (GeV/#it{c})", 75, 0.0, 150.0);
 
     fh2K0sMiss = new TH2D("fh2K0sMiss", "Miss: Part level K0 in part level jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet (GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2); 
     fh3K0sRespMtx = new TH3D("fh3K0sRespMtx", "Part level K0 vs part level jet vs matched emb jet;V^{0} #it{p}_{T} (GeV/#it{c}); #it{p}_{T} jet gen (GeV/#it{c}); #it{p}_{T} jet emb(GeV/#it{c})", n_v0_jet_pT_bins, v0_jet_pT_bins, n_jet_pT_bins2,jet_pT_bins2, n_jet_pT_bins, jet_pT_bins); 
@@ -2459,7 +2459,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListMC->Add(fh3MatchJetPts); 
     fOutputListMC->Add(fh3MatchJetEtas); 
     fOutputListMC->Add(fh3MatchJetDeltaRs); 
-    fOutputListMC->Add(fh1UnMatchJetPts); 
+    fOutputListMC->Add(fh1MissJetPt); 
     fOutputListMC->Add(fh2K0sMiss);
     fOutputListMC->Add(fh3K0sRespMtx); 
     fOutputListMC->Add(fh2LMiss); 
@@ -2771,8 +2771,8 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     if(fbCorrelations) printf("max |delta-eta_V0-jet|: %g\n", fdDeltaEtaMax);
     printf("pt correlations of jets with trigger tracks: %s\n", fbCompareTriggers ? "yes" : "no");
     printf("-------------------------------------------------------\n");
-    if(fDoEmbedding && fbSubtrRhoFromPartJet)
-      printf("fbSubtrRhoFromPartJet is on, rho will be subtracted from the particle level jet pt in V0-jet matching");
+    if(fDoEmbedding && fbSubtrRhoFromMCJets)
+      printf("fbSubtrRhoFromMCJets is on, rho will be subtracted from the particle level jet pt in V0-jet matching");
       
     if(fJetsCont) {
       printf("Signal jet container parameters\n");
@@ -3151,7 +3151,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(!jetDet) continue;
       Double_t RhoDet = fJetsMCDetCont->GetRhoVal();
       Double_t PtDet = jetDet->Pt();
-      PtDet = jetDet->PtSub(RhoDet);
+      if(fbSubtrRhoFromMCJets)
+        PtDet = jetDet->PtSub(RhoDet);
       if(fdCutPtJetMin > 0. && PtDet < fdCutPtJetMin)// selection of high-pt jets, needs to be applied on the pt after bg subtraction
         continue;
       fh1DetJetPt->Fill(PtDet);
@@ -3163,11 +3164,26 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(!jetPart) continue;
       Double_t RhoPart = fJetsMCGenCont->GetRhoVal();
       Double_t PtPart = jetPart->Pt();
-      PtPart = jetPart->PtSub(RhoPart);
+      if(fbSubtrRhoFromMCJets)
+        PtPart = jetPart->PtSub(RhoPart);
       if(fdCutPtJetMin > 0. && PtPart < fdCutPtJetMin)// selection of high-pt jets, needs to be applied on the pt after bg subtraction
         continue;
       fh1PartJetPt->Fill(PtPart);
-     } 
+      
+      Double_t detPt = -999.0;
+      Double_t embPt = -999.0;
+      Double_t detPhi = -999.0;
+      Double_t detEta = -999.0;
+      Double_t embPhi = -999.0;
+      Double_t embEta = -999.0;
+      Double_t detDistance = -999.0;
+      Double_t embDistance = -999.0;
+      GetRevMatchedJetObservables(jetPart, detPt, embPt, detPhi, detEta, embPhi, embEta, detDistance, embDistance);
+    
+      if(embPt == -999.0 || embPt < fdCutPtJetMin) 
+        fh1MissJetPt->Fill(PtPart);
+    
+    } 
   }
 
   // select good jets and copy them to another array
@@ -3216,16 +3232,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Jet %d with pt %g passed selection", iJet, dPtJetCorr));
 
       if(fDoEmbedding){
-        
+
         fh1EmbJetPt->Fill(dPtJetCorr);
-        Double_t matchedJetDistance_Det = -0.1;
-        Double_t matchedJetPt_Det = -0.1;
-        Double_t matchedJetEta_Det = -1.1;
-        Double_t matchedJetPhi_Det = -0.1;
-        Double_t matchedJetDistance_Part = -0.1;
-        Double_t matchedJetPt_Part = -0.1;
-        Double_t matchedJetEta_Part = -1.1;
-        Double_t matchedJetPhi_Part = -0.1;
+        Double_t matchedJetDistance_Det = -999.0;
+        Double_t matchedJetPt_Det = -999.0;
+        Double_t matchedJetEta_Det = -999.0;
+        Double_t matchedJetPhi_Det = -999.0;
+        Double_t matchedJetDistance_Part = -999.0;
+        Double_t matchedJetPt_Part = -999.0;
+        Double_t matchedJetEta_Part = -999.0;
+        Double_t matchedJetPhi_Part = -999.0;
         Double_t truePtFraction = 0;
         Double_t truePtFraction_PartLevel = 0;
 
@@ -3236,22 +3252,16 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         //HERE is where the pT matching condition comes in
         GetMatchedJetObservables(jetSel, matchedJetPt_Det, matchedJetPt_Part, matchedJetPhi_Det, matchedJetEta_Det, matchedJetPhi_Part, matchedJetEta_Part, matchedJetDistance_Det, matchedJetDistance_Part);
 
-        
-        if(matchedJetPt_Part!=-0.1){
+        if(matchedJetPt_Part != -999.0){
           fh3MatchJetPts->Fill(dPtJetCorr, matchedJetPt_Det, matchedJetPt_Part);
           fh3MatchJetEtas->Fill(dEtaJetCorr, matchedJetEta_Det, matchedJetEta_Part);
           fh3MatchJetDeltaRs->Fill(dPtJetCorr, matchedJetDistance_Det, matchedJetDistance_Part);
           fh1JES->Fill((matchedJetPt_Part-dPtJetCorr)/matchedJetPt_Part);
         }  
-        if(matchedJetPt_Det==-0.1)
+        if(matchedJetPt_Det == -999.0)
           fh1DetFakeJetPts->Fill(dPtJetCorr);
-        if(matchedJetPt_Part==-0.1)
+        if(matchedJetPt_Part == -999.0)
           fh1FakeJetPts->Fill(dPtJetCorr);
-
-        if (matchedJetPt_Det==-0.1 || matchedJetPt_Part==-0.1) {
-          if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "THIS JET WASNT MATCHED");
-          fh1UnMatchJetPts->Fill(dPtJetCorr);
-        }
       }
 
       vecJetSel.SetPtEtaPhiM(dPtJetCorr, dEtaJetCorr, dPhiJetCorr, 0.);
@@ -3445,38 +3455,38 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           if(!jetGen) continue;
           Double_t dRhoGen = fJetsMCGenCont->GetRhoVal();
           Double_t dpTGenSub = 0;
-          if(fbSubtrRhoFromPartJet)
+          if(fbSubtrRhoFromMCJets)
             dpTGenSub = jetGen->PtSub(dRhoGen); 
           else   
             dpTGenSub = jetGen->Pt();
 
           if(IsParticleInCone(particleMC, jetGen, fdDistanceV0JetMax)) {
 
-            Double_t matchedJetPt_Det = -0.1;
-            Double_t matchedJetPt_Emb = -0.1;
-            Double_t matchedJetPhi_Det = -0.1;
-            Double_t matchedJetEta_Det = -1.1;
-            Double_t matchedJetPhi_Emb = -0.1;
-            Double_t matchedJetEta_Emb = -1.1;  
-            Double_t matchedJetDistance_Det = -0.1;
-            Double_t matchedJetDistance_Emb = -0.1;
+            Double_t matchedJetPt_Det = -999.0;
+            Double_t matchedJetPt_Emb = -999.0;
+            Double_t matchedJetPhi_Det = -999.0;
+            Double_t matchedJetEta_Det = -999.0;
+            Double_t matchedJetPhi_Emb = -999.0;
+            Double_t matchedJetEta_Emb = -999.0;  
+            Double_t matchedJetDistance_Det = -999.0;
+            Double_t matchedJetDistance_Emb = -999.0;
         
             GetRevMatchedJetObservables(jetGen, matchedJetPt_Det, matchedJetPt_Emb, matchedJetPhi_Det, matchedJetEta_Det, matchedJetPhi_Emb, matchedJetEta_Emb, matchedJetDistance_Det, matchedJetDistance_Emb);
 
-            if(bV0MCIsK0s) {
-              if(matchedJetPt_Emb == -0.1)    
+            if(bV0MCIsK0s) { 
+              if(matchedJetPt_Emb == -999.0 || matchedJetPt_Emb < fdCutPtJetMin)    
                 fh2K0sMiss->Fill(dPtV0Gen, dpTGenSub);   
               else  
                 fh3K0sRespMtx->Fill(dPtV0Gen, dpTGenSub, matchedJetPt_Emb);   
             }
             if(bV0MCIsLambda) {
-              if(matchedJetPt_Emb == -0.1) 
+              if(matchedJetPt_Emb == -999.0 || matchedJetPt_Emb < fdCutPtJetMin) 
                 fh2LMiss->Fill(dPtV0Gen, dpTGenSub);
               else
                 fh3LRespMtx->Fill(dPtV0Gen, dpTGenSub, matchedJetPt_Emb); 
             }
             if(bV0MCIsALambda) {
-              if(matchedJetPt_Emb == -0.1) 
+              if(matchedJetPt_Emb == -999.0 || matchedJetPt_Emb < fdCutPtJetMin) 
                 fh2ALMiss->Fill(dPtV0Gen, dpTGenSub);
               else 
                 fh3ALRespMtx->Fill(dPtV0Gen, dpTGenSub, matchedJetPt_Emb);  
@@ -6407,7 +6417,10 @@ void AliAnalysisTaskV0sInJetsEmcal::GetMatchedJetObservables(AliEmcalJet* jet, D
   // hybrid to detector level matching 
   AliEmcalJet * jet2 = jet->ClosestJet();
   if (!jet2) { return;}// if there is no match return.
-  Double_t ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
+  
+  Double_t ptJet2 = jet2->Pt();
+  if(fbSubtrRhoFromMCJets) 
+    ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
   // This will retrieve the fraction of jet2's momentum in jet1.
   Double_t fraction = hybridJetCont->GetFractionSharedPt(jet); //jet is emb jet
   if (fraction < fJetMatchingSharedPtFraction) { return; }
@@ -6422,7 +6435,10 @@ void AliAnalysisTaskV0sInJetsEmcal::GetMatchedJetObservables(AliEmcalJet* jet, D
   // detector to particle matching
   AliEmcalJet * jet3 = jet2->ClosestJet();
   if(!jet3){return;}
-  Double_t ptJet3 = jet3->Pt() - partJetCont->GetRhoVal() * jet3->Area(); 
+  
+  Double_t ptJet3 = jet3->Pt();//  
+  if(fbSubtrRhoFromMCJets) 
+    ptJet3 = jet3->Pt() - partJetCont->GetRhoVal() * jet3->Area();
   // make no fraction cut on the detector to particle
 
   // if we are doing particle level matching, require that there is both a particle and detector level match
@@ -6450,10 +6466,11 @@ void AliAnalysisTaskV0sInJetsEmcal::GetRevMatchedJetObservables(AliEmcalJet* jet
   AliEmcalJet * jet2 = jet->ClosestJet();
   if (!jet2) { return; }
 
-  Double_t ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
-
-  //Double_t fraction = partJetCont->GetFractionSharedPt(jet);
-  //if (fraction < fJetMatchingSharedPtFraction) { return; }
+  Double_t ptJet2 = jet2->Pt();
+   
+  if(fbSubtrRhoFromMCJets)
+    ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
+  
 
   // detector to hybrid level matching
   AliEmcalJet* jet3 = nullptr;
@@ -6462,6 +6479,9 @@ void AliAnalysisTaskV0sInJetsEmcal::GetRevMatchedJetObservables(AliEmcalJet* jet
     if(!hybridJet) continue;
     AliEmcalJet* detFromHybrid = hybridJet->ClosestJet();
     if(detFromHybrid == jet2) {
+      Double_t fraction = hybridJetCont->GetFractionSharedPt(hybridJet);
+      if(fraction < fJetMatchingSharedPtFraction)
+        continue;
       jet3 = hybridJet;
       break;
     }

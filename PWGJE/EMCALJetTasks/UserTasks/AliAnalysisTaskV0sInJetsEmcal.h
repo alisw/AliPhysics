@@ -187,7 +187,7 @@ public:
   void   SetJetMatchingSharedPtFraction(Double_t val)        { fJetMatchingSharedPtFraction = val; }
   void   SetCutMaxEmbV0DeltaR(Double_t val)                  { fdCutMaxEmbV0DeltaR = val; }
   void   SetCutMaxEmbV0RelPt(Double_t val)                   { fdCutMaxEmbV0RelPt = val; }
-  void   SetSubtrRhoFromPartJet(Bool_t val)                  { fbSubtrRhoFromPartJet = val;}                                     
+  void   SetSubtrRhoFromPartJet(Bool_t val)                  { fbSubtrRhoFromMCJets = val;}                                     
   Double_t  GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
   {
     Double_t deltaPhi = TMath::Min(TMath::Abs(phi1-phi2),TMath::TwoPi() - TMath::Abs(phi1-phi2));
@@ -843,7 +843,7 @@ private:
   Double_t            fJetMatchingSharedPtFraction; ///< Shared pT fraction required in matching
   Double_t            fdCutMaxEmbV0DeltaR;      ///< Max Delta R between matched V0s cut
   Double_t            fdCutMaxEmbV0RelPt;       ///< Max relative Pt between matched V0s cut
-  Bool_t              fbSubtrRhoFromPartJet;     ///< subtract rho from the partcle level jet when filling V0 embedding plot
+  Bool_t              fbSubtrRhoFromMCJets;     ///< subtract rho from the partcle level jet when filling V0 embedding plot
 
   TH1D* fh1V0K0sESPt; //!
   TH2D* fh2V0K0DeltaEtaVsPt; //!
@@ -873,7 +873,7 @@ private:
   TH3D* fh3MatchJetPts; //! fHist_MatchJetPts
   TH3D* fh3MatchJetEtas; //! fHist_MatchJetEtas
   TH3D* fh3MatchJetDeltaRs; //! fHist_MatchJetDeltaRs
-  TH1D* fh1UnMatchJetPts;  //!  
+  TH1D* fh1MissJetPt;  //!  
 
   TH2D* fh2K0sMiss;  //! 
   TH3D* fh3K0sRespMtx; //!
