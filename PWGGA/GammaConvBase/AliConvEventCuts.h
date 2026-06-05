@@ -28,6 +28,7 @@
 class AliESDEvent;
 class AliAODEvent;
 class TH1F;
+class TH2;
 class TH2F;
 class TProfile;
 class TF1;
@@ -582,6 +583,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameHistoReweightingGamma = histoNameGamma               ;
                                                                                       fNameDataHistoReweightingGamma = histoDataNameGamma       ;
                                                                                     }
+      void    SetUsePhotonPtEtaWeightsFromFile( Bool_t doWeighting=kTRUE,
+                                                 TString path="",
+                                                 TString objectName="")
+                                                                                    {
+                                                                                      AliInfo(Form("enabled photon pT/eta weights from file: %s, object: %s",
+                                                                                                   path.Data(), objectName.Data()));
+                                                                                      fDoPhotonPtEtaWeighting = doWeighting                     ;
+                                                                                      fPathPhotonPtEtaWeights = path                            ;
+                                                                                      fNamePhotonPtEtaWeights = objectName                      ;
+                                                                                    }
 
       void    SetMinFacPtHard(Float_t value)                                        { fMinFacPtHard = value                                     ;
                                                                                       AliInfo(Form("minimum factor between pt hard and jet put to: %2.2f",fMinFacPtHard));
@@ -642,6 +653,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetPhotonPtEtaWeightForFlatInjectedMesons(Double_t photonPt, Double_t photonEta) const;
       Float_t   GetWeightForHeavyNeutralMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
@@ -715,6 +727,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
       void    LoadGammaPtReweightingHistosMCFromFile ();
+      void    LoadPhotonPtEtaWeightsFromFile ();
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
@@ -841,6 +854,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fPathTrFGammaReweighting;               ///< Path for file used in gamma reweighting
       TString                     fNameHistoReweightingGamma;             ///< Histogram name for reweighting Gamma
       TString                     fNameDataHistoReweightingGamma;         ///< Histogram Data name for reweighting Gamma
+      Bool_t                      fDoPhotonPtEtaWeighting;                ///< Flag for photon pT/eta weighting from external object
+      TString                     fPathPhotonPtEtaWeights;                ///< Path for file used in photon pT/eta weighting
+      TString                     fNamePhotonPtEtaWeights;                ///< Name of TH2 used for photon pT/eta weighting
       TString                     fLabelNamePileupCutTPC;                 //<  Label for NEvents histograms depending on pileup cut used
 
       // Histograms
@@ -869,6 +885,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fReweightMCHist_interpolate_Eta;        ///< a tf1 that interpolates the MC Eta spectrum
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
       TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
+      TH2*                        hPhotonPtEtaWeights;                    ///< photon pT/eta weight map
       Int_t                       fAddedSignalPDGCode;
       Bool_t                      fPreSelCut;                             // Flag for preselection cut used in V0Reader
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
@@ -932,7 +949,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,102)
+      ClassDef(AliConvEventCuts,103)
       /// \endcond
 };
 
