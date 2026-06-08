@@ -378,7 +378,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
-    Int_t                             fDoPhotonWeights;                          // 0 off, 1 meson weights only, 2 current gamma-from-meson weights, 3 photon pt-eta weights for flat injected mesons
+    Int_t                             fDoPhotonWeights;                          // 0 off, 1 pt meson weights only, 2 pt*pt-y meson weights + gamma-from-meson, 3 pt meson weights if configured + photon pt-eta, 4 pt*pt-y meson weights only
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
