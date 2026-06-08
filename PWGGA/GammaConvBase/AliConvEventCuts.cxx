@@ -159,6 +159,10 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fDoPhotonPtEtaWeighting(kFALSE),
   fPathPhotonPtEtaWeights(""),
   fNamePhotonPtEtaWeights(""),
+  fDoMesonPtYWeighting(kFALSE),
+  fPathMesonPtYWeights(""),
+  fNameMesonPtYWeightsPi0(""),
+  fNameMesonPtYWeightsEta(""),
   fLabelNamePileupCutTPC(""),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
@@ -186,6 +190,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hReweightMCHistGamma(NULL),
   hReweightDataHistGamma(NULL),
   hPhotonPtEtaWeights(NULL),
+  hMesonPtYWeightsPi0(NULL),
+  hMesonPtYWeightsEta(NULL),
   fAddedSignalPDGCode(0),
   fPreSelCut(kFALSE),
   fTriggerSelectedManually(kFALSE),
@@ -321,6 +327,10 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fDoPhotonPtEtaWeighting(ref.fDoPhotonPtEtaWeighting),
   fPathPhotonPtEtaWeights(ref.fPathPhotonPtEtaWeights),
   fNamePhotonPtEtaWeights(ref.fNamePhotonPtEtaWeights),
+  fDoMesonPtYWeighting(ref.fDoMesonPtYWeighting),
+  fPathMesonPtYWeights(ref.fPathMesonPtYWeights),
+  fNameMesonPtYWeightsPi0(ref.fNameMesonPtYWeightsPi0),
+  fNameMesonPtYWeightsEta(ref.fNameMesonPtYWeightsEta),
   fLabelNamePileupCutTPC(ref.fLabelNamePileupCutTPC),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
@@ -348,6 +358,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hReweightMCHistGamma(ref.hReweightMCHistGamma),
   hReweightDataHistGamma(ref.hReweightDataHistGamma),
   hPhotonPtEtaWeights(ref.hPhotonPtEtaWeights),
+  hMesonPtYWeightsPi0(ref.hMesonPtYWeightsPi0),
+  hMesonPtYWeightsEta(ref.hMesonPtYWeightsEta),
   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
   fPreSelCut(ref.fPreSelCut),
   fTriggerSelectedManually(ref.fTriggerSelectedManually),
@@ -476,6 +488,20 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
                                        fPathPhotonPtEtaWeights.Data(),
                                        fNamePhotonPtEtaWeights.Data()));
     fHistograms->Add(hPhotonPtEtaWeights);
+  }
+  if (hMesonPtYWeightsPi0){
+    hMesonPtYWeightsPi0->SetName(Form("UsedMesonPtYWeightsPi0_%s", GetCutNumber().Data()));
+    hMesonPtYWeightsPi0->SetTitle(Form("Used pi0 pT-y weights from %s:%s",
+                                       fPathMesonPtYWeights.Data(),
+                                       fNameMesonPtYWeightsPi0.Data()));
+    fHistograms->Add(hMesonPtYWeightsPi0);
+  }
+  if (hMesonPtYWeightsEta){
+    hMesonPtYWeightsEta->SetName(Form("UsedMesonPtYWeightsEta_%s", GetCutNumber().Data()));
+    hMesonPtYWeightsEta->SetTitle(Form("Used eta pT-y weights from %s:%s",
+                                       fPathMesonPtYWeights.Data(),
+                                       fNameMesonPtYWeightsEta.Data()));
+    fHistograms->Add(hMesonPtYWeightsEta);
   }
 
   // Persist precomputed bin-wise meson weights (if available).
@@ -1154,6 +1180,67 @@ void AliConvEventCuts::LoadPhotonPtEtaWeightsFromFile() {
   delete f;
 }
 
+///________________________________________________________________________
+void AliConvEventCuts::LoadMesonPtYWeightsFromFile() {
+
+  AliInfo("Entering loading of meson pT-y weights");
+  if (!fDoMesonPtYWeighting) return;
+  if (fPathMesonPtYWeights.CompareTo("") == 0 ||
+      fNameMesonPtYWeightsPi0.CompareTo("") == 0 ||
+      fNameMesonPtYWeightsEta.CompareTo("") == 0) {
+    AliError("Meson pT-y weighting enabled, but file path or object name is empty");
+    return;
+  }
+
+  TFile *f = TFile::Open(fPathMesonPtYWeights.Data());
+  if(!f || f->IsZombie()){
+    AliError(Form("file for meson pT-y weighting %s not found", fPathMesonPtYWeights.Data()));
+    if (f) {
+      f->Close();
+      delete f;
+    }
+    return;
+  }
+
+  TObject *objectMesonPtYWeightsPi0 = f->Get(fNameMesonPtYWeightsPi0.Data());
+  TObject *objectMesonPtYWeightsEta = f->Get(fNameMesonPtYWeightsEta.Data());
+  if (!objectMesonPtYWeightsPi0 || !objectMesonPtYWeightsEta) {
+    AliError(Form("%s or %s not found in %s",
+                  fNameMesonPtYWeightsPi0.Data(),
+                  fNameMesonPtYWeightsEta.Data(),
+                  fPathMesonPtYWeights.Data()));
+    f->Close();
+    delete f;
+    return;
+  }
+
+  if (!objectMesonPtYWeightsPi0->InheritsFrom(TH2::Class()) ||
+      !objectMesonPtYWeightsEta->InheritsFrom(TH2::Class())) {
+    AliError(Form("%s or %s in %s is not a TH2",
+                  fNameMesonPtYWeightsPi0.Data(),
+                  fNameMesonPtYWeightsEta.Data(),
+                  fPathMesonPtYWeights.Data()));
+    f->Close();
+    delete f;
+    return;
+  }
+
+  hMesonPtYWeightsPi0 = static_cast<TH2*>(objectMesonPtYWeightsPi0->Clone(
+      Form("%s_%s", fNameMesonPtYWeightsPi0.Data(), GetCutNumber().Data())));
+  hMesonPtYWeightsEta = static_cast<TH2*>(objectMesonPtYWeightsEta->Clone(
+      Form("%s_%s", fNameMesonPtYWeightsEta.Data(), GetCutNumber().Data())));
+  if (hMesonPtYWeightsPi0) hMesonPtYWeightsPi0->SetDirectory(0);
+  if (hMesonPtYWeightsEta) hMesonPtYWeightsEta->SetDirectory(0);
+
+  AliInfo(Form("%s and %s have been loaded from %s as TH2 meson pT-y weights",
+               fNameMesonPtYWeightsPi0.Data(),
+               fNameMesonPtYWeightsEta.Data(),
+               fPathMesonPtYWeights.Data()));
+
+  f->Close();
+  delete f;
+}
+
 //________________________________________________________________________
 int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 {
@@ -1390,6 +1477,18 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     if (!hPhotonPtEtaWeights) {
       AliError(Form("Photon pT/eta weighting was requested, but %s could not be loaded as TH2 from %s",
                     fNamePhotonPtEtaWeights.Data(), fPathPhotonPtEtaWeights.Data()));
+      return kFALSE;
+    }
+  }
+
+  if(fDoMesonPtYWeighting) {
+    AliInfo("Meson pT-y Weighting was enabled");
+    LoadMesonPtYWeightsFromFile();
+    if (!hMesonPtYWeightsPi0 || !hMesonPtYWeightsEta) {
+      AliError(Form("Meson pT-y weighting was requested, but %s and %s could not both be loaded as TH2 from %s",
+                    fNameMesonPtYWeightsPi0.Data(),
+                    fNameMesonPtYWeightsEta.Data(),
+                    fPathMesonPtYWeights.Data()));
       return kFALSE;
     }
   }
@@ -8315,6 +8414,76 @@ Float_t AliConvEventCuts::GetPhotonPtEtaWeightForFlatInjectedMesons(Double_t pho
 }
 
 //_________________________________________________________________________
+Float_t AliConvEventCuts::GetMesonPtYWeightForFlatInjectedMesons(Int_t index, AliMCEvent *mcEvent, AliVEvent *event) {
+
+  if (!fDoMesonPtYWeighting) return 1.;
+  if (index < 0) return 1.;
+
+  bool isESD = !event || (event->IsA() == AliESDEvent::Class());
+  bool isAOD = !isESD && (event->IsA() == AliAODEvent::Class());
+
+  Int_t pdgCode = 0;
+  Double_t mesonPt = 0.;
+  Double_t mesonY = 1.e30;
+  if (isAOD) {
+    if (!fAODMCTrackArray){
+      fAODMCTrackArray = dynamic_cast<TClonesArray *>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!fAODMCTrackArray) {
+        AliWarning("GetMesonPtYWeightForFlatInjectedMesons(): fAODMCTrackArray could not be obtained.");
+        return 1.;
+      }
+    }
+    AliAODMCParticle* aodMCParticle = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(index));
+    if (!aodMCParticle) return 1.;
+    pdgCode = aodMCParticle->GetPdgCode();
+    mesonPt = aodMCParticle->Pt();
+    if (aodMCParticle->E() != TMath::Abs(aodMCParticle->Pz())) {
+      const Double_t ratio = (aodMCParticle->E()+aodMCParticle->Pz()) / (aodMCParticle->E()-aodMCParticle->Pz());
+      if (ratio > 0) mesonY = aodMCParticle->Y()-fEtaShift;
+    }
+  } else {
+    if (!mcEvent) return 1.;
+    AliMCParticle* mcParticle = static_cast<AliMCParticle *>(mcEvent->GetTrack(index));
+    if (!mcParticle) return 1.;
+    pdgCode = mcParticle->PdgCode();
+    mesonPt = mcParticle->Pt();
+    if (mcParticle->E() != TMath::Abs(mcParticle->Pz())) {
+      const Double_t ratio = (mcParticle->E()+mcParticle->Pz()) / (mcParticle->E()-mcParticle->Pz());
+      if (ratio > 0) mesonY = mcParticle->Y()-fEtaShift;
+    }
+  }
+
+  TH2* hMesonPtYWeights = nullptr;
+  if (pdgCode == 111) {
+    hMesonPtYWeights = hMesonPtYWeightsPi0;
+  } else if (pdgCode == 221) {
+    hMesonPtYWeights = hMesonPtYWeightsEta;
+  } else {
+    return 1.;
+  }
+  if (!hMesonPtYWeights) return 1.;
+
+  const TAxis *axisPt = hMesonPtYWeights->GetXaxis();
+  const TAxis *axisY = hMesonPtYWeights->GetYaxis();
+  if (!axisPt || !axisY) return 1.;
+  if (mesonPt < axisPt->GetXmin() || mesonPt > axisPt->GetXmax() ||
+      mesonY < axisY->GetXmin() || mesonY > axisY->GetXmax()) return 1.;
+
+  Double_t weight = hMesonPtYWeights->Interpolate(mesonPt, mesonY);
+  if (weight <= 0.) {
+    const Int_t binPt = axisPt->FindBin(mesonPt);
+    const Int_t binY = axisY->FindBin(mesonY);
+    if (binPt >= 1 && binPt <= axisPt->GetNbins() &&
+        binY >= 1 && binY <= axisY->GetNbins()) {
+      weight = hMesonPtYWeights->GetBinContent(binPt, binY);
+    }
+  }
+
+  if (weight <= 0. || !isfinite(weight)) return 1.;
+  return static_cast<Float_t>(weight);
+}
+
+//_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
 {
   //begin remove todo
@@ -8380,7 +8549,11 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
     return true;
   };  
   fillMesonHisto();
-  return (lWeightNew != -1.) ? lWeightNew : lWeightOld;
+  const double lPtWeight = (lWeightNew != -1.) ? lWeightNew : lWeightOld;
+  const double lPtYWeight = fDoMesonPtYWeighting
+    ? GetMesonPtYWeightForFlatInjectedMesons(index, mcEvent, event)
+    : 1.;
+  return lPtWeight * lPtYWeight;
 }
 
 //_________________________________________________________________________

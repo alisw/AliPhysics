@@ -593,6 +593,18 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fPathPhotonPtEtaWeights = path                            ;
                                                                                       fNamePhotonPtEtaWeights = objectName                      ;
                                                                                     }
+      void    SetUseMesonPtYWeightsFromFile( Bool_t doWeighting=kTRUE,
+                                              TString path="",
+                                              TString objectNamePi0="hMesonPtYWeight_Pi0",
+                                              TString objectNameEta="hMesonPtYWeight_Eta")
+                                                                                    {
+                                                                                      AliInfo(Form("enabled meson pT-y weights from file: %s, pi0 object: %s, eta object: %s",
+                                                                                                   path.Data(), objectNamePi0.Data(), objectNameEta.Data()));
+                                                                                      fDoMesonPtYWeighting = doWeighting                       ;
+                                                                                      fPathMesonPtYWeights = path                              ;
+                                                                                      fNameMesonPtYWeightsPi0 = objectNamePi0                  ;
+                                                                                      fNameMesonPtYWeightsEta = objectNameEta                  ;
+                                                                                    }
 
       void    SetMinFacPtHard(Float_t value)                                        { fMinFacPtHard = value                                     ;
                                                                                       AliInfo(Form("minimum factor between pt hard and jet put to: %2.2f",fMinFacPtHard));
@@ -654,6 +666,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetPhotonPtEtaWeightForFlatInjectedMesons(Double_t photonPt, Double_t photonEta) const;
+      Float_t   GetMesonPtYWeightForFlatInjectedMesons(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForHeavyNeutralMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
@@ -728,6 +741,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    LoadReweightingHistosMCFromFile ();
       void    LoadGammaPtReweightingHistosMCFromFile ();
       void    LoadPhotonPtEtaWeightsFromFile ();
+      void    LoadMesonPtYWeightsFromFile ();
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
@@ -857,6 +871,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fDoPhotonPtEtaWeighting;                ///< Flag for photon pT/eta weighting from external object
       TString                     fPathPhotonPtEtaWeights;                ///< Path for file used in photon pT/eta weighting
       TString                     fNamePhotonPtEtaWeights;                ///< Name of TH2 used for photon pT/eta weighting
+      Bool_t                      fDoMesonPtYWeighting;                   ///< Flag for meson pT-y weighting from external objects
+      TString                     fPathMesonPtYWeights;                   ///< Path for file used in meson pT-y weighting
+      TString                     fNameMesonPtYWeightsPi0;                ///< Name of TH2 used for pi0 pT-y weighting
+      TString                     fNameMesonPtYWeightsEta;                ///< Name of TH2 used for eta pT-y weighting
       TString                     fLabelNamePileupCutTPC;                 //<  Label for NEvents histograms depending on pileup cut used
 
       // Histograms
@@ -886,6 +904,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
       TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       TH2*                        hPhotonPtEtaWeights;                    ///< photon pT/eta weight map
+      TH2*                        hMesonPtYWeightsPi0;                    ///< pi0 pT-y weight map
+      TH2*                        hMesonPtYWeightsEta;                    ///< eta pT-y weight map
       Int_t                       fAddedSignalPDGCode;
       Bool_t                      fPreSelCut;                             // Flag for preselection cut used in V0Reader
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
@@ -949,7 +969,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,103)
+      ClassDef(AliConvEventCuts,104)
       /// \endcond
 };
 
