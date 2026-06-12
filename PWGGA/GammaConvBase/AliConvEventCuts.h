@@ -23,14 +23,11 @@
 #include "AliTimeRangeCut.h"
 #include "AliEventCuts.h"
 
-#include "GammaConvUtilsTH1.h"
-
 class AliESDEvent;
 class AliAODEvent;
 class TH1F;
 class TH2;
 class TH2F;
-class TProfile;
 class TF1;
 class AliAnalysisCuts;
 class iostream;
@@ -437,36 +434,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kEtaEMCf  = 13    //!< Injected Eta in DCal acceptance
       };
 
-      // ============ BEGIN section for pt weights in variant calculation form =====
-      /**
-       * @enum EnumPtWeights
-       * @brief two options for calculating pt weights. Invariant (historic) and variant
-       */
-      enum EnumPtWeights
-      {
-        kOff,                // 0
-        kInvariant,          // 1
-        kVariant,            // 2
-        kInvariant_expInter, // 3
-        kVariant_expInter,   // 4
-        kInvariant_binWise,  // 5  calc weights as fData integrated / histo bin count 
-        kVariant_binWise     // 6  same with fData and hMC multiplied by x first
-      };
-
-      /**
-       * @struct PtWeightsBundle
-       * @brief for a meson: define invariant OR variant pt weights along with data and mc objects to compute them
-       */
-      struct PtWeightsBundle
-      {
-        EnumPtWeights eWhich; 
-        TF1 const *fData;
-        TH1 const *hMC;
-        TF1 const *fMC;
-        TProfile const *hWeights;
-      };
-      // ============ END section for pt weights in variant calculation form =====
-
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
       AliConvEventCuts& operator=(const AliConvEventCuts&);
@@ -548,9 +515,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         {
             AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",
                          pi0reweight, etareweight, k0sreweight));
-            fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
-            fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
-            fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
+            fDoReweightHistoMCPi0 = pi0reweight > 0;
+            fDoReweightHistoMCEta = etareweight > 0;
+            fDoReweightHistoMCK0s = k0sreweight > 0;
             fPathTrFReweighting = path;
             fNameHistoReweightingPi0 = histoNamePi0;
             fNameHistoReweightingEta = histoNameEta;
@@ -559,7 +526,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
             fNameFitDataEta = fitNameEta;
             fNameFitDataK0s = fitNameK0s;
         }
-      void    SetUseGetWeightForMesonNew(Bool_t useNewMethod)                       { fUseGetWeightForMesonNew = useNewMethod                    ; }                                                                                       
       void    SetUseWeightMultiplicityFromFile( Int_t doWeighting = 0,
                                                 TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/MultiplicityInput.root",
                                                 TString nameHistoMultData="",
@@ -662,8 +628,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
-      Float_t   GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
-      Float_t   GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetPtWeightForMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetPhotonPtEtaWeightForFlatInjectedMesons(Double_t photonPt, Double_t photonEta) const;
       Float_t   GetMesonPtYWeightForFlatInjectedMesons(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
@@ -735,7 +700,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                  AliAODConversionPhoton &thePhoton,
                                                  Bool_t                 &theIsFromSelectedHeader); // future todo: make this const
       
-      int     InitializeMapPtWeightsAccessObjects();
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
@@ -854,9 +818,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<
-      EnumPtWeights               fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
-      EnumPtWeights               fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
-      EnumPtWeights               fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
+      Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
+      Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
+      Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
       TString                     fPathTrFReweighting;                    ///< Path for file used in reweighting
       TString                     fNameHistoReweightingPi0;               ///< Histogram name for reweighting Pi0
       TString                     fNameHistoReweightingEta;               ///< Histogram name for reweighting Eta
@@ -899,8 +863,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fFitDataPi0_inv;                        ///< fit to pi0 spectrum in Data, or in HNM task: heavy neutral meson
       TF1*                        fFitDataEta_inv;                        ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s_inv;                        ///< fit to K0s spectrum in Data
-      TF1*                        fReweightMCHist_interpolate_Pi0;        ///< a tf1 that interpolates the MC Pi0 spectrum
-      TF1*                        fReweightMCHist_interpolate_Eta;        ///< a tf1 that interpolates the MC Eta spectrum
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
       TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       TH2*                        hPhotonPtEtaWeights;                    ///< photon pT/eta weight map
@@ -955,21 +917,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
       // V0M resolution studies
       TH2F*                       fHistoV0MMultCorrMC;                    ///< V0M multiplicity vs. number of true tracks in V0M acceptance
 
-      // new pt weights data members
-      bool                           fUseGetWeightForMesonNew; 
-      std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects;          ///<  map of meson pdg code to PtWeightsBundle
-      bool                           fMapPtWeightsIsFilledAndSane;        ///<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
-      TH2D                          *fHistoRelDiffNewOldMesonWeights_Pi0;
-      TH2D                          *fHistoRelDiffNewOldMesonWeights_Eta;
       TH1F                          *hCountMissingEventInformation;      
 
-      utils_TH1                     fUtils_TH1;                          ///< needed for the GlobalPieceWiseExponentialInterpolation 
       // keep this one last
       Int_t                          fDebugLevel;                            ///< debug level for interactive debugging
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,104)
+      ClassDef(AliConvEventCuts,107)
       /// \endcond
 };
 

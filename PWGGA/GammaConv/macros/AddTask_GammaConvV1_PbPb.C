@@ -39,15 +39,13 @@ void AddTask_GammaConvV1_PbPb(
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
 
-  // FPTW:fileNamePtWeights, FGAW:fileNameGammaPtEtaWeights, FMYW:fileNameMesonPtYWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model]
+  // FPTW:fileNamePtWeights, FGAW:fileNameGammaPtEtaWeights, FMYW:fileNameMesonPtYWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ;
+  // NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB.
+  // Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model]
  
   TString   fileNameExternalInputs        = "",
   Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
-  Int_t     intPtWeightsCalculationMethod = 0,        // enable pT weighting. 0 = kOff, 
-                                                      //                      1 = kInvariant (historic), 
-                                                      //                      2 = kVariant   (multiply invariant data TF1 and mc TH1 with pt and binCenter (pt))
-                                                      //                      3 = kInvariant_expInter (use piecewise exponential interpolation for MC histo in inv form) 
-                                                      //                      4 = kVariant_expInter   (use piecewise exponential interpolation for MC histo in variant form)
+  Int_t     intPtWeightsCalculationMethod = 0,        // enable pT weighting. 0 = off, 1 = on
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   TString   periodNameAnchor              = "",       //
@@ -127,6 +125,12 @@ void AddTask_GammaConvV1_PbPb(
 
   if (acceptedAddedParticles<0) {
     Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No negative values allowed for acceptedAddedParticles");
+    return;
+  }
+  if (intPtWeightsCalculationMethod < 0 || intPtWeightsCalculationMethod > 1) {
+    Error(Form("%s_%i", addTaskName.Data(),  trainConfig),
+          "Unsupported intPtWeightsCalculationMethod=%d. Only 0 = off and 1 = on are supported.",
+          intPtWeightsCalculationMethod);
     return;
   }
 
@@ -5401,7 +5405,6 @@ void AddTask_GammaConvV1_PbPb(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
-    analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew > 0);
     if (theUseGetMesonWeightNew == 3) {
       analysisEventCuts[i]->SetUsePhotonPtEtaWeightsFromFile(kTRUE, fileNameGammaPtEtaWeights, "hPhotonPtEtaWeight");
     }
