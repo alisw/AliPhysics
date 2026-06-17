@@ -181,6 +181,10 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
 
   fbCompareTriggers(0),
 
+  fbDeltapTStudy(0),   
+  fdRandomMinDist(1.0),
+  fdJetConstCut(0.15),
+
   fJetsCont(0),
   fJetsBgCont(0),
   fJetsMCGenCont(0),
@@ -276,7 +280,10 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fh2LMiss(0), 
   fh3LRespMtx(0),
   fh2ALMiss(0),
-  fh3ALRespMtx(0)
+  fh3ALRespMtx(0),
+  fh1DeltaPtRndCone(0),
+  fh2PtRndConeVsRhoA(0),
+  fh1PtRndCone(0)
 
 {
   for(Int_t i = 0; i < fgkiNQAIndeces; i++)
@@ -772,6 +779,10 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
 
   fbCompareTriggers(0),
 
+  fbDeltapTStudy(0),   
+  fdRandomMinDist(1.0),
+  fdJetConstCut(0.15),
+
   fJetsCont(0),
   fJetsBgCont(0),
   fJetsMCGenCont(0),
@@ -867,7 +878,10 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fh2LMiss(0), 
   fh3LRespMtx(0),
   fh2ALMiss(0),
-  fh3ALRespMtx(0)
+  fh3ALRespMtx(0),
+  fh1DeltaPtRndCone(0),
+  fh2PtRndConeVsRhoA(0),
+  fh1PtRndCone(0)
 {
   for(Int_t i = 0; i < fgkiNQAIndeces; i++)
   {
@@ -1310,7 +1324,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   if(fbJetSelection) {
     fJetsCont = GetJetContainer(0);
     fJetsBgCont = GetJetContainer(1);
-    if(fbCompareTriggers) {
+    if(fbCompareTriggers ||  fbDeltapTStudy) {
       fTracksCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
     }
 
@@ -2503,6 +2517,17 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fOutputListMC->Add(fh2V0ALDeltaRVsPt);
     fOutputListMC->Add(fh1V0ALDeltaR);  
   }
+  if(fbDeltapTStudy) {
+    fh1DeltaPtRndCone = new TH1D("fh1DeltaPtRndCone", "#delta p_{T} random cone;#delta p_{T} (GeV/#it{c});counts", 240, -60., 60.);
+    fh1PtRndCone = new TH1D("fh1PtRndCone", "Random cone p_{T};p_{T}^{RC} (GeV/#it{c});counts", 200, 0., 100.);
+    fh2PtRndConeVsRhoA = new TH2D("fh2PtRndConeVsRhoA", "p_{T}^{RC} vs #rho A;#rho A (GeV/#it{c});p_{T}^{RC} (GeV/#it{c})", 200, 0., 100., 200, 0., 100.);
+
+    fOutputListJet->Add(fh1DeltaPtRndCone);
+    fOutputListJet->Add(fh1PtRndCone);
+    fOutputListJet->Add(fh2PtRndConeVsRhoA);
+  }
+
+
   // Event cuts with strong anti-pile-up cuts
   if(fbUseIonutCut == 1) {
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
@@ -2647,7 +2672,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
       fJetsCont = 0;
     if(fJetsBgCont && fJetsBgCont->GetArray() == 0)
       fJetsBgCont = 0;
-    if(fbCompareTriggers)
+    if(fbCompareTriggers ||  fbDeltapTStudy)
     {
       if(fTracksCont && fTracksCont->GetArray() == 0)
         fTracksCont = 0;
@@ -2672,6 +2697,13 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     {
       fTracksCont->SetFilterHybridTracks(kTRUE);
       fTracksCont->SetParticlePtCut(5.);
+      fTracksCont->SetParticleEtaLimits(-0.8, 0.8);
+    }
+    //Selection for Delta pt study
+    if(fbDeltapTStudy && fTracksCont)
+    {
+      fTracksCont->SetFilterHybridTracks(kTRUE);
+      fTracksCont->SetParticlePtCut(fdJetConstCut);
       fTracksCont->SetParticleEtaLimits(-0.8, 0.8);
     }
   }
@@ -2773,7 +2805,12 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
     printf("-------------------------------------------------------\n");
     if(fDoEmbedding && fbSubtrRhoFromMCJets)
       printf("fbSubtrRhoFromMCJets is on, rho will be subtracted from the particle level jet pt in V0-jet matching");
-      
+
+    if(fbDeltapTStudy) 
+      printf("Delta pT study is on, min distance from the jet is %g, the jet coinstituent cut is %g\n", fdRandomMinDist, fdJetConstCut);
+
+    printf("-------------------------------------------------------\n");
+    
     if(fJetsCont) {
       printf("Signal jet container parameters\n");
       printf("Jet R = %g\n", fJetsCont->GetJetRadius());
@@ -3329,13 +3366,53 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
   }
 
+  AliAODJet* jetRndDeltapT = 0; // pointer to a rand. cone
+  if(fbDeltapTStudy && fTracksCont) {
+
+    // Use the same random cone radius as the V0-jet matching radius.
+    // For your R = 0.2 analysis this should be 0.2.
+    const Double_t dRC = fdDistanceV0JetMax;
+    const Double_t dAreaRC = TMath::Pi() * dRC * dRC;
+
+    // Cone must be fully inside the track/V0 acceptance.
+    // Your existing dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax.
+    jetRndDeltapT = GetRandomCone(arrayJetSel, dCutEtaJetMax, fdRandomMinDist);
+
+    if(jetRndDeltapT) {
+      Double_t dPtRC = 0.0;
+
+      fTracksCont->ResetCurrentID();
+      AliVTrack* trackRC = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+
+      while(trackRC) {
+        const Double_t dEta = trackRC->Eta() - jetRndDeltapT->Eta();
+        const Double_t dPhi = TVector2::Phi_mpi_pi(trackRC->Phi() - jetRndDeltapT->Phi());
+        const Double_t dR = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+
+        if(dR < dRC) 
+          dPtRC += trackRC->Pt();
+
+        trackRC = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+      }
+      const Double_t dRhoA = dRho * dAreaRC;
+      const Double_t dDeltaPt = dPtRC - dRhoA;
+
+      fh1PtRndCone->Fill(dPtRC);
+      fh1DeltaPtRndCone->Fill(dDeltaPt);
+      fh2PtRndConeVsRhoA->Fill(dRhoA, dPtRC);
+
+      delete jetRndDeltapT;
+    }
+  }
+
+
   if(fbJetSelection && fbCompareTriggers) {// Correlations of pt_jet with pt_trigger-track
     if(!fTracksCont)
       AliError("No track container!");
     else {
       AliAODJet* jetTrig = 0;
       fTracksCont->ResetCurrentID();
-      AliVTrack* track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+      AliVTrack* track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
       if(track) {// there are some accepted trigger tracks
         while(track) {// loop over selected tracks
           fh1PtTrigger[iCentIndex]->Fill(track->Pt());
@@ -3348,7 +3425,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           else {// there are no accepted jets
             fh2PtJetPtTrigger[iCentIndex]->Fill(0., track->Pt());
           }
-          track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); // load next accepted trigger track
+          track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); // load next accepted trigger track
         }
       }
       else {// there are no accepted trigger tracks
@@ -5918,7 +5995,7 @@ AliAODJet* AliAnalysisTaskV0sInJetsEmcal::GetRandomCone(const TClonesArray* arra
   TLorentzVector vecCone;
   AliAODJet* part = 0;
   Double_t dEta, dPhi;
-  Int_t iNTrialsMax = 10;
+  Int_t iNTrialsMax = 100;
   Bool_t bStatus = kFALSE;
   for(Int_t iTry = 0; iTry < iNTrialsMax; iTry++) {
     if(fDebug > 4) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Try %d", iTry));

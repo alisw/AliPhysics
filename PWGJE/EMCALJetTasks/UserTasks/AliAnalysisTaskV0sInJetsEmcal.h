@@ -66,6 +66,10 @@ public:
 
   // pt correlations of jets with trigger tracks
   void SetCompareTriggerTracks(Bool_t val = kTRUE) {fbCompareTriggers = val;}
+   
+  void SetDeltapTStudy(Bool_t val = kTRUE) {fbDeltapTStudy = val;} 
+  void SetRandomMinDist(Double_t val = 1.0) {fdRandomMinDist = val;}
+  void SetJetConstCut(Double_t val = 0.15) {fdJetConstCut = val;}
 
   void FillQAHistogramV0(AliAODVertex* vtx, const AliAODv0* vZero, Int_t iIndexHisto, Bool_t IsCandK0s, Bool_t IsCandLambda, Bool_t IsCandALambda, Bool_t IsInPeakK0s, Bool_t IsInPeakLambda, Bool_t IsInPeakALambda);
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent);
@@ -298,6 +302,10 @@ private:
 
   // Correlations of pt_jet with pt_trigger-track
   Bool_t fbCompareTriggers; // switch for pt correlations of jets with trigger tracks
+
+  Bool_t fbDeltapTStudy;   // Delta pt study switch
+  Double_t fdRandomMinDist; // Minimum distance of the random cone for the delta pt study
+  Double_t fdJetConstCut; // jet constituent track pt cut for the delta pt study
 
   // EMCal containers
   AliJetContainer* fJetsCont; //! Signal Jets
@@ -882,11 +890,14 @@ private:
   TH2D* fh2ALMiss;  //! 
   TH3D* fh3ALRespMtx; //!
 
+  TH1D* fh1DeltaPtRndCone; //!
+  TH2D* fh2PtRndConeVsRhoA; //!
+  TH1D* fh1PtRndCone; //!
 
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 38) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 39) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
