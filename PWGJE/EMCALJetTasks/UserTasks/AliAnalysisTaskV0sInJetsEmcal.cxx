@@ -3382,7 +3382,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Double_t dPtRC = 0.0;
 
       fTracksCont->ResetCurrentID();
-      AliVTrack* trackRC = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+      AliVTrack* trackRC = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
 
       while(trackRC) {
         const Double_t dEta = trackRC->Eta() - jetRndDeltapT->Eta();
@@ -3392,7 +3392,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         if(dR < dRC) 
           dPtRC += trackRC->Pt();
 
-        trackRC = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+        trackRC = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
       }
       const Double_t dRhoA = dRho * dAreaRC;
       const Double_t dDeltaPt = dPtRC - dRhoA;
@@ -3412,7 +3412,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     else {
       AliAODJet* jetTrig = 0;
       fTracksCont->ResetCurrentID();
-      AliVTrack* track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+      AliVTrack* track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
       if(track) {// there are some accepted trigger tracks
         while(track) {// loop over selected tracks
           fh1PtTrigger[iCentIndex]->Fill(track->Pt());
@@ -3425,7 +3425,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           else {// there are no accepted jets
             fh2PtJetPtTrigger[iCentIndex]->Fill(0., track->Pt());
           }
-          track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); // load next accepted trigger track
+          track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); // load next accepted trigger track
         }
       }
       else {// there are no accepted trigger tracks
