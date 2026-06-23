@@ -87,6 +87,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     void SetLogBinningXTH2(TH2* histoRebin);
     void SetIsK0(Int_t isK0){fIsK0 = isK0;}
     void SetMaxPt(Double_t pTmax){fMaxpT = pTmax;}
+    void SetMaxY(Double_t yMax){fMaxY = yMax;}
     void SetDoMultStudies(Int_t tmp){fDoMultStudies = tmp;}
     void SetDoJetStudies(int tmp) {fDoJetStudies = tmp;}
     void SetDoFeedDownStudies(int tmp) {fDoFeedDownStudies = tmp;}
@@ -221,6 +222,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
 	  Int_t				          fIsK0;					  // k0 flag
     Int_t                 fIsMC;            // MC flag
     Double_t              fMaxpT;           // Max pT flag
+    Double_t              fMaxY;          // Max y flag
     Int_t                 fDoMultStudies;   // enable multiplicity dependent studies (0 -> No mult studies, 1 -> Mult estimation with V0, 2 -> Mult estimation with V0 and INEL>0 criterium for multiplicity)
     Int_t                 fNTracksInV0Acc;  // number of tracks in V0A+C acceptance for multiplicity studies
     Bool_t                fIsEvtINELgtZERO; // flag if event is INEL>0
@@ -255,7 +257,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 14);
+    ClassDef(AliAnalysisTaskGammaPureMC, 15);
 };
 
 #endif

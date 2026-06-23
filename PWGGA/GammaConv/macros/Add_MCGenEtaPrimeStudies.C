@@ -1,16 +1,18 @@
-AliGenerator* CreatePythia8Gen( Float_t e_cms,
-                                Int_t tune,
+AliGenerator* CreatePythia8GenEtaPrime( Float_t e_cms,
                                 TString specialSetting,
                                 Double_t etaPrimeSup,
+                                Double_t etaSup,
+                                Double_t mixingAngle, 
                                 Int_t kProcess,
                                 Double_t ptHardMin,
                                 Double_t ptHardMax
                             );
 
-AliGenerator* Add_MCGenEtaPrimeStudies(     Float_t e_cms           = 13000., 
-                                            Int_t tune              = 5, 
+AliGenerator* Add_MCGenEtaPrimeStudies(     Float_t e_cms           = 13000.,
                                             TString specialSetting  = "EtaPrimeBiased",
                                             Double_t etaPrimeSup    = 0.12,
+                                            Double_t etaSup         = 0.6,
+                                            Double_t mixingAngle    = -15, 
                                             Int_t kProcess          = 0, 
                                             Double_t ptHardMin      = 0, 
                                             Double_t ptHardMax      = 1.
@@ -22,20 +24,21 @@ AliGenerator* Add_MCGenEtaPrimeStudies(     Float_t e_cms           = 13000.,
     // Special setting:
     //      EtaPrimeBiased: require at least one eta' in each event, all eta' decays into pi+ pi- eta, all eta into gamma gamma
     //      EtaPrimeNotSuppressedAndFixedDecays: etaPrimeSup factor in Pythia set to given value (default 0.12); all eta' decay into pi+ pi- eta, all eta into gamma gamma
-    //      EtaPrimeNotSuppressed: etaPrimeSup factor in Pythia set to given value (default 0.12)
+    //      EtaPrimeNotSuppressed: etaPrimeSup factor in Pythia set to given value (default 0.12), also modifies eta sup factor and mixing angle between eta and eta'
 
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(e_cms, tune, specialSetting.Data(), etaPrimeSup, kProcess, ptHardMin, ptHardMax);
+    genP                = CreatePythia8GenEtaPrime(e_cms, specialSetting.Data(), etaPrimeSup, etaSup, mixingAngle, kProcess, ptHardMin, ptHardMax);
     
     return genP;
 }
 
-AliGenerator* CreatePythia8Gen( Float_t e_cms, 
-                                Int_t tune, 
+AliGenerator* CreatePythia8GenEtaPrime( Float_t e_cms,
                                 TString specialSetting,
                                 Double_t etaPrimeSup,
+                                Double_t etaSup,
+                                Double_t mixingAngle, 
                                 Int_t kProcess, 
                                 Double_t ptHardMin, 
                                 Double_t ptHardMax
@@ -50,16 +53,16 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
     gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
     gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
 
-
-    AliPythia8 *pythia = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
-    AliGenPythiaPlus* gener = new AliGenPythiaPlus(pythia);
-
+    AliPythia8          *pythia     = AliPythia8::Instance();            // For ROOT6 needs to be created before AliGenPythiaPlus object, otherwise ending in "illegal instruction"
+    AliGenPythiaPlus    *gener      = new AliGenPythiaPlus(pythia);
+    
     std::cout << "*****************************************************************" << std::endl;
-    std::cout << "Process: "<< kProcess << "\t Tune: " << tune << "\t Special eta' setting: "<< specialSetting.Data() << "\t Eta suppression factor: "<< etaPrimeSup <<  std::endl;
+    std::cout << "Process: "<< kProcess << "\t Special eta' setting: "<< specialSetting.Data() << "\t Eta suppression factor: "<< etaPrimeSup <<  std::endl;
     if (kProcess == 1){
         std::cout << "pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
     }	
     std::cout << "*****************************************************************" << std::endl;
+
     // set process (MB)
     if(kProcess==0){
         std::cout << "running in min bias mode"<< std::endl;
@@ -80,7 +83,7 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
 
     // Event list
     gener->SetEventListRange(-1, -1);
-    gener->SetTune(tune);
+
 
     //random seed based on time
     (AliPythia8::Instance())->ReadString("Random:setSeed = on");
@@ -102,7 +105,9 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
         (AliPythia8::Instance())->ReadString("221:onIfMatch = 22 22");
     } else if (specialSetting.EqualTo("EtaPrimeNotSuppressed")) {
         std::cout << "special setting " << specialSetting.Data() << std::endl;
-        (AliPythia8::Instance())->ReadString( Form("StringFlav:etaPrimeSup = %f",etaPrimeSup) );
+        (AliPythia8::Instance())->ReadString( Form("StringFlav:etaPrimeSup = %f"    ,etaPrimeSup) );
+        (AliPythia8::Instance())->ReadString( Form("StringFlav:etaSup = %f"         ,etaSup) );
+        (AliPythia8::Instance())->ReadString( Form("StringFlav:thetaPS = %f"        ,mixingAngle) );
     } else {
         std::cout << Form("specialSetting %s not found... returning\n", specialSetting.Data());
         return nullptr;
