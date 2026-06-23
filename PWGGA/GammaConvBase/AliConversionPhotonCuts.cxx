@@ -1136,6 +1136,70 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
 }
 
 ///________________________________________________________________________
+Int_t AliConversionPhotonCuts::GetAODMCConversionPhotonSelectionCategory(AliAODMCParticle *particle,TClonesArray *aodmcArray) const {
+  // Diagnostic categories for the conversion-specific part of AOD MC photon selection.
+  // This helper is intended to be called after PhotonIsSelectedAODMC(..., kFALSE).
+  if (!particle || !aodmcArray) return -1;
+  if (particle->GetPdgCode() != 22) return -1;
+
+  if (particle->Eta() > fEtaCut || particle->Eta() < -fEtaCut) return -1;
+  if (fEtaCutMin > -0.1) {
+    if (particle->Eta() < fEtaCutMin && particle->Eta() > -fEtaCutMin) return -1;
+  }
+
+  if (particle->GetMother() > -1) {
+    AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother()));
+    if (mother && mother->GetPdgCode() == 22) return -1;
+  }
+
+  if (particle->GetNDaughters() < 2) return 1;
+
+  AliAODMCParticle* ePos = nullptr;
+  AliAODMCParticle* eNeg = nullptr;
+  for (Int_t daughterIndex = particle->GetDaughterLabel(0); daughterIndex <= particle->GetDaughterLabel(1); daughterIndex++) {
+    AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(aodmcArray->At(daughterIndex));
+    if (!tmpDaughter) continue;
+    if (tmpDaughter->GetMCProcessCode() != 5) continue;
+    if (tmpDaughter->GetPdgCode() == 11) {
+      eNeg = tmpDaughter;
+    } else if (tmpDaughter->GetPdgCode() == -11) {
+      ePos = tmpDaughter;
+    }
+  }
+
+  if (ePos == nullptr || eNeg == nullptr) return 2;
+
+  if (ePos->Eta() > fEtaCut || ePos->Eta() < -fEtaCut ||
+      eNeg->Eta() > fEtaCut || eNeg->Eta() < -fEtaCut) {
+    return 3;
+  }
+  if (fEtaCutMin > -0.1) {
+    if ((ePos->Eta() < fEtaCutMin && ePos->Eta() > -fEtaCutMin) ||
+        (eNeg->Eta() < fEtaCutMin && eNeg->Eta() > -fEtaCutMin)) {
+      return 3;
+    }
+  }
+
+  const Double_t rPos = TMath::Sqrt(ePos->Xv() * ePos->Xv() + ePos->Yv() * ePos->Yv());
+  const Double_t rNeg = TMath::Sqrt(eNeg->Xv() * eNeg->Xv() + eNeg->Yv() * eNeg->Yv());
+  if (rPos > fMaxR) return 4;
+  if (TMath::Abs(ePos->Zv()) > fMaxZ || TMath::Abs(eNeg->Zv()) > fMaxZ) return 5;
+
+  if (rPos <= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue) ||
+      rNeg <= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)) {
+    return 6;
+  }
+  if (fEtaCutMin != -0.1) {
+    if (rPos >= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin) ||
+        rNeg >= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)) {
+      return 7;
+    }
+  }
+
+  return 8;
+}
+
+///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PhotonIsSelectedMCAODESD(AliDalitzAODESDMC* particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma) const{
 // MonteCarlo Photon Selection
     if(!mcEvent)return kFALSE;
@@ -5158,9 +5222,12 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
 
 ///___________________________________________________________________________________________________
  Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField){
+    return GetMaterialBudgetCorrectingWeightForTrueGamma(gamma->GetConversionRadius(), gamma->Pt(), magField);
+}
 
+///___________________________________________________________________________________________________
+ Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(Float_t gammaConversionRadius, Float_t gammaPt, Double_t magField){
     Float_t weight = 1.0;
-    Float_t gammaConversionRadius = gamma->GetConversionRadius();
     Float_t scalePt=1.;
     Float_t nomMagField = 5.;
     if(magField!=0)
@@ -5173,7 +5240,7 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
     // So take the correction  at pT=0.5 if pT is > 0.7 GeV/c
     Float_t maxPtForCor = 0.7;
     Float_t defaultPtForCor = 0.5;
-    Float_t gammaPt = scalePt * gamma->Pt();
+    gammaPt = scalePt * gammaPt;
 
 
     Int_t binX = fProfileContainingMaterialBudgetWeights->GetXaxis()->FindBin(gammaConversionRadius+0.001);

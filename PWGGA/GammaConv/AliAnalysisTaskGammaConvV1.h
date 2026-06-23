@@ -200,8 +200,25 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCDecayGammaPhiPt;                         //!
     TH1F**                            fHistoMCDecayGammaSigmaPt;                       //!
     TH1F**                            fHistoMCConvGammaPt;                             //!
+    TH1F**                            fHistoMCConvGammaPtMatBudWeights;                //!
     TH2F**                            fHistoMCConvGammaMCPtMCEta;                      //!
     TH2F**                            fHistoMCSecondaryConvGammaPt;                    //!
+    TH2F**                            fHistoMCConvGammaSelectionAODPt;                 //!
+    TH2F**                            fHistoMCAllGammaDaughterStatusPt;                //!
+    TH2F**                            fHistoMCAllGammaConvRAllPt;                      //!
+    TH2F**                            fHistoMCAllGammaConvZAllPt;                      //!
+    TH2F**                            fHistoMCAllGammaConvRZAll;                       //!
+    TH2F**                            fHistoMCAllGammaDaughterPt;                      //!
+    TH2F**                            fHistoMCAllGammaDaughterEta;                     //!
+    TH2F**                            fHistoMCAllGammaNDaughtersPt;                    //!
+    TH2F**                            fHistoMCAllGammaDaughterElectronProcessPt;       //!
+    TH2F**                            fHistoMCAllGammaEPosConvRAllPt;                  //!
+    TH2F**                            fHistoMCAllGammaENegConvRAllPt;                  //!
+    TH2F**                            fHistoMCAllGammaEPosConvZAllPt;                  //!
+    TH2F**                            fHistoMCAllGammaENegConvZAllPt;                  //!
+    TH2F**                            fHistoMCAllGammaSingleProcess5ConvRAllPt;        //!
+    TH2F**                            fHistoMCAllGammaSingleProcess5ConvZAllPt;        //!
+    TH2F**                            fHistoMCAllGammaSingleProcess5SignPt;            //!
     TH1F**                            fHistoMCConvGammaR;                              //!
     TH2F**                            fHistoMCConvGammaPtR;                            //!
     TH1F**                            fHistoMCConvGammaEta;                            //!
@@ -278,6 +295,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
     TH1F**                            fHistoTrueConvGammaInvMass;                   //!
     TH1F**                            fHistoTrueConvGammaInvMassReco;               //!
+    TH2F**                            fHistoTrueConvGammaRecoStageMCPt;             //!
     TH2F**                            fHistoCombinatorialPt;                        //!
     TH3F**                            fHistoCombinatorialMothersPt;                 //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
@@ -534,7 +552,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 76);
+    ClassDef(AliAnalysisTaskGammaConvV1, 78);
 };
 
 #endif
