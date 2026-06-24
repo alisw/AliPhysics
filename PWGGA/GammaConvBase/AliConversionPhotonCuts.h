@@ -166,6 +166,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
+    Int_t GetAODMCConversionPhotonSelectionCategory(AliAODMCParticle *particle,TClonesArray *aodmcArray) const;
     Bool_t PhotonIsSelectedMCAODESD(AliDalitzAODESDMC *particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma) const;
     //Bool_t ElectronIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent);
     Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
@@ -268,6 +269,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField);
+    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(Float_t gammaConversionRadius, Float_t gammaPt, Double_t magField);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
