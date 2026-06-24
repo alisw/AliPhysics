@@ -1,4 +1,5 @@
 AliGenerator* CreatePythia8GenEtaPrime( Float_t e_cms,
+                                Int_t tune, 
                                 TString specialSetting,
                                 Double_t etaPrimeSup,
                                 Double_t etaSup,
@@ -9,6 +10,7 @@ AliGenerator* CreatePythia8GenEtaPrime( Float_t e_cms,
                             );
 
 AliGenerator* Add_MCGenEtaPrimeStudies(     Float_t e_cms           = 13000.,
+                                            Int_t tune              = 14, 
                                             TString specialSetting  = "EtaPrimeBiased",
                                             Double_t etaPrimeSup    = 0.12,
                                             Double_t etaSup         = 0.6,
@@ -29,12 +31,13 @@ AliGenerator* Add_MCGenEtaPrimeStudies(     Float_t e_cms           = 13000.,
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8GenEtaPrime(e_cms, specialSetting.Data(), etaPrimeSup, etaSup, mixingAngle, kProcess, ptHardMin, ptHardMax);
+    genP                = CreatePythia8GenEtaPrime(e_cms, tune, specialSetting.Data(), etaPrimeSup, etaSup, mixingAngle, kProcess, ptHardMin, ptHardMax);
     
     return genP;
 }
 
 AliGenerator* CreatePythia8GenEtaPrime( Float_t e_cms,
+                                Int_t tune, 
                                 TString specialSetting,
                                 Double_t etaPrimeSup,
                                 Double_t etaSup,
@@ -91,6 +94,7 @@ AliGenerator* CreatePythia8GenEtaPrime( Float_t e_cms,
 
     if (specialSetting.EqualTo("EtaPrimeBiased")) {
         std::cout << "special setting " << specialSetting.Data() << std::endl;
+        gener->SetTune(tune);
         gener->SetTriggerParticle(331, 1.2);
         (AliPythia8::Instance())->ReadString("331:onMode = off");
         (AliPythia8::Instance())->ReadString("331:onIfMatch = 211 -211 221");
