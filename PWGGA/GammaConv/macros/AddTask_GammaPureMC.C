@@ -1,4 +1,4 @@
-void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0, int doJetStudies = 0, int doFeedDownStudies = 0) {
+void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0, int doJetStudies = 0, int doFeedDownStudies = 0, Double_t maxY = 1.0) {
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -20,6 +20,7 @@ void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStu
   // if no k0 desired, set to isK0
   task->SetIsK0(isK0);
   task->SetMaxPt(maxpT);
+  task->SetMaxY(maxY);
   task->SetDoMultStudies(doMultStudies);
   task->SetDoJetStudies(doJetStudies);
   task->SetDoFeedDownStudies(doFeedDownStudies);
