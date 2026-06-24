@@ -29,7 +29,7 @@
 #include "AliGenHerwigEventHeader.h"
 #include "AliEmcalPythiaInfo.h"
 #include "AliPythiaRndm.h"
-#include "AliHerwigRndm.h"
+// #include "AliHerwigRndm.h"
 ClassImp(AliJetEmbeddingFromGenTask)
 
 //________________________________________________________________________
@@ -154,8 +154,10 @@ void AliJetEmbeddingFromGenTask::Run()
   AliPythiaRndm::SetPythiaRandom(new TRandom3());
   AliPythiaRndm::GetPythiaRandom()->SetSeed(clock()+gSystem->GetPid());}
   if(fGenType==3){
-  AliHerwigRndm::SetHerwigRandom(new TRandom3());
-  AliHerwigRndm::GetHerwigRandom()->SetSeed(clock()+gSystem->GetPid());}
+  // AliHerwigRndm::SetHerwigRandom(new TRandom3());
+  // AliHerwigRndm::GetHerwigRandom()->SetSeed(clock()+gSystem->GetPid());
+    AliFatal("HEWIG is obsolete and not supported!");
+  }
  
   AliStack *stack = fGen->GetStack();
   stack->Reset();
