@@ -246,7 +246,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoTruePrimaryConvGammaReaderMCPtCutFlow(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtTrackCut(NULL),
-  fHistoTruePrimaryConvGammaReaderMCPtdEdxCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtPhotonCut(NULL),
   fHistoCombinatorialPt(NULL),
   fHistoCombinatorialMothersPt(NULL),
@@ -651,7 +653,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoTruePrimaryConvGammaReaderMCPtCutFlow(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtTrackCut(NULL),
-  fHistoTruePrimaryConvGammaReaderMCPtdEdxCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtPhotonCut(NULL),
   fHistoCombinatorialPt(NULL),
   fHistoCombinatorialMothersPt(NULL),
@@ -2006,7 +2010,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoTruePrimaryConvGammaReaderMCPtCutFlow = new TH2F*[fnCuts];
         fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome = new TH2F*[fnCuts];
         fHistoTruePrimaryConvGammaReaderMCPtTrackCut = new TH2F*[fnCuts];
-        fHistoTruePrimaryConvGammaReaderMCPtdEdxCut = new TH3F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos = new TH2F*[fnCuts];
         fHistoTruePrimaryConvGammaReaderMCPtPhotonCut = new TH2F*[fnCuts];
       }
     }
@@ -2734,18 +2740,29 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
           Double_t dEdxCutBins[13];
           for (Int_t i = 0; i < 13; ++i) dEdxCutBins[i] = -1.5 + i;
-          const Double_t chargeBins[4] = {-1.5, -0.5, 0.5, 1.5};
-          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut] =
-            new TH3F("ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_Charge",
-                     "ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_Charge",
-                     nBinsPt, arrPtBinning, 12, dEdxCutBins, 3, chargeBins);
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_ENeg",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_ENeg",
+                     nBinsPt, arrPtBinning, 12, dEdxCutBins);
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_NotLegSpecific",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_NotLegSpecific",
+                     nBinsPt, arrPtBinning, 12, dEdxCutBins);
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_EPos",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_EPos",
+                     nBinsPt, arrPtBinning, 12, dEdxCutBins);
           const char *dedxLabels[12] = {"kappa", "in", "TPC electron", "TPC pion", "TPC pion high p", "TPC kaon low p", "TPC proton low p", "TPC pion low p", "TOF electron", "ITS electron", "TRD electron", "out"};
-          for (Int_t i = 0; i < 12; ++i) fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetYaxis()->SetBinLabel(i + 1, dedxLabels[i]);
-          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetZaxis()->SetBinLabel(1, "e-");
-          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetZaxis()->SetBinLabel(2, "not leg-specific");
-          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetZaxis()->SetBinLabel(3, "e+");
-          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->Sumw2();
-          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]);
+          TH2F *dEdxCutHistograms[3] = {
+            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg[iCut],
+            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific[iCut],
+            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos[iCut]
+          };
+          for (Int_t iCharge = 0; iCharge < 3; ++iCharge) {
+            for (Int_t i = 0; i < 12; ++i) dEdxCutHistograms[iCharge]->GetYaxis()->SetBinLabel(i + 1, dedxLabels[i]);
+            dEdxCutHistograms[iCharge]->Sumw2();
+            fTrueList[iCut]->Add(dEdxCutHistograms[iCharge]);
+          }
 
           fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut] =
             new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_PhotonCut",
@@ -3766,7 +3783,13 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if (result.numerator) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(result.pt, 5., result.weight);
       fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome[fiCut]->Fill(result.pt, result.outcome, result.weight);
       if (result.outcome == 4 && result.subCut >= 0) fHistoTruePrimaryConvGammaReaderMCPtTrackCut[fiCut]->Fill(result.pt, result.subCut, result.weight);
-      if (result.outcome == 5) fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[fiCut]->Fill(result.pt, result.subCut, result.subCharge, result.weight);
+      if (result.outcome == 5) {
+        TH2F *dEdxCutHistogram = NULL;
+        if (result.subCharge == -1) dEdxCutHistogram = fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg[fiCut];
+        else if (result.subCharge == 0) dEdxCutHistogram = fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific[fiCut];
+        else if (result.subCharge == 1) dEdxCutHistogram = fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos[fiCut];
+        if (dEdxCutHistogram) dEdxCutHistogram->Fill(result.pt, result.subCut, result.weight);
+      }
       if (result.outcome == 7 && result.subCut >= 0) fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[fiCut]->Fill(result.pt, result.subCut, result.weight);
     }
   }

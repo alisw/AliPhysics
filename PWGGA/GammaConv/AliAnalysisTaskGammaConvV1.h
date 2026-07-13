@@ -308,7 +308,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtCutFlow; //!
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome; //!
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtTrackCut; //!
-    TH3F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCut; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutENeg; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos; //!
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtPhotonCut; //!
     TH2F**                            fHistoCombinatorialPt;                        //!
     TH3F**                            fHistoCombinatorialMothersPt;                 //!
