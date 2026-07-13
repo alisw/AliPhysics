@@ -305,6 +305,11 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     THnSparseF**                      fSparseTruePrimaryConvGammaPtEtaPhiRZDaughter; //!
     THnSparseF**                      fSparseTruePrimaryConvGammaPtRMinDaughterPtAsymFrac; //!
     THnSparseF**                      fSparseTrueConvGammaRecoStagePtRMinDaughterPt; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtCutFlow; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtTrackCut; //!
+    TH3F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCut; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtPhotonCut; //!
     TH2F**                            fHistoCombinatorialPt;                        //!
     TH3F**                            fHistoCombinatorialMothersPt;                 //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
@@ -561,7 +566,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 79);
+    ClassDef(AliAnalysisTaskGammaConvV1, 80);
 };
 
 #endif

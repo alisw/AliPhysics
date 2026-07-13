@@ -243,6 +243,11 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fSparseTruePrimaryConvGammaPtEtaPhiRZDaughter(NULL),
   fSparseTruePrimaryConvGammaPtRMinDaughterPtAsymFrac(NULL),
   fSparseTrueConvGammaRecoStagePtRMinDaughterPt(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtCutFlow(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtTrackCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtPhotonCut(NULL),
   fHistoCombinatorialPt(NULL),
   fHistoCombinatorialMothersPt(NULL),
   fHistoCombinatorialPtDeltaPhi_ek(NULL),
@@ -643,6 +648,11 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fSparseTruePrimaryConvGammaPtEtaPhiRZDaughter(NULL),
   fSparseTruePrimaryConvGammaPtRMinDaughterPtAsymFrac(NULL),
   fSparseTrueConvGammaRecoStagePtRMinDaughterPt(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtCutFlow(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtTrackCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtdEdxCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMCPtPhotonCut(NULL),
   fHistoCombinatorialPt(NULL),
   fHistoCombinatorialMothersPt(NULL),
   fHistoCombinatorialPtDeltaPhi_ek(NULL),
@@ -1992,6 +2002,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fSparseTruePrimaryConvGammaPtEtaPhiRZDaughter = new THnSparseF*[fnCuts];
       fSparseTruePrimaryConvGammaPtRMinDaughterPtAsymFrac = new THnSparseF*[fnCuts];
       fSparseTrueConvGammaRecoStagePtRMinDaughterPt = new THnSparseF*[fnCuts];
+      if (fDoPhotonQA == 7) {
+        fHistoTruePrimaryConvGammaReaderMCPtCutFlow = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtTrackCut = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtdEdxCut = new TH3F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMCPtPhotonCut = new TH2F*[fnCuts];
+      }
     }
 
     if(fDoMesonAnalysis){
@@ -2687,6 +2704,58 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoTrueConvGammaRecoStageMCPt[iCut]->GetYaxis()->SetBinLabel(5, "AODMC selected conv");
         fHistoTrueConvGammaRecoStageMCPt[iCut]->GetYaxis()->SetBinLabel(6, "fills primary numerator");
         fTrueList[iCut]->Add(fHistoTrueConvGammaRecoStageMCPt[iCut]);
+        if (fDoPhotonQA == 7) {
+          fHistoTruePrimaryConvGammaReaderMCPtCutFlow[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_CutFlow",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_CutFlow",
+                     nBinsPt, arrPtBinning, 6, -0.5, 5.5);
+          const char *cutFlowLabels[6] = {"selected MC conversion", "reader candidate", "accepted header", "photon selected", "event plane", "fills primary numerator"};
+          for (Int_t i = 0; i < 6; ++i) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[iCut]->GetYaxis()->SetBinLabel(i + 1, cutFlowLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMCPtCutFlow[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtCutFlow[iCut]);
+
+          fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_SelectionOutcome",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_SelectionOutcome",
+                     nBinsPt, arrPtBinning, 12, -0.5, 11.5);
+          const char *outcomeLabels[12] = {"header rejected", "on-fly", "missing tracks", "missing AOD V0", "track cuts", "dEdx cuts", "invalid conversion point", "photon cuts", "event plane", "post-selection removal", "fills primary numerator", "reader candidate only"};
+          for (Int_t i = 0; i < 12; ++i) fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome[iCut]->GetYaxis()->SetBinLabel(i + 1, outcomeLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome[iCut]);
+
+          fHistoTruePrimaryConvGammaReaderMCPtTrackCut[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_TrackCut",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_TrackCut",
+                     nBinsPt, arrPtBinning, 9, -0.5, 8.5);
+          const char *trackLabels[9] = {"in", "charge", "TPC clusters", "track eta", "single track pT or TOF timing", "TPC refit", "kink", "TPC chi2", "out"};
+          for (Int_t i = 0; i < 9; ++i) fHistoTruePrimaryConvGammaReaderMCPtTrackCut[iCut]->GetYaxis()->SetBinLabel(i + 1, trackLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMCPtTrackCut[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtTrackCut[iCut]);
+
+          Double_t dEdxCutBins[13];
+          for (Int_t i = 0; i < 13; ++i) dEdxCutBins[i] = -1.5 + i;
+          const Double_t chargeBins[4] = {-1.5, -0.5, 0.5, 1.5};
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut] =
+            new TH3F("ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_Charge",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_dEdxCut_Charge",
+                     nBinsPt, arrPtBinning, 12, dEdxCutBins, 3, chargeBins);
+          const char *dedxLabels[12] = {"kappa", "in", "TPC electron", "TPC pion", "TPC pion high p", "TPC kaon low p", "TPC proton low p", "TPC pion low p", "TOF electron", "ITS electron", "TRD electron", "out"};
+          for (Int_t i = 0; i < 12; ++i) fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetYaxis()->SetBinLabel(i + 1, dedxLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetZaxis()->SetBinLabel(1, "e-");
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetZaxis()->SetBinLabel(2, "not leg-specific");
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->GetZaxis()->SetBinLabel(3, "e+");
+          fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[iCut]);
+
+          fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut] =
+            new TH2F("ESD_TruePrimaryConvGammaReader_MCPt_PhotonCut",
+                     "ESD_TruePrimaryConvGammaReader_MCPt_PhotonCut",
+                     nBinsPt, arrPtBinning, 13, -0.5, 12.5);
+          const char *photonLabels[13] = {"in", "qT", "chi2", "acceptance", "asymmetry", "PID probability", "corrected TPC clusters", "PsiPair", "CosPA", "DCA r", "DCA z", "photon quality", "out"};
+          for (Int_t i = 0; i < 13; ++i) fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut]->GetYaxis()->SetBinLabel(i + 1, photonLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut]);
+        }
         if (fDoPhotonQA == 6) {
           const Int_t nBinsMinDaughterPt = 222;
           Double_t arrMinDaughterPtBinning[nBinsMinDaughterPt+1];
@@ -3342,8 +3411,86 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 {
+  struct TruePrimaryReaderResult {
+    Double_t pt = 0.;
+    Double_t weight = 1.;
+    Bool_t reader = kFALSE;
+    Bool_t header = kFALSE;
+    Bool_t photonSelected = kFALSE;
+    Bool_t eventPlane = kFALSE;
+    Bool_t numerator = kFALSE;
+    Int_t outcome = 11;
+    Int_t rejectionRank = -1;
+    Int_t subCut = -1;
+    Int_t subCharge = 0;
+  };
+  std::map<Int_t, TruePrimaryReaderResult> truePrimaryReaderResults;
+
+  auto getAcceptedTruePrimaryConversion = [&](AliAODConversionPhoton *candidate, Int_t &photonLabel, AliAODMCParticle *&photon) -> Bool_t {
+    photonLabel = -1;
+    photon = NULL;
+    if (fDoPhotonQA != 7 || fIsMC <= 0 || !candidate || !fAODMCTrackArray ||
+        fInputEvent->IsA() != AliAODEvent::Class()) return kFALSE;
+
+    const Int_t posLabel = candidate->GetMCLabelPositive();
+    const Int_t negLabel = candidate->GetMCLabelNegative();
+    if (posLabel < 0 || negLabel < 0 || posLabel >= fAODMCTrackArray->GetEntriesFast() || negLabel >= fAODMCTrackArray->GetEntriesFast()) return kFALSE;
+    AliAODMCParticle *pos = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(posLabel));
+    AliAODMCParticle *neg = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(negLabel));
+    if (!pos || !neg || pos->GetMother() < 0 || pos->GetMother() != neg->GetMother()) return kFALSE;
+    if (TMath::Abs(pos->GetPdgCode()) != 11 || TMath::Abs(neg->GetPdgCode()) != 11 || pos->GetPdgCode() == neg->GetPdgCode()) return kFALSE;
+    if (pos->GetMCProcessCode() != 5 || neg->GetMCProcessCode() != 5) return kFALSE;
+
+    photonLabel = pos->GetMother();
+    if (photonLabel >= fAODMCTrackArray->GetEntriesFast()) return kFALSE;
+    photon = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(photonLabel));
+    if (!photon || photon->GetPdgCode() != 22) return kFALSE;
+
+    const AliVVertex *primaryVertexMC = fMCEvent->GetPrimaryVertex();
+    if (!fiEventCut->IsConversionPrimaryAOD(fInputEvent, photon,
+                                             primaryVertexMC->GetX(), primaryVertexMC->GetY(), primaryVertexMC->GetZ())) return kFALSE;
+    if (fiEventCut->GetSignalRejection() != 0) {
+      const Int_t headerClass = fiEventCut->IsParticleFromBGEvent(photonLabel, fMCEvent, fInputEvent);
+      if (headerClass == 0 && fiEventCut->GetSignalRejection() != 3) return kFALSE;
+    }
+    if (!fiPhotonCut->PhotonIsSelectedAODMC(photon, fAODMCTrackArray, kTRUE)) return kFALSE;
+    if (!fiPhotonCut->InPlaneOutOfPlaneCut(photon->Phi(), fEventPlaneAngle, kFALSE)) return kFALSE;
+    return kTRUE;
+  };
+
+  auto updateTruePrimaryResult = [&](AliAODConversionPhoton *candidate, Int_t outcome, Int_t rank, Int_t subCut, Int_t subCharge = 0) {
+    Int_t photonLabel = -1;
+    AliAODMCParticle *photon = NULL;
+    if (!getAcceptedTruePrimaryConversion(candidate, photonLabel, photon)) return;
+    TruePrimaryReaderResult &result = truePrimaryReaderResults[photonLabel];
+    result.pt = photon->Pt();
+    result.weight = fWeightJetJetMC * GetPhotonWeight(photon);
+    result.reader = kTRUE;
+    if (rank > result.rejectionRank) {
+      result.outcome = outcome;
+      result.rejectionRank = rank;
+      result.subCut = subCut;
+      result.subCharge = subCharge;
+    }
+  };
+
   // ProcessPhotonCandidates() starts after definition of following lambda function
   auto fillHistosAndTree = [&](AliAODConversionPhoton *thePhoton){
+
+    if (fDoPhotonQA == 7 && fInputEvent->IsA() == AliAODEvent::Class()) {
+      Int_t photonLabel = -1;
+      AliAODMCParticle *photon = NULL;
+      if (getAcceptedTruePrimaryConversion(thePhoton, photonLabel, photon)) {
+        TruePrimaryReaderResult &result = truePrimaryReaderResults[photonLabel];
+        result.pt = photon->Pt();
+        result.weight = fWeightJetJetMC * GetPhotonWeight(photon);
+        result.reader = result.header = result.photonSelected = result.eventPlane = result.numerator = kTRUE;
+        result.outcome = 10;
+        result.rejectionRank = 100;
+        result.subCut = -1;
+        result.subCharge = 0;
+      }
+    }
 
     if( fIsMC > 0 ){
       if(fInputEvent->IsA()==AliESDEvent::Class()) ProcessTruePhotonCandidates(thePhoton);
@@ -3406,12 +3553,59 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     if (!iCandidate) { AliWarning("Non AliAODConversionPhoton type object in fReaderGammas.\n"); continue; }
 
     Bool_t lIsFromSelectedHeader = kTRUE;
+    updateTruePrimaryResult(iCandidate, 11, 0, -1);
     if(fIsMC){
-      if (!fiEventCut->PhotonPassesAddedParticlesCriterion(fMCEvent, fInputEvent, *iCandidate, lIsFromSelectedHeader)) continue;
+      if (!fiEventCut->PhotonPassesAddedParticlesCriterion(fMCEvent, fInputEvent, *iCandidate, lIsFromSelectedHeader)) {
+        updateTruePrimaryResult(iCandidate, 0, 1, -1);
+        continue;
+      }
+    }
+    if (fDoPhotonQA == 7) {
+      Int_t photonLabel = -1;
+      AliAODMCParticle *photon = NULL;
+      if (getAcceptedTruePrimaryConversion(iCandidate, photonLabel, photon)) {
+        if (lIsFromSelectedHeader) truePrimaryReaderResults[photonLabel].header = kTRUE;
+        else updateTruePrimaryResult(iCandidate, 0, 1, -1);
+      }
     }
 
-    if(!fiPhotonCut->PhotonIsSelected(iCandidate,fInputEvent)) continue;
-    if(!fiPhotonCut->InPlaneOutOfPlaneCut(iCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
+    if(!fiPhotonCut->PhotonIsSelected(iCandidate,fInputEvent)) {
+      Int_t outcome = 11;
+      Int_t rank = 2;
+      Int_t subCut = -1;
+      switch (fiPhotonCut->GetLastPhotonCutIndex()) {
+        case AliConversionPhotonCuts::kOnFly:        outcome = 1; rank = 2; break;
+        case AliConversionPhotonCuts::kNoTracks:     outcome = 2; rank = 3; break;
+        case AliConversionPhotonCuts::kNoV0:         outcome = 3; rank = 4; break;
+        case AliConversionPhotonCuts::kTrackCuts:    outcome = 4; rank = 5; subCut = fiPhotonCut->GetLastTrackCutIndex(); break;
+        case AliConversionPhotonCuts::kdEdxCuts:     outcome = 5; rank = 6; subCut = fiPhotonCut->GetLastdEdxCutIndex(); break;
+        case AliConversionPhotonCuts::kConvPointFail:outcome = 6; rank = 7; break;
+        case AliConversionPhotonCuts::kPhotonCuts:   outcome = 7; rank = 8; subCut = fiPhotonCut->GetLastPhotonSubCutIndex(); break;
+        default: break;
+      }
+      if (lIsFromSelectedHeader) {
+        updateTruePrimaryResult(iCandidate, outcome, rank, subCut,
+                                outcome == 5 ? fiPhotonCut->GetLastdEdxTrackCharge() : 0);
+      }
+      continue;
+    }
+    if (fDoPhotonQA == 7 && lIsFromSelectedHeader) {
+      Int_t photonLabel = -1;
+      AliAODMCParticle *photon = NULL;
+      if (getAcceptedTruePrimaryConversion(iCandidate, photonLabel, photon)) truePrimaryReaderResults[photonLabel].photonSelected = kTRUE;
+    }
+    if(!fiPhotonCut->InPlaneOutOfPlaneCut(iCandidate->GetPhotonPhi(),fEventPlaneAngle)) {
+      if (lIsFromSelectedHeader) updateTruePrimaryResult(iCandidate, 8, 9, -1);
+      continue;
+    }
+    if (fDoPhotonQA == 7) {
+      Int_t photonLabel = -1;
+      AliAODMCParticle *photon = NULL;
+      if (lIsFromSelectedHeader && getAcceptedTruePrimaryConversion(iCandidate, photonLabel, photon)) {
+        truePrimaryReaderResults[photonLabel].eventPlane = kTRUE;
+        updateTruePrimaryResult(iCandidate, 9, 10, -1);
+      }
+    }
 
     // if no further cuts, add to fGammaCandidates and we are done. If header criterion is fullfilled, also fill histos and tree
     if (!(lUseElecShareCut || lUseTooCloseCut)){
@@ -3559,6 +3753,21 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         if (iPhotonHeader.second){
           fillHistosAndTree(iPhotonHeader.first);
         }
+    }
+  }
+
+  if (fDoPhotonQA == 7 && fIsMC > 0 && fInputEvent->IsA() == AliAODEvent::Class()) {
+    for (const auto &entry : truePrimaryReaderResults) {
+      const TruePrimaryReaderResult &result = entry.second;
+      if (result.reader) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(result.pt, 1., result.weight);
+      if (result.header) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(result.pt, 2., result.weight);
+      if (result.photonSelected) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(result.pt, 3., result.weight);
+      if (result.eventPlane) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(result.pt, 4., result.weight);
+      if (result.numerator) fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(result.pt, 5., result.weight);
+      fHistoTruePrimaryConvGammaReaderMCPtSelectionOutcome[fiCut]->Fill(result.pt, result.outcome, result.weight);
+      if (result.outcome == 4 && result.subCut >= 0) fHistoTruePrimaryConvGammaReaderMCPtTrackCut[fiCut]->Fill(result.pt, result.subCut, result.weight);
+      if (result.outcome == 5) fHistoTruePrimaryConvGammaReaderMCPtdEdxCut[fiCut]->Fill(result.pt, result.subCut, result.subCharge, result.weight);
+      if (result.outcome == 7 && result.subCut >= 0) fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[fiCut]->Fill(result.pt, result.subCut, result.weight);
     }
   }
 }
@@ -4305,6 +4514,9 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
 	          Float_t photonWeight = GetPhotonWeight(particle);
 	          Float_t totalPhotonWeight = fWeightJetJetMC*photonWeight;
 	          fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),totalPhotonWeight);
+	          if (fDoPhotonQA == 7) {
+	            fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(particle->Pt(), 0., totalPhotonWeight);
+	          }
 	          if (fDoPhotonQA > 0) {
 	            Float_t weightMatBudgetGamma = 1.;
 	            if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && fiPhotonCut->GetMaterialBudgetWeightsInitialized()) {

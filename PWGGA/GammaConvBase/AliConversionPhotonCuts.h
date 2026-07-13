@@ -124,6 +124,14 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
         kPhotonOut
     };
 
+    // Diagnostics for the most recent PhotonIsSelected call. The sub-cut
+    // indices use the bin ordering of TrackCuts, dEdxCuts and PhotonCuts.
+    Int_t GetLastPhotonCutIndex() const { return fLastPhotonCutIndex; }
+    Int_t GetLastTrackCutIndex() const { return fLastTrackCutIndex; }
+    Int_t GetLastdEdxCutIndex() const { return fLastdEdxCutIndex; }
+    Int_t GetLastdEdxTrackCharge() const { return fLastdEdxTrackCharge; }
+    Int_t GetLastPhotonSubCutIndex() const { return fLastPhotonSubCutIndex; }
+
     // todo: use unordered_map when found out how to make it work with ROOT5
     typedef std::map<AliAODConversionPhoton*, Bool_t> TMapPhotonBool;
 
@@ -457,6 +465,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fBadRegionAMax;                       ///<
     Double_t          fExcludeMinR;                         ///< r cut exclude region
     Double_t          fExcludeMaxR;                         ///< r cut exclude region
+    Int_t             fLastPhotonCutIndex = -1;             //! last top-level PhotonIsSelected outcome
+    Int_t             fLastTrackCutIndex = -1;              //! last failed TrackCuts index
+    Int_t             fLastdEdxCutIndex = -1;               //! last failed dEdxCuts index
+    Int_t             fLastdEdxTrackCharge = 0;             //! charge of leg failing dEdxCuts
+    Int_t             fLastPhotonSubCutIndex = -1;          //! last failed PhotonCuts index
 
   private:
     /*helper class for on-the-fly removal of elements from a std::map like container while iterating over it */
@@ -473,7 +486,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const;
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,41)
+    ClassDef(AliConversionPhotonCuts,42)
     /// \endcond
 };
 
