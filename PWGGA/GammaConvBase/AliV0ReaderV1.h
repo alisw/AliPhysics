@@ -82,6 +82,7 @@ class AliV0ReaderV1 : public AliAODRelabelInterface {
 
     // Return Reconstructed Gammas
     TClonesArray*             GetReconstructedGammas() const        {return fConversionGammas;}
+    TClonesArray*             GetInputGammas() const                {return fInputGammas;}
     Int_t                     GetNReconstructedGammas() const       {if(fConversionGammas){return fConversionGammas->GetEntriesFast();} else{ return 0;}}
     AliConversionPhotonBase *operator[](int index) const;
 

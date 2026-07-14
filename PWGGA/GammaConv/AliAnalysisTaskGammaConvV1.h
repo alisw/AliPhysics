@@ -312,6 +312,17 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific; //!
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos; //!
     TH2F**                            fHistoTruePrimaryConvGammaReaderMCPtPhotonCut; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMatchMCPtStatus; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMatchMCPtReason; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMatchedMCPtR; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMissingMCPtR; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta; //!
+    TH2F**                            fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta; //!
+    vector<Int_t>                     fQA7SelectedConversionLabels; //!
     TH2F**                            fHistoCombinatorialPt;                        //!
     TH3F**                            fHistoCombinatorialMothersPt;                 //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
@@ -568,7 +579,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 80);
+    ClassDef(AliAnalysisTaskGammaConvV1, 81);
 };
 
 #endif

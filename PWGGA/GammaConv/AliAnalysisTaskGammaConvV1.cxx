@@ -56,6 +56,7 @@
 #include "AliAODEvent.h"
 #include <vector>
 #include <map>
+#include <set>
 
 
 ClassImp(AliAnalysisTaskGammaConvV1)
@@ -250,6 +251,17 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtPhotonCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchMCPtStatus(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchMCPtReason(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtR(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtR(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta(NULL),
+  fQA7SelectedConversionLabels(),
   fHistoCombinatorialPt(NULL),
   fHistoCombinatorialMothersPt(NULL),
   fHistoCombinatorialPtDeltaPhi_ek(NULL),
@@ -657,6 +669,17 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos(NULL),
   fHistoTruePrimaryConvGammaReaderMCPtPhotonCut(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchMCPtStatus(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchMCPtReason(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtR(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtR(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym(NULL),
+  fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta(NULL),
+  fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta(NULL),
+  fQA7SelectedConversionLabels(),
   fHistoCombinatorialPt(NULL),
   fHistoCombinatorialMothersPt(NULL),
   fHistoCombinatorialPtDeltaPhi_ek(NULL),
@@ -2014,6 +2037,16 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoTruePrimaryConvGammaReaderMCPtdEdxCutNotLegSpecific = new TH2F*[fnCuts];
         fHistoTruePrimaryConvGammaReaderMCPtdEdxCutEPos = new TH2F*[fnCuts];
         fHistoTruePrimaryConvGammaReaderMCPtPhotonCut = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMatchMCPtStatus = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMatchMCPtReason = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtR = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMissingMCPtR = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta = new TH2F*[fnCuts];
+        fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta = new TH2F*[fnCuts];
       }
     }
 
@@ -2772,6 +2805,84 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
           for (Int_t i = 0; i < 13; ++i) fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut]->GetYaxis()->SetBinLabel(i + 1, photonLabels[i]);
           fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[iCut]);
+
+          fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMatch_MCPt_Status",
+                     "MC_TruePrimaryConvGammaReaderMatch_MCPt_Status",
+                     nBinsPt, arrPtBinning, 7, -0.5, 6.5);
+          const char *readerMatchStatusLabels[7] = {
+            "selected MC conversion", "e- track found", "e+ track found", "both tracks found",
+            "satellite branch available", "raw satellite candidate found", "reader candidate found"
+          };
+          for (Int_t i = 0; i < 7; ++i) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[iCut]->GetYaxis()->SetBinLabel(i + 1, readerMatchStatusLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[iCut]);
+
+          fHistoTruePrimaryConvGammaReaderMatchMCPtReason[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMatch_MCPt_Reason",
+                     "MC_TruePrimaryConvGammaReaderMatch_MCPt_Reason",
+                     nBinsPt, arrPtBinning, 9, -0.5, 8.5);
+          const char *readerMatchReasonLabels[9] = {
+            "reader candidate found", "both tracks missing", "e- track missing", "e+ track missing",
+            "ambiguous track labels", "satellite branch unavailable", "no raw satellite candidate",
+            "raw candidate rejected by reader", "invalid truth daughters"
+          };
+          for (Int_t i = 0; i < 9; ++i) fHistoTruePrimaryConvGammaReaderMatchMCPtReason[iCut]->GetYaxis()->SetBinLabel(i + 1, readerMatchReasonLabels[i]);
+          fHistoTruePrimaryConvGammaReaderMatchMCPtReason[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaReaderMatchMCPtReason[iCut]);
+
+          const Int_t nBinsMinDaughterPtReaderMatch = 222;
+          Double_t minDaughterPtReaderMatchBinning[nBinsMinDaughterPtReaderMatch + 1];
+          for (Int_t i = 0; i <= 100; ++i) minDaughterPtReaderMatchBinning[i] = 0.002 * i;
+          for (Int_t i = 1; i <= 90; ++i) minDaughterPtReaderMatchBinning[100 + i] = 0.2 + 0.02 * i;
+          for (Int_t i = 1; i <= 32; ++i) minDaughterPtReaderMatchBinning[190 + i] = 2.0 + 0.25 * i;
+
+          fHistoTruePrimaryConvGammaReaderMatchedMCPtR[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMatched_MCPt_RConv",
+                     "MC_TruePrimaryConvGammaReaderMatched_MCPt_RConv",
+                     nBinsPt, arrPtBinning, 200, 0., 200.);
+          fHistoTruePrimaryConvGammaReaderMissingMCPtR[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMissing_MCPt_RConv",
+                     "MC_TruePrimaryConvGammaReaderMissing_MCPt_RConv",
+                     nBinsPt, arrPtBinning, 200, 0., 200.);
+          fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMatched_MCPt_MinDaughterPt",
+                     "MC_TruePrimaryConvGammaReaderMatched_MCPt_MinDaughterPt",
+                     nBinsPt, arrPtBinning, nBinsMinDaughterPtReaderMatch, minDaughterPtReaderMatchBinning);
+          fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMissing_MCPt_MinDaughterPt",
+                     "MC_TruePrimaryConvGammaReaderMissing_MCPt_MinDaughterPt",
+                     nBinsPt, arrPtBinning, nBinsMinDaughterPtReaderMatch, minDaughterPtReaderMatchBinning);
+          fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMatched_MCPt_DaughterPtAsym",
+                     "MC_TruePrimaryConvGammaReaderMatched_MCPt_DaughterPtAsym",
+                     nBinsPt, arrPtBinning, 100, 0., 1.);
+          fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMissing_MCPt_DaughterPtAsym",
+                     "MC_TruePrimaryConvGammaReaderMissing_MCPt_DaughterPtAsym",
+                     nBinsPt, arrPtBinning, 100, 0., 1.);
+          fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMatched_MCPt_MaxAbsDaughterEta",
+                     "MC_TruePrimaryConvGammaReaderMatched_MCPt_MaxAbsDaughterEta",
+                     nBinsPt, arrPtBinning, 150, 0., 1.5);
+          fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta[iCut] =
+            new TH2F("MC_TruePrimaryConvGammaReaderMissing_MCPt_MaxAbsDaughterEta",
+                     "MC_TruePrimaryConvGammaReaderMissing_MCPt_MaxAbsDaughterEta",
+                     nBinsPt, arrPtBinning, 150, 0., 1.5);
+          TH2F *readerMatchTopologyHistograms[8] = {
+            fHistoTruePrimaryConvGammaReaderMatchedMCPtR[iCut],
+            fHistoTruePrimaryConvGammaReaderMissingMCPtR[iCut],
+            fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt[iCut],
+            fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt[iCut],
+            fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym[iCut],
+            fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym[iCut],
+            fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta[iCut],
+            fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta[iCut]
+          };
+          for (Int_t i = 0; i < 8; ++i) {
+            readerMatchTopologyHistograms[i]->Sumw2();
+            fTrueList[iCut]->Add(readerMatchTopologyHistograms[i]);
+          }
         }
         if (fDoPhotonQA == 6) {
           const Int_t nBinsMinDaughterPt = 222;
@@ -3792,6 +3903,154 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       }
       if (result.outcome == 7 && result.subCut >= 0) fHistoTruePrimaryConvGammaReaderMCPtPhotonCut[fiCut]->Fill(result.pt, result.subCut, result.weight);
     }
+
+    // Match each cached MC_ConvGamma denominator photon through tracks, the raw satellite, and the reader output.
+    auto canonicalPair = [](Int_t first, Int_t second) {
+      return first < second ? std::make_pair(first, second) : std::make_pair(second, first);
+    };
+
+    std::map<Int_t, Int_t> trackIdToMCLabel;
+    std::map<Int_t, Int_t> mcLabelTrackMultiplicity;
+    const Int_t nAODTracks = fInputEvent->GetNumberOfTracks();
+    const Int_t nAODMCParticles = fAODMCTrackArray ? fAODMCTrackArray->GetEntriesFast() : 0;
+    for (Int_t iTrack = 0; iTrack < nAODTracks; ++iTrack) {
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
+      if (!track) continue;
+      const Int_t mcLabel = TMath::Abs(track->GetLabel());
+      if (mcLabel < 0 || mcLabel >= nAODMCParticles) continue;
+      trackIdToMCLabel[track->GetID()] = mcLabel;
+      ++mcLabelTrackMultiplicity[mcLabel];
+    }
+
+    auto resolveRawCandidateLeg = [&](AliAODConversionPhoton *candidate, Bool_t positive) -> Int_t {
+      if (!candidate) return -1;
+      const Int_t candidateMCLabel = positive ? candidate->GetMCLabelPositive() : candidate->GetMCLabelNegative();
+      const Int_t trackReference = positive ? candidate->GetTrackLabelPositive() : candidate->GetTrackLabelNegative();
+
+      if (trackReference >= 0 && trackReference < nAODTracks) {
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(trackReference));
+        if (track) {
+          const Int_t trackMCLabel = TMath::Abs(track->GetLabel());
+          if (trackMCLabel >= 0 && trackMCLabel < nAODMCParticles &&
+              (candidateMCLabel < 0 || candidateMCLabel == trackMCLabel)) return trackMCLabel;
+        }
+      }
+
+      const auto trackIdMatch = trackIdToMCLabel.find(trackReference);
+      if (trackIdMatch != trackIdToMCLabel.end()) return trackIdMatch->second;
+      if (candidateMCLabel >= 0 && candidateMCLabel < nAODMCParticles) return candidateMCLabel;
+
+      if (trackReference >= 0 && trackReference < nAODTracks) {
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(trackReference));
+        if (track) {
+          const Int_t trackMCLabel = TMath::Abs(track->GetLabel());
+          if (trackMCLabel >= 0 && trackMCLabel < nAODMCParticles) return trackMCLabel;
+        }
+      }
+      return -1;
+    };
+
+    TClonesArray *inputGammas = fV0Reader->GetInputGammas();
+    const Bool_t satelliteBranchAvailable = inputGammas != NULL;
+    std::set<std::pair<Int_t, Int_t> > rawSatellitePairs;
+    if (inputGammas) {
+      for (Int_t iGamma = 0; iGamma < inputGammas->GetEntriesFast(); ++iGamma) {
+        AliAODConversionPhoton *candidate = dynamic_cast<AliAODConversionPhoton*>(inputGammas->At(iGamma));
+        const Int_t posLabel = resolveRawCandidateLeg(candidate, kTRUE);
+        const Int_t negLabel = resolveRawCandidateLeg(candidate, kFALSE);
+        if (posLabel >= 0 && negLabel >= 0) rawSatellitePairs.insert(canonicalPair(posLabel, negLabel));
+      }
+    }
+
+    std::set<std::pair<Int_t, Int_t> > readerPairs;
+    for (TObject *object : *fReaderGammas) {
+      AliAODConversionPhoton *candidate = dynamic_cast<AliAODConversionPhoton*>(object);
+      if (!candidate) continue;
+      const Int_t posLabel = candidate->GetMCLabelPositive();
+      const Int_t negLabel = candidate->GetMCLabelNegative();
+      if (posLabel >= 0 && negLabel >= 0 && posLabel < nAODMCParticles && negLabel < nAODMCParticles)
+        readerPairs.insert(canonicalPair(posLabel, negLabel));
+    }
+
+    for (const Int_t photonLabel : fQA7SelectedConversionLabels) {
+      if (photonLabel < 0 || photonLabel >= nAODMCParticles) continue;
+      AliAODMCParticle *photon = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(photonLabel));
+      if (!photon) continue;
+
+      AliAODMCParticle *electron = NULL;
+      AliAODMCParticle *positron = NULL;
+      Int_t electronLabel = -1;
+      Int_t positronLabel = -1;
+      const Int_t firstDaughter = photon->GetDaughterLabel(0);
+      const Int_t lastDaughter = photon->GetDaughterLabel(1);
+      if (firstDaughter >= 0 && lastDaughter >= firstDaughter) {
+        for (Int_t daughterLabel = firstDaughter; daughterLabel <= lastDaughter; ++daughterLabel) {
+          if (daughterLabel < 0 || daughterLabel >= nAODMCParticles) continue;
+          AliAODMCParticle *daughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(daughterLabel));
+          if (!daughter || daughter->GetMCProcessCode() != 5) continue;
+          if (daughter->GetPdgCode() == 11) {
+            electron = daughter;
+            electronLabel = daughterLabel;
+          } else if (daughter->GetPdgCode() == -11) {
+            positron = daughter;
+            positronLabel = daughterLabel;
+          }
+        }
+      }
+
+      const Double_t photonPt = photon->Pt();
+      const Double_t weight = fWeightJetJetMC * GetPhotonWeight(photon);
+      fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 0., weight);
+      if (satelliteBranchAvailable) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 4., weight);
+
+      if (!electron || !positron || electronLabel < 0 || positronLabel < 0) {
+        fHistoTruePrimaryConvGammaReaderMatchMCPtReason[fiCut]->Fill(photonPt, 8., weight);
+        continue;
+      }
+
+      const Bool_t electronTrackFound = mcLabelTrackMultiplicity[electronLabel] > 0;
+      const Bool_t positronTrackFound = mcLabelTrackMultiplicity[positronLabel] > 0;
+      const Bool_t bothTracksFound = electronTrackFound && positronTrackFound;
+      const Bool_t ambiguousTrackLabels = mcLabelTrackMultiplicity[electronLabel] > 1 || mcLabelTrackMultiplicity[positronLabel] > 1;
+      const std::pair<Int_t, Int_t> daughterPair = canonicalPair(electronLabel, positronLabel);
+      const Bool_t rawSatelliteCandidateFound = rawSatellitePairs.find(daughterPair) != rawSatellitePairs.end();
+      const Bool_t readerCandidateFound = readerPairs.find(daughterPair) != readerPairs.end();
+
+      if (electronTrackFound) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 1., weight);
+      if (positronTrackFound) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 2., weight);
+      if (bothTracksFound) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 3., weight);
+      if (rawSatelliteCandidateFound) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 5., weight);
+      if (readerCandidateFound) fHistoTruePrimaryConvGammaReaderMatchMCPtStatus[fiCut]->Fill(photonPt, 6., weight);
+
+      Int_t reason = 8;
+      if (readerCandidateFound) reason = 0;
+      else if (!electronTrackFound && !positronTrackFound) reason = 1;
+      else if (!electronTrackFound) reason = 2;
+      else if (!positronTrackFound) reason = 3;
+      else if (ambiguousTrackLabels) reason = 4;
+      else if (!satelliteBranchAvailable) reason = 5;
+      else if (!rawSatelliteCandidateFound) reason = 6;
+      else reason = 7;
+      fHistoTruePrimaryConvGammaReaderMatchMCPtReason[fiCut]->Fill(photonPt, reason, weight);
+
+      const Double_t conversionRadius = TMath::Sqrt(electron->Xv() * electron->Xv() + electron->Yv() * electron->Yv());
+      const Double_t minDaughterPt = TMath::Min(electron->Pt(), positron->Pt());
+      const Double_t daughterPtSum = electron->Pt() + positron->Pt();
+      const Double_t daughterPtAsym = daughterPtSum > 0. ? TMath::Abs(electron->Pt() - positron->Pt()) / daughterPtSum : 0.;
+      const Double_t maxAbsDaughterEta = TMath::Max(TMath::Abs(electron->Eta()), TMath::Abs(positron->Eta()));
+      if (readerCandidateFound) {
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtR[fiCut]->Fill(photonPt, conversionRadius, weight);
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtMinDaughterPt[fiCut]->Fill(photonPt, minDaughterPt, weight);
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtDaughterPtAsym[fiCut]->Fill(photonPt, daughterPtAsym, weight);
+        fHistoTruePrimaryConvGammaReaderMatchedMCPtMaxAbsDaughterEta[fiCut]->Fill(photonPt, maxAbsDaughterEta, weight);
+      } else {
+        fHistoTruePrimaryConvGammaReaderMissingMCPtR[fiCut]->Fill(photonPt, conversionRadius, weight);
+        fHistoTruePrimaryConvGammaReaderMissingMCPtMinDaughterPt[fiCut]->Fill(photonPt, minDaughterPt, weight);
+        fHistoTruePrimaryConvGammaReaderMissingMCPtDaughterPtAsym[fiCut]->Fill(photonPt, daughterPtAsym, weight);
+        fHistoTruePrimaryConvGammaReaderMissingMCPtMaxAbsDaughterEta[fiCut]->Fill(photonPt, maxAbsDaughterEta, weight);
+      }
+    }
+    fQA7SelectedConversionLabels.clear();
   }
 }
 
@@ -4352,6 +4611,8 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPho
 }
 void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelected)
 {
+  if (fDoPhotonQA == 7) fQA7SelectedConversionLabels.clear();
+
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
@@ -4539,6 +4800,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles(int isCurrentEventSelecte
 	          fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),totalPhotonWeight);
 	          if (fDoPhotonQA == 7) {
 	            fHistoTruePrimaryConvGammaReaderMCPtCutFlow[fiCut]->Fill(particle->Pt(), 0., totalPhotonWeight);
+	            fQA7SelectedConversionLabels.push_back(i);
 	          }
 	          if (fDoPhotonQA > 0) {
 	            Float_t weightMatBudgetGamma = 1.;
