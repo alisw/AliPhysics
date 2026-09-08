@@ -450,6 +450,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fKind_Gamma0(0),
   fKind_Gamma1(0),
   fApplyPhotonML(0),
+  fHistoXGBoutput_PtBDT(NULL),
   fHistoXGBoutput_PtBDT_Signal_MC(NULL),
   fHistoXGBoutput_PtBDT_Background_MC(NULL),
   fHistoXGBoutput_MC(NULL),
@@ -850,6 +851,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fKind_Gamma0(0),
   fKind_Gamma1(0),
   fApplyPhotonML(0),
+  fHistoXGBoutput_PtBDT(NULL),
   fHistoXGBoutput_PtBDT_Signal_MC(NULL),
   fHistoXGBoutput_PtBDT_Background_MC(NULL),
   fHistoXGBoutput_MC(NULL),
@@ -1279,6 +1281,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   }
 
   if(fApplyPhotonML){
+    fHistoXGBoutput_PtBDT = new TH2F*[fnCuts];
     fHistoXGBoutput_PtBDT_Signal_MC = new TH2F*[fnCuts];
     fHistoXGBoutput_PtBDT_Background_MC = new TH2F*[fnCuts];
     fHistoXGBoutput_MC = new TH1F*[fnCuts];
@@ -1545,6 +1548,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
     if(fApplyPhotonML){
    
+      fHistoXGBoutput_PtBDT[iCut] = new TH2F("PhotonPt_BDT", "Photon candidates;p_{T} (GeV/c);BDT score", 210, -1, 20, 200, -1, 1);
+      fESDList[iCut]->Add(fHistoXGBoutput_PtBDT[iCut]);
+
       fHistoXGBoutput_PtBDT_Signal_MC[iCut] = new TH2F("SignalPt_BDT_MC", "Signal Pt vs BDT", 210, -1, 20, 200, -1, 1);
       fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Signal_MC[iCut]);
 
@@ -3416,9 +3422,10 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     // if no further cuts, add to fGammaCandidates and we are done. If header criterion is fullfilled, also fill histos and tree
     if (!(lUseElecShareCut || lUseTooCloseCut)){
       if (fApplyPhotonML) {
-          Double_t modelPred = 0.3;
+          Double_t modelPred = - 0.3;
 	        std::vector<double> scores{};
           isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
+          fHistoXGBoutput_PtBDT[fiCut]->Fill(iCandidate->Pt(), modelPred);
 	        //cout<< isMLsel <<" , " << modelPred << endl;
       
           if(fIsMC){
@@ -3533,8 +3540,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   for (auto &iPhotonHeader : fMapPhotonHeaders){
     AliAODConversionPhoton *iCandidate = dynamic_cast<AliAODConversionPhoton*>( iPhotonHeader.first);
     if (fApplyPhotonML) {
-      Double_t modelPred = 0.3;
+      Double_t modelPred = - 0.3;
       isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
+      fHistoXGBoutput_PtBDT[fiCut]->Fill(iCandidate->Pt(), modelPred);
 
       if(fIsMC){
 	      if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class())            fKind = IsTruePhotonESD(iCandidate);
