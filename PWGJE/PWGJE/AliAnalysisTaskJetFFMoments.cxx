@@ -193,6 +193,8 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fHistosLevel(1),
   fkHighResolution(kFALSE),
   fkUseTrackPtSumAsJetPt(kFALSE),
+  fVarbins(0x0),
+  fNvarbins(0),
   fkDoJetReco(kFALSE),
   fkUseBackgroundCalc(kFALSE),
   fRparam(0.4),
@@ -397,6 +399,8 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fHistosLevel(1),
   fkHighResolution(kFALSE),
   fkUseTrackPtSumAsJetPt(kFALSE),
+  fVarbins(0x0),
+  fNvarbins(0),
   fkDoJetReco(kFALSE),
   fkUseBackgroundCalc(kFALSE),
   fRparam(0.4),
@@ -1172,6 +1176,9 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
              fastjet::PseudoJet pseudoJetuRecJetUE;
              int retRecUE = AliAODJetToPseudoJet(uRecJet, pseudoJetuRecJetUE);
              if(!retRecUE) jetBkgPtRec = bge->rho(pseudoJetuRecJetUE)*pseudoJetuRecJetUE.area();
+
+std::cout<<fFFBckgMode<<" "<<uRecJet->Pt()<<" "<<jetBkgPtGen<<" "<<jetBkgPtRec<<" "<<std::endl;
+std::cout<<bge->rho(pseudoJetuGenJetUE)<<" "<<pseudoJetuGenJetUE.area()<<std::endl;
            }
 
            fh2MatchedJetsUE[0]->Fill(uGenJet->Pt(),jetBkgPtGen);
@@ -2365,7 +2372,7 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
 	for( Int_t iAxis = 0; iAxis < 3; iAxis++) fh2AssociatedTracksInJetsSecSsc[iJetBranch][iAxis+4] = CreateTH2D(Form("%s_%s", sHisName.Data(), sAxisName[iAxis].Data()), 20+iAxis, iJetBranch?15:10, fkHighResolution);
 
       sHisName = Form("h2RecJetVsGenJet_%s", fAnaJetType.Data());
-      for( Int_t iAxis = 0; iAxis < 5; iAxis++) fh2MatchedJets[iAxis] = CreateTH2D(Form("%s_%s", sHisName.Data(), sAxisName[iAxis].Data()), 10+iAxis, 15+iAxis, fkHighResolution);
+      for( Int_t iAxis = 0; iAxis < 5; iAxis++) fh2MatchedJets[iAxis] = CreateTH2D(Form("%s_%s", sHisName.Data(), sAxisName[iAxis].Data()), 10+iAxis, 15+iAxis, fkHighResolution,fVarbins,fNvarbins);
 
       if( fHistosLevel >= 9 ) {
 	entries   = 1<<8 | 1<<9 | 1<<10 | 1<<15 | 1<<25;
@@ -2735,7 +2742,7 @@ TProfile2D * AliAnalysisTaskJetFFMoments::CreateTProfile2D(const char* name, Int
   return p2tmp;
 }
 //_____________________________________________________________________________________________
-TH2D * AliAnalysisTaskJetFFMoments::CreateTH2D(const char* name, Int_t iXAxis, Int_t iYAxis, Bool_t res)
+TH2D * AliAnalysisTaskJetFFMoments::CreateTH2D(const char* name, Int_t iXAxis, Int_t iYAxis, Bool_t res, TArrayF Varbins,Int_t Nvarbins)  
 {
 
   TString hnTitle(name);
@@ -2751,7 +2758,9 @@ TH2D * AliAnalysisTaskJetFFMoments::CreateTH2D(const char* name, Int_t iXAxis, I
 
   hnTitle += ";";
 
-  TH2D* h2tmp =  new TH2D(name, hnTitle.Data(), nbins[0], xmin[0], xmax[0], nbins[1], xmin[1], xmax[1]);
+  TH2D* h2tmp = 0x0;
+  if(!Varbins.GetArray()) {h2tmp  =  new TH2D(name, hnTitle.Data(), nbins[0], xmin[0], xmax[0], nbins[1], xmin[1], xmax[1]);}
+  else         {h2tmp  =  new TH2D(name, hnTitle.Data(), Nvarbins, Varbins.GetArray(), Nvarbins, Varbins.GetArray());}
   h2tmp->Sumw2();
 
   return h2tmp;
