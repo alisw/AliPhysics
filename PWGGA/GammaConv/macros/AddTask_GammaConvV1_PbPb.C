@@ -3871,6 +3871,62 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
   } else if (trainConfig == 999){ //____________________-___
       cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+
+//**************************************************************************************************
+// TPC pion-rejection working-point study. Each config holds one centrality class only; the
+// config number mirrors the centrality digits of the event cut, 90xx for 10130... (0-10%) and
+// 93xx for 13530... (30-50%). Last digit: 0 data, 1 minimum-bias MC, 2 added signal (pi0),
+// 3 added signal (eta). The two added-signal configs per centrality carry identical cut strings
+// and differ only so that each injected meson writes its own output file, as for 4095/4097.
+//**************************************************************************************************
+  } else if (trainConfig == 9010){ // 0-10% data
+      cuts.AddCutPCM("10130e03", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130e03", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("10130e03", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("10130e03", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9011){ // 0-10% minimum-bias MC
+      cuts.AddCutPCM("10130053", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130053", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("10130053", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("10130053", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9012){ // 0-10% added-signal MC - run with acceptedAddedParticles = 1 (pi0)
+      cuts.AddCutPCM("10130023", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130023", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("10130023", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("10130023", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9013){ // 0-10% added-signal MC - run with acceptedAddedParticles = 6 (eta)
+      cuts.AddCutPCM("10130023", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130023", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("10130023", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("10130023", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9350){ // 30-50% data
+      cuts.AddCutPCM("13530e03", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530e03", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("13530e03", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("13530e03", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9351){ // 30-50% minimum-bias MC
+      cuts.AddCutPCM("13530053", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530053", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("13530053", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("13530053", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530053", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9352){ // 30-50% added-signal MC - run with acceptedAddedParticles = 1 (pi0)
+      cuts.AddCutPCM("13530023", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530023", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("13530023", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("13530023", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
+  } else if (trainConfig == 9353){ // 30-50% added-signal MC - run with acceptedAddedParticles = 6 (eta)
+      cuts.AddCutPCM("13530023", "0d200009ac760c00amd0404000", "0152101500000000"); // V1.5 nominal : nSigma_pi >= 3 for 0.4<p<2 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530023", "0d200009ab760c00amd0404000", "0152101500000000"); // V2.0 tighter : >= 3 below 2 GeV/c, >= 2.0 above
+      cuts.AddCutPCM("13530023", "0d200009a4760c00amd0404000", "0152101500000000"); // V1.0 looser  : >= 3 below 2 GeV/c, >= 1.0 above
+      cuts.AddCutPCM("13530023", "0d200009ac740c00amd0404000", "0152101500000000"); // break 3 GeV/c: >= 3 below 3 GeV/c, >= 1.5 above
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // current      : >= 3 below 8 GeV/c, >= 2.0 above (reference)
 //****************************************************************************************************
 
   } else if (trainConfig == 1001){
