@@ -202,6 +202,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
     fnBinsAxis[1] = nntr; fBinMinAxis[1] = minntr; fBinMaxAxis[1] = maxntr;
     fnBinsAxis[2] = nep;  fBinMinAxis[2] = minep;  fBinMaxAxis[2] = maxep;
     fnBinsAxis[3] = nepb; fBinMinAxis[3] = minepb; fBinMaxAxis[3] = maxepb;}
+  void SetVarBinning(TArrayF varbins,Int_t nvarbins) {fVarbins = varbins; fNvarbins = nvarbins;} 
   // For jet reco
   void SetDoJetReco( Bool_t c = kFALSE)                {fkDoJetReco = c;}                                // Do jet reconstruction in this code (kTRUE) or read existing jet branch 
   void SetBackgroundCalc(Bool_t b)                     {fkUseBackgroundCalc = b;}                        // - 
@@ -272,7 +273,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   int        AliAODJetToPseudoJet(AliAODJet * jet, TList* list, fastjet::PseudoJet & fCurrentPseudojet);
   Bool_t     PropertiesInJet(TVector3 & jetV, TVector3 & trackV, Double_t & Z, Double_t & xi, Double_t & lnjT, Double_t & deltaTheta, Double_t & pt, Double_t & eta, Double_t & phi);
   THnSparse* CreateTHnSparseF(const char* name, UInt_t entries, UInt_t res);
-  TH2D*      CreateTH2D(const char* name, Int_t iXAxis, Int_t iYAxis, Bool_t res);
+  TH2D*      CreateTH2D(const char* name, Int_t iXAxis, Int_t iYAxis, Bool_t res, TArrayF Varbins=0, Int_t Nvarbins=0);
   TProfile2D*      CreateTProfile2D(const char* name, Int_t iXAxis, Int_t iYAxis, Int_t iZAxis, Bool_t res);
   TH1D*      CreateTH1D(const char* name, Int_t iXAxis, Bool_t res);
   void       GetDimParams(Int_t iEntry, Bool_t hr, const char* &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
@@ -379,6 +380,8 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Int_t	             fnBinsAxis[32];		    // Possible nBins for axis used in this class for all plots
   Double_t	     fBinMinAxis[32];		    // Possible Bin Min for axis used in this class for all plots
   Double_t	     fBinMaxAxis[32];		    // Possible Bin Max for axis used in this class for all plots
+  TArrayF            fVarbins;                      //! Variable bins array
+  Int_t              fNvarbins;                     // number of variable bins
   //  0 - 9
   //  0 |  1  |  2  |  3   |  4  |  5 |   6   |      7      |    8    |    9    |
   // vz | ntr | ep  | epb  |  z  | xi | lnjT  |  DeltaTheta | FFM_gen | FFM_rec |
@@ -601,7 +604,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   }
 
 
-  ClassDef(AliAnalysisTaskJetFFMoments, 2);
+  ClassDef(AliAnalysisTaskJetFFMoments, 3);
 
 };
 
