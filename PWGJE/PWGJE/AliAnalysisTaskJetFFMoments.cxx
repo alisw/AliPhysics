@@ -1177,8 +1177,8 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
              int retRecUE = AliAODJetToPseudoJet(uRecJet, pseudoJetuRecJetUE);
              if(!retRecUE) jetBkgPtRec = bge->rho(pseudoJetuRecJetUE)*pseudoJetuRecJetUE.area();
 
-std::cout<<fFFBckgMode<<" "<<uRecJet->Pt()<<" "<<jetBkgPtGen<<" "<<jetBkgPtRec<<" "<<std::endl;
-std::cout<<bge->rho(pseudoJetuGenJetUE)<<" "<<pseudoJetuGenJetUE.area()<<std::endl;
+             if(fDebug > 9) std::cout<<fFFBckgMode<<" "<<uRecJet->Pt()<<" "<<jetBkgPtGen<<" "<<jetBkgPtRec<<" "<<std::endl;
+             if(fDebug > 9) std::cout<<bge->rho(pseudoJetuGenJetUE)<<" "<<pseudoJetuGenJetUE.area()<<std::endl;
            }
 
            fh2MatchedJetsUE[0]->Fill(uGenJet->Pt(),jetBkgPtGen);
