@@ -545,7 +545,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
 
     TH2F**                            fHistoXGBoutput_PtBDT;
-    TH3F**                            fHistoXGBoutput_EtaP_ElecNsigma;
+    TTree**                           fQATreeXGB_EtaP_ElecNsigma_ConvR;           //! per-cut electron PID trees, owned by fESDList
+    TTree**                           fQATreeXGB_EtaP_PosNsigma_ConvR;            //! per-cut positron PID trees, owned by fESDList
+    Double_t                          fPhotonEta_XGBoutput;                      //! photon pseudorapidity
+    Double_t                          fPhotonP_XGBoutput;                        //! photon momentum (GeV/c)
+    Double_t                          fElecNsigma_XGBoutput;                     //! negative daughter's TPC electron n-sigma
+    Double_t                          fPosNsigma_XGBoutput;                      //! positive daughter's TPC electron n-sigma
+    Double_t                          fConvR_XGBoutput;                          //! conversion radius (cm)
     TH2F**                            fHistoXGBoutput_PtBDT_Signal_MC;                            
     TH2F**                            fHistoXGBoutput_PtBDT_Background_MC;
     TH1F**                            fHistoXGBoutput_MC;                          
@@ -563,7 +569,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 81);
+    ClassDef(AliAnalysisTaskGammaConvV1, 83);
 };
 
 #endif

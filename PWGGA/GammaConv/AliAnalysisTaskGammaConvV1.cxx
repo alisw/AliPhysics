@@ -451,7 +451,13 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fKind_Gamma1(0),
   fApplyPhotonML(0),
   fHistoXGBoutput_PtBDT(NULL),
-  fHistoXGBoutput_EtaP_ElecNsigma(NULL),
+  fQATreeXGB_EtaP_ElecNsigma_ConvR(NULL),
+  fQATreeXGB_EtaP_PosNsigma_ConvR(NULL),
+  fPhotonEta_XGBoutput(0),
+  fPhotonP_XGBoutput(0),
+  fElecNsigma_XGBoutput(0),
+  fPosNsigma_XGBoutput(0),
+  fConvR_XGBoutput(0),
   fHistoXGBoutput_PtBDT_Signal_MC(NULL),
   fHistoXGBoutput_PtBDT_Background_MC(NULL),
   fHistoXGBoutput_MC(NULL),
@@ -853,7 +859,13 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fKind_Gamma1(0),
   fApplyPhotonML(0),
   fHistoXGBoutput_PtBDT(NULL),
-  fHistoXGBoutput_EtaP_ElecNsigma(NULL),
+  fQATreeXGB_EtaP_ElecNsigma_ConvR(NULL),
+  fQATreeXGB_EtaP_PosNsigma_ConvR(NULL),
+  fPhotonEta_XGBoutput(0),
+  fPhotonP_XGBoutput(0),
+  fElecNsigma_XGBoutput(0),
+  fPosNsigma_XGBoutput(0),
+  fConvR_XGBoutput(0),
   fHistoXGBoutput_PtBDT_Signal_MC(NULL),
   fHistoXGBoutput_PtBDT_Background_MC(NULL),
   fHistoXGBoutput_MC(NULL),
@@ -882,6 +894,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 
 AliAnalysisTaskGammaConvV1::~AliAnalysisTaskGammaConvV1()
 {
+  delete[] fQATreeXGB_EtaP_ElecNsigma_ConvR; // The trees themselves are owned by fESDList.
+  delete[] fQATreeXGB_EtaP_PosNsigma_ConvR;  // The trees themselves are owned by fESDList.
   if(fGammaCandidates){
     delete fGammaCandidates;
     fGammaCandidates = 0x0;
@@ -1284,7 +1298,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
   if(fApplyPhotonML){
     fHistoXGBoutput_PtBDT = new TH2F*[fnCuts];
-    fHistoXGBoutput_EtaP_ElecNsigma = new TH3F*[fnCuts];
+    fQATreeXGB_EtaP_ElecNsigma_ConvR = new TTree*[fnCuts];
+    fQATreeXGB_EtaP_PosNsigma_ConvR = new TTree*[fnCuts];
     fHistoXGBoutput_PtBDT_Signal_MC = new TH2F*[fnCuts];
     fHistoXGBoutput_PtBDT_Background_MC = new TH2F*[fnCuts];
     fHistoXGBoutput_MC = new TH1F*[fnCuts];
@@ -1554,8 +1569,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoXGBoutput_PtBDT[iCut] = new TH2F("PhotonPt_BDT", "Photon candidates;p_{T} (GeV/c);BDT score", 210, -1, 20, 200, -1, 1);
       fESDList[iCut]->Add(fHistoXGBoutput_PtBDT[iCut]);
 
-      fHistoXGBoutput_EtaP_ElecNsigma[iCut] = new TH3F("EtaP_ElecNsigma", "Electron PID; #eta; p (GeV/c);Electron n#sigma", 50, -1, 1, 500, 0, 50, 200, -10, 10);
-      fESDList[iCut]->Add(fHistoXGBoutput_EtaP_ElecNsigma[iCut]);
+      fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut] = new TTree("EtaP_ElecNsigma", "ML-selected photon kinematics, negative-daughter electron PID and conversion radius");
+      fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut]->SetDirectory(nullptr);
+      fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut]->Branch("Eta", &fPhotonEta_XGBoutput, "Eta/D");
+      fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut]->Branch("P", &fPhotonP_XGBoutput, "P/D");
+      fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut]->Branch("ElecNsigma", &fElecNsigma_XGBoutput, "ElecNsigma/D");
+      fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut]->Branch("ConvR", &fConvR_XGBoutput, "ConvR/D");
+      fESDList[iCut]->Add(fQATreeXGB_EtaP_ElecNsigma_ConvR[iCut]);
+
+      fQATreeXGB_EtaP_PosNsigma_ConvR[iCut] = new TTree("EtaP_PosNsigma", "ML-selected photon kinematics, positive-daughter electron PID and conversion radius");
+      fQATreeXGB_EtaP_PosNsigma_ConvR[iCut]->SetDirectory(nullptr);
+      fQATreeXGB_EtaP_PosNsigma_ConvR[iCut]->Branch("Eta", &fPhotonEta_XGBoutput, "Eta/D");
+      fQATreeXGB_EtaP_PosNsigma_ConvR[iCut]->Branch("P", &fPhotonP_XGBoutput, "P/D");
+      fQATreeXGB_EtaP_PosNsigma_ConvR[iCut]->Branch("PosNsigma", &fPosNsigma_XGBoutput, "PosNsigma/D");
+      fQATreeXGB_EtaP_PosNsigma_ConvR[iCut]->Branch("ConvR", &fConvR_XGBoutput, "ConvR/D");
+      fESDList[iCut]->Add(fQATreeXGB_EtaP_PosNsigma_ConvR[iCut]);
 
       fHistoXGBoutput_PtBDT_Signal_MC[iCut] = new TH2F("SignalPt_BDT_MC", "Signal Pt vs BDT", 210, -1, 20, 200, -1, 1);
       fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Signal_MC[iCut]);
@@ -3452,8 +3480,22 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             if (electron) {
               Double_t nSigma = fiPhotonCut->GetPIDResponse()->NumberOfSigmasTPC(electron, AliPID::kElectron);
               if (!fIsMC) {nSigma = fiPhotonCut->GetCorrectedElectronTPCResponse(electron->Charge(), nSigma,electron->P(), electron->Eta(), electron->GetTPCNcls(), iCandidate->GetConversionRadius());}       // Same data correction used in the photon ML tree.
-              fHistoXGBoutput_EtaP_ElecNsigma[fiCut]->Fill(iCandidate->Eta(), iCandidate->P(), nSigma);
-              }
+              fPhotonEta_XGBoutput = iCandidate->Eta();
+              fPhotonP_XGBoutput = iCandidate->P();
+              fElecNsigma_XGBoutput = nSigma;
+              fConvR_XGBoutput = iCandidate->GetConversionRadius();
+              fQATreeXGB_EtaP_ElecNsigma_ConvR[fiCut]->Fill();
+            }
+            AliVTrack *positron = fiPhotonCut->GetTrack(fInputEvent, iCandidate->GetTrackLabelPositive());
+            if (positron) {
+              Double_t nSigma = fiPhotonCut->GetPIDResponse()->NumberOfSigmasTPC(positron, AliPID::kElectron);
+              if (!fIsMC) {nSigma = fiPhotonCut->GetCorrectedElectronTPCResponse(positron->Charge(), nSigma, positron->P(), positron->Eta(), positron->GetTPCNcls(), iCandidate->GetConversionRadius());}
+              fPhotonEta_XGBoutput = iCandidate->Eta();
+              fPhotonP_XGBoutput = iCandidate->P();
+              fPosNsigma_XGBoutput = nSigma;
+              fConvR_XGBoutput = iCandidate->GetConversionRadius();
+              fQATreeXGB_EtaP_PosNsigma_ConvR[fiCut]->Fill();
+            }
 	          //if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
             if (lIsFromSelectedHeader){
               fillHistosAndTree(iCandidate);
@@ -3574,7 +3616,21 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         if (electron) {
           Double_t nSigma = fiPhotonCut->GetPIDResponse()->NumberOfSigmasTPC(electron, AliPID::kElectron);
           if (!fIsMC) {nSigma = fiPhotonCut->GetCorrectedElectronTPCResponse(electron->Charge(), nSigma,electron->P(), electron->Eta(), electron->GetTPCNcls(), iCandidate->GetConversionRadius());}       // Same data correction used in the photon ML tree.
-          fHistoXGBoutput_EtaP_ElecNsigma[fiCut]->Fill(iCandidate->Eta(), iCandidate->P(), nSigma);
+          fPhotonEta_XGBoutput = iCandidate->Eta();
+          fPhotonP_XGBoutput = iCandidate->P();
+          fElecNsigma_XGBoutput = nSigma;
+          fConvR_XGBoutput = iCandidate->GetConversionRadius();
+          fQATreeXGB_EtaP_ElecNsigma_ConvR[fiCut]->Fill();
+        }
+        AliVTrack *positron = fiPhotonCut->GetTrack(fInputEvent, iCandidate->GetTrackLabelPositive());
+        if (positron) {
+          Double_t nSigma = fiPhotonCut->GetPIDResponse()->NumberOfSigmasTPC(positron, AliPID::kElectron);
+          if (!fIsMC) {nSigma = fiPhotonCut->GetCorrectedElectronTPCResponse(positron->Charge(), nSigma, positron->P(), positron->Eta(), positron->GetTPCNcls(), iCandidate->GetConversionRadius());}
+          fPhotonEta_XGBoutput = iCandidate->Eta();
+          fPhotonP_XGBoutput = iCandidate->P();
+          fPosNsigma_XGBoutput = nSigma;
+          fConvR_XGBoutput = iCandidate->GetConversionRadius();
+          fQATreeXGB_EtaP_PosNsigma_ConvR[fiCut]->Fill();
         }
 	      //if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
         if (iPhotonHeader.second){
