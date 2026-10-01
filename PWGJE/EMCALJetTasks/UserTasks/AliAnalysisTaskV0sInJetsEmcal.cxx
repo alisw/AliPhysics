@@ -469,6 +469,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh2V0LambdaMCPtGenPtRec[i] = 0;
     fhnV0LambdaInclMCFromXi[i] = 0;
     fhnV0LambdaInclMCFromXi0[i] = 0;
+    fh2V0LambdaInclMCFromXiGen[i] = 0;
+    fhnV0LambdaInJetsMCFromXiGen[i] = 0;
     fhnV0LambdaInJetsMCFD[i] = 0;
     fhnV0LambdaBulkMCFD[i] = 0;
     fh1V0XiPtMCGen[i] = 0;
@@ -487,6 +489,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
     fh2V0ALambdaMCPtGenPtRec[i] = 0;
     fhnV0ALambdaInclMCFromAXi[i] = 0;
     fhnV0ALambdaInclMCFromAXi0[i] = 0;
+    fh2V0ALambdaInclMCFromAXiGen[i] = 0;
+    fhnV0ALambdaInJetsMCFromAXiGen[i] = 0;
     fhnV0ALambdaInJetsMCFD[i] = 0;
     fhnV0ALambdaBulkMCFD[i] = 0;
     fh1V0AXiPtMCGen[i] = 0;
@@ -1067,6 +1071,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh2V0LambdaMCPtGenPtRec[i] = 0;
     fhnV0LambdaInclMCFromXi[i] = 0;
     fhnV0LambdaInclMCFromXi0[i] = 0;
+    fh2V0LambdaInclMCFromXiGen[i] = 0;
+    fhnV0LambdaInJetsMCFromXiGen[i] = 0;
     fhnV0LambdaInJetsMCFD[i] = 0;
     fhnV0LambdaBulkMCFD[i] = 0;
     fh1V0XiPtMCGen[i] = 0;
@@ -1085,6 +1091,8 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
     fh2V0ALambdaMCPtGenPtRec[i] = 0;
     fhnV0ALambdaInclMCFromAXi[i] = 0;
     fhnV0ALambdaInclMCFromAXi0[i] = 0;
+    fh2V0ALambdaInclMCFromAXiGen[i] = 0;
+    fhnV0ALambdaInJetsMCFromAXiGen[i] = 0;
     fhnV0ALambdaInJetsMCFD[i] = 0;
     fhnV0ALambdaBulkMCFD[i] = 0;
     fh1V0AXiPtMCGen[i] = 0;
@@ -1970,6 +1978,12 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fOutputListMC->Add(fhnV0LambdaInclMCFromXi[i]);
       fhnV0LambdaInclMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi0_%d", i), Form("MC Lambda associated, inclusive, from Xi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0LambdaInclMCFromXi0[i]);
+
+      fh2V0LambdaInclMCFromXiGen[i] = new TH2D(Form("fh2V0LambdaInclMCFromXiGen_%d", i), Form("MC Lambda from Xi, pure generator level, inclusive, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtV0, dPtV0Min, dPtV0Max, iNBinsPtXi, dPtXiMin, dPtXiMax);
+      fOutputListMC->Add(fh2V0LambdaInclMCFromXiGen[i]);
+      fhnV0LambdaInJetsMCFromXiGen[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXiGen_%d", i), Form("MC Lambda from Xi, pure generator level, parent Xi in JC, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0LambdaInJetsMCFromXiGen[i]);
+
       fhnV0LambdaInJetsMCFD[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFD_%d", i), Form("MC Lambda associated, in JC, from Xi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0LambdaInJetsMCFD[i]);
       fhnV0LambdaBulkMCFD[i] = new THnSparseD(Form("fhnV0LambdaBulkMCFD_%d", i), Form("MC Lambda associated, in no jet events, from Xi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
@@ -1982,6 +1996,11 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
       fOutputListMC->Add(fhnV0ALambdaInclMCFromAXi[i]);
       fhnV0ALambdaInclMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi0_%d", i), Form("MC ALambda associated, from AXi0: pt-pt, cent %s;#it{p}_{T}^{A#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{A#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0ALambdaInclMCFromAXi0[i]);
+      fh2V0ALambdaInclMCFromAXiGen[i] = new TH2D(Form("fh2V0ALambdaInclMCFromAXiGen_%d", i), Form("MC ALambda from AXi, pure generator level, inclusive, cent %s;#it{p}_{T}^{#bar{#Lambda},gen.} (GeV/#it{c});#it{p}_{T}^{#bar{#Xi},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtV0, dPtV0Min, dPtV0Max, iNBinsPtXi, dPtXiMin, dPtXiMax);
+      fOutputListMC->Add(fh2V0ALambdaInclMCFromAXiGen[i]);
+      fhnV0ALambdaInJetsMCFromAXiGen[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXiGen_%d", i), Form("MC ALambda from AXi, pure generator level, parent AXi in JC, cent %s;#it{p}_{T}^{#bar{#Lambda},gen.} (GeV/#it{c});#it{p}_{T}^{#bar{#Xi},gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0ALambdaInJetsMCFromAXiGen[i]);
+
       fhnV0ALambdaInJetsMCFD[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFD_%d", i), Form("MC ALambda associated, in JC, from AXi: pt-pt-ptJet, cent %s;#it{p}_{T}^{A#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{A#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0ALambdaInJetsMCFD[i]);
       fhnV0ALambdaBulkMCFD[i] = new THnSparseD(Form("fhnV0ALambdaBulkMCFD_%d", i), Form("MC ALambda associated, in no jet events, from AXi: pt-pt-ptJet, cent %s;#it{p}_{T}^{A#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{A#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
@@ -3492,8 +3511,40 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       else if(iPdgCodeParticleMC == -3322)
         fh1V0AXi0PtMCGen[iCentIndex]->Fill(particleMC->Pt(), fdCentrality);
 
-      // Skip not interesting particles
-      if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeXi) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeOmega))
+      // ----------------------------------------------------------------------
+      Double_t dPtLambdaFromXiGen = -1.;
+      Bool_t bHasLambdaFromXiGen = kFALSE;
+      const Bool_t bIsXiForFDGen = (iPdgCodeParticleMC == 3312 || iPdgCodeParticleMC == 3322 ||
+                                    iPdgCodeParticleMC == -3312 || iPdgCodeParticleMC == -3322);
+      if(bIsXiForFDGen) {
+        const Int_t iDaughterFirst = particleMC->GetDaughterFirst();
+        const Int_t iDaughterLast  = particleMC->GetDaughterLast();
+        if(iDaughterFirst >= 0 && iDaughterLast >= iDaughterFirst) {
+          for(Int_t iDaughter = iDaughterFirst; iDaughter <= iDaughterLast; ++iDaughter) {
+            AliAODMCParticle* particleMCDaughter = (AliAODMCParticle*)arrayMC->At(iDaughter);
+            if(!particleMCDaughter) continue;
+            if(particleMCDaughter->GetMother() != iPartMC) continue;
+            const Int_t iPdgDaughter = particleMCDaughter->GetPdgCode();
+            if((iPdgCodeParticleMC > 0 && iPdgDaughter == 3122) ||
+               (iPdgCodeParticleMC < 0 && iPdgDaughter == -3122)) {
+              dPtLambdaFromXiGen = particleMCDaughter->Pt();
+              bHasLambdaFromXiGen = kTRUE;
+              break;
+            }
+          }
+        }
+
+        if(bHasLambdaFromXiGen) {
+          if(iPdgCodeParticleMC > 0)
+            fh2V0LambdaInclMCFromXiGen[iCentIndex]->Fill(dPtLambdaFromXiGen, particleMC->Pt());
+          else
+            fh2V0ALambdaInclMCFromAXiGen[iCentIndex]->Fill(dPtLambdaFromXiGen, particleMC->Pt());
+        }
+      }
+
+// ----------------------------------------------------------------------
+
+      if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeXi) && (TMath::Abs(iPdgCodeParticleMC) != 3322) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeOmega))
         continue;
 
       // Check identity of the MC V0 particle
@@ -3588,6 +3639,17 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           }
         }
       }
+      // For the jet-cone GEN/GEN map the selection is made on the generated
+      // parent Xi. The daughter Lambda is NOT required to remain inside the cone;
+      // this preserves Xi -> Lambda feed-out from the jet cone.
+      if(bHasLambdaFromXiGen && bIsMCV0InJet && jetMC) {
+        Double_t valueFDGenInJets[3] = {dPtLambdaFromXiGen, particleMC->Pt(), jetMC->Pt()};
+        if(iPdgCodeParticleMC > 0)
+          fhnV0LambdaInJetsMCFromXiGen[iCentIndex]->Fill(valueFDGenInJets);
+        else
+          fhnV0ALambdaInJetsMCFromAXiGen[iCentIndex]->Fill(valueFDGenInJets);
+      }
+
       // K0s
       // if (bV0MCIsK0s && bV0MCIsPrimary) // well reconstructed candidates
       if(bV0MCIsK0s) {// well reconstructed candidates
