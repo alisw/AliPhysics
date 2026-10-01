@@ -467,6 +467,8 @@ private:
   // feed-down
   THnSparse* fhnV0LambdaInclMCFromXi[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInclMCFromXi0[fgkiNBinsCent]; //!
+  TH2D* fh2V0LambdaInclMCFromXiGen[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInJetsMCFromXiGen[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
   TH2D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
@@ -526,6 +528,8 @@ private:
   // feed-down
   THnSparse* fhnV0ALambdaInclMCFromAXi[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInclMCFromAXi0[fgkiNBinsCent]; //!
+  TH2D* fh2V0ALambdaInclMCFromAXiGen[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInJetsMCFromAXiGen[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
   TH2D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
@@ -897,7 +901,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 39) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 40) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
