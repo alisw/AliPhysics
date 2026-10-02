@@ -380,7 +380,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Int_t	             fnBinsAxis[32];		    // Possible nBins for axis used in this class for all plots
   Double_t	     fBinMinAxis[32];		    // Possible Bin Min for axis used in this class for all plots
   Double_t	     fBinMaxAxis[32];		    // Possible Bin Max for axis used in this class for all plots
-  TArrayF            fVarbins;                      //! Variable bins array
+  TArrayF            fVarbins;                      // Variable bins array
   Int_t              fNvarbins;                     // number of variable bins
   //  0 - 9
   //  0 |  1  |  2  |  3   |  4  |  5 |   6   |      7      |    8    |    9    |
@@ -604,7 +604,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   }
 
 
-  ClassDef(AliAnalysisTaskJetFFMoments, 3);
+  ClassDef(AliAnalysisTaskJetFFMoments, 4);
 
 };
 
