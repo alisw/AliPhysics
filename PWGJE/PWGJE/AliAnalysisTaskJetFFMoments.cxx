@@ -195,6 +195,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fkUseTrackPtSumAsJetPt(kFALSE),
   fVarbins(0x0),
   fNvarbins(0),
+  fVarbinsAxis("pt"),
   fkDoJetReco(kFALSE),
   fkUseBackgroundCalc(kFALSE),
   fRparam(0.4),
@@ -401,6 +402,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fkUseTrackPtSumAsJetPt(kFALSE),
   fVarbins(0x0),
   fNvarbins(0),
+  fVarbinsAxis("pt"),
   fkDoJetReco(kFALSE),
   fkUseBackgroundCalc(kFALSE),
   fRparam(0.4),
@@ -2760,7 +2762,10 @@ TH2D * AliAnalysisTaskJetFFMoments::CreateTH2D(const char* name, Int_t iXAxis, I
 
   TH2D* h2tmp = 0x0;
   if(!Varbins.GetArray()) {h2tmp  =  new TH2D(name, hnTitle.Data(), nbins[0], xmin[0], xmax[0], nbins[1], xmin[1], xmax[1]);}
-  else         {h2tmp  =  new TH2D(name, hnTitle.Data(), Nvarbins, Varbins.GetArray(), Nvarbins, Varbins.GetArray());}
+  else         { 
+	        if(TString(name).EndsWith(fVarbinsAxis.Data())) {h2tmp  =  new TH2D(name, hnTitle.Data(), Nvarbins, Varbins.GetArray(), Nvarbins, Varbins.GetArray());} 
+		else {h2tmp  =  new TH2D(name, hnTitle.Data(), nbins[0], xmin[0], xmax[0], nbins[1], xmin[1], xmax[1]); }
+  	      }
   h2tmp->Sumw2();
 
   return h2tmp;
