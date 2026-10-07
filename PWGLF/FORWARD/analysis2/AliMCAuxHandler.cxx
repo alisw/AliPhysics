@@ -63,9 +63,7 @@ AliMCAuxHandler::Init(Option_t* opt)
   //      opt, GetName(), GetTitle());
 
   TString option(opt);
-  if (option.EqualTo("proof") || 
-      option.EqualTo("local") || 
-      option.EqualTo("lite")) return true;
+  if (option.EqualTo("local")) return true;
 
   TString t = "Tree";
   TString b = "";

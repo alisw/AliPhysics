@@ -230,7 +230,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
     fClusters->Delete(); delete fClusters;
     fClusters = NULL;
   }
-  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
+  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && false)){
     fContainer->Delete(); 
     delete fContainer;
     fContainer = NULL;

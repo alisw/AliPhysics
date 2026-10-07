@@ -69,8 +69,7 @@ AliAnalysisTaskHe3piAOD::AliAnalysisTaskHe3piAOD(bool isMC, TString taskname) : 
 ///
 AliAnalysisTaskHe3piAOD::~AliAnalysisTaskHe3piAOD()
 {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
   if (fList)
     delete fList;
   if (fTree)

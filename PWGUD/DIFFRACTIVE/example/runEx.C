@@ -15,18 +15,16 @@ class AliAnalysisGrid;
 
 //______________________________________________________________________________
 void runEx(
-             const char* runtype = "proof", // local, proof or grid
+             const char* runtype = "local", // local, proof or grid
              const char *gridmode = "full", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
              const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
              const Long64_t nentries = 2000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
-             const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-             const char *proofdataset = "/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
-             const char *proofcluster = "alice-caf.cern.ch", // which proof cluster to use in proof mode
+             const Long64_t firstentry = 0, // which proof cluster to use in proof mode
              const char *taskname = "CDex" // sets name of grid generated macros
              )
 {
 	// check run type
-	if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+	if(runtype != "local" && runtype != "grid"){
 		Printf("\n\tIncorrect run option, check first argument of run macro");
 		Printf("\tint runtype = local, proof or grid\n");
 		return;
@@ -38,7 +36,6 @@ void runEx(
 	gSystem->Load("libTree");
 	gSystem->Load("libPhysics");
 	gSystem->Load("libMinuit");
-	gSystem->Load("libProof");
 	gSystem->Load("libmicrocern");
 	gSystem->Load("liblhapdf");
 	gSystem->Load("libpythia6");
@@ -136,7 +133,7 @@ void runEx(
 
 	// create the alien handler and attach it to the manager
 	AliAnalysisGrid *plugin =
-		CreateAlienHandler(taskname, gridmode, proofcluster, proofdataset);
+		CreateAlienHandler(taskname, gridmode);
 
 	// analysis manager
 	AliAnalysisManager* mgr = new AliAnalysisManager("CDMeson-Manager");
@@ -189,9 +186,7 @@ void runEx(
 
 //______________________________________________________________________________
 AliAnalysisGrid* CreateAlienHandler(const char *taskname,
-                                    const char *gridmode,
-                                    const char *proofcluster,
-                                    const char *proofdataset)
+                                    const char *gridmode)
 {
 	AliAnalysisAlien *plugin = new AliAnalysisAlien();
 	// Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
@@ -242,7 +237,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 
 	// Declare all libraries (other than the default ones for the framework. These will be
 	// loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-	plugin->SetAdditionalLibs("libGui.so libCore.so libTree.so libPhysics.so libMinuit.so libProof.so libmicrocern.so liblhapdf.so libpythia6.so libEG.so libGeom.so libVMC.so libEGPythia6.so libSTEERBase.so libESD.so libRAWDatabase.so libRAWDatarec.so libAOD.so libANALYSIS.so libANALYSISalice.so libCDB.so libSTEER.so libRAWDatasim.so libFASTSIM.so libEVGEN.so libAliPythia6.so libSTAT.so libhijing.so libTHijing.so libSTRUCT.so libPHOSUtils.so libPHOSbase.so libPHOSsim.so libPHOSrec.so libMUONcore.so libMUONmapping.so libMUONgeometry.so libMUONcalib.so libMUONraw.so libMUONtrigger.so libMUONbase.so libMUONsim.so libMUONrec.so libMUONevaluation.so libFMDbase.so libFMDsim.so libFMDrec.so libPMDbase.so libPMDsim.so libPMDrec.so libHMPIDbase.so libHMPIDsim.so libHMPIDrec.so libT0base.so libT0sim.so libT0rec.so libZDCbase.so libZDCsim.so libZDCrec.so libACORDEbase.so libACORDErec.so libACORDEsim.so libVZERObase.so libVZEROrec.so libVZEROsim.so libEMCALraw.so libEMCALUtils.so libEMCALbase.so libEMCALsim.so libEMCALrec.so libTPCbase.so libTPCrec.so libTPCsim.so libTPCfast.so libITSbase.so libITSsim.so libITSrec.so libTRDbase.so libTRDsim.so libTRDrec.so libTOFbase.so libTOFrec.so libTOFsim.so libHLTbase.so libHLTinterface.so libHLTsim.so libHLTrec.so AliCDMesonBaseStripped.h AliCDMesonBaseStripped.cxx AliCDMesonTracks.h AliCDMesonTracks.cxx AliCDMesonUtilsStripped.h AliCDMesonUtilsStripped.cxx AliAnalysisTaskCDex.h AliAnalysisTaskCDex.cxx");
+	plugin->SetAdditionalLibs("libGui.so libCore.so libTree.so libPhysics.so libMinuit.so libmicrocern.so liblhapdf.so libpythia6.so libEG.so libGeom.so libVMC.so libEGPythia6.so libSTEERBase.so libESD.so libRAWDatabase.so libRAWDatarec.so libAOD.so libANALYSIS.so libANALYSISalice.so libCDB.so libSTEER.so libRAWDatasim.so libFASTSIM.so libEVGEN.so libAliPythia6.so libSTAT.so libhijing.so libTHijing.so libSTRUCT.so libPHOSUtils.so libPHOSbase.so libPHOSsim.so libPHOSrec.so libMUONcore.so libMUONmapping.so libMUONgeometry.so libMUONcalib.so libMUONraw.so libMUONtrigger.so libMUONbase.so libMUONsim.so libMUONrec.so libMUONevaluation.so libFMDbase.so libFMDsim.so libFMDrec.so libPMDbase.so libPMDsim.so libPMDrec.so libHMPIDbase.so libHMPIDsim.so libHMPIDrec.so libT0base.so libT0sim.so libT0rec.so libZDCbase.so libZDCsim.so libZDCrec.so libACORDEbase.so libACORDErec.so libACORDEsim.so libVZERObase.so libVZEROrec.so libVZEROsim.so libEMCALraw.so libEMCALUtils.so libEMCALbase.so libEMCALsim.so libEMCALrec.so libTPCbase.so libTPCrec.so libTPCsim.so libTPCfast.so libITSbase.so libITSsim.so libITSrec.so libTRDbase.so libTRDsim.so libTRDrec.so libTOFbase.so libTOFrec.so libTOFsim.so libHLTbase.so libHLTinterface.so libHLTsim.so libHLTrec.so AliCDMesonBaseStripped.h AliCDMesonBaseStripped.cxx AliCDMesonTracks.h AliCDMesonTracks.cxx AliCDMesonUtilsStripped.h AliCDMesonUtilsStripped.cxx AliAnalysisTaskCDex.h AliAnalysisTaskCDex.cxx");
 
 	plugin->AddIncludePath("-I$ALICE_ROOT/ITS -I$ALICE_ROOT/PWGPP/ITS");
 
@@ -286,28 +281,17 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 	//---      PROOF MODE SPECIFIC SETTINGS         ------------
 	//----------------------------------------------------------
 	// Proof cluster
-	plugin->SetProofCluster(proofcluster);
 	// Dataset to be used
-	plugin->SetProofDataSet(proofdataset);
 	// May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-	plugin->SetProofReset(0);
 	// May limit number of workers
-	plugin->SetNproofWorkers(0);
 	// May limit the number of workers per slave
-	plugin->SetNproofWorkersPerSlave(1);
 	// May use a specific version of root installed in proof
-	plugin->SetRootVersionForProof("current");
 	// May set the aliroot mode. Check http://aaf.cern.ch/node/83
-	plugin->SetAliRootMode("default"); // Loads AF libs by default
 	// May request ClearPackages (individual ClearPackage not supported)
-	plugin->SetClearPackages(kFALSE);
 	// Plugin test mode works only providing a file containing test file locations, used in "local" mode also
 	plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
 	// Request connection to alien upon connection to grid
-	plugin->SetProofConnectGrid(kFALSE);
 	// Other PROOF specific parameters
-	plugin->SetProofParameter("PROOF_UseMergers","-1");
-	printf("Using: PROOF_UseMergers   : %s\n", plugin->GetProofParameter("PROOF_UseMergers"));
 
 	return plugin;
 }

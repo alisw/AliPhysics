@@ -4,7 +4,7 @@
 # ./runTrig.sh -d '/alice/data/2015/LHC15f/<RUN09>/pass1/%.%/;runList=225106,226225,226220,226170'
 # ./runTrig.sh -d '/alice/data/2015/LHC15f/225106,226225/pass1/%.%/'
 # defaults
-PROOFDATASET="Find;BasePath=/alice/data/2015/LHC15f/000226062/pass2/%.%/;FileName=root_archive.zip;Anchor=AliESDs.root;Tree=/esdTree;Mode=remote;"
+DATASET="Find;BasePath=/alice/data/2015/LHC15f/000226062/pass2/%.%/;FileName=root_archive.zip;Anchor=AliESDs.root;Tree=/esdTree;Mode=remote;"
 isMC="kFALSE"
 NEV=2000
 FIRSTEV=0
@@ -22,7 +22,6 @@ RUNLIST="226062"
 DATAPATTERN="/*/AliESDs.root"
 GRIDWORKINGDIR="dNdeta_LHC15g3c2_MC"
 
-RUNPROOF="NO"
 RUNLOCAL="NO"
 RUNTESTDEST="NO"
 RUNGRID="NO"
@@ -39,20 +38,20 @@ give_help() {
 
     echo "Available Options: "
     echo " -h                    Give Help"
-    echo " -d <dataset>          Set the dataset to be processed on proof"
+    echo " -d <dataset>          Set the dataset to be used for dataset checks"
     echo "                       The format on VAF id the following: "
     echo "                        \"/alice/data/2015/LHC15f/000225768/pass1/%.%/;\""
-    echo "                       if you want to specify and AOD processing you need to edit the runProof macro"
-    echo "                       (Default: $PROOFDATASET)"
+    echo "                       if you want to specify and AOD processing you need to edit the runGridEsd macro"
+    echo "                       (Default: $DATASET)"
     echo " -l <files>            Set files to be processed locally"
-    echo " -r proof|local|dset|grid "
-    echo "                       Run on proof, locally or on grid. The dset mode simply checks the dataset creation on VAF"
+    echo " -r local|dset|grid "
+    echo "                       Run locally or on grid. The dset mode simply checks the dataset creation on VAF"
     echo "                       for grid, you also have to specify the additional options below"
     echo " -n <nev>              Set number of events (default: $NEV)"
     echo " -u                    Show FIXME and TODO from classes and macros"
     echo " -s kTRUE|kFALSE       Use physics selection (default: $USEPHYSICSSELECTION)"
     echo " -m                    Use this flag if processing MC"
-    echo " -t                    Enable multiplicity selection trees (not yet supported on proof, flag needs to be propagated)"
+    echo " -t                    Enable multiplicity selection trees (enabled for grid processing)"
     echo " -o fname              Set out filename (default $OUTFNAME)"
     echo " -a oadbMCMult         Set the OADB to be used for the mult selection in the MC. Can either be a period name "
     echo "                       (e.g. LHC15f), to use the same absolute boundaries used in data, or a root file "
@@ -90,7 +89,7 @@ while getopts "hd:l:mr:g:n:s:o:p:w:x:b:ca:tv:" opt; do
 	  exit 0
 	  ;;
       d) 
-	  PROOFDATASET="Find;BasePath=$OPTARG;FileName=root_archive.zip;Anchor=AliESDs.root;Tree=/esdTree;Mode=remote;"
+	  DATASET="Find;BasePath=$OPTARG;FileName=root_archive.zip;Anchor=AliESDs.root;Tree=/esdTree;Mode=remote;"
 	  ;;
       l)
 	  rm  files.txt
@@ -138,10 +137,6 @@ while getopts "hd:l:mr:g:n:s:o:p:w:x:b:ca:tv:" opt; do
           ;;
 
       r)
-	  if [ "$OPTARG" = "proof" ]
-	      then
-	      RUNPROOF=YES
-	  fi
 	  if [ "$OPTARG" = "local" ]
 	      then
 	      RUNLOCAL=YES
@@ -187,12 +182,6 @@ done
 
 if [ $OPTIND -eq 1 ]; then give_help; fi
 
-if [ "$RUNPROOF" = "YES" ]
-    then   
-        #    ADDTASKMACRO=${ADDTASKMACRO/<outname>/\\\"out_`basename $PROOFDATASET`.root\\\"}
-    ADDTASKMACRO=${ADDTASKMACRO/<outname>/\\\"$OUTFNAME\\\"}
-    root -b -q runProofdNdeta.C\(\"$PROOFDATASET\",$USEPHYSICSSELECTION,$isMC,$NEV,$FIRSTEV,\"$OADBMCMULT\",\"$ADDTASKMACRO\"\)
-fi
 
 if [ "$RUNLOCAL" = "YES" ]
     then   
@@ -207,7 +196,7 @@ fi
 
 if [ "$RUNTESTDSET" = "YES" ]
     then   
-    root -b -q CreateVAFDataset.C\(\"$PROOFDATASET\"\)
+    root -b -q CreateVAFDataset.C\(\"$DATASET\"\)
 fi
 
 

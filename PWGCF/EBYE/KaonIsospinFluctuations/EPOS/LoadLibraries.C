@@ -24,7 +24,6 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
 	gSystem->Load("libANALYSISalice.so");
 	gSystem->Load("libCORRFW.so");
 	gSystem->Load("libGui.so");
-	gSystem->Load("libProof.so");
 	gSystem->Load("libXMLParser.so");
 	gSystem->Load("libRAWDatabase.so");
 	gSystem->Load("libRAWDatarec.so");

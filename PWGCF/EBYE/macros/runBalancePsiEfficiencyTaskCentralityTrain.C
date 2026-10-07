@@ -1,7 +1,6 @@
-enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
+enum anaModes {mLocal=0,mLocalPAR=1,mGrid=3,mGridPAR=4};
 //mLocal: Analyze locally files in your computer using aliroot
 //mLocalPAR: Analyze locally files in your computer using root + PAR files
-//mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
 //mGridPAR: Analyze files on Grid via AliEn plug-in and using par files for FLOW package
 
@@ -20,7 +19,7 @@ Double_t vertexZ = 10.;
 //output file
 TString commonOutputFileName = "outputEfficiency";
 
-//void runEfficiencyTaskCentralityTrain(Int_t mode = mPROOF, 
+//void runEfficiencyTaskCentralityTrain(Int_t mode = mLocal,
 //Int_t nRuns = 600000, 
 //Bool_t DATA = kFALSE, 
 //const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_4plus#esdTree", Int_t offset=0) {
@@ -57,10 +56,7 @@ void runBalancePsiEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA
     chain->Add("/glusterfs/alice1/alice2/pchrist/HeavyIons/MC/Set10/AliESDs.root");
   }
   //Proof
-  if(mode == mPROOF) {
-    gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
-    gProof->Load("AliAnalysisTaskEfficiencyBF.cxx++");
-  }
+
 
   // Create analysis manager:
   AliAnalysisManager *mgr = new AliAnalysisManager("bfPsiCorrectionManager");
@@ -112,8 +108,6 @@ void runBalancePsiEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA
   mgr->PrintStatus(); 
   if(mode == mLocal || mode == mLocalPAR) 
     mgr->StartAnalysis("local",chain);
-  else if(mode == mPROOF) 
-    mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   else if(mode == mGrid || mode == mGridPAR) 
     mgr->StartAnalysis("grid");
 
@@ -170,25 +164,7 @@ void LoadLibraries(const anaModes mode) {
   //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    // Put appropriate username here
-    TProof::Open("alice-caf.cern.ch");
-    //TProof::Open("skaf.saske.sk");
-    //TProof::Open("prf000-iep-grid.saske.sk");
 
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
- 
-    TString extraLibs = "";
-    extraLibs += "CORRFW:PWGTools";
-
-    TList *list = new TList();
-    list->Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
-
-    gProof->EnablePackage("VO_ALICE@AliRoot::v5-03-46-AN",list);
-  }  
   
 } // end of void LoadLibraries(const anaModes mode)
 

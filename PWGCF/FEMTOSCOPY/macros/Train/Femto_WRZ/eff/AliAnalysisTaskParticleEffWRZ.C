@@ -81,7 +81,6 @@ AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partN
 AliAnalysisTaskParticleEffWRZ::~AliAnalysisTaskParticleEffWRZ()
 {
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
     delete fHistoList;
 }
 

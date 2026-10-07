@@ -73,7 +73,9 @@ fPrinfCounts(kFALSE)
 //________________________________________________________________________
 AliAnalysisTaskTriggerRates::~AliAnalysisTaskTriggerRates()
 {
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fTriggerCounters;
+  {
+delete fTriggerCounters;
+}
 }
 
 //________________________________________________________________________

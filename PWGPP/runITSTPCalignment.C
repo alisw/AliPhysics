@@ -3,7 +3,6 @@ void runITSTPCalignment( UInt_t saveinterval = 1000000 )
   TStopwatch timer;
   timer.Start();
 
-  //runProof("/COMMON/COMMON/LHC09a4_run8100X#esdTree");
   runLocal("AliESDs.root");
 
   timer.Stop();
@@ -98,7 +97,6 @@ void runLocal(const char* filenamestr = "AliESDs.root" ) {
 
 //_________________________________________________//
 void runInteractive(const char* collectionName = "tag.xml") {
-  gSystem->Load("libProofPlayer");
 
   TString outputArrayFilename = "ITSTPCalignmentArray.root";
   TString outputHistFilename = "ITSTPCalignmentHist.root";

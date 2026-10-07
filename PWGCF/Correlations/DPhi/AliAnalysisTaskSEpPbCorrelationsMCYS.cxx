@@ -480,17 +480,17 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS(const
 
 AliAnalysisTaskSEpPbCorrelationsMCYS::~AliAnalysisTaskSEpPbCorrelationsMCYS()
 {
-  if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutputList ) {
     delete fOutputList;
     fOutputList = 0x0;
   }
   
-  if (fOutputList1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutputList1 ) {
     delete fOutputList1;
     fOutputList1 = 0x0;
   }
   
-  if (fOutputList2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutputList2 ) {
     delete fOutputList2;
     fOutputList2 = 0x0;
   }

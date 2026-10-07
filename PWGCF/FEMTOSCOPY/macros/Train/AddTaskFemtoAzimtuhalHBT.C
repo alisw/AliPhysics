@@ -64,15 +64,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
   //===========================================================================
 //  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_PHYSICS/include");
 
-  if (TProofMgr::GetListOfManagers()->GetEntries()) {
-//     if (dynamic_cast<TProofLite *> gProof) {
-//       char *macrocommand[10000];
-//       sprintf(macrocommand, ".L %s", configMacroName);
-//       gProof->Exec(macrocommand);
-//     }
-//     else
-    gProof->Load(configMacroName);
-  }
+
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);

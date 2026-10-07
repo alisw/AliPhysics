@@ -132,8 +132,9 @@ AliAnalysisEffTaskExclusivePID::AliAnalysisEffTaskExclusivePID(TString name, int
 AliAnalysisEffTaskExclusivePID::~AliAnalysisEffTaskExclusivePID()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

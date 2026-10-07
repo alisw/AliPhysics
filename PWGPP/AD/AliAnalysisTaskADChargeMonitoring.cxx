@@ -70,9 +70,7 @@ AliAnalysisTaskADChargeMonitoring::AliAnalysisTaskADChargeMonitoring(const char 
 }
 
 AliAnalysisTaskADChargeMonitoring::~AliAnalysisTaskADChargeMonitoring() {
-  if (AliAnalysisManager::GetAnalysisManager() && 
-      AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
-    return;
+
 
   delete fTL;
   fTL = NULL;

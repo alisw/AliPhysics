@@ -125,8 +125,9 @@ AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int
 AliAnalysisTaskEfficiencyFB128::~AliAnalysisTaskEfficiencyFB128()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

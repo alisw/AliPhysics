@@ -500,7 +500,7 @@ AliAnalysisTaskEMCALPi0Gamma::~AliAnalysisTaskEMCALPi0Gamma()
 {
   // Destructor.
   
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
     delete fOutput;
   }
 }

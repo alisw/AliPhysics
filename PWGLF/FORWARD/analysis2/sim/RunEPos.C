@@ -1,5 +1,5 @@
 void
-RunEPos(const char* url="lite://${PWD}/index.root?events=-1&run=138190#Particle", 
+RunEPos(const char* url="local://${PWD}/index.root?events=-1&run=138190#Particle",
 	const char* opt="")
 {
   TString fwd = ""; // gSystem->Getenv("ANA_SRC");
@@ -11,13 +11,11 @@ RunEPos(const char* url="lite://${PWD}/index.root?events=-1&run=138190#Particle"
 			       fwd.Data()));
   gROOT->SetMacroPath(Form("%s:%s/sim", gROOT->GetMacroPath(), fwd.Data()));
 
-  // Remember to copy changes to FastSim.C(FastSim::ProofLoadLibs)
   TList clsLib;
   clsLib.Add(new TNamed("TVirtualMC",              "libVMC"));
   clsLib.Add(new TNamed("TLorentzVector",          "libPhysics"));
   clsLib.Add(new TNamed("TLinearFitter",           "libMinuit"));
   clsLib.Add(new TNamed("TTree",                   "libTree"));
-  clsLib.Add(new TNamed("TProof",                  "libProof"));
   clsLib.Add(new TNamed("TGFrame",                 "libGui"));
   clsLib.Add(new TNamed("TSAXParser",              "libXMLParser"));
   clsLib.Add(new TNamed("AliVEvent",               "libSTEERBase"));

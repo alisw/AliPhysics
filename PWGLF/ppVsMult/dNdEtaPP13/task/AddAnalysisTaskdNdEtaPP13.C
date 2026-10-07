@@ -4,7 +4,6 @@
 #include "AliVEvent.h"
 #include "AliAnalysisTaskdNdEtapp13.h"
 #include "AliAnalysisManager.h"
-#include "TProof.h"
 #include "TFile.h"
 #include "TROOT.h"
 #endif

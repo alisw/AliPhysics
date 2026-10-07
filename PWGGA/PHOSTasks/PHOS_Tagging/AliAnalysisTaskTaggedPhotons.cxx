@@ -274,7 +274,7 @@ AliAnalysisTaskTaggedPhotons& AliAnalysisTaskTaggedPhotons::operator=(const AliA
 AliAnalysisTaskTaggedPhotons::~AliAnalysisTaskTaggedPhotons()
 {
   // dtor
-  if (fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutputContainer ) {
     fOutputContainer->Clear();
     delete fOutputContainer;
   }

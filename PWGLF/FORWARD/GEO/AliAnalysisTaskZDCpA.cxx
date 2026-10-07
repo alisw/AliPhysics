@@ -259,7 +259,7 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA(const AliAnalysisTaskZDCpA& ana):
 AliAnalysisTaskZDCpA::~AliAnalysisTaskZDCpA()
 {
   // Destructor
-  if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if(fOutput ){
     delete fOutput; fOutput=0;
   } 
    

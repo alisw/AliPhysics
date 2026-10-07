@@ -38,7 +38,6 @@
 #include "AliSpectraBothTrackCuts.h"
 #include "AliSpectraBothEventCuts.h"
 #include "AliCentrality.h"
-#include "TProof.h"
 #include "AliPID.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"

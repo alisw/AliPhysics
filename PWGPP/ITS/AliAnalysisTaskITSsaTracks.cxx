@@ -143,7 +143,7 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
 //___________________________________________________________________________
 AliAnalysisTaskITSsaTracks::~AliAnalysisTaskITSsaTracks(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistNEventsVsTrig;

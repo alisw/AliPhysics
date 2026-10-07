@@ -50,7 +50,7 @@ AliGloAlgTask::AliGloAlgTask(const char *name)
 AliGloAlgTask::~AliGloAlgTask()
 {
   // Destructor
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
+  if (fOutput ) {  //RRR
     printf("Deleteing output\n");
     delete fOutput;
     fOutput = 0;

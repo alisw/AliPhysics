@@ -7,8 +7,8 @@ correct=no
 nev=-1
 offset=0
 debug=kFALSE
-runmode=1
-dataset=/alice/sim/LHC10f8a_130844
+runmode=0
+dataset=AliESDs.root
 ropt="-l"
 option="DCA,SAVE"
 workers=26
@@ -44,13 +44,10 @@ Available options:
   -r <mode>                    Run the task
                                Modes [default=$runmode]:
                                   0 local
-                                  1 caf    
                                   2 grid    (remeber to set run list)
-                                  3 prooflite
   -c <data,mc>                 Run the correction data and MC are names of the folders. 
                                ./output/ is added automatically in front of the folder names
   -s                           Run the trigger study task (by default it runs the multiplicity analysis)
- Proof settings
   -w nworkers                  Set the number of worker nodes (0 == 1 worker per node)
   -n <nev>                     Number of events to be analized
  Grid Settings
@@ -59,7 +56,6 @@ Available options:
   -d <dataset>                 Dataset or data collection (according to run mode) [default=$dataset]
                                 - local mode: a single ESD file, an xml collection of files on 
                                   grid or a text file with a ESD per line
-                                - caf mode: a dataset
                                 - grid mode: a directory on alien (don't forget the run list)
   -h                           This help
  Options specific to the multiplicity analysis

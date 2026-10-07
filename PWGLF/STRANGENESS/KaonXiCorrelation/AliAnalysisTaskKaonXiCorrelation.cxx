@@ -72,8 +72,7 @@ AliAnalysisTaskKaonXiCorrelation::AliAnalysisTaskKaonXiCorrelation(bool isMC, TS
 ///
 AliAnalysisTaskKaonXiCorrelation::~AliAnalysisTaskKaonXiCorrelation()
 {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
   if (fList)
     delete fList;
   if (fTree)

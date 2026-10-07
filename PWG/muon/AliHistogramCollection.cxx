@@ -1200,7 +1200,6 @@ AliHistogramCollection::Remove(TObject* key)
 //______________________________________________________________________________
 Bool_t AliHistogramCollection::HistoSameAxis(TH1 *h0, TH1 *h1) const
 {
-  // shameless copy from TProofPlayerRemote::HistoSameAxis
   //
   // Return kTRUE is the histograms 'h0' and 'h1' have the same binning and ranges
   // on the axis (i.e. if they can be just Add-ed for merging).

@@ -101,7 +101,6 @@ cout<<mc<<" "<<aod<<" "<<griddatadir.Data()<<" "<<root.Data()<<" "<<datapattern.
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libProof");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libSTEER");
   gSystem->Load("libTender");

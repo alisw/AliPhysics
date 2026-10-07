@@ -288,7 +288,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
 AliAnalysisPHOSNeutralMesonsAndPhotons::~AliAnalysisPHOSNeutralMesonsAndPhotons()
 {
   // Destructor
-  if (fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutputContainer ) {
     fOutputContainer->Clear();
     delete fOutputContainer;
     fOutputContainer = nullptr;

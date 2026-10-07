@@ -281,8 +281,8 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
 
   if (!AliAnalysisManager::GetAnalysisManager())  return;  
 
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
   {
+
     delete fEMCALRecoUtils;
     delete fRecParam;
     delete fUnfolder;
@@ -300,7 +300,8 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
       delete fClusterizer;
       fDigitsArr = 0;
     }
-  }
+
+}
 }
 
 //_____________________________________________________
