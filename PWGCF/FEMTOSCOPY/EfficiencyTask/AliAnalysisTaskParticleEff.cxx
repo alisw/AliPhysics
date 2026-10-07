@@ -1109,7 +1109,7 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
       continue;
     fHistQA[10]->Fill(4);
 
-    if (track->Pt() < 0.2 || track->Pt() > 20)
+    if (track->Pt() < 4 || track->Pt() > 8)
       continue;
     fHistQA[10]->Fill(5);
 
@@ -2025,7 +2025,7 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
       continue;
     }
 
-    if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 20){
+    if (MCtrk->Pt() < 4 || MCtrk->Pt() > 8){
       continue;
     }
 
