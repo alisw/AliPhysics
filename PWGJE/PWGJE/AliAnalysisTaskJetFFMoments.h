@@ -202,7 +202,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
     fnBinsAxis[1] = nntr; fBinMinAxis[1] = minntr; fBinMaxAxis[1] = maxntr;
     fnBinsAxis[2] = nep;  fBinMinAxis[2] = minep;  fBinMaxAxis[2] = maxep;
     fnBinsAxis[3] = nepb; fBinMinAxis[3] = minepb; fBinMaxAxis[3] = maxepb;}
-  void SetVarBinning(TArrayF varbins,Int_t nvarbins) {fVarbins = varbins; fNvarbins = nvarbins;} 
+  void SetVarBinning(TArrayF varbins,Int_t nvarbins, TString varbinaxis = TString("pt")) {fVarbins = varbins; fNvarbins = nvarbins; fVarbinsAxis = varbinaxis;} 
   // For jet reco
   void SetDoJetReco( Bool_t c = kFALSE)                {fkDoJetReco = c;}                                // Do jet reconstruction in this code (kTRUE) or read existing jet branch 
   void SetBackgroundCalc(Bool_t b)                     {fkUseBackgroundCalc = b;}                        // - 
@@ -380,6 +380,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Double_t	     fBinMaxAxis[32];		    // Possible Bin Max for axis used in this class for all plots
   TArrayF            fVarbins;                      // Variable bins array
   Int_t              fNvarbins;                     // number of variable bins
+  TString            fVarbinsAxis;	            // Variable bin axis name ex pt
   //  0 - 9
   //  0 |  1  |  2  |  3   |  4  |  5 |   6   |      7      |    8    |    9    |
   // vz | ntr | ep  | epb  |  z  | xi | lnjT  |  DeltaTheta | FFM_gen | FFM_rec |
