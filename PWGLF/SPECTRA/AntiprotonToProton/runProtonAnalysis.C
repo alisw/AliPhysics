@@ -41,9 +41,8 @@ void runProtonAnalysis(Bool_t kAnalyzeMC = kTRUE,
     "/home/pchrist/ALICE/Baryons/Data/104070");*/
   //runInteractive("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, kRunQA, "tag.xml");
   //runBatch("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, kUseOfflineTrigger, kRunQA, "wn.xml");  
-  runProof("ESD", kAnalyzeMC, esdAnalysisType, pidMode, kUseOnlineTrigger, 
-	   kUseOfflineTrigger, kRunQA,
-	   500000,0,"/COMMON/COMMON/LHC10a8_run104867_8#esdTree");
+  runLocal("ESD", kAnalyzeMC, esdAnalysisType, pidMode,
+           kUseOnlineTrigger, kUseOfflineTrigger, kRunQA, ".");
 
   timer.Stop();
   timer.Print();
@@ -163,7 +162,6 @@ void runInteractive(const char* mode = "ESD",
 		    Bool_t kUseOfflineTrigger = kTRUE,
 		    Bool_t kRunQA = kFALSE,
 		    const char* collectionName = "tag.xml") {
-  gSystem->Load("libProofPlayer");
   
   TString smode = mode;
   TString cutFilename = "ListOfCuts."; cutFilename += mode;
@@ -293,7 +291,6 @@ void runBatch(const char* mode = "ESD",
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer");
 
   //____________________________________________________//
   //_____________Setting up the par files_______________//
@@ -373,111 +370,7 @@ void runBatch(const char* mode = "ESD",
 }
 
 //_________________________________________________//
-void runProof(const char* mode = "ESD",
-	      Bool_t kAnalyzeMC = kTRUE,
-	      const char* analysisType = 0x0,
-	      const char* pidMode = 0x0,
-	      Bool_t kUseOnlineTrigger = kTRUE,
-	      Bool_t kUseOfflineTrigger = kTRUE,
-	      Bool_t kRunQA = kFALSE,
-	      Int_t stats = 0, Int_t startingPoint = 0,
-	      const char* dataset = 0x0) {  
-  TString smode = mode;
-  TString cutFilename = "ListOfCuts."; cutFilename += mode;
-  TString outputFilename = "Protons."; outputFilename += mode;
-  if(analysisType) {
-    cutFilename += "."; cutFilename += analysisType;
-    outputFilename += "."; outputFilename += analysisType;
-  }
-  if(pidMode) {
-    cutFilename += "."; cutFilename += pidMode;
-    outputFilename += "."; outputFilename += pidMode;
-  }
-  cutFilename += ".root";
-  outputFilename += ".root";
 
-  gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  printf("****** Connect to PROOF *******\n");
-  TProof::Open("alicecaf.cern.ch"); 
-  gProof->SetParallel();
-
-  // Enable the Analysis Package
-  gProof->UploadPackage("STEERBase.par");
-  gProof->EnablePackage("STEERBase");
-  gProof->UploadPackage("ESD.par");
-  gProof->EnablePackage("ESD");
-  gProof->UploadPackage("AOD.par");
-  gProof->EnablePackage("AOD");
-  gProof->UploadPackage("ANALYSIS.par");
-  gProof->EnablePackage("ANALYSIS");
-  gProof->UploadPackage("ANALYSISalice.par");
-  gProof->EnablePackage("ANALYSISalice");
-  gProof->UploadPackage("CORRFW.par");
-  gProof->EnablePackage("CORRFW");
-  gProof->UploadPackage("PWG2spectra.par");
-  gProof->EnablePackage("PWG2spectra");
-  
-  //____________________________________________//
-  gROOT->LoadMacro("configProtonAnalysis.C");
-  AliProtonAnalysis *analysis = GetProtonAnalysisObject(mode,kAnalyzeMC,
-							analysisType,
-							pidMode,
-							kUseOnlineTrigger,
-							kUseOfflineTrigger,
-							kRunQA);
-  //____________________________________________//
-
-  //____________________________________________//
-  // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("protonAnalysisManager");
-  AliVEventHandler* esdH = new AliESDInputHandler;
-  mgr->SetInputEventHandler(esdH);
-  if(smode == "MC") {
-    AliMCEventHandler *mc = new AliMCEventHandler();
-    mgr->SetMCtruthEventHandler(mc);
-  }
-  //____________________________________________//
-  //Create the proton task
-  AliAnalysisTaskProtons *taskProtons = new AliAnalysisTaskProtons("TaskProtons");
-  taskProtons->SetAnalysisObject(analysis);
-  mgr->AddTask(taskProtons);
-
-  // Create containers for input/output
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("outputList",
-                                                            TList::Class(),
-							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("outputQAList",
-                                                            TList::Class(),
-							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());
-  /*AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
-                                                            TCanvas::Class(),
-							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());*/
-
-  //____________________________________________//
-  mgr->ConnectInput(taskProtons,0,cinput1);
-  mgr->ConnectOutput(taskProtons,0,coutput1);
-  mgr->ConnectOutput(taskProtons,1,coutput2);
-  //mgr->ConnectOutput(taskProtons,3,coutput3);
-  if (!mgr->InitAnalysis()) return;
-  mgr->PrintStatus();
-
-  if(dataset)
-    mgr->StartAnalysis("proof",dataset,stats,startingPoint);
-  else {
-    // You should get this macro and the txt file from:
-    // http://aliceinfo.cern.ch/Offline/Analysis/CAF/
-    gROOT->LoadMacro("CreateESDChain.C");
-    TChain* chain = 0x0;
-    chain = CreateESDChain("ESD82XX_30K.txt",stats);
-    chain->SetBranchStatus("*Calo*",0);
-
-    mgr->StartAnalysis("proof",chain);
-  }
-}
 
 //_________________________________________________//
 Int_t setupPar(const char* pararchivename) {

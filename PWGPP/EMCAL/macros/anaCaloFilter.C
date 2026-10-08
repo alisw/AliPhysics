@@ -14,10 +14,9 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 //
 //-------------------------------------------------
-enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
+enum anaModes {mLocal=0,mLocalCAF=1,mGRID=3};
 //mLocal: Analyze locally files in your computer
 //mLocalCAF: Analyze locally CAF files
-//mPROOF: Analyze CAF files with PROOF
 
 //---------------------------------------------------------------------------
 //Settings to read locally several files, only for "mLocal" mode
@@ -128,8 +127,6 @@ void anaCaloFilter(Int_t mode=mLocal)
     TString smode = "";
     if (mode==mLocal || mode == mLocalCAF) 
       smode = "local";
-    else if (mode==mPROOF) 
-      smode = "proof";
     else if (mode==mGRID) 
       smode = "local";
     
@@ -198,35 +195,7 @@ void  LoadLibraries(const anaModes mode) {
   //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    //
-    // Connect to proof
-    // Put appropriate username here
-    // TProof::Reset("proof://mgheata@lxb6046.cern.ch"); 
-    TProof::Open("proof://mgheata@lxb6046.cern.ch");
     
-    //    gProof->ClearPackages();
-    //    gProof->ClearPackage("ESD");
-    //    gProof->ClearPackage("AOD");
-    //    gProof->ClearPackage("ANALYSIS");   
-     
-    // Enable the STEERBase Package
-    gProof->UploadPackage("STEERBase.par");
-    gProof->EnablePackage("STEERBase");
-    // Enable the ESD Package
-    gProof->UploadPackage("ESD.par");
-    gProof->EnablePackage("ESD");
-    // Enable the AOD Package
-    gProof->UploadPackage("AOD.par");
-    gProof->EnablePackage("AOD");
-    // Enable the Analysis Package
-    gProof->UploadPackage("ANALYSIS.par");
-    gProof->EnablePackage("ANALYSIS");
-    // Enable the PHOS geometry Package
-    //gProof->UploadPackage("PHOSUtils.par");
-    //gProof->EnablePackage("PHOSUtils");
-    gProof->ShowEnabledPackages();
-  }  
   
 }
 
@@ -288,7 +257,7 @@ void CreateChain(const anaModes mode, TChain * chain){
   //-----------------------------------------------------------
   //Analysis of CAF data locally and with PROOF
   //-----------------------------------------------------------
-  if(mode ==mPROOF || mode ==mLocalCAF){
+  if(mode ==mLocalCAF){
     // Chain from CAF
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
     // The second parameter is the number of input files in the chain

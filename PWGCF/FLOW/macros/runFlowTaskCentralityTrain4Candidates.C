@@ -1,7 +1,6 @@
-enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
+enum anaModes {mLocal=0,mLocalPAR=1,mGrid=3,mGridPAR=4};
 //mLocal: Analyze locally files in your computer using aliroot
 //mLocalPAR: Analyze locally files in your computer using root + PAR files
-//mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
 //       (Remark: When using this mode set also Bool_t bUseParFiles = kFALSE; in CreateAlienHandler.C)
 //mGridPAR: Analyze files on Grid via AliEn plug-in and using par files for FLOW package
@@ -103,8 +102,6 @@ void runFlowTaskCentralityTrain4Candidates(Int_t mode = mGridPAR, Int_t nRuns = 
   mgr->PrintStatus();
   if(mode == mLocal || mode == mLocalPAR) {
     mgr->StartAnalysis("local",chain);
-  } else if(mode == mPROOF) {
-    mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   } else if(mode == mGrid || mode == mGridPAR) { 
     mgr->StartAnalysis("grid");
   }
@@ -141,7 +138,6 @@ void LoadLibraries(const anaModes mode)
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   
   if (mode==mLocal || mode==mGrid || mode == mGridPAR || mode == mLocalPAR )
   {
@@ -172,61 +168,7 @@ void LoadLibraries(const anaModes mode)
   //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    //  set to debug root versus if needed
-    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
-    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
-    //TProof::Reset("proof://snelling@alicecaf.cern.ch");     
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    TProof::Open("mkrzewic@alice-caf.cern.ch");
-    //TProof::Open("mkrzewic@skaf.saske.sk");
-     // list the data available
-    //gProof->ShowDataSets("/*/*"); 
-    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
-    //gProof->ShowDataSets("/alice/data/"); //for REAL Data 
- 
-    // Clear the Packages
-    /*    
-    gProof->ClearPackage("STEERBase.par");
-    gProof->ClearPackage("ESD.par");
-    gProof->ClearPackage("AOD.par");
-    */
-    //gProof->ClearPackage("ANALYSIS.par");
-    //gProof->ClearPackage("ANALYSISalice.par");
-    //gProof->ClearPackage("CORRFW.par");
     
-    gProof->ClearPackage("PWGflowBase");
-    gProof->ClearPackage("PWGflowTasks");
-    
-    // Upload the Packages
-    //gProof->UploadPackage("STEERBase.par");
-    //gProof->UploadPackage("ESD.par");    
-    //gProof->UploadPackage("AOD.par");
-       
-    //gProof->UploadPackage("ANALYSIS.par"); 
-    //gProof->UploadPackage("ANALYSISalice.par");
-    gProof->UploadPackage("CORRFW.par");
-    gProof->UploadPackage("PWGflowBase.par");
-    gProof->UploadPackage("PWGflowTasks.par");
-    gProof->UploadPackage("ALIRECO.par");
-
-    // Enable the Packages 
-    // The global package
-    TList* list = new TList();
-    list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","RAW:OCDB:STEER:TOF"));
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-07-AN",list);
-    gProof->EnablePackage("ALIRECO");
-    //gProof->EnablePackage("ANALYSIS");
-    //gProof->EnablePackage("ANALYSISalice");
-    //gProof->EnablePackage("CORRFW");
-    gProof->EnablePackage("PWGflowBase");
-    gProof->EnablePackage("PWGflowTasks");
-
-    // Show enables Packages
-    gProof->ShowEnabledPackages();
-  }  
   
 } // end of void LoadLibraries(const anaModes mode) 
 

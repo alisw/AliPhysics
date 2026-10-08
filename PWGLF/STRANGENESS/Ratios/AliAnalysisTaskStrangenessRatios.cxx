@@ -92,8 +92,7 @@ AliAnalysisTaskStrangenessRatios::AliAnalysisTaskStrangenessRatios(bool isMC, TS
 ///
 AliAnalysisTaskStrangenessRatios::~AliAnalysisTaskStrangenessRatios()
 {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
   if (fList)
     delete fList;
   if (fTree)

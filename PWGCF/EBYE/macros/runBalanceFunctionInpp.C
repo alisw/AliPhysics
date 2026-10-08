@@ -1,4 +1,4 @@
-enum analysisModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
+enum analysisModes {mLocal=0,mLocalPAR=1,mGrid=3,mGridPAR=4};
 enum analysisTypes {mESD,mAOD,mMC,mMCESD};
 
 //
@@ -15,9 +15,9 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
   timer.Start();
   
   //Check analysis mode
-  if((mode < 0) || (mode > 4)) {
+  if((mode < 0) || (mode > 4) || (mode == 2)) {
     Printf("Analysis mode not recognized!");
-    Printf("You can select out of 0: local, 1: local with par files, 2: proof, 3: grid, 4: grid with par files");
+    Printf("You can select out of 0: local, 1: local with par files, 3: grid, 4: grid with par files");
     return;
   }
   
@@ -62,9 +62,7 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
     }
   }
   //Proof
-  if(mode == mPROOF) {
-    gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
-  }
+
   
   // analysis manager
   AliAnalysisManager* mgr = new AliAnalysisManager("balanceFunctionManager");
@@ -105,8 +103,6 @@ void runBalanceFunctionInpp(Int_t mode = mLocal,
   // start analysis
   if(mode == mLocal || mode == mLocalPAR) 
     mgr->StartAnalysis("local",chain);
-  else if(mode == mPROOF) 
-    mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   else if(mode == mGrid || mode == mGridPAR) 
     mgr->StartAnalysis("grid");
 
@@ -160,17 +156,7 @@ void LoadLibraries(const analysisModes mode) {
   //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    // Put appropriate username here
-    TProof::Open("alice-caf.cern.ch");
-    //TProof::Open("skaf.saske.sk");
-    //TProof::Open("prf000-iep-grid.saske.sk");
 
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
-  }  
   
 } // end of void LoadLibraries(const anaModes mode)
 

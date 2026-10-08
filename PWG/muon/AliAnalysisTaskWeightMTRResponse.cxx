@@ -102,9 +102,11 @@ AliAnalysisTaskWeightMTRResponse::~AliAnalysisTaskWeightMTRResponse()
   //
 
   // For proof: do not delete output containers
-  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  {
+
     delete fMergeableCollection;
-  }
+
+}
 }
 
 //________________________________________________________________________

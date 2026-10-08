@@ -3,11 +3,6 @@ void runAnalysisTaskITSTPCalignment()
   TStopwatch timer;
   timer.Start();
 
-  //runProof("/ITS/dainesea/run104070#esdTree");
-  //runProof("/ITS/dainesea/run104070_newTPCalign#esdTree");
-  //runProof("/ALIREC/aliprod/run104671#esdTree");
-  //runProof("/ITS/dainesea/run104070_newTPCcalib#esdTree");
-  //runProof("/COMMON/COMMON/LHC09d9a_0.9TeV_0.5T#esdTree");
   //runLocal("find /data/alice3/mikolaj/runs_pp/pass1/ -name AliESDs.root","tree");
   //runLocal("find /data/alice3/mikolaj/ITSmisal -path */0.001/* -name AliESDs.root","tree");
   //runLocal("find /data/alice3/mikolaj/TPCfullmisalignmentB0 -name AliESDs.root","tree");
@@ -33,7 +28,6 @@ void runLocal(TString inputFile = "fileList", TString options="")
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   gSystem->Load("libMinuit");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libCDB");
@@ -90,56 +84,7 @@ void runLocal(TString inputFile = "fileList", TString options="")
 }
 
 //______________________________________________________________________________
-void runProof(const char* dataset, TString options="" )
-{
 
-  TString outputFilename = "outputITSTPCalignment.root";
-
-  printf("****** Connect to PROOF *******\n");
-  gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("mkrzewic@alicecaf.cern.ch");
-  //gProof->SetParallel();
-  gProof->ClearPackages();
-
-  // Enable the Analysis Package
-  gProof->UploadPackage("STEERBase.par");
-  gProof->EnablePackage("STEERBase");
-  gProof->UploadPackage("ESD.par");
-  gProof->EnablePackage("ESD");
-  gProof->UploadPackage("AOD.par");
-  gProof->EnablePackage("AOD");
-  gProof->UploadPackage("ANALYSIS.par");
-  gProof->EnablePackage("ANALYSIS");
-  gProof->UploadPackage("ANALYSISalice.par");
-  gProof->EnablePackage("ANALYSISalice");
-  gProof->UploadPackage("CORRFW.par");
-  gProof->EnablePackage("CORRFW");
-
-  //gProof->UploadPackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-18-12-AN/AF-v4-18-12-AN");
-  //gProof->EnablePackage("/afs/cern.ch/alice/caf/sw/ALICE/PARs/v4-18-12-AN/AF-v4-18-12-AN");
-
-  gProof->Load("AliRelAlignerKalman.cxx++g");
-  gProof->Load("AliRelAlignerKalmanArray.cxx++g");
-  gProof->Load("AliAnalysisTaskITSTPCalignment.cxx++g");
-  gProof->Load("AddTaskITSTPCalignment.C");
-
-  // analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("ITSTPCalignmentAnalysisManager");
-
-  // input handlers
-  AliVEventHandler* esdH = new AliESDInputHandler();
-  ((AliESDInputHandler*)esdH)->SetReadFriends(kTRUE);
-  mgr->SetInputEventHandler(esdH);
-
-  //add the task
-  AliAnalysisTaskITSTPCalignment *task = AddTaskITSTPCalignment();
-
-  //start analysis
-  if (!mgr->InitAnalysis()) return;
-  mgr->PrintStatus();
-
-  mgr->StartAnalysis("proof",dataset,10000,0);
-}
 
 //______________________________________________________________________________
 void runAlienPlugin(const char* pluginmode="full")
@@ -156,7 +101,6 @@ void runAlienPlugin(const char* pluginmode="full")
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   gSystem->Load("libMinuit");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libCDB");

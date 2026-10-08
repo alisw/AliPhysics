@@ -313,8 +313,9 @@ fPVzCut(10)
 AliAnalysisTaskEffK0ss::~AliAnalysisTaskEffK0ss()
 {
   //Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

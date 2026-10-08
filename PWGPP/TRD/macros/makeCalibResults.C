@@ -66,7 +66,7 @@
 
 #endif
 
-Char_t const *libs[] = {"libProofPlayer", "libANALYSIS", "libANALYSISalice", "libTender", "libSTAT", "libPWGPP", "libPWGmuon"};
+Char_t const *libs[] = {"", "libANALYSIS", "libANALYSISalice", "libTender", "libSTAT", "libPWGPP", "libPWGmuon"};
 
 // define setup
 TClass *ctask = new TClass;

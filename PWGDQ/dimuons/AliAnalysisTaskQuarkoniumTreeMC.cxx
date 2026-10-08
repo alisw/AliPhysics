@@ -227,7 +227,9 @@ AliAnalysisTaskQuarkoniumTreeMC::~AliAnalysisTaskQuarkoniumTreeMC() {
   //destructor
   //
   Info("~AliAnalysisTaskQuarkoniumTreeMC","Calling Destructor");
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis) delete fOutputTree;
+  {
+delete fOutputTree;
+}
 }
 
 

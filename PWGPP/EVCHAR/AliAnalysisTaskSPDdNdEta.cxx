@@ -187,7 +187,7 @@ AliAnalysisTaskSPDdNdEta::~AliAnalysisTaskSPDdNdEta()
   // list is deleted by the TSelector dtor
   delete fMultReco;
 
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
     delete fOutput;
     fOutput = 0;
   }

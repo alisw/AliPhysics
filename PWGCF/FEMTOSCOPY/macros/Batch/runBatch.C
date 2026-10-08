@@ -4,7 +4,6 @@ void runBatch(const char *chainlistfile) {
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer");
 
   //____________________________________________________//
   //_____________Setting up STEERBase.par_______________//

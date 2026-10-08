@@ -1,18 +1,13 @@
 // Macro to run AliDhcTask - A. Adare, Mar 2012
 // Choose dataType = "esd" or "aod".
-// Choose runMode  = "local", "proof", "grid", or "terminate".
-// Choose proofCluster = "skaf.saske.sk" or "alice-caf.cern.ch".
-// When running on proof: use root, not aliroot.
 
 Int_t verbosity      = 0;
 Long64_t nEvents     = 123456789;
-TString runMode      = "local"; // "proof";
+TString runMode      = "local";
 TString dataType     = "aod";
 TString localDir     = "/Users/adare/esd/alice/data/2010/LHC10h/000139107/ESDs/pass2/";
 TString esdDir       = localDir + TString("10000139107001.120/");
 TString aodDir       = localDir + TString("AOD049/0008/");
-TString proofDataset = "/alice/data/LHC10h_000137848_p2_AOD049";
-TString proofCluster = "aadare@skaf.saske.sk"; // or "aadare@alice-caf.cern.ch";
 TString alirootVer   = "VO_ALICE@AliRoot::v4-21-21-AN"; // for PROOF
 TString libsBase     = "Tree:Geom:VMC:STEERBase:ESD:AOD";
 TString libsExtra    = "ANALYSIS:ANALYSISalice:PWGCFCorrelationsDPhi";
@@ -28,9 +23,7 @@ void RunDhcTask()
 
   if (runMode=="local")
     LocalSetup();
-  else if (runMode=="proof") {
-    ProofSetup();
-  }
+
 
   AddDhcTask();
   
@@ -44,9 +37,7 @@ void RunDhcTask()
   if (runMode=="local") {
     mgr->StartAnalysis(runMode.Data(), chain, nEvents);
   }
-  else if (runMode=="proof") {
-    mgr->StartAnalysis(runMode.Data(), proofDataset.Data(), nEvents);
-  }
+
   return;
 }
 
@@ -84,52 +75,7 @@ void LocalSetup()
   return;
 }
 
-void ProofSetup()
-{
-  gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-      
-  // Get PROOF pointer
-  TProof *proof = gProof;
-  if (proof) {
-    TProof::Reset(proofCluster.Data()); // add kTRUE as a 2nd arg for hard reset
-    //    proof->Reset("");
-    cerr << "Trying to reset proof" << endl;
-  } else {
-    proof = TProof::Open(proofCluster.Data(), "workers=60");
-  }
-  if (!proof) {
-    cerr << "Connection to " << proofCluster.Data()
-	 << " failed!" << endl;
-    return;
-  }
 
-  if (0) {
-    proof->ShowPackages();
-    proof->ShowDataSets();
-  }
-  
-  // Load libraries   
-  int  ret = 0;
-  libList->Add(new TNamed("ALIROOT_EXTRA_LIBS", libsBase.Data()));
-  libList->Add(new TNamed("ALIROOT_EXTRA_LIBS", libsExtra.Data()));
-
-  ret = proof->EnablePackage(alirootVer.Data(), libList);
-  
-  proof->EnablePackage(alirootVer.Data(), 0);
-  if (ret) {
-    Error("ProofSetup()", "Failed to load all libs.");
-    return;
-  }
-
-  // Load macros/tasks
-  if (dataType == "esd") {
-    proof->Load("AddTaskCentrality.C");
-  }
-  proof->Load("AddTaskPhysicsSelection.C");
-  proof->Load("AliPool.cxx+g");  
-  proof->Load("AliDhcTask.cxx+g", 0);
-  return;
-}
 
 void AddDhcTask()
 {

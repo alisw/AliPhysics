@@ -138,7 +138,6 @@ Bool_t LoadCommonLibraries(const char *mode)
 // Load common analysis libraries.
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (!gSystem->Getenv("ALICE_ROOT")) {
       ::Error("LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
@@ -163,21 +162,6 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("libCORRFW.so", mode);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          break;
-      case 1:
-         Int_t ires = -1;
-         if (!gSystem->AccessPathName(AFversion)) ires = gProof->UploadPackage(AFversion);
-         if (ires < 0) {
-            success &= LoadLibrary("STEERBase", mode);
-            success &= LoadLibrary("ESD", mode);
-            success &= LoadLibrary("AOD", mode);
-            success &= LoadLibrary("ANALYSIS", mode);
-            success &= LoadLibrary("ANALYSISalice", mode);
-            success &= LoadLibrary("CORRFW", mode);
-         } else { 
-            ires = gProof->EnablePackage(AFversion);
-            if (ires<0) success = kFALSE;
-         }
-         break;         
       default:
          ::Error("LoadCommonLibraries", "Unknown run mode: %s", mode);
          return kFALSE;
@@ -199,7 +183,6 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
 // Create the input chain
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TChain *chain = NULL;
    // Local chain
@@ -215,8 +198,6 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
                // Interactive ESD
                chain = CreateChainSingle(dataset, "esdTree");
             }   
-         break;
-      case 1:
          break;
       case 2:
             TString  treeName = "esdTree";
@@ -236,7 +217,6 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
    Int_t result;
    TString smodule(module);
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString mod(module);
    if (!mod.Length()) {
@@ -262,17 +242,6 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
       case 2:
             result = gSystem->Load(Form("lib%s", module));
             if (rec) anaLibs += Form("lib%s.so ", module);
-         break;
-      case 1:
-         result = gProof->UploadPackage(module);
-         if (result<0) {
-            result = gProof->UploadPackage(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", module)));
-            if (result<0) {
-               ::Error("LoadLibrary", "Could not find module %s.par in current directory nor in $ALICE_ROOT", module);
-               return kFALSE;
-            }
-         }   
-         result = gProof->EnablePackage(module);
          break;
       default:
          return kFALSE;

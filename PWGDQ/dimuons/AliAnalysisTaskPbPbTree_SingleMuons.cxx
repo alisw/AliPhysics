@@ -137,7 +137,9 @@ AliAnalysisTaskPbPbTree_SingleMuons::~AliAnalysisTaskPbPbTree_SingleMuons() {
   //destructor
   //
   Info("~AliAnalysisTaskPbPbTree_SingleMuons","Calling Destructor");
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis) delete fOutputTree;
+  {
+delete fOutputTree;
+}
   fMuonTracks->Delete();
 }
 

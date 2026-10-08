@@ -401,7 +401,7 @@ AliRsnMiniTaskPhiVn::~AliRsnMiniTaskPhiVn()
   //
 
 
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
     delete fOutput;
     delete fEvBuffer;
   }

@@ -191,7 +191,8 @@ AliAnalysisTaskMuonPerformance::~AliAnalysisTaskMuonPerformance()
   //
   /// Destructor
   //
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fCFContainer;
     delete fEfficiencyList;
     delete fTriggerList;
@@ -204,7 +205,8 @@ AliAnalysisTaskMuonPerformance::~AliAnalysisTaskMuonPerformance()
     delete fSlopeAt1stClList;
     delete fDCAList;
     delete fClusterList;
-  }
+
+}
 }
 
 

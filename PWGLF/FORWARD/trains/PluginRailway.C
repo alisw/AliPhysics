@@ -77,7 +77,6 @@ struct PluginRailway : public Railway
     fOptions.Add("aliroot", "VERSION", "AliROOT version", "last");
     fOptions.Add("root",    "VERSION", "ROOT version", "last");
     fOptions.Add("par", "Use par files");
-    fOptions.Add("mode", "default|rec|sim", "AliROOT mode", "default");
     fOptions.Add("storage", "URL", "Location for external storage", "");    
     fOptions.Add("plugin", "Use AliEn handler");
     fOptions.Add("testpar", "Test build PARs");
@@ -290,10 +289,6 @@ struct PluginRailway : public Railway
     fHandler->AddIncludePath("-I$ALICE_ROOT/include");
     // Execute through interpreter until patch is applied
     fHandler->SetDropToShell(false);
-    if (fOptions.Has("mode"))
-      fHandler->SetAliRootMode(fOptions.Get("mode"));
-    else 
-      fHandler->SetAliRootMode("default");
     
     return true;
   }

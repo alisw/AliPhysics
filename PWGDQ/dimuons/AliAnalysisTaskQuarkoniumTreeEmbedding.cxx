@@ -213,7 +213,9 @@ AliAnalysisTaskQuarkoniumTreeEmbedding::~AliAnalysisTaskQuarkoniumTreeEmbedding(
   //destructor
   //
   Info("~AliAnalysisTaskQuarkoniumTreeEmbedding","Calling Destructor");
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis) delete fOutputTree;
+  {
+delete fOutputTree;
+}
 }
 
 //___________________________________________________________________________

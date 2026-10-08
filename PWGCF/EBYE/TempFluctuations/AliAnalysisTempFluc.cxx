@@ -214,7 +214,7 @@ fNEvt(0)
 AliAnalysisTempFluc::~AliAnalysisTempFluc()
 {
  
-    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    if (fOutput ) {
         delete fOutput;
     }
 }

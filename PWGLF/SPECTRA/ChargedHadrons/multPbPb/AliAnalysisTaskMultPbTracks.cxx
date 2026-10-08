@@ -78,14 +78,16 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMu
 AliAnalysisTaskMultPbTracks::~AliAnalysisTaskMultPbTracks(){
   // destructor
 
-  if(!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     if(fHistoManager) {
       delete fHistoManager;
       fHistoManager = 0;
       delete fTriggerAnalysis;
       fTriggerAnalysis=0;
     }
-  }
+
+}
   // Histo list should not be destroyed: fListWrapper is owner!
 
 }

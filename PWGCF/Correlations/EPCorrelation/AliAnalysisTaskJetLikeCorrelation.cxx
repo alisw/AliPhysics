@@ -239,7 +239,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
 AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
 
   for (int iin = 0; iin < fNumberOfPlanes; iin++) {
-    if (fOutput[iin] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    if (fOutput[iin] ) {
       delete fOutput[iin];
     }
   }

@@ -55,7 +55,7 @@
 */
 
 //_____________________________________________________________________________
-void RunPerformanceTaskResEffMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE,  Bool_t bProof=kTRUE)
+void RunPerformanceTaskResEffMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE,  Bool_t /*legacyMode*/=kFALSE)
 {
   if(!chain) 
   {
@@ -330,7 +330,6 @@ void RunPerformanceTaskResEffMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t b
 
   mgr->PrintStatus();
 
-  if(bProof) mgr->StartAnalysis("proof",chain);
-  else mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("local",chain);
 }
 

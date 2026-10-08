@@ -28,10 +28,6 @@ Options:
 TYPE is one of 
 
 	local        Run over local files 
-	lite         Run in Proof-lite
-	hehi         Run on hehi Proof farm
-	caf          Run on CAF 
-	caf plugin   Run on CAF using plugin 
 	grid         Run in AliEn - Real data
 	grid hijing  Run in AliEn - Hijing simulation
 	grid dpmjet  Run in AliEn - DPMJet simulation
@@ -51,30 +47,9 @@ while test $# -gt 0 ; do
     shift 
 done
 case $type in 
-    local|lite) 
+    local)
 	proto=$type
 	file="$dir"
-	if test "x$type" = "xlite" ; then opts="workers=10" ; fi
-	;;
-    hehi*|caf*)
-	proto=proof
-	opts="mode=default&dsname=${outds}"
-	if test $par -gt 0 ; then opts="$opts&par=tasks" ; fi
-	case $type in 
-	    hehi*) 
-		host="hehi00.nbi.dk";
-		f="/default/cholm/LHC12g_pass1_uncalibrated_ESD_188359_partial"
-		;;
-	    caf*)
-		host="alice-caf.cern.ch";
-		f="/alice/data/LHC12g_000188359_ESDs_p1_uncalibrated";
-		opts="${opts}&workers=60&aliroot=v5-03-68-AN&reset&clear"
-		case $type in 
-		    *plugin*) opts="${opts}&plugin" ;;
-		esac
-		;;
-	esac
-	file=$f
 	;;
     grid*)
 	proto=alien

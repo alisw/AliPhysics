@@ -20,7 +20,6 @@ void RunGrid(const char* pluginmode = "test", Bool_t theMCon=kFALSE, Bool_t UseT
   gSystem->Load("libCORRFW");
     
   gSystem->Load("libGui.so");
-  gSystem->Load("libProof.so");
   gSystem->Load("libMinuit.so");
   gSystem->Load("libRAWDatabase.so");
   gSystem->Load("libRAWDatarec.so");
@@ -118,7 +117,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",
   plugin->SetGridWorkingDir("HMstudies_Jun/newTree_20150603");
   plugin->SetGridOutputDir("output");
   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TOF -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS");
-  plugin->SetAdditionalLibs("AliAnalysisMBVeto.h AliAnalysisMBVeto.cxx libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libANALYSIS.so libOADB.so libANALYSISalice.so libXMLIO.so libXMLParser.so libCDB.so libSTEERBase.so libSTEER.so libSTAT.so");
+  plugin->SetAdditionalLibs("AliAnalysisMBVeto.h AliAnalysisMBVeto.cxx libGui.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libANALYSIS.so libOADB.so libANALYSISalice.so libXMLIO.so libXMLParser.so libCDB.so libSTEERBase.so libSTEER.so libSTAT.so");
   plugin->SetAnalysisSource("AliAnalysisMBVeto.cxx");
     
   plugin->SetDefaultOutputs(kFALSE);

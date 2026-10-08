@@ -137,7 +137,7 @@ AliAnalysisTaskMuonHadronCorrelations::~AliAnalysisTaskMuonHadronCorrelations() 
   delete fPtAxis;
   delete fEtaAxis;
 
-  if (fOutputList  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+  if (fOutputList  )
     delete fOutputList;
 }
 

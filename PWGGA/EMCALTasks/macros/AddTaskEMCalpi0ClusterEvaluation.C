@@ -24,7 +24,6 @@ void load_libraries( void )
     gSystem->Load("libGui");
     gSystem->Load("libXMLParser");
     gSystem->Load("libCDB");
-    gSystem->Load("libProof");
     gSystem->Load("libRAWDatabase");
     gSystem->Load("libRAWDatarec");
     gSystem->Load("libSTEERBase");

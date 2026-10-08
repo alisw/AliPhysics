@@ -85,8 +85,8 @@ AliAnalysisTaskJetsFinder::AliAnalysisTaskJetsFinder(const char* name):
 AliAnalysisTaskJetsFinder::~AliAnalysisTaskJetsFinder()
 {
   // destructor
-  if (fHistos && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fHistos;
-  if (fListOfHistos &&  ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fListOfHistos;
+  if (fHistos ) delete fHistos;
+  if (fListOfHistos ) delete fListOfHistos;
 
 }
 

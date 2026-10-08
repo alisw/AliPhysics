@@ -337,7 +337,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     //Declare all libraries (other than the default ones for the framework. These will be
     //plugin->SetAdditionalLibs("AliAnalysisTaskPhiSA.h AliAnalysisTaskPhiSA.cxx");
     // Add aditional AliRoot libraries
-    plugin->SetAdditionalLibs("libPWGPPevchar.so libPWGPPevcharQn.so libPWGPPevcharQnInterface.so libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libCORRFW.so libTOFbase.so libPWGmuon.so libPWGflowBase.so libPWGflowTasks.so AliAnalysisTaskPhiSA.h AliAnalysisTaskPhiSA.cxx");
+    plugin->SetAdditionalLibs("libPWGPPevchar.so libPWGPPevcharQn.so libPWGPPevcharQnInterface.so libGui.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libCORRFW.so libTOFbase.so libPWGmuon.so libPWGflowBase.so libPWGflowTasks.so AliAnalysisTaskPhiSA.h AliAnalysisTaskPhiSA.cxx");
     //plugin->SetAdditionalLibs("libPWGPPevchar.so");
     //loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
 

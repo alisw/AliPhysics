@@ -146,7 +146,8 @@ fMuonTrackCuts(0x0)
 AliAnalysisTaskMuonFakes::~AliAnalysisTaskMuonFakes()
 {
   /// Destructor.
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fList;
     delete fList2;
     delete fTrackCounters;
@@ -154,7 +155,8 @@ AliAnalysisTaskMuonFakes::~AliAnalysisTaskMuonFakes()
     delete fMatchedTrackCounters;
     delete fEventCounters;
     delete fPairCounters;
-  }
+
+}
   delete fCanvases;
   delete fMuonTrackCuts;
 }

@@ -1,32 +1,4 @@
-/*
-How to debug:
-Check that AliRoot and ROOT versions are OK!
 
-to run:
- export X509_CERT_DIR=$ALIEN_ROOT/globus/share/certificates
- aliroot
- .L runAAF.C
-
- runAAF(10, "proof", "/alice/data/LHC10h_000137366_p2", 2)
-
- runAAF(1, "local aod MC", "test_aod_mc.txt", 3)
-
- runAAF(1, "grid aod off", "lhc10d", 3)
-
-
- runAAF(5, "grid off MC1", "lhc10d", 3)
-
- runAAF(1, "local esd PbPb", "test_esd.txt", 2) //ESDs local
-
-
- runAAF(20, "grid esd term PbPb", "lhc10h", 2)
-
-To clean:
- rm -f HighPtDeDx*
- rm -f *.xml
- rm -f *.root
-
-*/
 
 //UInt_t kTriggerInt=AliVEvent::kMB;
 //UInt_t *kTriggerInt=new UInt_t[2];
@@ -37,8 +9,6 @@ UInt_t kTriggerInt[2] = { AliVEvent::kMB, AliVEvent::kINT7 };
 Float_t minCent[6] = { 0.0, 5.0, 10.0, 20.0, 40.0, 60.0 };
 Float_t maxCent[6] = { 5.0, 10.0, 20.0, 40.0, 60.0, 80.0 };
 void runAAF(Int_t nFilesMax, char* type = "local", char* textFileName = "esd.txt", Int_t task = 2);
-TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName);
-//TChain* CreateChainCAF(Int_t nFilesMax, const char* label, const char* treeName, Bool_t AnalysisMC);
 TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName);
 const Char_t* GetTreeName(Bool_t esdAna);
 
@@ -91,16 +61,9 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   cout << "MonteCarlo " << analysisMC << endl;
 
   const char* alirootver = "v5-02-17-AN";
-  Int_t mode = -1; // mode 1: PROOF, 2: GRID, 0: LOCAL
+  Int_t mode = -1; // mode 2: GRID, 0: LOCAL
   printf("===================================================================\n");
-  if(strstr(type,"proof") != NULL){ 
-    if(mode != -1){
-      printf("===== CONFLICTING TYPES =====\n");
-      return;
-    }
-    mode = 1; 
-    printf("===============   RUNNING ANALYSIS IN CAF MODE   ================\n");
-  }
+
   if(strstr(type,"grid") != NULL){
     if(mode != -1){
       printf("===== CONFLICTING TYPES =====\n");
@@ -200,26 +163,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
   cout << "mode " << mode << ", type " << type << endl;
 
-  if (mode == 1){
-    cout << "Connecting to CAF..." << endl;
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
 
-    //const char* AAF = "pchristi@skaf.saske.sk";    
-    const char* AAF = "aortizve@alice-caf.cern.ch";    
-
-    if(strstr(type,"reset") != NULL)
-       TProof::Reset(AAF,kFALSE);
-    //       TProof::Reset("pchristi@alice-caf.cern.ch",kTRUE);
-    //    TProof::Open(AAF);
-    TProof::Open(AAF, "workers=10");
-
-    TList *list = new TList();
-    list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "CDB"));
-
-    gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootver), list);
-
-    cout << "Connected to " << AAF << endl;
-  }
 
  
   // Load the analysis macro (old version); should be removed when the library will be decided
@@ -234,24 +178,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
     sprintf(loadtask,"AliAnalysisTask%s.cxx+", taskname);
   }
 
-  if(mode == 1){ // PROOF
-
-    // switch(task){
-    // case 1: // ch fluct
-    //   break;
-    // case 2: // high pt dedx
-    //gProof->Load("DebugClasses.C++g");
-    //   break;
-    // case 3: // high pt v0s
-    //   gProof->Load("DebugClasses.C++g");
-    //   break;
-    // default:
-    //   printf("Unknown task\n");
-    //   return;
-    // }
-
-    gProof->Load(loadtask);
-  }else{
+  {
 
     switch(task){
     case 1: // ch fluct
@@ -284,12 +211,6 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
   // Dataset 
   switch(mode){
-  case 1: // PROOF
-    TFileCollection* proofColl = gProof->GetDataSet(textFileName);
-    TFileCollection* stagedColl = proofColl->GetStagedSubset();
-    TChain* chain = CreateChainCAF(nFilesMax, stagedColl, treeName);
-//    TChain* chain = CreateChainCAF(nFilesMax, textFileName, treeName, analysisMC);
-    break;
   case 2: // GRID
     //gSystem->Setenv("alien_CLOSE_SE", "ALICE::GSI::SE2");
     //    gSystem->Setenv("alien_CLOSE_SE", "ALICE::NIHAM::FILE");
@@ -443,9 +364,6 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   if (mgr->InitAnalysis()){
     mgr->PrintStatus();
     switch(mode){
-    case 1: // PROOF
-      mgr->StartAnalysis("proof",chain);
-      break;
     case 2: // GRID
       mgr->StartAnalysis("grid");
       break;
@@ -461,33 +379,12 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
 
 //__________________________________________________________
-TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName)
-{
-  TIter iter(coll->GetList());
-  
-  TChain* target = new TChain(treeName);
-  
-  Int_t nFiles = 0;
-  
-  TFileInfo* fileInfo = 0;
-  while ((fileInfo = dynamic_cast<TFileInfo*> (iter())) && (nFiles<nFilesMax || nFilesMax == 0)){
-    if (fileInfo->GetFirstUrl()) {
-      target->Add(fileInfo->GetFirstUrl()->GetUrl());
-      nFiles++;
-    }
-  }
-  
-  Printf("Added %d files to chain", target->GetListOfFiles()->GetEntries());
-  
-  return target;
-}
+
 
 
 // //__________________________________________________________
-// TChain* CreateChainCAF(Int_t nFilesMax, const char* label, const char* treeName, Bool_t AnalysisMC)
 // {
 
-//   cout << "CreateChainCAF2" << endl; 
 
 //   TChain* target = new TChain(treeName);
 
@@ -528,9 +425,6 @@ TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName)
 // 	sprintf(textFileName,"/alice/data/%s_000%d_%s",runperiod, run, pass);
 
 //       cout << "Collection: " << textFileName << endl;
-//       TFileCollection* proofColl = gProof->GetDataSet(textFileName);
-//       TFileCollection* stagedColl = proofColl->GetStagedSubset();
-//       TIter iter(proofColl->GetList());
       
 //       TFileInfo* fileInfo = 0;
 //       while ((fileInfo = dynamic_cast<TFileInfo*> (iter())) && (nFiles<nFilesMax || nFilesMax <= 0)){
@@ -586,70 +480,3 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
 
   return chain;
 }
-
-
-
-
-/*
-
-  gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  const char* AAF = "pchristi@alice-caf.cern.ch";    
-  TProof::Open(AAF, "workers=10");
-  TList *list = new TList();
-  list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "CDB"));
-  gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootver), list);
-  const char* alirootver = "v4-21-20-AN";
-  gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootver), list);
-  gProof->Load("AliAnalysisTaskHighPtDeDx.cxx++g")
-  AliAnalysisManager* mgr = new AliAnalysisManager("PID histos", "testing analysis");
-  TFileCollection* proofColl = gProof->GetDataSet("/alice/data/LHC10h_000137366_p2")
-  TFileCollection* stagedColl = proofColl->GetStagedSubset();
-  .L runAAF.C 
-  TChain* chain = CreateChainCAF(10, stagedColl, "esdTree")
-  gSystem->Load("libTree");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libCDB");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
-  AliAnalysisManager* mgr = new AliAnalysisManager("PID histos", "testing analysis");
-  AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdHandler);
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
-  AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
-
-  // ######### PID task ###############
-  gROOT->LoadMacro("AddTaskHighPtDeDx.C");
-  AliAnalysisTask* taskPid = AddTask(kFALSE, "testTask");
-
-
-  // ######### PHYSICS SELECTION ###############
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-  mgr->InitAnalysis()
-  mgr->PrintStatus();
-  mgr->StartAnalysis("proof",chain);
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- */

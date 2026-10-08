@@ -2,7 +2,6 @@
 
 # General options 
 batch=0
-proof=0
 cent=0
 dopass1=0
 dopass2=0
@@ -59,7 +58,6 @@ Options:
    General options:
 	-h,--help		This help                  
 	-b,--batch              Do batch processing         ($batch)
-	-P,--proof NWORKERS	Run in PROOF(Lite) mode     ($proof)
 	-1,--pass1 		Run pass 1 (AOD)            ($dopass1)
 	-2,--pass2		Run pass 2 (Hists)          ($dopass2)
 	-3,--pass3		Run pass 3 (Vizualisation)  ($dopass3)
@@ -245,7 +243,6 @@ while test $# -gt 0 ; do
 	# General options 
 	-h|--help)            usage  ; exit 0		  ;; 
 	-b|--batch)           batch=`toggle $batch`       ;; 
-	-P|--proof)           proof=$2	; shift 	  ;; 
 	-1|--pass1|--aod)     dopass1=`toggle $dopass1`   ;; 
 	-2|--pass2|--hist)    dopass2=`toggle $dopass2`   ;; 
 	-3|--pass3|--draw)    dopass3=`toggle $dopass3`   ;; 
@@ -295,7 +292,7 @@ fi
 #_____________________________________________________________________
 # Pass 1 
 if test $dopass1 -gt 0 ; then 
-    args="(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\")"
+    args="(\"${esddir}\",$nev,0,$mc,$cent,\"${name}\")"
     echo "Args=$args"
     run_pass ${batch} ${output1} "${outputs1}" "${pass2dir}" ${dopass2} \
 	${ana}/${pass1} ${args}
@@ -311,7 +308,7 @@ if test $dopass2 -gt 0 ; then
 	    mcfilename=forward_dndeta_mc.root
 	fi
     fi
-    args="(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\",\"$mcfilename\")"
+    args="(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,0,\"$name\",\"$mcfilename\")"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${pass2dir}${output1}\"\))
     fi

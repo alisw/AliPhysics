@@ -4,7 +4,6 @@
 
 gSystem->Load("libVMC");
 gSystem->Load("libTree");
-gSystem->Load("libProofPlayer");
 gSystem->Load("libPhysics");
 gSystem->Load("libMatrix");
 gSystem->Load("libMinuit");

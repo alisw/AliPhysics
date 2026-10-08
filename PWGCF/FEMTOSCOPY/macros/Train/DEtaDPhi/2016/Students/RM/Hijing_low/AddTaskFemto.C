@@ -15,9 +15,7 @@ void AddTaskFemto(TString configMacroName, TString containerName="femtolist", TS
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-  if (TProofMgr::GetListOfManagers()->GetEntries()) {
-    gProof->Load(configMacroName);
-  }
+
 
   AliAnalysisTaskFemtoMJ *taskfemto = new AliAnalysisTaskFemtoMJ("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);//"$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kTRUE);
   // TFile *filter_file = TFile::Open("alien:///alice/cern.ch/user/r/rmaselek/filters/first_approach/filters.root");

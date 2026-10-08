@@ -2778,9 +2778,7 @@ void AliAnalysisTaskFilteredTree::FinishTaskOutput()
   Bool_t deleteTrees=kTRUE;
   if ((AliAnalysisManager::GetAnalysisManager()))
   {
-    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == 
-        AliAnalysisManager::kProofAnalysis)
-      deleteTrees=kFALSE;
+
   }
   if (deleteTrees) delete fTreeSRedirector;
   fTreeSRedirector=NULL;

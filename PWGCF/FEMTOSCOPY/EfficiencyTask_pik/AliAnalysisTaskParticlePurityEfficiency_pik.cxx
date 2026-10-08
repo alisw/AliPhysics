@@ -79,8 +79,9 @@ AliAnalysisTaskParticlePurityEfficiency_pik::AliAnalysisTaskParticlePurityEffici
 AliAnalysisTaskParticlePurityEfficiency_pik::~AliAnalysisTaskParticlePurityEfficiency_pik()
 {
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________
