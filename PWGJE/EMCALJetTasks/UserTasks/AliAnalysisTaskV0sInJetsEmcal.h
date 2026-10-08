@@ -469,6 +469,9 @@ private:
   THnSparse* fhnV0LambdaInclMCFromXi0[fgkiNBinsCent]; //!
   TH2D* fh2V0LambdaInclMCFromXiGen[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaInJetsMCFromXiGen[fgkiNBinsCent]; //!
+  TH2D* fh2V0LambdaInclMCFromXi0Gen[fgkiNBinsCent]; //! Lambda from Xi0, gen. level, inclusive
+  THnSparse* fhnV0LambdaInJetsMCFromXi0Gen[fgkiNBinsCent]; //! Lambda from Xi0, gen. level, parent Xi0 in JC
+  TH2D* fh2V0Xi0InJetPtMCGen[fgkiNBinsCent]; //! Xi0 generated in JC: pt-ptJet
   THnSparse* fhnV0LambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0LambdaBulkMCFD[fgkiNBinsCent]; //!
   TH2D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
@@ -530,6 +533,9 @@ private:
   THnSparse* fhnV0ALambdaInclMCFromAXi0[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaInclMCFromAXiGen[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaInJetsMCFromAXiGen[fgkiNBinsCent]; //!
+  TH2D* fh2V0ALambdaInclMCFromAXi0Gen[fgkiNBinsCent]; //! ALambda from AXi0, gen. level, inclusive
+  THnSparse* fhnV0ALambdaInJetsMCFromAXi0Gen[fgkiNBinsCent]; //! ALambda from AXi0, gen. level, parent AXi0 in JC
+  TH2D* fh2V0AXi0InJetPtMCGen[fgkiNBinsCent]; //! AXi0 generated in JC: pt-ptJet
   THnSparse* fhnV0ALambdaInJetsMCFD[fgkiNBinsCent]; //!
   THnSparse* fhnV0ALambdaBulkMCFD[fgkiNBinsCent]; //!
   TH2D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
@@ -901,7 +907,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 40) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 41) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
