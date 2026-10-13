@@ -1538,7 +1538,7 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     fCutsLambda->Fill(cutLam++);
     fCutsAntiLambda->Fill(cutALam++);
 
-    if(aodv0->Pt() < 0.5 || aodv0->Pt() > 4) continue;
+    if(aodv0->Pt() < 4 || aodv0->Pt() > 8) continue;
     fCutsLambda->Fill(cutLam++);
     fCutsAntiLambda->Fill(cutALam++);
 
@@ -1704,9 +1704,9 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     if(isProtonNsigmaNeg && isPionNsigmaPos)
   	{
   	  fCutsAntiLambda->Fill(cutALam++);
-  	  if(trackpos->Pt() < 0.16 || trackpos->Pt() > 4.0) continue; //pions plus
+  	  if(trackpos->Pt() < 0.16 || trackpos->Pt() > 8.0) continue; //pions plus
   	  fCutsAntiLambda->Fill(cutALam++);
-  	  if(trackneg->Pt() < 0.3 || trackneg->Pt() > 4.0)  continue; //antiproton
+  	  if(trackneg->Pt() < 0.3 || trackneg->Pt() > 8.0)  continue; //antiproton
   	  fCutsAntiLambda->Fill(cutALam++);
 
 	  fAllVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
@@ -1731,9 +1731,9 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     if(isProtonNsigmaPos && isPionNsigmaNeg)
       {
 	fCutsLambda->Fill(cutLam++);
-	if(trackpos->Pt() < 0.3 || trackpos->Pt() > 4.0) continue; //proton
+	if(trackpos->Pt() < 0.3 || trackpos->Pt() > 8.0) continue; //proton
 	fCutsLambda->Fill(cutLam++);
-	if(trackneg->Pt() < 0.16 || trackneg->Pt() > 4.0) continue; //pion minus
+	if(trackneg->Pt() < 0.16 || trackneg->Pt() > 8.0) continue; //pion minus
 	fCutsLambda->Fill(cutLam++);
 
 	fAllVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
