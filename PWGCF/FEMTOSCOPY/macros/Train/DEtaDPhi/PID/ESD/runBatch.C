@@ -4,7 +4,6 @@ void runBatch() {
 
   printf("*** Connect to AliEn ***\n");
   //TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer");
   gSystem->Load("libVMC");
   gSystem->Load("libPhysics");
 

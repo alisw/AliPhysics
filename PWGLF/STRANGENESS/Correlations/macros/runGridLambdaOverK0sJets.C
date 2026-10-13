@@ -73,10 +73,8 @@ void InitAndLoadLibs() {
     gSystem->Load("libVMC");
     gSystem->Load("libPhysics");
     gSystem->Load("libMinuit");
-    gSystem->Load("libProof");
     gSystem->Load("libGui");
     gSystem->Load("libXMLParser");
-    gSystem->Load("libProofPlayer");
     gSystem->Load("libXMLIO");
 
     gSystem->Load("libSTEERBase");

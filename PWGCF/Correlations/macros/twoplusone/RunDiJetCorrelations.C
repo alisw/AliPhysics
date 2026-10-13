@@ -38,7 +38,7 @@ void RunDiJetCorrelations()
     
   // Seeting for analysis run
   Load();
-  TString      analysisMode = "grid"; // "local", "grid", or "proof"
+  TString      analysisMode = "grid"; // "local", "grid"
   TString        pluginmode = "full"; // full terminate or test mode
   Bool_t     useAlienPlugin =  kTRUE;
   TString         inputMode = "list"; // "list", "xml", or "dataset"
@@ -92,11 +92,11 @@ void RunDiJetCorrelations()
     
   
   if(analysisMode=="grid" && !useAlienPlugin) analysisMode="local";
-  if(analysisMode!="proof") {
+  {
+
     mgr->StartAnalysis(analysisMode.Data(),chainAOD,nentries,firstentry);
-  } else {
-    mgr->StartAnalysis(analysisMode.Data(),dataset.Data(),nentries,firstentry);
-  }
+
+}
   
   return;
   

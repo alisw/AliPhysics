@@ -26,16 +26,13 @@ void CreateResponseMatrices(const char* aoddir=".",
 		Double_t    vzMin=-10,
 		Double_t    vzMax=10,
 		char* output="responseMatrices.root",
-	        Int_t       proof=0)
+	        Int_t /*legacyMode*/=0)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadPars.C");
-    LoadPars(proof);
-  }
+
   
   // --- Our data chain ----------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
@@ -69,13 +66,13 @@ void CreateResponseMatrices(const char* aoddir=".",
   // Some informative output 
   mgr->PrintStatus();
   // mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && !proof) 
+  if (mgr->GetDebugLevel() < 1)
     mgr->SetUseProgressBar(kTRUE,100);
 
   // Run the train 
   t.Start();
   Printf("=== RUNNING ANALYSIS ==================================");
-  mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
+  mgr->StartAnalysis("local", chain, nEvents);
   t.Stop();
   t.Print();
 }

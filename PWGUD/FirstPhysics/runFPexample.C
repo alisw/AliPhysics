@@ -10,12 +10,12 @@ void runFPexample(
          const Int_t gridRun = -1, // the run to analyse *must be set for grid mode*
          const char *gridDirData = "/alice/data/2010/LHC10d", // the location of the data for grid analysis
          const char *gridDirMC = "/alice/sim/LHC10f6a", // the location of the MC for grid analysis
-         const Long64_t proofNentries = 2000000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
-         const Long64_t proofFirstEntry = 0, // for local and proof mode, ignored in grid mode
+         const Long64_t nentries = 2000000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
+         const Long64_t firstEntry = 0, // for local and proof mode, ignored in grid mode
          )
 {
     // check run type
-    if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+    if(runtype != "local" && runtype != "grid"){
         Printf("\n\tIncorrect run option, check first argument of run macro");
         Printf("\tint runtype = local, proof or grid\n");
         return;
@@ -25,20 +25,14 @@ void runFPexample(
     const bool bMCtruth = !useRealData;
     bool bMCphyssel = false;
 
-    const char *proofRealDataSet = "/default/kimb/LHC10d_000126405";
-    const char *proofMCDataSet = "/alice/sim/LHC11b1a_000118558";
 
-    char *proofdataset;
     if (useRealData) {
-      proofdataset = proofRealDataSet;
       bMCphyssel = false;
       Printf("Using REAL DATA (TM) for analysis");
     } else {
-      proofdataset = proofMCDataSet;
       bMCphyssel = true;
       Printf("Using MC for analysis");
     }
-    const char *proofcluster = "alice-caf.cern.ch"; // which proof cluster to use in proof mode
 
     // load libraries
     gSystem->Load("libCore");
@@ -166,25 +160,16 @@ void runFPexample(
     plugin->SetSplitMode("se");
 
     // Proof cluster
-    plugin->SetProofCluster(proofcluster);
     // Dataset to be used
-    plugin->SetProofDataSet(proofdataset);
     // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-    plugin->SetProofReset(0);
     // May limit number of workers
-    plugin->SetNproofWorkers(0);
     // May limit the number of workers per slave
-    // plugin->SetNproofWorkersPerSlave(1);
     // May use a specific version of root installed in proof
-    plugin->SetRootVersionForProof("current");
     // May set the aliroot mode. Check http://aaf.cern.ch/node/83
-    plugin->SetAliRootMode("default"); // Loads AF libs by default
     // May request ClearPackages (individual ClearPackage not supported)
-    plugin->SetClearPackages(kFALSE);
     // Plugin test mode works only providing a file containing test file locations, used in "local" mode also
     plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
     // Request connection to alien upon connection to grid
-    plugin->SetProofConnectGrid(kFALSE);
 
     // mc event handler
     if (bMCtruth) {
@@ -241,5 +226,5 @@ void runFPexample(
 
     // start analysis
     Printf("Starting Analysis....");
-    mgr->StartAnalysis(runtype, proofNentries, proofFirstEntry);
+    mgr->StartAnalysis(runtype, nentries, firstEntry);
 }

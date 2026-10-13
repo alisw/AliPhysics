@@ -373,8 +373,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
 AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
 {
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
 
   if (fOutput && !fOutput->IsOwner()) {
     delete fHistNEvents;

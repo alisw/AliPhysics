@@ -185,10 +185,12 @@ AliAnalysisTaskCentralJpsi_DG::~AliAnalysisTaskCentralJpsi_DG()
 {
     // destructor
 
-    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+    {
+
         delete fOutputList;
         fOutputList = 0x0;
-    }
+
+}
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()

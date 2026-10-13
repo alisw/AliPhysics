@@ -93,9 +93,11 @@ void RunSingleTrackEfficiencyTaskHFCJ()
     if(!mgr->InitAnalysis()) return;
     mgr->PrintStatus();
     if(fAnalysisMode=="grid" && !IsPlugin) fAnalysisMode="local";
-    if(fAnalysisMode!="proof") {
+    {
+
         mgr->StartAnalysis(fAnalysisMode.Data(),analysisChain,nEntries,firstentry);
-    }
+
+}
     
     fBenchMark.Stop("AliCFSingleTrackEfficiencyTask");
     fBenchMark.Show("AliCFSingleTrackEfficiencyTask");

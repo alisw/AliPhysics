@@ -88,7 +88,7 @@ AliAnalysisAlien* CreateAlienHandler()
   // Declare all libraries
   plugin->SetAdditionalLibs("libCORRFW.so libPWGHFbase.so libPWGmuon.so libPWGPPMUONlite.so");
 
-  plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
+  plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so ");
 
   plugin->AddIncludePath("-I.");
   plugin->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/MUON/lite");
@@ -107,7 +107,6 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, 
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libPhysics");
-  gSystem->Load("libProof");
 
   TString libsList = "libANALYSIS libOADB libANALYSISalice libCORRFW libPWGHFbase libPWGmuon libPWGPPMUONlite";
 

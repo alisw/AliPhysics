@@ -187,10 +187,12 @@ AliAnalysisTaskTOFTrigger::~AliAnalysisTaskTOFTrigger()
   // Destructor
 
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+  {
+
      delete fOutputList;
      fOutputList = 0x0;
-  }
+
+}
 
 }//~AliAnalysisTaskTOFTrigger
 

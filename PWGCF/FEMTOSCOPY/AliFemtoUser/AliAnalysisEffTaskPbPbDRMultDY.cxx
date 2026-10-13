@@ -125,8 +125,9 @@ AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY(TString name, int
 AliAnalysisEffTaskPbPbDRMultDY::~AliAnalysisEffTaskPbPbDRMultDY()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

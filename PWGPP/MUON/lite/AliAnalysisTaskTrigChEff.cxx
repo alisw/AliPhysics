@@ -85,9 +85,11 @@ AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
   /// Destructor
   //
   delete fAnalysisOutput;
-  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  {
+
     delete fList;
-  }
+
+}
 }
 
 

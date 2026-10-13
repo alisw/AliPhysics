@@ -99,7 +99,6 @@ LoadLibs() {
   gSystem->Load("libPhysics");
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
-  gSystem->Load("libProof");
   gSystem->Load("libMatrix");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");

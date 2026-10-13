@@ -73,7 +73,8 @@ AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy(const AliAnalysisTaskTr
 AliAnalysisTaskTriggerStudy::~AliAnalysisTaskTriggerStudy(){
   // destructor
 
-  if(!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     if(fHistoList) {
       delete fHistoList;
       fHistoList = 0;
@@ -82,7 +83,8 @@ AliAnalysisTaskTriggerStudy::~AliAnalysisTaskTriggerStudy(){
       delete fTriggerAnalysis;
       fHistoList = 0;
     }
-  }
+
+}
   // Histo list should not be destroyed: fListWrapper is owner!
 
 }

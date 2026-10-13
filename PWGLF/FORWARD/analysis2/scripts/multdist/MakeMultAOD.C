@@ -10,7 +10,6 @@ void MakeMultAOD()
   bool        usePar  =  true;
   bool        mc      =  true;
   Int_t       nEvents = -1;
-  UShort_t    proof   = 0;
 
   const char* name    = "test_flatMult_withbg";
   UShort_t    type    = 1;  // pp==1, PbPb==2
@@ -26,7 +25,6 @@ void MakeMultAOD()
   t.SetDataSet("");
   t.SetNReplica(2);
   t.SetAllowOverwrite(true);
-  t.SetProofServer(Form("workers=%d",proof));
  
   
   t.SetROOTVersion("v5-28-00f");

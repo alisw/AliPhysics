@@ -383,7 +383,7 @@ AliAnalysisTaskHFEMulti::~AliAnalysisTaskHFEMulti(){
     if(fAnalysisUtils) delete fAnalysisUtils;
     // Delete output objects only if we are not running in PROOF mode because otherwise this produces a crash during merging
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if(mgr && mgr->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+    if(mgr ){
         if(fPIDqa) delete fPIDqa;
         if(fOutput) delete fOutput;
         if(fParams) delete fParams;
