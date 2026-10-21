@@ -39,7 +39,7 @@ void AddTask_GammaConvV1_PbPb(
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
 
-  // FPTW:fileNamePtWeights, FGAW:fileNameGammaPtEtaWeights, FMYW:fileNameMesonPtYWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model]
+  // FPTW:fileNamePtWeights, FGAW:fileNameGammaPtEtaWeights, FMYW:fileNameMesonPtYWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable/enableP/enableM' -> Machine learning Trees; 'FMLR:config_file.yml' => Apply ML model; 'FMLR:config_file.yml+nsigmaTrees' => Apply ML model and fill EtaP_ElecNsigma/EtaP_PosNsigma trees]
  
   TString   fileNameExternalInputs        = "",
   Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
@@ -86,6 +86,7 @@ void AddTask_GammaConvV1_PbPb(
   Bool_t    enablePhotonTree      =  kFALSE;
   Bool_t    enableMesonTree       =  kFALSE;
   Bool_t    fApplyML 		  =  kFALSE;
+  Bool_t    enableNsigmaTrees     =  kFALSE;
 
   Float_t   meson_m1_range_left = 0.04; 
   Float_t   meson_m1_range_right = 0.2; 
@@ -105,6 +106,11 @@ void AddTask_GammaConvV1_PbPb(
     }
   else if(fileNameMLR.Contains(".yml")) {
     fApplyML = kTRUE;
+    if (fileNameMLR.EndsWith("+nsigmaTrees")){
+      enableNsigmaTrees = kTRUE;
+      fileNameMLR.ReplaceAll("+nsigmaTrees", "");   // strip before fileNameMLR is used as the config path
+      cout << " EtaP_ElecNsigma/EtaP_PosNsigma trees enabled" << endl;
+    }
     cout << " ML classification model set to -> " << fApplyML << endl;
     cout << " Using .yml file from : " << fileNameMLR.Data() << endl;
     }
@@ -5805,6 +5811,7 @@ void AddTask_GammaConvV1_PbPb(
   if (fApplyML){
 	  task->SetApplyPhotonML(kTRUE);
 	  task->SetMLConfigFile(fileNameMLR.Data());
+	  task->SetDoEtaPNsigmaTrees(enableNsigmaTrees);
   }
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);

@@ -259,6 +259,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fnRBins(4),
   fHistoEleMapRecalib(NULL),
   fHistoPosMapRecalib(NULL),
+  fElecDeDxPostCalibrationMLInitialized(kFALSE),
+  fHistoEleMapRecalibML(NULL),
+  fHistoPosMapRecalibML(NULL),
   fGoodRegionCMin(0),
   fGoodRegionAMin(0),
   fBadRegionCMin(0),
@@ -278,10 +281,14 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
 
   fHistoEleMapRecalib  = new TH2S*[fnRBins];
   fHistoPosMapRecalib  = new TH2S*[fnRBins];
+  fHistoEleMapRecalibML  = new TH2S*[fnRBins];
+  fHistoPosMapRecalibML  = new TH2S*[fnRBins];
 
   for (Int_t i = 0; i < fnRBins; i++) {
     fHistoEleMapRecalib[i] = NULL;
     fHistoPosMapRecalib[i] = NULL;
+    fHistoEleMapRecalibML[i] = NULL;
+    fHistoPosMapRecalibML[i] = NULL;
   }
 }
 
@@ -448,6 +455,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fnRBins(ref.fnRBins),
   fHistoEleMapRecalib(ref.fHistoEleMapRecalib),
   fHistoPosMapRecalib(ref.fHistoPosMapRecalib),
+  fElecDeDxPostCalibrationMLInitialized(ref.fElecDeDxPostCalibrationMLInitialized),
+  fHistoEleMapRecalibML(ref.fHistoEleMapRecalibML),
+  fHistoPosMapRecalibML(ref.fHistoPosMapRecalibML),
   fGoodRegionCMin(ref.fGoodRegionCMin),
   fGoodRegionAMin(ref.fGoodRegionAMin),
   fBadRegionCMin(ref.fBadRegionCMin),
@@ -517,6 +527,16 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     if( fHistoPosMapRecalib[i]  != NULL){
       delete fHistoPosMapRecalib[i] ;
       fHistoPosMapRecalib[i]  =NULL;
+    }
+
+    if( fHistoEleMapRecalibML[i]  != NULL){
+      delete fHistoEleMapRecalibML[i] ;
+      fHistoEleMapRecalibML[i]  =NULL;
+    }
+
+    if( fHistoPosMapRecalibML[i]  != NULL){
+      delete fHistoPosMapRecalibML[i] ;
+      fHistoPosMapRecalibML[i]  =NULL;
     }
 
   }
@@ -605,6 +625,16 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       }
       if(fHistoPosMapRecalib[i]){
         fHistograms->Add(fHistoPosMapRecalib[i]);
+      }
+    }
+    if (fElecDeDxPostCalibrationMLInitialized){
+      for (Int_t i = 0; i < fnRBins; i++) {
+        if( fHistoEleMapRecalibML[i] ){
+          fHistograms->Add(fHistoEleMapRecalibML[i]);
+        }
+        if(fHistoPosMapRecalibML[i]){
+          fHistograms->Add(fHistoPosMapRecalibML[i]);
+        }
       }
     }
   }
@@ -835,6 +865,31 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
     fHistoPosMapRecalib[i]  ->SetDirectory(0);
   }
 
+  // optional ML-based second-stage maps in the sub-directory ML_maps/, applied after the maps above
+  TDirectory* dirML = dynamic_cast<TDirectory*>(file->Get("ML_maps"));
+  if (dirML){
+    if (fIsRecalibDepTPCCl){
+      AliWarning(Form("ML_maps/ found in %s, but the post calibration is done as function of TPC clusters: ML second-stage maps are only valid in ConvR mode, ignoring them", filename.Data()));
+    } else {
+      for(Int_t i=0;i<fnRBins;i++){
+        fHistoEleMapRecalibML[i]  = (TH2S*)dirML->Get(Form("Ele_R%d_recalib",i));
+        fHistoPosMapRecalibML[i]  = (TH2S*)dirML->Get(Form("Pos_R%d_recalib",i));
+        if (fHistoEleMapRecalibML[i] == NULL || fHistoPosMapRecalibML[i] == NULL){
+          AliFatal(Form("ML_maps/ found in %s, but ML_maps/Ele_R%d_recalib or ML_maps/Pos_R%d_recalib is missing!", filename.Data(), i, i));
+          return kFALSE;// code must break if histograms are not found!
+        }
+      }
+      for(Int_t i=0;i<fnRBins;i++){
+        fHistoEleMapRecalibML[i]  ->SetDirectory(0);
+        fHistoPosMapRecalibML[i]  ->SetDirectory(0);
+        fHistoEleMapRecalibML[i]  ->SetName(Form("Ele_R%d_recalib_ML",i));
+        fHistoPosMapRecalibML[i]  ->SetName(Form("Pos_R%d_recalib_ML",i));
+      }
+      fElecDeDxPostCalibrationMLInitialized=kTRUE;
+      AliInfo(Form("found ML second-stage maps for post calibration as function of ConvR in %s/ML_maps, they are applied after the initial maps", filename.Data()));
+    }
+  }
+
   file->Close();
   delete file;
   fElecDeDxPostCalibrationInitialized=kTRUE;
@@ -960,8 +1015,36 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
   }
   if (width!=0.){
     CornSig = (nsig - mean) / width;
+    if (fElecDeDxPostCalibrationMLInitialized){
+      CornSig = ApplyElecDeDxPostCalibrationML(Charge, CornSig, P, Eta, R);
+    }
   }
   return CornSig;
+}
+
+//_________________________________________________________________________
+Double_t AliConversionPhotonCuts::ApplyElecDeDxPostCalibrationML(Double_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t R) const {
+  // ML second-stage correction, applied on the output of the initial maps; the ML maps are only loaded in ConvR mode
+  Double_t arrayR[5]        = {0, 33.5, 72, 145, 180};
+  Int_t BinCorr   = -1;
+  for (Int_t i = 0; i<4; i++){
+    if (R > arrayR[i] && R <= arrayR[i+1]){
+      BinCorr = i;
+    }
+  }
+  if (BinCorr == -1) return nsig;
+
+  TH2S* map = (charge<0) ? fHistoEleMapRecalibML[BinCorr] : fHistoPosMapRecalibML[BinCorr];
+  if (map == NULL) return nsig;
+
+  // above the upper edge of the map use the last p bin
+  Int_t BinP    = (P < map->GetXaxis()->GetXmax()) ? map->GetXaxis()->FindBin(P) : map->GetNbinsX();
+  Int_t BinEta  = map->GetYaxis()->FindBin(Eta);
+  Double_t mean  = (Double_t)map->GetBinContent(BinP,BinEta)/1000;
+  Double_t width = (Double_t)map->GetBinError(BinP,BinEta)/1000;
+  // width is 0 in underflow/overflow bins: leave the value unchanged there
+  if (width == 0.) return nsig;
+  return (nsig - mean) / width;
 }
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(AliMCParticle *particle, AliMCEvent *mcEvent, Bool_t checkForConvertedGamma){
