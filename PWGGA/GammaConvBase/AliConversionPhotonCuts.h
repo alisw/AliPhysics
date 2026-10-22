@@ -278,6 +278,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t InitializeElecDeDxPostCalibration(TString filename);
     Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
+    Bool_t HasElecDeDxPostCalibrationML() const {return fElecDeDxPostCalibrationMLInitialized;}
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
     void SetPtCutArraySize(Int_t ptCutArraySize){fPtCutArraySize = ptCutArraySize;return;};
     void SetRArraySize(Int_t rArraySize){fRArraySize = rArraySize;return;};
@@ -447,6 +448,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t             fnRBins;                              //
     TH2S**            fHistoEleMapRecalib;  //[fnRBins]
     TH2S**            fHistoPosMapRecalib;  //[fnRBins]
+    Bool_t            fElecDeDxPostCalibrationMLInitialized; ///< ML second-stage maps found in ML_maps/ of the post calibration file
+    TH2S**            fHistoEleMapRecalibML;  //[fnRBins]
+    TH2S**            fHistoPosMapRecalibML;  //[fnRBins]
     Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
     Double_t          fGoodRegionAMin;                      ///<
     Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
@@ -471,9 +475,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     };
 
     void RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const;
+    Double_t ApplyElecDeDxPostCalibrationML(Double_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t R) const;
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,41)
+    ClassDef(AliConversionPhotonCuts,42)
     /// \endcond
 };
 

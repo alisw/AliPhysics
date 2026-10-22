@@ -115,6 +115,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     void SetApplyPhotonML(Int_t flag){ fApplyPhotonML           = flag;}         
     void SetMLConfigFile(TString path = ""){ fConfigPath 	= path;}
+    void SetDoEtaPNsigmaTrees(Bool_t flag){ fDoEtaPNsigmaTrees = flag;}  // EtaP_ElecNsigma/EtaP_PosNsigma trees, FMLR:<config>.yml+nsigmaTrees
 
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
@@ -545,6 +546,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
 
     TH2F**                            fHistoXGBoutput_PtBDT;
+    Bool_t                            fDoEtaPNsigmaTrees;                         // switch for the two trees below
     TTree**                           fQATreeXGB_EtaP_ElecNsigma_ConvR;           //! per-cut electron PID trees, owned by fESDList
     TTree**                           fQATreeXGB_EtaP_PosNsigma_ConvR;            //! per-cut positron PID trees, owned by fESDList
     Double_t                          fDaughterEta_XGBoutput;                      //! daughter-track pseudorapidity
@@ -569,7 +571,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 84);
+    ClassDef(AliAnalysisTaskGammaConvV1, 85);
 };
 
 #endif
