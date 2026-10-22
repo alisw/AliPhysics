@@ -127,7 +127,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char* title)
 //_____________________________________________________________________________
 AliPerformanceTask::~AliPerformanceTask()
 {
-  if (!(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())) {
+  if (!(AliAnalysisManager::GetAnalysisManager() && false)) {
     delete fOutput;
     delete fOutputSummary;
     delete fCompList;

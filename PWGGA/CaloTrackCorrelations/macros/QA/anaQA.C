@@ -53,7 +53,6 @@
 enum anaModes
 {
     mLocal  = 0, /// Analyze locally files in your computer.
-    mPROOF  = 1, /// Analyze files on GRID with Plugin
     mPlugin = 2, /// Analyze files on GRID with Plugin
     mGRID   = 3, /// Analyze files on GRID, jobs launched from aliensh
     mLocalCAF= 4 /// Analyze CAF local?
@@ -238,8 +237,6 @@ void anaQA(Int_t mode=mLocal)
     TString smode = "";
     if (mode==mLocal || mode == mLocalCAF) 
       smode = "local";
-    else if (mode==mPROOF) 
-      smode = "proof";
     else if (mode==mGRID) 
       smode = "local";
     
@@ -335,7 +332,7 @@ void CreateChain(const Int_t mode, TChain * chain)
   //-----------------------------------------------------------
   // Analysis of CAF data locally and with PROOF
   //-----------------------------------------------------------
-  if(mode ==mPROOF || mode ==mLocalCAF)
+  if(mode ==mLocalCAF)
   {
     // Chain from CAF
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/CreateESDChain.C");

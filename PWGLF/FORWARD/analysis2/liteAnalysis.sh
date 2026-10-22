@@ -1,7 +1,7 @@
 #!/bin/bash
 # 
 # BEGIN_MANUAL
-# 	Script to help do PWGLF-Forward analsysis using ProofLite
+# 	Script to help do PWGLF-Forward analsysis locally
 #       =========================================================
 # First, one need to figure out what to analyse.  We assume we have
 # the ESDs from a real run in some directory - possibly in
@@ -345,9 +345,9 @@ url_opts()
     if test x$uuopts != x ; then 
 	uopt="${uopt}&${uuopts}"
     fi
-    # PROOF-lite URL form:
+    # Local URL form:
     # 
-    #  lite://<datadir_or_list>[?<options>][#<treeName]
+    #  local://<datadir_or_list>[?<options>][#<treeName]
     # 
     # Options:
     #  clear=PKGS                 Clear packages ','-separated
@@ -360,7 +360,7 @@ url_opts()
     #  workers=N[x]               Number of workers to use [8]
     #  wrapper=CMD                Wrapper command []
 
-    url="lite://${inp}?${uopt}#${tree}"
+    url="local://${inp}?${uopt}#${tree}"
 
 }
 

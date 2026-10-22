@@ -417,11 +417,6 @@ struct TrainSetup
     else { 
       o << "Possible URL forms:\n\n";
       Railway::ShowUrlHelp("LocalRailway");
-      Railway::ShowUrlHelp("ProofRailway");
-      Railway::ShowUrlHelp("LiteRailway");
-      Railway::ShowUrlHelp("VAFRailway");
-      Railway::ShowUrlHelp("AAFRailway");
-      Railway::ShowUrlHelp("AAFPluginRailway");
       Railway::ShowUrlHelp("GridRailway");
       o << "\n";
     }
@@ -1338,11 +1333,7 @@ protected:
   virtual const Char_t* ClassName() const = 0;
   /* @} */
   //__________________________________________________________________
-  virtual void AddMonitor(const TString& name)
-  {
-    if (fRailway->Mode() != Railway::kProof) return;
-    Warning("CreateMonitors", "Monitoring not supported yet (%s)", name.Data());
-  }
+  virtual void AddMonitor(const TString&) {}
   //__________________________________________________________________
   /** 
    * Create the monitors

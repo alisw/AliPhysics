@@ -113,8 +113,9 @@ s128     if(fHistoList) delete fHistoList;
      if(vtxSPD) delete vtxSPD;*/
 
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

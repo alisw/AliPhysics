@@ -640,8 +640,8 @@ AliAnalysisTaskPerformanceStrangeAOD::~AliAnalysisTaskPerformanceStrangeAOD() {
   //
   // Destructor
   //
-  if (fListHist && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())  { delete fListHist;     fListHist = 0x0;    }
-  // if (fTracksCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())  { delete fTracksCuts;     fTracksCuts = 0x0;    }
+  if (fListHist )  { delete fListHist;     fListHist = 0x0;    }
+  // if (fTracksCuts )  { delete fTracksCuts;     fTracksCuts = 0x0;    }
 
 
 }

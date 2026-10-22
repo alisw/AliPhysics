@@ -123,10 +123,12 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi(const char *name)
 AliAnalysisTaskLumiStabi::~AliAnalysisTaskLumiStabi()
 {
 	// Destructor
-	if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+	{
+
 		delete fOutputList;     fOutputList = 0x0;
 		delete tOutput;     tOutput = 0x0;
-	}
+
+}
 
 }//~AliAnalysisTaskLumiStabi
 

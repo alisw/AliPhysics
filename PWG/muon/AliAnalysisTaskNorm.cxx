@@ -103,13 +103,15 @@ AliAnalysisTaskNorm::~AliAnalysisTaskNorm()
 {
   // Destructor. Clean-up the output list, but not the histograms that are put inside
   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-  if ( !AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  {
+
     if (fEventCounters) delete fEventCounters;   
     if (fRunCounters) delete fRunCounters;   
     if (fListVertex) delete fListVertex;
     if (fListV0A) delete fListV0A;
     if (fListZN) delete fListZN;
-  }
+
+}
 
   if (fSCentEst) delete fSCentEst;
   if (fSCentBin) delete fSCentBin;

@@ -281,8 +281,7 @@ AliAnalysisTaskXi1530PbPb::AliAnalysisTaskXi1530PbPb(const char *name,
 //_____________________________________________________________________________
 AliAnalysisTaskXi1530PbPb::~AliAnalysisTaskXi1530PbPb()
 {
-    if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-        return;
+
     if (fHistos)
         delete fHistos;
     if (fTree)

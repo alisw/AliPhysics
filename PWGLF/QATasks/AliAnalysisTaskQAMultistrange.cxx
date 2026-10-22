@@ -301,7 +301,7 @@ AliAnalysisTaskQAMultistrange::~AliAnalysisTaskQAMultistrange()
   // For all TH1, 2, 3 HnSparse and CFContainer are in the fListCascade TList.
   // They will be deleted when fListCascade is deleted by the TSelector dtor
   // Because of TList::SetOwner() ...
-  if (fListHistMultistrangeQA && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fListHistMultistrangeQA; fListHistMultistrangeQA = 0x0; }
+  if (fListHistMultistrangeQA ) { delete fListHistMultistrangeQA; fListHistMultistrangeQA = 0x0; }
 }
 
 

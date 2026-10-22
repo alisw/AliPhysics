@@ -196,7 +196,7 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
   //  if (fTOFT0v1) delete fTOFT0v1;
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;  
+
   if (fHlist) {
     delete fHlist;
     fHlist = 0;

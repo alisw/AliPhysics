@@ -101,7 +101,7 @@ AliAnalysisTaskTrackRefsChecksMultipleSpecies::AliAnalysisTaskTrackRefsChecksMul
 //___________________________________________________________________________
 AliAnalysisTaskTrackRefsChecksMultipleSpecies::~AliAnalysisTaskTrackRefsChecksMultipleSpecies(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if(fOutput && !fOutput->IsOwner()){
     for (Int_t i = 0; i < 6; i++){
       for (Int_t j = 0; j < 3; j++){

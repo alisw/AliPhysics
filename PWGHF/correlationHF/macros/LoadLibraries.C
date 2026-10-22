@@ -18,7 +18,7 @@ void LoadLibraries()
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGHFvertexingHF");
   */
-	//Gui,Proof,Minuit,XMLParser,RAWDatabase,RAWDatarec,CDB,STEER,TOFbase,TOFrec,
+	//Gui,Minuit,XMLParser,RAWDatabase,RAWDatarec,CDB,STEER,TOFbase,TOFrec,
 	//CORRFW,PWGflowBase,PWGflowTasks,PWGHFbase,PWGHFvertexingHF
 
 

@@ -8,9 +8,6 @@
 #include "AliAnalysisTaskFemtoNu.h"
 
 #include <TString.h>
-#include <TProofMgr.h>
-#include <TProof.h>
-
 #endif
 
 

@@ -91,12 +91,14 @@ AliAnalysisTaskJetFFMoments::~AliAnalysisTaskJetFFMoments()
   delete fRef;
 
   for(int iJetBranch=0; iJetBranch < fgkFFMNJetBranches; iJetBranch++){
-    fListJets[iJetBranch]->Clear(ProofClearOpt());
-    if (!IsProof()) { 
+    fListJets[iJetBranch]->Clear("");
+    {
+
       fListMatchedJets[iJetBranch]->Clear();
       fHistListJets[iJetBranch]->Clear();
       delete fListMatchedJets[iJetBranch];
-    }
+
+}
     if(fListJets[iJetBranch]) delete fListJets[iJetBranch];
   }
 
@@ -105,7 +107,7 @@ AliAnalysisTaskJetFFMoments::~AliAnalysisTaskJetFFMoments()
   if(fTracksAODMCChargedSecS)  delete fTracksAODMCChargedSecS;
   if(fTracksRecQualityCuts)    delete fTracksRecQualityCuts;
 
-  if (fHistList && ! IsProof() ) { delete fHistList; }
+  if (fHistList ) { delete fHistList; }
 
   if( !fkIsPbPb ) {
     delete fh1CentralitySelect;

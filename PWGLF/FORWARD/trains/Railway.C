@@ -50,8 +50,7 @@ struct Railway
 {
   enum EMode { 
     kLocal, 
-    kProof, 
-    kGrid
+    kGrid=2
   };
   enum EOperation { 
     kTest,
@@ -96,23 +95,6 @@ struct Railway
    * alien:///<path>#<pattern>
    * @endcode
    *
-   * - PROOF mode: 
-   * 
-   * Several options 
-   *
-   * @code 
-   * lite:///<path>[?[recursive[&]][workers=<n>]][#treeName]
-   * proof:///<path>[?[recursive[&]][workers=<n>]][#treeName]
-   * @endcode 
-   *
-   * @code 
-   * proof://<host>/<dsname>[?[workers=<n>[&]][dsname[=<outname>]]][#treeName]
-   * @endcode 
-   *
-   * Note, if &lt;host&gt; is recognised as an Alice Analysis
-   * Facility, then the Grid handler (AliAnalysisAlien) is used unless
-   * the option <tt>plain</tt> was given. 
-   * 
    * @return Newly allocated helper or null 
    */
   static Railway* Create(const TUrl& url, Int_t verbose=0);
@@ -124,13 +106,7 @@ struct Railway
 			      Int_t verbose=0)
   {
     if (verbose < 3) gSystem->RedirectOutput("/dev/null","w");
-    if (cl.Contains("proof", TString::kIgnoreCase) || 
-	cl.Contains("vaf",   TString::kIgnoreCase) || 
-	cl.Contains("lite",  TString::kIgnoreCase) || 
-	cl.Contains("aaf",   TString::kIgnoreCase)) {
-      gSystem->Load("libProof");
-      gSystem->Load("libProofPlayer");
-    }
+
     // (Always) recompile and with debug symbols 
     gROOT->LoadMacro(Form("%s.C++g",cl.Data()));    
     Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
@@ -414,7 +390,7 @@ struct Railway
    */
   virtual Long64_t Run(Long64_t nEvents=-1) = 0;
   /**
-   * Add a monitor object - only for PROOF 
+   * Add a monitor object
    */
   virtual Bool_t AddMonitor(const TString&) { return true; }
   /* @} */
@@ -692,46 +668,16 @@ Railway::Create(const TUrl& url, Int_t verbose)
     // Create Lite helper 
     cl = "LocalRailway";
   }
-  else if (prot.EqualTo("proof")) { 
-    // Create a Proof helper 
-    if (host.IsNull()) 
-      cl = "LiteRailway";
-    else if (host.BeginsWith("alice-caf")) { 
-      // AAF
-      ::Warning("Railway::Create", "CAF has been decommissioned");
-      cl = opts.Contains("plugin") ? "AAFPluginRailway" : "AAFRailway";
-    }
-    else if (host.BeginsWith("alivaf")) {
-      // VAF
-      cl = "VAFRailway";
-    }
-    else 
-      cl = "ProofRailway";
-  }
-  else if (prot.EqualTo("lite")) { 
-    // Create a Proof helper 
-    cl = "LiteRailway";
-  }
   else if (prot.EqualTo("help")) {
     // Special HELP protocol
     if (host.Contains("options")) {
       std::cout << "Possible URL types and options are:" << std::endl;
       ShowFullHelp("LocalRailway");
-      ShowFullHelp("ProofRailway");
-      ShowFullHelp("LiteRailway");
-      ShowFullHelp("VAFRailway");
-      ShowFullHelp("AAFRailway");
-      ShowFullHelp("AAFPluginRailway");
       ShowFullHelp("GridRailway");
       return 0;
     }
     std::cout << "Possible URL types are:" << std::endl;
     ShowUrlHelp("LocalRailway");
-    ShowUrlHelp("ProofRailway");
-    ShowUrlHelp("LiteRailway");
-    ShowUrlHelp("VAFRailway");
-    ShowUrlHelp("AAFRailway");
-    ShowUrlHelp("AAFPluginRailway");
     ShowUrlHelp("GridRailway");
     return 0;
   }

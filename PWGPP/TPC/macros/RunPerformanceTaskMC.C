@@ -35,49 +35,6 @@
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/RunPerformanceTaskMC.C");
   RunPerformanceTaskMC(chain, kTRUE, kFALSE, kFALSE, 0);
 
-  //2. Run on PROOF Lite e.g.
-
-  TProof::Open(""); 
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ProofEnableAliRoot.C");
-  ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/trunkJB");
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("list_flatP_JB.txt", 400, 0);
-  chain->Lookup();
-
-  // set magnetic field
-  // the best is to create macro MagField.C with the line: 
-  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG));
-  gProof->Exec("gROOT->Macro(\"MagField.C\")");
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTaskMC.C");
-  RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE,0);
-
-  //3. Run only on static PROOF at GSI e.g.
-
-  TProof::Reset("jacek@lxgrid5.gsi.de");
-  TProofMgr * proofmgr = TProof::Mgr("jacek@lxgrid5.gsi.de");
-  //proofmgr->SetROOTVersion("523-04");
-  TProof * proof = proofmgr->CreateSession();
-  proof->SetParameter("PROOF_MaxSlavesPerNode", (Long_t)10000);
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/ProofEnableAliRoot.C");
-  ProofEnableAliRoot("/u/jacek/alice/AliRoot/HEADJB/");
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("flat_JB.txt", 50, 0);
-  chain->Lookup();
-
-  // Geometry (need for the track propagation through material)
-  //AliGeomManager::LoadGeometry("/lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/test/RUN0/geometry.root");
-
-  // set magnetic field
-  gProof->Exec("gROOT->ProcessLine(\"TGeoGlobalMagField::Instance()->SetField(new AliMagF(\"Maps\",\"Maps\", 1., 1., AliMagF::k5kG))\")");
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/RunPerformanceTaskMC.C");
-  RunPerformanceTaskMC(chain, kTRUE, kTRUE, kTRUE);
-
   //4. Make final spectra and store them in the
   // output folder and generate control pictures e.g.
 
@@ -95,7 +52,7 @@
 */
 
 //_____________________________________________________________________________
-void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE,  Bool_t bProof=kTRUE, Int_t debugStreamLevel=0)
+void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfriend=kTRUE,  Bool_t /*legacyMode*/=kFALSE, Int_t debugStreamLevel=0)
 {
   if(!chain) 
   {
@@ -207,7 +164,6 @@ void RunPerformanceTaskMC(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESD
 
   mgr->PrintStatus();
 
-  if(bProof) mgr->StartAnalysis("proof",chain);
-  else mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("local",chain);
 }
 

@@ -2,7 +2,6 @@ void runAOD(Bool_t isMC = 0)
 {
 
 //gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-//TProof::Open("pverstee@alice-caf.cern.ch");
 
    gSystem->Load("libTree");
    gSystem->Load("libGeom");
@@ -27,8 +26,6 @@ void runAOD(Bool_t isMC = 0)
       chain->AddFile(line.Data());
       cout << "Adding file " << line.Data() << endl;
    }
-//  gProof->UploadPackage("AF-v4-19-04-AN");
-//  gProof->EnablePackage("AF-v4-19-04-AN");
    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
    gStyle->SetPalette(1);
 

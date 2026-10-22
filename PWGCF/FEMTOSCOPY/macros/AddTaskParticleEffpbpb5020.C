@@ -30,15 +30,6 @@ AliAnalysisTaskParticleEffpbpb5020 *AddTaskParticleEffpbpb5020(TString container
   //===========================================================================
 //  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
 
-//   if (TProofMgr::GetListOfManagers()->GetEntries()) {
-// //     if (dynamic_cast<TProofLite *> gProof) {
-// //       char *macrocommand[10000];
-// //       sprintf(macrocommand, ".L %s", configMacroName);
-// //       gProof->Exec(macrocommand);
-// //     }
-// //     else
-//     gProof->Load(configMacroName);
-//   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskParticleEffpbpb5020 *taskEfficiency = new AliAnalysisTaskParticleEffpbpb5020("EfficiencyTask");

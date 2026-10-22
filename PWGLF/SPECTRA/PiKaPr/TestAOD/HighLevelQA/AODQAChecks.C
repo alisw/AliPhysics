@@ -82,7 +82,6 @@ void AODQAChecks(Bool_t useMC = 1, Int_t icut = 1, const Float_t nSigmaCut = 3)
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFspectra");
-  gSystem->Load("libProof");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
   TString fold = "AODQAChecks";

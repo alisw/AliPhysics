@@ -85,7 +85,7 @@ AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliA
 /// Standard destructor
 ///
 AliAnalysisTaskNucleiPIDqa::~AliAnalysisTaskNucleiPIDqa(){
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if (fList) delete fList;
 }
 

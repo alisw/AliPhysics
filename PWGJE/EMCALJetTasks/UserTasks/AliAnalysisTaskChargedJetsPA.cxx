@@ -2641,7 +2641,7 @@ AliAnalysisTaskChargedJetsPA::~AliAnalysisTaskChargedJetsPA()
   delete fHybridESDtrackCuts_variedPtDep;
 
   for(Int_t i=0; i<static_cast<Int_t>(fOutputLists.size()); i++)
-    if (fOutputLists[i] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+    if (fOutputLists[i] )
       delete fOutputLists[i];
 
 }

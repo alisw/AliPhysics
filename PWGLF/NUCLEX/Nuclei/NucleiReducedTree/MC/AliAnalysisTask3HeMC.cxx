@@ -129,7 +129,7 @@ AliAnalysisTask3HeMC::~AliAnalysisTask3HeMC(){
    
    // Delete output objects only if we are not running in PROOF mode because otherwise this produces a crash during merging
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if(mgr && mgr->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+   if(mgr ){
       if(fOutput) delete fOutput;
       if(fQAList) delete fQAList;
       if(fUtils) delete fUtils;

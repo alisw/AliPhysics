@@ -130,10 +130,12 @@ AliAnalysisTaskGenTuner::~AliAnalysisTaskGenTuner()
 {
   /// Destructor
   
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fList;
     delete fEventCounters;
-  }
+
+}
   delete fMuonTrackCuts;
   delete fPtFuncOld;
   delete fPtFuncNew;

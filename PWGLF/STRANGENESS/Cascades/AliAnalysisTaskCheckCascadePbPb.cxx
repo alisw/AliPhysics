@@ -385,12 +385,12 @@ AliAnalysisTaskCheckCascadePbPb::~AliAnalysisTaskCheckCascadePbPb() {
   // They will be deleted when fListCascade is deleted by the TSelector dtor
   // Because of TList::SetOwner() ...
         
-  if (fListHistCascade && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())         { delete fListHistCascade;     fListHistCascade = 0x0;    }
-    if (fCFContCascadePIDXiMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDXiMinus;     fCFContCascadePIDXiMinus = 0x0;  }
-  if (fCFContCascadePIDXiPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDXiPlus;     fCFContCascadePIDXiPlus = 0x0;  }
-  if (fCFContCascadePIDOmegaMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDOmegaMinus;     fCFContCascadePIDOmegaMinus = 0x0;  }
-  if (fCFContCascadePIDOmegaPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadePIDOmegaPlus;     fCFContCascadePIDOmegaPlus = 0x0;  }
-  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadeCuts;     fCFContCascadeCuts = 0x0;  }
+  if (fListHistCascade )         { delete fListHistCascade;     fListHistCascade = 0x0;    }
+    if (fCFContCascadePIDXiMinus ) { delete fCFContCascadePIDXiMinus;     fCFContCascadePIDXiMinus = 0x0;  }
+  if (fCFContCascadePIDXiPlus ) { delete fCFContCascadePIDXiPlus;     fCFContCascadePIDXiPlus = 0x0;  }
+  if (fCFContCascadePIDOmegaMinus ) { delete fCFContCascadePIDOmegaMinus;     fCFContCascadePIDOmegaMinus = 0x0;  }
+  if (fCFContCascadePIDOmegaPlus ) { delete fCFContCascadePIDOmegaPlus;     fCFContCascadePIDOmegaPlus = 0x0;  }
+  if (fCFContCascadeCuts ) { delete fCFContCascadeCuts;     fCFContCascadeCuts = 0x0;  }
 
   if (fESDtrackCuts)         { delete fESDtrackCuts;        fESDtrackCuts = 0x0; }
   //if (fPaveTextBookKeeping)     { delete fPaveTextBookKeeping; fPaveTextBookKeeping = 0x0;} // fPaveTextBookKeeping is not strored in the TList

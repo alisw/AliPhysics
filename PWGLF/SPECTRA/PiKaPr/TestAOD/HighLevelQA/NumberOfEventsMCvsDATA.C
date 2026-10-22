@@ -43,7 +43,6 @@ void NumberOfEventsMCvsDATA(Int_t icut = 1, const Float_t nSigmaCut = 3)
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
   gSystem->Load("libPWGLFspectra");
-  gSystem->Load("libProof");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
 
   // get number of runs used

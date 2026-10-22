@@ -511,8 +511,8 @@ AliAnalysisTaskhCascadeFemto::~AliAnalysisTaskhCascadeFemto() {
   //
   // Destructor
   //
-  if (fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())   { delete fOutputContainer;     fOutputContainer = 0x0;    }
-//  if (fCFContCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fCFContCascadeCuts; fCFContCascadeCuts = 0x0; }
+  if (fOutputContainer )   { delete fOutputContainer;     fOutputContainer = 0x0;    }
+//  if (fCFContCascadeCuts ) { delete fCFContCascadeCuts; fCFContCascadeCuts = 0x0; }
   if (fESDtrackCuts) delete fESDtrackCuts;
 
 

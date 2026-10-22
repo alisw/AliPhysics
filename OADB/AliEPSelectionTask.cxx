@@ -172,7 +172,7 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
 AliEPSelectionTask::~AliEPSelectionTask()
 {
   // Destructor
-  if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if (fOutputList ){
       delete fOutputList;
       fOutputList = 0;
   }
