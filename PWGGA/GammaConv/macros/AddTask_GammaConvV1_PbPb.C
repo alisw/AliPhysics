@@ -4699,6 +4699,184 @@ void AddTask_GammaConvV1_PbPb(
 
 
 
+    // ========================================================================
+    // ML SYSTEMATIC VARIATIONS: 3 S 3 X
+    // S: 2 = data, 3 = MB MC, 4 = pi0 added-signal MC, 5 = eta added-signal MC.
+    // X: 0-4 = Central (0-10%), 5-9 = Semi-Central (30-50%). Within each centrality:
+    //   +0 NOMINAL (copies its sample's old 3S22 / 3S27 baseline), +1 BDT_UP, +2 BDT_DOWN,
+    //   +3 TPC cluster fraction + daughter-electron pT, +4 close-V0 + meson energy asymmetry.
+    // BDT_UP/BDT_DOWN have the nominal cuts; supply shifted thresholds via FMLR YAML.
+    // All other configs use nominal FMLR. Keep sample/centrality calibration and weights.
+    // ========================================================================
+
+    // ========================================================================
+    // DATA: 3230-3239
+    // ========================================================================
+
+    // ------------------------------------------------------------------------
+    // Central (0-10%): 3230-3234
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3230){ // NOMINAL: same cuts as 3222; use its FMLR working point
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3231){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3232){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3233){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("10130e03", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("10130e03", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("10130e03", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("10130e03", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3234){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ------------------------------------------------------------------------
+    // Semi-Central (30-50%): 3235-3239
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3235){ // NOMINAL: same cuts as 3227; use its FMLR working point
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3236){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3237){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3238){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("13530e03", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("13530e03", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("13530e03", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("13530e03", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3239){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ========================================================================
+    // MC (MINIMUM BIAS): 3330-3339
+    // ========================================================================
+
+    // ------------------------------------------------------------------------
+    // Central (0-10%): 3330-3334
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3330){ // NOMINAL: same cuts as 3322; use its FMLR working point
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3331){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3332){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3333){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("10130053", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("10130053", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("10130053", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("10130053", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3334){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("10130053", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ------------------------------------------------------------------------
+    // Semi-Central (30-50%): 3335-3339
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3335){ // NOMINAL: same cuts as 3327; use its FMLR working point
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3336){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3337){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3338){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("13530053", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("13530053", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("13530053", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("13530053", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3339){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("13530053", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ========================================================================
+    // PI0 (ADDED-SIGNAL MC): 3430-3439
+    // ========================================================================
+
+    // ------------------------------------------------------------------------
+    // Central (0-10%): 3430-3434
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3430){ // NOMINAL: same cuts as 3422; use its FMLR working point
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3431){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3432){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3433){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("10130023", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("10130023", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("10130023", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("10130023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3434){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("10130023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ------------------------------------------------------------------------
+    // Semi-Central (30-50%): 3435-3439
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3435){ // NOMINAL: same cuts as 3427; use its FMLR working point
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3436){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3437){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3438){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("13530023", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("13530023", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("13530023", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("13530023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3439){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("13530023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ========================================================================
+    // ETA (ADDED-SIGNAL MC): 3530-3539
+    // ========================================================================
+
+    // ------------------------------------------------------------------------
+    // Central (0-10%): 3530-3534
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3530){ // NOMINAL: same cuts as 3522; use its FMLR working point
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3531){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3532){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3533){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("10130023", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("10130023", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("10130023", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("10130023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3534){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("10130023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
+    // ------------------------------------------------------------------------
+    // Semi-Central (30-50%): 3535-3539
+    // ------------------------------------------------------------------------
+    } else if (trainConfig == 3535){ // NOMINAL: same cuts as 3527; use its FMLR working point
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3536){ // BDT_UP: nominal thresholds + 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3537){ // BDT_DOWN: nominal thresholds - 0.02 via FMLR YAML
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152101500000000");
+    } else if (trainConfig == 3538){ // TPC cluster fraction + daughter-electron pT variations; nominal FMLR
+      cuts.AddCutPCM("13530023", "0dq00009100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.60
+      cuts.AddCutPCM("13530023", "0dq00006100000001100404000", "0152101500000000"); // TPC cluster fraction > 0.70
+      cuts.AddCutPCM("13530023", "0dq00048100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.075 GeV/c
+      cuts.AddCutPCM("13530023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
+    } else if (trainConfig == 3539){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
+      cuts.AddCutPCM("13530023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+
     //  LHC18qr_pass3 std. gamma cut: copy paste from 993(data) + MBMC, AS1, AS2, AS3: 
     //    Two full copies for more testing of pt-weights
     // first complete block
