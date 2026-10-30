@@ -162,7 +162,7 @@ AliAnalysisTaskMinijetV2::~AliAnalysisTaskMinijetV2()
 {
     // Destructor
     
-    if (fHists && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fHists;
+    if (fHists ) delete fHists;
 }
 
 //________________________________________________________________________

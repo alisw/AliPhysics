@@ -262,7 +262,8 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
 AliAnalysisTaskSEITSsaSpectra::~AliAnalysisTaskSEITSsaSpectra()
 {
   // Destructor in case not running on proof
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     if (fOutput) {
       delete fOutput;
       fOutput = NULL;
@@ -283,7 +284,8 @@ AliAnalysisTaskSEITSsaSpectra::~AliAnalysisTaskSEITSsaSpectra()
       delete fITSPIDResponse;
       fITSPIDResponse = NULL;
     }
-  }
+
+}
 
   AliInfo("End of AliAnalysisTaskSEITSsaSpectra destructor");
 }

@@ -6,7 +6,6 @@
 # include <TSelector.h>
 # include <TCanvas.h>
 # include <TROOT.h>
-// # include <TProof.h>
 # include <TGraph.h>
 # include <TMath.h>
 # include <TTimer.h>
@@ -22,7 +21,6 @@ class TH1;
 class TObjArray;
 class TClass;
 class TQObject;
-// class TProof;
 #endif
 
 //====================================================================
@@ -45,22 +43,7 @@ struct FastMonitor : public TObject, public TQObject
     kBitScale   = (1<<17), // BIT(15),
     kBitNoStats = (1<<16)  // BIT(16)
   };
-  /** 
-   * Execute a PROOF command. Short hand convinience 
-   * 
-   * @param cmd Command, or empty string. 
-   * 
-   * @return If cmd is empty, test if gProof is defined, other wise
-   * result of command.
-   */
-  static Long_t ProofExec(const char* cmd=0)
-  {
-    Bool_t hasCmd = (cmd && cmd[0] != '\0');
-    TString lne;
-    lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
-    // Printf("FastMonitor::ProofExec: %s", lne.Data());
-    return gROOT->ProcessLine(lne);
-  }
+
   FastMonitor()
     : TObject(),
       TQObject(),
@@ -140,22 +123,7 @@ struct FastMonitor : public TObject, public TQObject
       return;
     }
     if (freq <= 0) return;
-    if (ProofExec()) {
-      // We're on Proof
-      // Info("Construct", "Attaching to PROOF");
-      gROOT->ProcessLine(Form("((FastMonitor*)%p)->SetName("
-			      "gProof->GetSessionTag())", this));
-      Long_t ret = ProofExec(Form("Connect(\"Feedback(TList *objs)\","
-				  "        \"FastMonitor\",(void*)%p,"
-				  "        \"Feedback(TList *objs)\")", this));
-      if (!ret) {
-	Warning("FastMonitor", "Failed to connect to Proof");
-	return;
-      }	
-      ProofExec(Form("SetParameter(\"PROOF_FeedbackPeriod\",%d)",
-		     freq*1000));
-    }
-    else {
+    {
       fTimer = new TTimer(freq*1000);
       fTimer->Connect("Timeout()","FastMonitor",this, "Handle()");
       fTimer->Start(-1,false);
@@ -168,10 +136,7 @@ struct FastMonitor : public TObject, public TQObject
    */
   void Disconnect()
   {
-    if (ProofExec())
-      ProofExec(Form("Disconnect(\"Feedback(TList *objs)\","
-		     "(void*)%p,\"Feedback(TList* objs)\"", this));
-    else if (fTimer)
+    if (fTimer)
       fTimer->Stop();
   }
   /** 
@@ -181,11 +146,10 @@ struct FastMonitor : public TObject, public TQObject
    * not the actual object to draw.
    * 
    * @param descr 
-   * @param proof  IF true, register for Proof(Lite)
    */
-  void Register(TObject* descr, Bool_t proof=true)
+  void Register(TObject* descr, Bool_t /*legacyFeedback*/=false)
   {
-    Register(descr->GetName(), descr->GetTitle(), descr->GetUniqueID(), proof);
+    Register(descr->GetName(), descr->GetTitle(), descr->GetUniqueID());
   }
   /** 
    * Prepare a draw 
@@ -193,19 +157,16 @@ struct FastMonitor : public TObject, public TQObject
    * @param name   Name (path) of object 
    * @param title  Drawing options  
    * @param flags  Flags 
-   * @param proof  Register for proof 
    */
   void Register(const char* name,
 		const char* title="",
 		UInt_t      flags=0,
-		Bool_t      proof=true)
+		Bool_t /*legacyFeedback*/=false)
   {
     TNamed* n = new TNamed(name, title);
     n->SetUniqueID(flags);
     fPaths.Add(n);
-    if (ProofExec() && proof) {
-      ProofExec(Form("AddFeedback(\"%s\")", name));
-    }    
+
   }
   /** 
    * Set name of this object 

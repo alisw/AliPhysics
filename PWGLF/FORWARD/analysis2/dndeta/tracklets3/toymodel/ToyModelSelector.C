@@ -1,17 +1,13 @@
 #include <TSelector.h>
 #include "ToyModel.C"
 #ifndef __CINT__
-#include <TProof.h>
 #include <TTree.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TString.h>
-#include <TProofOutputFile.h>
 #include <TFile.h>
 #else
 class TTree;
-class TProof;
-class TProofOutputFile;
 class TFile;
 #endif
 
@@ -21,7 +17,6 @@ struct ToyModelSelector : public TSelector
 
   ToyModelSelector()
     : fModel(0),
-      fProofFile(0),
       fFile(0) 
   {}
   Int_t Version() const { return 2; }
@@ -32,13 +27,8 @@ struct ToyModelSelector : public TSelector
     Printf("Slave begining");
     fModel = new ToyModel(fParams);
 
-    TString loc(GetParam("PROOF_OUTPUTFILE_LOCATION"));
-    fProofFile = new TProofOutputFile("dist.root",
-				      (loc.IsNull() ? "M" : loc.Data()));
-    TString out(GetParam("PROOF_OUTPUTFILE"));
-    if (!out.IsNull()) fProofFile->SetOutputFileName(out);
-    fFile = fProofFile->OpenFile("recreate");
-    
+    fFile = TFile::Open(fOutputName, "RECREATE");
+
   }
   const char* GetParam(const char* key)
   {
@@ -67,9 +57,7 @@ struct ToyModelSelector : public TSelector
     Printf("Slave Terminating");
     if (!fModel) return;
     fModel->Output(fFile);
-    fProofFile->Print();
     fFile->Print();
-    fOutput->Add(fProofFile);
     fFile->Close();
   }
   
@@ -82,7 +70,7 @@ struct ToyModelSelector : public TSelector
     
     return Form("%s%s", found, post);
   }
-  static void Run(const char* url="workers=10",
+  static void Run(const char* output="",
 		  Int_t       nTracks=500,
 		  Int_t       nEvents=1000,
 		  Double_t    varTracks=0)
@@ -90,26 +78,27 @@ struct ToyModelSelector : public TSelector
     TString fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/dndeta/tracklets3/toymodel";
     if (gSystem->Getenv("ANA_SRC")) fwd = "$ANA_SRC/dndeta/tracklets3/toymodel";
     gROOT->SetMacroPath(Form("%s:%s",fwd.Data(), gROOT->GetMacroPath()));
-    TProof* proof = TProof::Open(url);
-    proof->Load(Find("ToyModel.C"));
-    proof->Load(Find("ToyModelSelector.C"));
-    proof->AddInput(new TNamed("PROOF_OUTPUTFILE",
-			       Form("dist_t%06d_e%06d_v%1dd%03d.root",
-				    nTracks, nEvents,
-				    Int_t(varTracks),
-				    Int_t(varTracks*1000) % 1000)));
-
     ToyModelSelector* selector = new ToyModelSelector;
     selector->fNtracks   = nTracks;
     selector->fVarTracks = varTracks;
 
-    proof->Process(selector, nEvents);
+    selector->fOutputName = output;
+    if (selector->fOutputName.IsNull())
+      selector->fOutputName.Form("dist_t%06d_e%06d_v%1dd%03d.root",
+                                nTracks, nEvents, Int_t(varTracks),
+                                Int_t(varTracks*1000) % 1000);
+    selector->Begin(0);
+    selector->SlaveBegin(0);
+    for (Int_t i = 0; i < nEvents; ++i) selector->Process(i);
+    selector->SlaveTerminate();
+    selector->Terminate();
+    delete selector;
   }
       
+  TString           fOutputName;
   Int_t             fNtracks;
   Double_t          fVarTracks;
   ToyModel::Params  fParams;
-  TProofOutputFile* fProofFile; //!
   TFile*            fFile;//!
   ToyModel*         fModel; //!
 

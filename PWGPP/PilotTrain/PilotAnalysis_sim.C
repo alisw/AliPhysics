@@ -401,20 +401,12 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
  ***     PROOF MODE SPECIFIC SETTINGS         ************
  *********************************************************/
 // Proof cluster
-//   plugin->SetProofCluster("alice-caf");
-   plugin->SetProofCluster("skaf.saske.sk");
 // Dataset to be used   
-   plugin->SetProofDataSet("/alice/data/LHC10e_000128175_p1#esdTree");
 // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-   plugin->SetProofReset(0);
 // May limit number of workers
-   plugin->SetNproofWorkers(20);   
 // May use a specific version of root installed in proof
-   plugin->SetRootVersionForProof("current_dbg");
 // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
-   plugin->SetAliRootMode("ALIROOT"); // Loads AF libs by default
 // May request ClearPackages (individual ClearPackage not supported)
-   plugin->SetClearPackages(kFALSE);
 // Plugin test mode works only providing a file containing test file locations
    plugin->SetFileForTestMode(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGPP/PilotTrain/files.txt"));
    return plugin;

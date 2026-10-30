@@ -5,10 +5,7 @@ void Load(const char* taskName, Bool_t debug)
   if (debug)
     compileTaskName += "g";
 
-  if (gProof) {
-    gProof->Load(compileTaskName);
-  } else
-    gROOT->Macro(compileTaskName);
+  gROOT->Macro(compileTaskName);
 
   // Enable debug printouts
   if (debug)
@@ -41,9 +38,9 @@ void GetTimes(UInt_t run, Int_t* startTime = 0, Int_t* endTime = 0)
   Printf("Got start and endtime from OCDB: %d, %d", grp->GetTimeStart(), grp->GetTimeEnd());
 }
 
-void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Int_t startTime = 0, Int_t endTime = 0, const char* option = "")
+void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t inputMode = kFALSE, Int_t startTime = 0, Int_t endTime = 0, const char* option = "")
 {
-  // aProof option: 0 no proof
+  // inputMode option: 0 no proof
   //                1 proof with chain
   //                2 proof with dataset
   //
@@ -74,41 +71,10 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   if (nRuns < 0)
     nRuns = 1234567890;
 
-  if (aProof)
-  {
-    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
-    TProof::Open("alicecaf"); 
-    //gProof->SetParallel(1);
-
-    // Enable the needed package
-    if (1)
-    {
-      gProof->UploadPackage("$ALICE_ROOT/STEERBase");
-      gProof->EnablePackage("$ALICE_ROOT/STEERBase");
-      gProof->UploadPackage("$ALICE_ROOT/ESD");
-      gProof->EnablePackage("$ALICE_ROOT/ESD");
-      gProof->UploadPackage("$ALICE_ROOT/AOD");
-      gProof->EnablePackage("$ALICE_ROOT/AOD");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
-      gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
-      gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
-    }
-    else
-    {
-      gProof->UploadPackage("$ALICE_ROOT/AF-v4-18-12-AN.par");
-      gProof->EnablePackage("AF-v4-18-12-AN");
-    }
-
-    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
-  }
-  else
   {
     gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/"); 
     gSystem->Load("libVMC");
     gSystem->Load("libTree");
-    gSystem->Load("libProof");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
@@ -174,31 +140,6 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
   mgr->InitAnalysis();
   mgr->PrintStatus();
 
-  if (aProof == 2)
-  {
-    // process dataset
-
-    mgr->StartAnalysis("proof", data, nRuns, offset);
-
-    if (save)
-    {
-      TString path("maps/");
-      path += TString(data).Tokenize("/")->Last()->GetName();
-      
-      gSystem->mkdir(path, kTRUE);
-      gSystem->Rename("trigger.root", path + "/trigger.root");
-      
-      Printf(">>>>> Moved files to %s", path.Data());
-    }  
-  }
-  else if (aProof == 3)
-  {
-    gROOT->ProcessLine(".L CreateChainFromDataSet.C");
-    ds = gProof->GetDataSet(data)->GetStagedSubset();
-    chain = CreateChainFromDataSet(ds, "esdTree", nRuns);
-    mgr->StartAnalysis("local", chain, nRuns, offset);
-  }
-  else
   {
     // Create chain of input files
     gROOT->LoadMacro("../CreateESDChain.C");
@@ -206,7 +147,7 @@ void run(const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFA
     chain = CreateESDChain(data, nRuns, offset);
     //chain = CreateChain("TE", data, nRuns, offset);
 
-    mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);
+    mgr->StartAnalysis("local", chain);
   }
 
 }

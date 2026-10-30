@@ -52,13 +52,7 @@ AliAnalysisAlien *CreateAlienHandler(Bool_t isProof){
   alienplugin->SetAPIVersion(api_version);
   alienplugin->SetAdditionalLibs("libPWGHFhfe.so");
   alienplugin->SetDefaultOutputs(kTRUE);
-  if(isProof){
-    // proof mode
-    if(analysis_mode.Contains("test")) alienplugin->SetRunMode("test");
-    alienplugin->SetProofCluster("alice_caf.cern.ch");
-    alienplugin->SetRootVersionForProof(root_version);
-    alienplugin->SetAliRootMode("aliroot");
-  } else {
+  {
     // grid mode
     alienplugin->SetRunMode(analysis_mode.Data());
     // default setting that need no deeper logic
@@ -149,7 +143,7 @@ void runAlien(TString data, TString mode = "test", Bool_t MC = kFALSE){
   
   // check for valid modes
   const int kModes = 5;
-  TString allowed_modes[kModes] = {"proof", "prooftest", "test", "full", "submit"}; 
+  TString allowed_modes[kModes] = {"test", "full", "submit"};
   Bool_t isValid = kFALSE;
   mode.ToLower();
   for(int imode = 0; imode < kModes; imode++){
@@ -160,7 +154,6 @@ void runAlien(TString data, TString mode = "test", Bool_t MC = kFALSE){
     return;
   }
   analysis_mode = mode; 
-  Bool_t proofmode = mode.Contains("proof");
   // libraries to be loaded
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
@@ -172,21 +165,21 @@ void runAlien(TString data, TString mode = "test", Bool_t MC = kFALSE){
   runAnalysis->SetCommonFileName(output_file.Data());
   runAnalysis->SetInputEventHandler(new AliESDInputHandler); 
   if(MC) runAnalysis->SetMCtruthEventHandler(new AliMCEventHandler);
-  AliAnalysisAlien *alienhandler = CreateAlienHandler(proofmode);
+  AliAnalysisAlien *alienhandler = CreateAlienHandler(kFALSE);
   printf("alienhandler %p\n", alienhandler);
   runAnalysis->SetGridHandler(alienhandler);
   //return;
   
   // Specify input (runs or dataset)
-  if(!proofmode){
+  {
+
     // Query sample ID and runs
     TString sample;
     TArrayI listofruns;
     DecodeDataString(data, sample, listofruns);
     AddInput(alienhandler, sample, listofruns, MC);
-  } else {
-    alienhandler->SetProofDataSet(data);
-  }
+
+}
 
   // Add Tasks
   gROOT->LoadMacro(Form("%s/OADB/macros/AddTaskPhysicsSelection.C", gSystem->Getenv("ALICE_ROOT")));
@@ -195,7 +188,7 @@ void runAlien(TString data, TString mode = "test", Bool_t MC = kFALSE){
   AddTaskHFE();     // @TODO: MC and PbPb flag to be fixed
 
   // Run Analysis
-  TString anamode = proofmode ? "proof" : "grid";
+  TString anamode = "grid";
   if(runAnalysis->InitAnalysis()){
     runAnalysis->PrintStatus();
     runAnalysis->StartAnalysis(anamode);

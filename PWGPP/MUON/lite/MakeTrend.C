@@ -31,7 +31,6 @@ void LoadLibs()
 //  gSystem->Load("libGeom");
 //  gSystem->Load("libVMC");
 //  gSystem->Load("libPhysics");
-//  gSystem->Load("libProof");
 //
 //  gSystem->Load("libANALYSIS");
 //  gSystem->Load("libOADB");
@@ -55,7 +54,7 @@ AliAnalysisAlien* CreateAlienHandler()
   // Declare all libraries
   plugin->SetAdditionalLibs("libCORRFW.so libPWGHFbase.so libPWGmuon.so libPWGPPMUONlite.so");
 
-  plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
+  plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so ");
 
   plugin->AddIncludePath("-I.");
   plugin->AddIncludePath("-I$ALICE_PHYSICS/PWGPP/MUON/lite");

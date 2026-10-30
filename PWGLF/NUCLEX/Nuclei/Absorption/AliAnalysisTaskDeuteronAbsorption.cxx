@@ -130,7 +130,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
 
 AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
 {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   
   if (fOutputList)
     delete fOutputList; // at the end of your task, it is deleted from memory by calling this function

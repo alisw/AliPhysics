@@ -256,19 +256,14 @@ void runAnalysisTrain_EMCalCorrFramework(const Char_t* infile, const Char_t* run
    if(!runmodestr.Contains("grid"))
       chain = makeChain(infile, inputType);
 
-   TProof* proof=0x0;
-   if(runmodestr.Contains("proof")) {
-      proof = TProof::Open("");
-      chain->SetProof();
-   }
+
 
    mgr->PrintStatus();
    // Start analysis
    if(nEntries==-1) nEntries=1234567890;
    if(runmodestr.Contains("local"))
       mgr->StartAnalysis("local", chain, nEntries, firstEntry);
-   if(runmodestr.Contains("proof"))
-      mgr->StartAnalysis("proof", chain, nEntries, firstEntry);
+
    if(runmodestr.Contains("grid"))
       mgr->StartAnalysis("grid", nEntries, firstEntry);
 

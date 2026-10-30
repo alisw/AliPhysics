@@ -56,7 +56,7 @@ AliAnalysisMultiplicityTask::AliAnalysisMultiplicityTask ( const char* name, con
 //_____________________________________________________________________________________________________________________________________________
 AliAnalysisMultiplicityTask::~AliAnalysisMultiplicityTask() {
 	//Clean-up
-	if ( fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+	if ( fOutput  ) {
 		delete fOutput;
 	}
 }

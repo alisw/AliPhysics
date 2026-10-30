@@ -5,7 +5,6 @@
 // Grid full mode as below (other modes: test, offline, submit, terminate)
 //    root[1] AnalysisTrainHMPID("grid", "full")
 // CAF mode (requires root v5-23-02 + aliroot v4-16-Rev08)
-//    root[2] AnalysisTrainHMPID("proof")
 // Local mode requires AliESds.root or AliAOD.root in ./data directory
 //    root[3] AnalysisTrainHMPID("local")
 // In proof and grid modes, a token is needed and sourcing the produced environment file.
@@ -53,15 +52,8 @@ Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Fil
 // ### PROOF Steering varibales
 //==============================================================================
 //== proof setup variables
-TString     kProofCluster      = "alice-caf.cern.ch";
-Bool_t      kProofUseAFPAR     = kTRUE;  // use AF special par file
-TString     kProofAFversion    = "VO_ALICE@AliRoot::v4-20-08-AN";
 //== proof input and output variables
-TString     kProofDataSet      = "/alice/sim/LHC10d2_117220";
 //== proof process variables
-Bool_t      kProofClearPackages = kFALSE;
-Int_t       kProofEvents = 10000;
-Int_t       kProofOffset = 0;
 
 //==============================================================================
 // ### Grid plugin Steering varibiables
@@ -123,7 +115,6 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
 
    if (strlen(config_file) && !LoadConfig(config_file)) return;
 
-   if(iOffset)kProofOffset = iOffset;
    TString smode(analysis_mode);
    smode.ToUpper();
    // Check compatibility of selected modules
@@ -319,7 +310,6 @@ void StartAnalysis(const char *mode, TChain *chain) {
    Int_t imode = -1;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    switch (imode) {
       case 0:
@@ -328,13 +318,6 @@ void StartAnalysis(const char *mode, TChain *chain) {
             return;
          }
          mgr->StartAnalysis(mode, chain);
-         return;
-      case 1:
-         if (!kProofDataSet.Length()) {
-            ::Error("AnalysisTrainHMPID.C::StartAnalysis", "kProofDataSet is empty");
-            return;
-         }
-         mgr->StartAnalysis(mode, kProofDataSet, kProofEvents,kProofOffset);
          return;
       case 2:
          if (kPluginUse) {
@@ -359,7 +342,6 @@ void CheckModuleFlags(const char *mode) {
 // Checks selected modules and insure compatibility
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
 
 
@@ -367,12 +349,7 @@ void CheckModuleFlags(const char *mode) {
      kPluginAliRootVersion    = ""; // NO aliroot if we use CPAR
    }
 
-   if (imode==1) {
-      if (!kUsePAR) {
-         ::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "PAR files enabled due to PROOF analysis");
-         kUsePAR = kTRUE;
-      }   
-   }  
+
    if (imode != 2) {
       ::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "AliEn plugin disabled since not in GRID mode");
       kPluginUse = kFALSE; 
@@ -410,29 +387,10 @@ Bool_t Connect(const char *mode) {
 // Connect <username> to the back-end system.
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString username = gSystem->Getenv("alien_API_USER");
    switch (imode) {
      case 0:
-       break;
-     case 1:
-       if  (!username.Length()) {
-         ::Error(Form("AnalysisTrainHMPID.C::Connect <%s>", mode), "Make sure you:\n \
-                        1. Have called: alien-token-init <username>\n \
-                        2. Have called: >source /tmp/gclient_env_$UID");
-         return kFALSE;
-       }
-       ::Info("AnalysisTrainHMPID.C::Connect", "Connecting user <%s> to PROOF cluster <%s>", 
-                username.Data(), kProofCluster.Data());
-       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-       TProof::Open(Form("%s@%s", username.Data(), kProofCluster.Data()));       
-       if (!gProof) {
-         if (strcmp(gSystem->Getenv("XrdSecGSISRVNAMES"), "lxfsrd0506.cern.ch"))
-           ::Error(Form("AnalysisTrainHMPID.C::Connect <%s>", mode), "Environment XrdSecGSISRVNAMES different from lxfsrd0506.cern.ch");
-           return kFALSE;
-         }
-       if(kProofClearPackages)gProof->ClearPackages();
        break;
      case 2:      
        if  (!username.Length()) {
@@ -467,7 +425,6 @@ Bool_t LoadCommonLibraries(const char *mode)
 // Load common analysis libraries.
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    if (!gSystem->Getenv("ALICE_ROOT")) {
       ::Error("AnalysisTrainHMPID.C::LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
@@ -501,19 +458,6 @@ Bool_t LoadCommonLibraries(const char *mode)
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          }   
          break;
-      case 1:
-         if (!kProofUseAFPAR) {
-            success &= LoadLibrary("STEERBase", mode);
-            success &= LoadLibrary("ESD", mode);
-            success &= LoadLibrary("AOD", mode);
-            success &= LoadLibrary("ANALYSIS", mode);
-            success &= LoadLibrary("ANALYSISalice", mode);
-            success &= LoadLibrary("CORRFW", mode);
-         } else { 
-            success &= !gProof->EnablePackage(kProofAFversion);
-            success &= LoadLibrary("CORRFW", mode);
-         }
-         break;         
       default:
          ::Error("AnalysisTrainHMPID.C::LoadCommonLibraries", "Unknown run mode: %s", mode);
          return kFALSE;
@@ -561,7 +505,6 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
    Int_t result;
    TString smodule(module);
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString mod(module);
    if (!mod.Length()) {
@@ -594,21 +537,6 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
             if (rec) anaLibs += Form("lib%s.so ", module);
          }   
          break;
-      case 1:
-	     if(!gSystem->AccessPathName(module)){
-	       ::Info("AnalysisTrainHMPID.C::LoadLibrary", "Removing directory %s",module);
-	       gSystem->Exec(Form("rm -rf %s",module));
-         }
-         result = gProof->UploadPackage(module);
-         if (result<0) {
-            result = gProof->UploadPackage(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", module)));
-            if (result<0) {
-               ::Error("AnalysisTrainHMPID.C::LoadLibrary", "Could not find module %s.par in current directory nor in $ALICE_ROOT", module);
-               return kFALSE;
-            }
-         }   
-         result = gProof->EnablePackage(module);
-         break;
       default:
          return kFALSE;
    }         
@@ -626,7 +554,6 @@ Bool_t LoadSource(const char *source, const char *mode, Bool_t rec=kFALSE)
    Int_t imode = -1;
    Int_t result = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString ssource(source);
    TString basename = gSystem->BaseName(ssource.Data());
@@ -652,9 +579,6 @@ Bool_t LoadSource(const char *source, const char *mode, Bool_t rec=kFALSE)
      switch (imode) {
      case 0:
        result = gROOT->LoadMacro(Form("%s.cxx++g",basename.Data()));
-       break;
-     case 1:
-       result = gProof->Load(Form("%s.cxx++g",basename.Data()));
        break;
      case 2:
        result = gROOT->LoadMacro(Form("%s.cxx++g",basename.Data()));
@@ -682,7 +606,6 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
 // Create the input chain
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TChain *chain = NULL;
    // Local chain
@@ -704,8 +627,6 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
 	       // Interactive ESD
            chain = CreateChainSingle(kLocalXMLDataset, "esdTree");
 	     }   
-         break;
-      case 1:
          break;
       case 2:
          if (kPluginUse) {

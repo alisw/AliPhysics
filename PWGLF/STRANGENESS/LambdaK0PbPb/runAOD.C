@@ -19,7 +19,7 @@
 
 using namespace std;
 
-enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID};
+enum { kMyRunModeLocal = 0, kMyRunModeGRID = 2};
 
 TList * listToLoad = new TList(); // Additional classes to be loaded, see InitAndLoadLibs
 
@@ -154,8 +154,6 @@ void runAOD(const char * data, const char * passOrPath, Long64_t nev = -1, Long6
     TChain * chain = GetAnalysisChain(data);
     //    chain->Print();
     mgr->StartAnalysis("local",chain,nev);
-  } else if (runMode == kMyRunModeCAF) {
-    mgr->StartAnalysis("proof",TString(passOrPath)+data+"#aodTree",nev);
   } else if (runMode == kMyRunModeGRID) {
     mgr->StartAnalysis("grid");
   } else {
@@ -227,28 +225,7 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
   // Loads libs and par files + custom task and classes (the order is important)
   listToLoad->Add(new TObjString("AliAnalysisTaskPerformanceStrangeAOD.cxx"));
 
-  if (runMode == kMyRunModeCAF)
-    {
-      cout << "Init in CAF mode" << endl;
-    
-      gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-      Char_t* alienuser = gSystem->Getenv("alien_API_USER");
-      TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : "alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
-      //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
-      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-            gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-19-AN");
-	    //gProof->GetManager()->SetROOTVersion("VO_ALICE@ROOT::v5-30-02");
-	    //gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-04-AN");
-
-
-      // Enable the needed package
-      // FIXME: what if I don't want to use par files?
-      gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
-      gSystem->AddIncludePath("-I${ALICE_ROOT}/STEER/");
-      
-    }
-  else
-    {
+  {
       cout << "Init in Local or Grid mode" << endl;
       gSystem->Load("libCore");
       gSystem->Load("libTree");
@@ -272,9 +249,7 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
   while ((name = (TObjString *)iter->Next())) {
     gSystem->ExpandPathName(name->String());
     cout << name->String().Data() << endl;
-    if (runMode == kMyRunModeCAF) {
-      gProof->Load(name->String()+(debug?"++g":"+"));   
-    } else {
+    {
       gROOT->LoadMacro(name->String()+(debug?"++g":"+"));   
     }
   }

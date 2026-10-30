@@ -282,10 +282,12 @@ fTHnCentNplusNminusCh(NULL)
 //---------------------------------------------------------------------------------
 AliEbyEPhiDistNew::~AliEbyEPhiDistNew() {
     
-    if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    {
+
         delete fThnList;
         //delete [] fPtArray;
-    }
+
+}
     if( fEventCuts ) delete fEventCuts;
     if( fESDtrackCuts ) delete fESDtrackCuts;
 }

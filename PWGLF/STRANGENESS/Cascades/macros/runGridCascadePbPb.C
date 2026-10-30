@@ -41,7 +41,6 @@ void runGridCascadePbPb( Bool_t   useMC               = kTRUE,  // kTRUE if anal
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libProof");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libSTEER");
 

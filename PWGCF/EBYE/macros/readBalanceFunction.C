@@ -13,7 +13,6 @@ void readBalanceFunction(Bool_t bHistos = kFALSE, TString inFile = "AnalysisResu
   //iii) store BF in output file
   //Author: Panos.Christakoglou@cern.ch, m.weber@cern.ch
   //Loading the needed libraries
-  gSystem->Load("libProofPlayer");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libEventMixing");

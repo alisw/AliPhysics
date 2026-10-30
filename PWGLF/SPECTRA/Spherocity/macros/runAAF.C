@@ -9,7 +9,7 @@
 
 */
 
-Int_t mode        = 0; // mode 1: PROOF, 2: GRID, 0: LOCAL
+Int_t mode        = 0; // mode 2: GRID, 0: LOCAL
 char *gridmode    = "test";//full, terminate, test, reset
 Bool_t debug      = kTRUE;
 Bool_t readTR     = kFALSE;// always false
@@ -21,7 +21,6 @@ char *centralityEstimator = "V0A";
 UInt_t kTriggerInt = AliVEvent::kMB;//pPb: kINT7, other kMB
 
 void runAAF(Int_t nFilesMax, char* textFileName = "esd.txt", Int_t task = 2);
-TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName);
 TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName);
 const Char_t* GetTreeName(Bool_t esdAna);
 
@@ -77,28 +76,13 @@ void runAAF(Int_t nFilesMax, char* textFileName, Int_t task)
   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
   gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_PHYSICS")));
 
-  if (mode == 1){
-    cout << "Connecting to CAF..." << endl;
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    const char* AAF = "cuautle@alice-caf.cern.ch";    
-    
-    if(strstr(gridmode,"reset") != NULL)
-      TProof::Reset(AAF,kFALSE);
-    TProof::Open(AAF, "workers=10");
-    
-    TList *list = new TList();
-    list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "CDB"));    
-    gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootver), list);    
-    cout << "Connected to " << AAF << endl;
-  }
+
     
   // Load the analysis macro (old version); should be removed when the library will be decided
   Char_t loadtask[128];
   sprintf(loadtask,"AliAna%s.cxx+", taskname);
   
-  if(mode == 1){ // PROOF
-    gProof->Load(loadtask);
-  }else{
+  {
     gROOT->LoadMacro(loadtask);
   }
   
@@ -108,11 +92,6 @@ void runAAF(Int_t nFilesMax, char* textFileName, Int_t task)
   
   // Dataset 
   switch(mode){
-  case 1: // PROOF
-    TFileCollection* proofColl = gProof->GetDataSet(textFileName);
-    TFileCollection* stagedColl = proofColl->GetStagedSubset();
-    TChain* chain = CreateChainCAF(nFilesMax, stagedColl, treeName);
-    break;
   case 2: // GRID
     TGrid::Connect("alien://");    
     gROOT->LoadMacro("CreateAlienHandler.C");
@@ -197,9 +176,6 @@ void runAAF(Int_t nFilesMax, char* textFileName, Int_t task)
   if (mgr->InitAnalysis()){
     mgr->PrintStatus();
     switch(mode){
-    case 1: // PROOF
-      mgr->StartAnalysis("proof",chain);
-      break;
     case 2: // GRID
       mgr->StartAnalysis("grid");
 //cout<<"!!!!!!!!!!!!!!!!!!!!   GetTest()="<<taskESA->GetTest()<<endl;
@@ -217,26 +193,7 @@ void runAAF(Int_t nFilesMax, char* textFileName, Int_t task)
 
 
 //__________________________________________________________
-TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName)
-{
-  TIter iter(coll->GetList());
-  
-  TChain* target = new TChain(treeName);
-  
-  Int_t nFiles = 0;
-  
-  TFileInfo* fileInfo = 0;
-  while ((fileInfo = dynamic_cast<TFileInfo*> (iter())) && (nFiles<nFilesMax || nFilesMax == 0)){
-    if (fileInfo->GetFirstUrl()) {
-      target->Add(fileInfo->GetFirstUrl()->GetUrl());
-      nFiles++;
-    }
-  }
-  
-  Printf("Added %d files to chain", target->GetListOfFiles()->GetEntries());
-  
-  return target;
-}
+
 
 
 //__________________________________________________________

@@ -23,7 +23,6 @@ void runGridPbPb()
 
    gSystem->Load("libTENDER"); 
    gSystem->Load("libTENDERSupplies"); 
-   gSystem->Load("libProof.so");
    gSystem->Load("libRAWDatabase.so");
    gSystem->Load("libSTEER.so");
    gSystem->Load("libTOFbase.so");

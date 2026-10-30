@@ -46,8 +46,7 @@ AliAnalysisTaskADCent::AliAnalysisTaskADCent(const char *name)
 }
 
 AliAnalysisTaskADCent::~AliAnalysisTaskADCent() {
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
-    return;
+
 
   SafeDelete(fTE);
 }

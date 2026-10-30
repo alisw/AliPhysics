@@ -118,7 +118,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
 /// Standard destructor
 ///
 AliAnalysisTaskTrackingEffPID::~AliAnalysisTaskTrackingEffPID(){
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if (fOutputList) delete fOutputList;
   if (fListCuts) delete fListCuts;
   if (fTrackCuts) delete fTrackCuts;

@@ -559,18 +559,18 @@ fCenCutHighPU(NULL)
 AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
 {
   // Destructor
-  if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if(fOutput ){
     delete fOutput; fOutput=0;
   }
   //@Shi add destructor for fOutputRecenter1 and fOutputRecenter2 and fOutputRecenter3
   if(fStepZDCRecenter >= 0) {
-    if(fOutputRecenter1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+    if(fOutputRecenter1 ){
       delete fOutputRecenter1; fOutputRecenter1=0;
     }
-    if(fOutputRecenter2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+    if(fOutputRecenter2 ){
       delete fOutputRecenter2; fOutputRecenter2=0;
     }
-    if(fOutputRecenter3 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+    if(fOutputRecenter3 ){
       delete fOutputRecenter3; fOutputRecenter3=0;
     }
   }

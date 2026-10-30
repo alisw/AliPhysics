@@ -138,9 +138,11 @@ AliAnalysisTaskV1SingleMu::~AliAnalysisTaskV1SingleMu()
   //
   /// Destructor
   //
-  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  {
+
     delete fMergeableCollection;
-  }
+
+}
   delete fSparse;
   // delete fAODEvent;
   // delete fESDEvent;

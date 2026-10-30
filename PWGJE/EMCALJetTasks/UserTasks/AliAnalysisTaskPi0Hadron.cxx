@@ -90,7 +90,7 @@ AliAnalysisTaskPi0Hadron::~AliAnalysisTaskPi0Hadron()
 	//Copied from chris yaldo. Ask Salvatore about it!
 	// Destructor. Clean-up the output list, but not the histograms that are put inside
 	// (the list is owner and will clean-up these histograms). Protect in PROOF case.
-	if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+	if (fOutput )
 	{
 		delete fOutputList1;
 	}

@@ -118,13 +118,15 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA(const char *name) :
 AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
 {
   /// Destructor
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fList;
     delete fListExpert;
     delete fTrackCounters;
     delete fEventCounters;
     delete fListNorm;
-  }
+
+}
   
   delete fEventCuts;
   delete fTrackCuts;
