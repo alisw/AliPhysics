@@ -21,9 +21,9 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskFM_moments)
     AliAnalysisTaskFM_moments::AliAnalysisTaskFM_moments()
-    : AliAnalysisTaskSE(), fAOD(nullptr), fMCEvent(nullptr), _pool(nullptr), fEvPoolMgr(nullptr), fPIDResponse(nullptr), mcHeader(nullptr), fEventCuts(), counter(0), c_field(0), c_percentile(0.0), hEventCounter(nullptr), hTrackCounter(nullptr), hTrackCounterGen(nullptr), hEnvsCounter(nullptr), hQACent{nullptr}, hQAVx(nullptr), hQAVy(nullptr), hQAVz{nullptr}, hDCAxy{nullptr}, hDCAz{nullptr}, hDCAxy_imp{nullptr}, hDCAz_imp{nullptr}, hDCAxypT{nullptr}, hDCAzpT{nullptr}, hnITScls{nullptr}, hnITScls2{nullptr}, hnTPCcls{nullptr}, hnTPCcls2{nullptr}, hnTPCcrossedrows{nullptr}, hmissingCls{nullptr}, htpcTgl{nullptr}, hNShCls{nullptr}, hNShClsFra{nullptr}, hNShClsNcls{nullptr}, hNShClsNcrows{nullptr}, hNFoundClsFra{nullptr}, hNShClsVsPt{nullptr}, hNFcls{nullptr}, hNFindClsFra{nullptr}, hNFindClsVsPt{nullptr}, hTPCsignal{nullptr}, hTPCsignalN{nullptr}, hTPCsignalvsPt{nullptr}, hTPCsignalvsPtN{nullptr}, hTPCsignalvsPtTuned{nullptr}, hTPCsignalvsPtot{nullptr}, hTPCsignalTuned{nullptr}, hITSsignal{nullptr}, hChi2TPC{nullptr}, hChi2ITS{nullptr}, hChi2perclTPC{nullptr}, hPtDis{nullptr}, hPtotDis{nullptr}, hEtaDis{nullptr}, hPhiDis{nullptr}, hPtDisGen{nullptr}, hEtaDisGen{nullptr}, hPhiDisGen{nullptr}, hGoldenChi2{nullptr}, hNumPions{nullptr}, hNumPionsCent{nullptr}, hNumKaons{nullptr}, hNumKaonsCent{nullptr}, hNumProtons{nullptr}, hNumProtonsCent{nullptr}, hPtBin{nullptr}, hEtaBin{nullptr}, hPhiBin{nullptr}, hMultBin{nullptr}, hPtBinGen{nullptr}, hEtaBinGen{nullptr}, hPhiBinGen{nullptr}, hMultBinGen{nullptr}, hEtaPhiBin{nullptr}, hEtaPhiBinGen{nullptr}, fntpMBin{nullptr}, fntpMBinGen{nullptr}, hdEta(nullptr), hdPhi(nullptr), hDEDPraw{nullptr}, hDEDPSel{nullptr}, hDEDPrawChSame{nullptr}, hDEDPrawChDiff{nullptr}, hDEDPrawPtOrd{nullptr}, hList{nullptr}, fNtupleList{nullptr}, fNtupleListGen{nullptr} {}
+    : AliAnalysisTaskSE(), fAOD(nullptr), fMCEvent(nullptr), _pool(nullptr), fEvPoolMgr(nullptr), fPIDResponse(nullptr), mcHeader(nullptr), fEventCuts(), _pileupCutLevel(1), _crowsMin(80.0), _shClsFracMax(0.4), _crowsOverFindableMin(0.8), counter(0), c_field(0), c_percentile(0.0), hEventCounter(nullptr), hTrackCounter(nullptr), hTrackCounterGen(nullptr), hEnvsCounter(nullptr), hQACent{nullptr}, hQAVx(nullptr), hQAVy(nullptr), hQAVz{nullptr}, hDCAxy{nullptr}, hDCAz{nullptr}, hDCAxy_imp{nullptr}, hDCAz_imp{nullptr}, hDCAxypT{nullptr}, hDCAzpT{nullptr}, hnITScls{nullptr}, hnITScls2{nullptr}, hnTPCcls{nullptr}, hnTPCcls2{nullptr}, hnTPCcrossedrows{nullptr}, hmissingCls{nullptr}, htpcTgl{nullptr}, hNShCls{nullptr}, hNShClsFra{nullptr}, hNShClsNcls{nullptr}, hNShClsNcrows{nullptr}, hNFoundClsFra{nullptr}, hNShClsVsPt{nullptr}, hNFcls{nullptr}, hNFindClsFra{nullptr}, hNFindClsVsPt{nullptr}, hTPCsignal{nullptr}, hTPCsignalN{nullptr}, hTPCsignalvsPt{nullptr}, hTPCsignalvsPtN{nullptr}, hTPCsignalvsPtTuned{nullptr}, hTPCsignalvsPtot{nullptr}, hTPCsignalTuned{nullptr}, hITSsignal{nullptr}, hChi2TPC{nullptr}, hChi2ITS{nullptr}, hChi2perclTPC{nullptr}, hPtDis{nullptr}, hPtotDis{nullptr}, hEtaDis{nullptr}, hPhiDis{nullptr}, hPtDisGen{nullptr}, hEtaDisGen{nullptr}, hPhiDisGen{nullptr}, hGoldenChi2{nullptr}, hNumPions{nullptr}, hNumPionsCent{nullptr}, hNumKaons{nullptr}, hNumKaonsCent{nullptr}, hNumProtons{nullptr}, hNumProtonsCent{nullptr}, hPtBin{nullptr}, hEtaBin{nullptr}, hPhiBin{nullptr}, hMultBin{nullptr}, hPtBinGen{nullptr}, hEtaBinGen{nullptr}, hPhiBinGen{nullptr}, hMultBinGen{nullptr}, hEtaPhiBin{nullptr}, hEtaPhiBinGen{nullptr}, fntpMBin{nullptr}, fntpMBinGen{nullptr}, hdEta(nullptr), hdPhi(nullptr), hDEDPraw{nullptr}, hDEDPSel{nullptr}, hDEDPrawChSame{nullptr}, hDEDPrawChDiff{nullptr}, hDEDPrawPtOrd{nullptr}, hList{nullptr}, fNtupleList{nullptr}, fNtupleListGen{nullptr} {}
 AliAnalysisTaskFM_moments::AliAnalysisTaskFM_moments(const char *name)
-    : AliAnalysisTaskSE(name), fAOD(nullptr), fMCEvent(nullptr), _pool(nullptr), fEvPoolMgr(nullptr), fPIDResponse(nullptr), mcHeader(nullptr), fEventCuts(), counter(0), c_field(0), c_percentile(0.0), hEventCounter(nullptr), hTrackCounter(nullptr), hTrackCounterGen(nullptr), hEnvsCounter(nullptr), hQACent{nullptr}, hQAVx(nullptr), hQAVy(nullptr), hQAVz{nullptr}, hDCAxy{nullptr}, hDCAz{nullptr}, hDCAxy_imp{nullptr}, hDCAz_imp{nullptr}, hDCAxypT{nullptr}, hDCAzpT{nullptr}, hnITScls{nullptr}, hnITScls2{nullptr}, hnTPCcls{nullptr}, hnTPCcls2{nullptr}, hnTPCcrossedrows{nullptr}, hmissingCls{nullptr}, htpcTgl{nullptr}, hNShCls{nullptr}, hNShClsFra{nullptr}, hNShClsNcls{nullptr}, hNShClsNcrows{nullptr}, hNFoundClsFra{nullptr}, hNShClsVsPt{nullptr}, hNFcls{nullptr}, hNFindClsFra{nullptr}, hNFindClsVsPt{nullptr}, hTPCsignal{nullptr}, hTPCsignalN{nullptr}, hTPCsignalvsPt{nullptr}, hTPCsignalvsPtN{nullptr}, hTPCsignalvsPtTuned{nullptr}, hTPCsignalvsPtot{nullptr}, hTPCsignalTuned{nullptr}, hITSsignal{nullptr}, hChi2TPC{nullptr}, hChi2ITS{nullptr}, hChi2perclTPC{nullptr}, hPtDis{nullptr}, hPtotDis{nullptr}, hEtaDis{nullptr}, hPhiDis{nullptr}, hPtDisGen{nullptr}, hEtaDisGen{nullptr}, hPhiDisGen{nullptr}, hGoldenChi2{nullptr}, hNumPions{nullptr}, hNumPionsCent{nullptr}, hNumKaons{nullptr}, hNumKaonsCent{nullptr}, hNumProtons{nullptr}, hNumProtonsCent{nullptr}, hPtBin{nullptr}, hEtaBin{nullptr}, hPhiBin{nullptr}, hMultBin{nullptr}, hPtBinGen{nullptr}, hEtaBinGen{nullptr}, hPhiBinGen{nullptr}, hMultBinGen{nullptr}, hEtaPhiBin{nullptr}, hEtaPhiBinGen{nullptr}, fntpMBin{nullptr}, fntpMBinGen{nullptr}, hdEta(nullptr), hdPhi(nullptr), hDEDPraw{nullptr}, hDEDPSel{nullptr}, hDEDPrawChSame{nullptr}, hDEDPrawChDiff{nullptr}, hDEDPrawPtOrd{nullptr}, hList{nullptr}, fNtupleList{nullptr}, fNtupleListGen{nullptr} {
+    : AliAnalysisTaskSE(name), fAOD(nullptr), fMCEvent(nullptr), _pool(nullptr), fEvPoolMgr(nullptr), fPIDResponse(nullptr), mcHeader(nullptr), fEventCuts(), _pileupCutLevel(1), _crowsMin(80.0), _shClsFracMax(0.4), _crowsOverFindableMin(0.8), counter(0), c_field(0), c_percentile(0.0), hEventCounter(nullptr), hTrackCounter(nullptr), hTrackCounterGen(nullptr), hEnvsCounter(nullptr), hQACent{nullptr}, hQAVx(nullptr), hQAVy(nullptr), hQAVz{nullptr}, hDCAxy{nullptr}, hDCAz{nullptr}, hDCAxy_imp{nullptr}, hDCAz_imp{nullptr}, hDCAxypT{nullptr}, hDCAzpT{nullptr}, hnITScls{nullptr}, hnITScls2{nullptr}, hnTPCcls{nullptr}, hnTPCcls2{nullptr}, hnTPCcrossedrows{nullptr}, hmissingCls{nullptr}, htpcTgl{nullptr}, hNShCls{nullptr}, hNShClsFra{nullptr}, hNShClsNcls{nullptr}, hNShClsNcrows{nullptr}, hNFoundClsFra{nullptr}, hNShClsVsPt{nullptr}, hNFcls{nullptr}, hNFindClsFra{nullptr}, hNFindClsVsPt{nullptr}, hTPCsignal{nullptr}, hTPCsignalN{nullptr}, hTPCsignalvsPt{nullptr}, hTPCsignalvsPtN{nullptr}, hTPCsignalvsPtTuned{nullptr}, hTPCsignalvsPtot{nullptr}, hTPCsignalTuned{nullptr}, hITSsignal{nullptr}, hChi2TPC{nullptr}, hChi2ITS{nullptr}, hChi2perclTPC{nullptr}, hPtDis{nullptr}, hPtotDis{nullptr}, hEtaDis{nullptr}, hPhiDis{nullptr}, hPtDisGen{nullptr}, hEtaDisGen{nullptr}, hPhiDisGen{nullptr}, hGoldenChi2{nullptr}, hNumPions{nullptr}, hNumPionsCent{nullptr}, hNumKaons{nullptr}, hNumKaonsCent{nullptr}, hNumProtons{nullptr}, hNumProtonsCent{nullptr}, hPtBin{nullptr}, hEtaBin{nullptr}, hPhiBin{nullptr}, hMultBin{nullptr}, hPtBinGen{nullptr}, hEtaBinGen{nullptr}, hPhiBinGen{nullptr}, hMultBinGen{nullptr}, hEtaPhiBin{nullptr}, hEtaPhiBinGen{nullptr}, fntpMBin{nullptr}, fntpMBinGen{nullptr}, hdEta(nullptr), hdPhi(nullptr), hDEDPraw{nullptr}, hDEDPSel{nullptr}, hDEDPrawChSame{nullptr}, hDEDPrawChDiff{nullptr}, hDEDPrawPtOrd{nullptr}, hList{nullptr}, fNtupleList{nullptr}, fNtupleListGen{nullptr} {
 
   Info("AliAnalysisTaskFM_moments", "Specific Constructor");
 
@@ -59,20 +59,21 @@ void AliAnalysisTaskFM_moments::UserCreateOutputObjects() {
     }
   }
   TString dataStr = _FLAG_MC_ ? "rec" : "";
-  TString conStr[_numEnvs] = { "fb128", "fb768", "fb768&&rchi2>80", "fb768&&shclsncls<0.3&&shclsncrows<0.25&&nfindableclsncls>0.8", "fb768&&rchi2>80&&shclsncls<0.3&&shclsncrows<0.25&&nfindableclsncls>0.8", "fb768&&pTDCAxy&&rchi2>80&&shclsncls<0.3&&shclsncrows<0.25&&nfindableclsncls>0.8" };
+  TString conStr[_numEnvs] = { "fb128", "fb128crows", "fb128shcls", "fb128crowsoverfindable", "fb768" }; 
   
   hEventCounter = new TH1F("hEventCounter", ";;no. of events", 9, 0.5, 9.5);
   hEventCounter->SetFillColor(kGreen);
   hList[0]->Add(hEventCounter);
-  hTrackCounter = new TH1F("hTrackCounter", ";;no. of tracks", 17, 0.5, 17.5);
+  hTrackCounter = new TH1F("hTrackCounter", ";;no. of tracks", 18, 0.5, 18.5);
   hTrackCounterGen = new TH1F("hTrackCounterGen", ";;no. of tracks", 8, 0.5, 8.5);
   hTrackCounter->SetFillColor(kGreen);
   hTrackCounterGen->SetFillColor(kGreen);
   hList[0]->Add(hTrackCounter);
   if (_FLAG_MC_) hList[0]->Add(hTrackCounterGen);
   hEnvsCounter = new TH1F("hEnvsCounter", ";;no. of tracks", _numEnvs+1, 0.5, _numEnvs + 1.5);
+  hEnvsCounter->GetXaxis()->SetBinLabel(1, "accepted tracks");
   for (Int_t i = 0; i < _numEnvs; ++i) {
-    hEnvsCounter->GetXaxis()->SetBinLabel(i + 1, conStr[i].Data());
+    hEnvsCounter->GetXaxis()->SetBinLabel(i + 2, Form("type %d (%s)", i+1, conStr[i].Data()));
   }
   hEnvsCounter->SetFillColor(kGreen);
   hList[0]->Add(hEnvsCounter);
@@ -312,9 +313,9 @@ void AliAnalysisTaskFM_moments::UserExec(Option_t *) {
 
   bool pileupGen = kFALSE, acceptedEv = kTRUE;
   if (_FLAG_PILEUP_) {
-  if (_FLAG_MC_) bool pileupGen = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
+  if (_FLAG_MC_) pileupGen = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
   else { 
-    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); 
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE, _pileupCutLevel); 
     acceptedEv = fEventCuts.AcceptEvent(fAOD); }
   } 
   if (!acceptedEv || pileupGen) return;
@@ -345,7 +346,7 @@ void AliAnalysisTaskFM_moments::UserExec(Option_t *) {
   Float_t lvy = (Float_t)vertex->GetY();
   Float_t lvz = (Float_t)vertex->GetZ();
   hQAVz[0]->Fill(lvz);
-  if ((fabs(lvx) < 0.3) && (fabs(lvy) < 0.4) && (fabs(lvz) < 10.0)) {
+  if ((fabs(lvx) < _vxMax) && (fabs(lvy) < _vyMax) && (fabs(lvz) < _vzMax)) {
     hQAVx->Fill(lvx);
     hQAVy->Fill(lvy);
     hQAVz[1]->Fill(lvz); _vzMax = lvz;
@@ -482,45 +483,41 @@ void AliAnalysisTaskFM_moments::FillTrackInfo() {
     for(Int_t i=2;i<6;i++) nITSClusters += multiObj->GetNumberOfITSClusters(i);
     Bool_t fb128_bug = track->TestFilterBit(128);
     Bool_t fb128 = track->TestFilterBit(128) && (abs(dcaXY) < 2.4 && abs(dcaZ) < 3.2 && nCls > 50 && tpcChi2percl <= 4.0);
+
+    // New 5-condition scheme:
+    // 1. fb128: baseline (fb128 with standard cuts)
+    // 2. fb128crows: fb128 + minimum TPC crossed rows (configurable, default 80)
+    // 3. fb128shcls: fb128 + maximum shared cluster fraction nSharedCls/nCls (configurable, default 0.4)
+    // 4. fb128crowsoverfindable: fb128 + minimum ratio of crossed rows/findable clusters (configurable, default 0.8)
+    // 5. fb768: fb768 filter bit (hybrid TPC+ITS tracks)
+    Bool_t fb128crows = fb128 && (nCrossedRows >= _crowsMin);
+    Bool_t fb128shcls = fb128 && (nSharedCls/nCls <= _shClsFracMax);
+    Bool_t fb128crowsoverfindable = fb128 && (nFindableCls > 0 && nCrossedRows/nFindableCls >= _crowsOverFindableMin);
     Bool_t fb768 = track->TestFilterBit(768);
 
-    // from note: https://alice-notes.web.cern.ch/node/736
-    Bool_t i_tpcRowsClsChi2 = nCrossedRows >= 80 /* && nCls >= 70 */ && tpcChi2percl <= 4.0;
-    Bool_t ptDCAxy1 = (abs(dcaXY) < (0.0182 + 0.035 / pow(pt, 1.01))); // run1
-    
-    // from ilya note (suggested by mesut) https://alice-notes.web.cern.ch/node/1653
-    // Bool_t ptDCAxy2 = (abs(dcaXY) < (0.028 + 0.04 * pow(pt, 1.01))); // run2
-    // from Ante's email conversation after PAG presentation on 30/Oct/2025
-    Bool_t ptDCAxy2 = (abs(dcaXY) < (0.0105 + 0.035 / pow(pt, 1.1))); // run2
-    Bool_t i_tpcFracShaClsFindCls = nSharedCls/nCls <= 0.3 && nSharedCls/nCrossedRows <= 0.25 && nFindableCls/nCls >= 0.8;
-
-    Bool_t ptDCAcut = (_YEAR_ == 2010) ? ptDCAxy1 : ptDCAxy2;
-
-    if(fb128) hTrackCounter->Fill(5); hTrackCounter->GetXaxis()->SetBinLabel(5, "fb128)");
-    if(fb768) hTrackCounter->Fill(6); hTrackCounter->GetXaxis()->SetBinLabel(6, "fb768");
-    if(isTPConly) hTrackCounter->Fill(7); hTrackCounter->GetXaxis()->SetBinLabel(7, "isTPConly");
-    if(isTPCconst) hTrackCounter->Fill(8); hTrackCounter->GetXaxis()->SetBinLabel(8, "isTPCconst");
-    if(isGlobalconst) hTrackCounter->Fill(9); hTrackCounter->GetXaxis()->SetBinLabel(9, "isGlobalconst");
-    if (fb128_bug) hTrackCounter->Fill(10); hTrackCounter->GetXaxis()->SetBinLabel(10, "fb128_bug");
-    if (i_tpcRowsClsChi2) hTrackCounter->Fill(11); hTrackCounter->GetXaxis()->SetBinLabel(11, "crows>80 && chi2percl<4");
-    if (i_tpcFracShaClsFindCls) hTrackCounter->Fill(12); hTrackCounter->GetXaxis()->SetBinLabel(12, "shcls/ncls<0.3 && shcls/ncrows<0.25 && nfindablecls/ncls>0.8");
-    if (ptDCAcut) hTrackCounter->Fill(13); hTrackCounter->GetXaxis()->SetBinLabel(13, Form("ptDCAcut: %s", _YEAR_ == 2010 ? "0.0182 + 0.035 / pow(pt, 1.01)" : "0.0105 + 0.035 / pow(pt, 1.1)"));
+    // Legacy track counters for QA
+    if(fb128) hTrackCounter->Fill(5); hTrackCounter->GetXaxis()->SetBinLabel(5, "fb128");
+    if(fb128crows) hTrackCounter->Fill(6); hTrackCounter->GetXaxis()->SetBinLabel(6, "fb128crows");
+    if(fb128shcls) hTrackCounter->Fill(7); hTrackCounter->GetXaxis()->SetBinLabel(7, "fb128shcls");
+    if(fb128crowsoverfindable) hTrackCounter->Fill(8); hTrackCounter->GetXaxis()->SetBinLabel(8, "fb128crowsoverfindable");
+    if(fb768) hTrackCounter->Fill(9); hTrackCounter->GetXaxis()->SetBinLabel(9, "fb768");
+    if(isTPConly) hTrackCounter->Fill(10); hTrackCounter->GetXaxis()->SetBinLabel(10, "isTPConly");
+    if(isTPCconst) hTrackCounter->Fill(11); hTrackCounter->GetXaxis()->SetBinLabel(11, "isTPCconst");
+    if(isGlobalconst) hTrackCounter->Fill(12); hTrackCounter->GetXaxis()->SetBinLabel(12, "isGlobalconst");
+    if (fb128_bug) hTrackCounter->Fill(13); hTrackCounter->GetXaxis()->SetBinLabel(13, "fb128_bug");
 
     Bool_t _type[_numEnvs] = {kFALSE};
     if (fb128) _type[0] = kTRUE;
-    if (fb768) _type[1] = kTRUE;
-    if (fb768 && i_tpcRowsClsChi2) _type[2] = kTRUE;
-    if (fb768 && i_tpcFracShaClsFindCls) _type[3] = kTRUE;
-    if (fb768 && i_tpcRowsClsChi2 && i_tpcFracShaClsFindCls) _type[4] = kTRUE;
-    if (fb768 && ptDCAcut && i_tpcRowsClsChi2 && i_tpcFracShaClsFindCls) _type[5] = kTRUE;
+    if (fb128crows) _type[1] = kTRUE;
+    if (fb128shcls) _type[2] = kTRUE;
+    if (fb128crowsoverfindable) _type[3] = kTRUE;
+    if (fb768) _type[4] = kTRUE;
 
     GetPtBin(pt);
     hEnvsCounter->Fill(1);
-    hEnvsCounter->GetXaxis()->SetBinLabel(1, "accepted tracks");
     for (Int_t j = 0; j < _numEnvs; ++j) {
     if (_type[j]) {
       hEnvsCounter->Fill(j+2);
-      hEnvsCounter->GetXaxis()->SetBinLabel(j+2, Form("type %d", j+1));
       hDCAxy[j]->Fill(dcaXY);
       hDCAz[j]->Fill(dcaZ);
       hDCAxy_imp[j]->Fill(dcaXY_imp);
