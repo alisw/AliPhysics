@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskFM_marooz_H
-#define AliAnalysisTaskFM_marooz_H
+#ifndef AliAnalysisTaskFM_moments_H
+#define AliAnalysisTaskFM_moments_H
 
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
@@ -26,11 +26,11 @@ class AliMCEvent;
 class AliPIDResponse;
 class AliEventPoolManager;
 
-class AliAnalysisTaskFM_marooz : public AliAnalysisTaskSE {
+class AliAnalysisTaskFM_moments : public AliAnalysisTaskSE {
 public:
-AliAnalysisTaskFM_marooz();
-AliAnalysisTaskFM_marooz(const char *name);
-virtual ~AliAnalysisTaskFM_marooz();
+AliAnalysisTaskFM_moments();
+AliAnalysisTaskFM_moments(const char *name);
+virtual ~AliAnalysisTaskFM_moments();
 virtual void UserCreateOutputObjects();
 virtual void UserExec(Option_t *option);
 virtual void Terminate(Option_t *option);
@@ -60,7 +60,7 @@ void SetITSClusterCut(Double_t itscut) { fITSCls = itscut; }
 void SetTPCClusterCut(Double_t tpccut) { fTPCCls = tpccut; }
 void SetnTPCrossedrows(Double_t tpcrowcut) { fTPCRows = tpcrowcut; }
 
-// Cuts of the 4 track-selection conditions (see AliAnalysisTaskFM_marooz::FillTrackInfo)
+// Cuts of the 4 track-selection conditions (see AliAnalysisTaskFM_moments::FillTrackInfo)
 // Minimum number of TPC crossed rows for the "fb128crows" condition (default 80).
 void SetCrowsMinCut(Double_t crows) { _crowsMin = crows; }
 // Maximum fraction of shared TPC clusters (nSharedCls/nCls) for the "fb128shcls" condition (default 0.4).
@@ -260,9 +260,9 @@ TH2F *hDEDPrawChDiff[_maxPtBin][2][_numEnvs];    //! dEta-dPhi for different cha
 // Histograms for dEta-dPhi for pt-ordered tracks
 TH2F *hDEDPrawPtOrd[_maxPtBin][4][3][2][_numEnvs]; //! dEta-dPhi for pt-ordered tracks (pt bins, order, charge, range)
 
-AliAnalysisTaskFM_marooz(const AliAnalysisTaskFM_marooz &); // not implemented
-AliAnalysisTaskFM_marooz & operator=(const AliAnalysisTaskFM_marooz &); // not implemented
-ClassDef(AliAnalysisTaskFM_marooz, 1);
+AliAnalysisTaskFM_moments(const AliAnalysisTaskFM_moments &); // not implemented
+AliAnalysisTaskFM_moments & operator=(const AliAnalysisTaskFM_moments &); // not implemented
+ClassDef(AliAnalysisTaskFM_moments, 1);
 };
 
 #endif
