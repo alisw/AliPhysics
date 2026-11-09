@@ -14,7 +14,7 @@
 #include "TList.h"
 #include "TNtuple.h"
 
-const Int_t _numM = 52, _maxPtBin = 5, _numEnvs = 6;
+const Int_t _numM = 52, _maxPtBin = 5, _numEnvs = 5;
 
 class TH1F;
 class TH2F;
@@ -48,12 +48,25 @@ void SetPSbinning(TArrayI MB, TArrayI NB, Int_t Mm) { _mBin2 = MB; _mNBin2 = NB;
 void SetPtArray(TArrayD f_ptArray, Int_t nbins) { _ptArray = f_ptArray; _numPtBin = nbins; }
 void SetRejectElectrons(Bool_t fRejectElectron) { flagRejEls = fRejectElectron; }
 void SetRejectPileup(Bool_t RejectPileup) { _FLAG_PILEUP_ = RejectPileup; }
+// Level of the ITS-TPC nClusters pile-up correlation cut (AliEventCuts).
+// 1 = tightest/standard (default), 2, 3 and >3 are progressively looser.
+// Note: only effective for the 2018 PbPb setup (AliEventCuts::SetupPbPb2018);
+// the 2015 (LHC15o) setup ignores the level and uses its own parameterisation.
+void SetPileupCutLevel(Int_t level) { _pileupCutLevel = level; }
 void SetBfield(Int_t bf) { fBfield = bf; }
 void SetDCAXYRangeMax(Int_t dcaxy) { _dcaXYMax = dcaxy; }
 void SetDCAZRangeMax(Double_t dcaz) { _dcaZMax = dcaz; }
 void SetITSClusterCut(Double_t itscut) { fITSCls = itscut; }
 void SetTPCClusterCut(Double_t tpccut) { fTPCCls = tpccut; }
 void SetnTPCrossedrows(Double_t tpcrowcut) { fTPCRows = tpcrowcut; }
+
+// Cuts of the 4 track-selection conditions (see AliAnalysisTaskFM_moments::FillTrackInfo)
+// Minimum number of TPC crossed rows for the "fb128crows" condition (default 80).
+void SetCrowsMinCut(Double_t crows) { _crowsMin = crows; }
+// Maximum fraction of shared TPC clusters (nSharedCls/nCls) for the "fb128shcls" condition (default 0.4).
+void SetSharedClsFractionCut(Double_t shcls) { _shClsFracMax = shcls; }
+// Minimum ratio of crossed rows over findable clusters for the "fb128crowsoverfindable" condition (default 0.8).
+void SetCrowsOverFindableCut(Double_t crowsOverFindable) { _crowsOverFindableMin = crowsOverFindable; }
 void SetSelfAffine(Bool_t selfaffine) { flagSelfAff = selfaffine; }
 void SetSharedCls(Double_t fSharedCls, Double_t fSharedrows, Double_t fFindable, Bool_t fSharedMean) { _sharedClsMax = fSharedCls; _sharedRowsMax = fSharedrows; _findableClsMin = fFindable; flagShClPro = fSharedMean; }
 
@@ -79,6 +92,10 @@ AliEventPool* _pool; // Event pool object to access event-level data.
 Bool_t _FLAG_MC_;        // Flag to indicate whether the analysis is running on MC data.
 AliEventPoolManager *fEvPoolMgr; // Event pool manager object to access event-level data.
 Bool_t _FLAG_PILEUP_;    // Flag to enable or disable pile-up rejection.
+Int_t _pileupCutLevel;   // Level of the ITS-TPC nClusters pile-up correlation cut (1 = tightest/standard).
+Double_t _crowsMin;           // Minimum number of TPC crossed rows (fb128crows condition).
+Double_t _shClsFracMax;       // Maximum fraction of shared TPC clusters, nSharedCls/nCls (fb128shcls condition).
+Double_t _crowsOverFindableMin; // Minimum ratio of crossed rows over findable clusters (fb128crowsoverfindable condition).
 Int_t _YEAR_;          // Year of data taking (e.g., 2010, 2015, 2018).
 TString fGenName;     // Name of the generator used for MC events (e.g., "Hijing").
 Int_t counter;        // General-purpose counter for internal use.
