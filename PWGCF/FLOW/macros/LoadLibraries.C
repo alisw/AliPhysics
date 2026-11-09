@@ -10,7 +10,6 @@ void LoadLibraries()
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   gSystem->Load("libMinuit");
 
 

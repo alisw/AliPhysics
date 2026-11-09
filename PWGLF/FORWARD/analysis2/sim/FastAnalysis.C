@@ -33,11 +33,11 @@
 # include <TParameter.h>
 # include <TSystem.h>
 # include <TUrl.h>
+# include <TObjString.h>
 # include <TGraph.h>
 # include <TMap.h>
 # include "FastShortHeader.C"
 # include "FastMonitor.C"
-// # include <TProof.h>
 #else
 class TTree;
 class TH1;
@@ -51,7 +51,6 @@ class TLegend;
 class TMultiGraph;
 class TParticle;
 class TArrayI;
-class TProof;
 class TUrl;
 class TVirtualPad;
 class TMap;
@@ -638,46 +637,7 @@ struct FastAnalysis : public TSelector
   virtual Bool_t ProcessHeader() { return CheckTrigger(); }
   /* @} */
 
-  /** 
-   * @{ 
-   * @name Static interface for running 
-   */
-  /** 
-   * Execute a PROOF command. Short hand convinience 
-   * 
-   * @param cmd Command, or empty string. 
-   * 
-   * @return If cmd is empty, test if gProof is defined, other wise
-   * result of command.
-   */
-  static Long_t ProofExec(const char* cmd=0)
-  {
-    Bool_t hasCmd = (cmd && cmd[0] != '\0');
-    TString lne;
-    lne.Form("gProof%s%s", (hasCmd ? "->" : ""), (hasCmd ? cmd : ""));
-    Printf("FastAnalysis::ProofExec: %s", lne.Data());
-    return gROOT->ProcessLine(lne);
-  }
-  static Bool_t ProofLoad(const char* file, const char* opt)
-  {
-    const char* real = gSystem->Which(gROOT->GetMacroPath(),
-				      file, kReadPermission);
-    if (!real) {
-      ::Warning("ProofLoad", "%s not found in load path: %s",
-		file, gROOT->GetMacroPath());
-      delete real;
-      return false;
-    }
-    TString cc(opt); if (cc == "-") cc = "" ; else cc.Prepend("+");
-    Long_t ret = ProofExec(Form("Load(\"%s%s\",true)",real, cc.Data()));
-    if (ret != 0) {
-      ::Warning("ProofLoad", "Failed to load %s%s", real, cc.Data());
-      delete real;
-      return false;
-    }
-    delete real;
-    return true;
-  }
+
   /** 
    * Extract key value pair from string 
    * 
@@ -700,43 +660,7 @@ struct FastAnalysis : public TSelector
     val = in(idx+1, in.Length()-idx-1);
     return true;
   }
-  /** 
-   * Set-up PROOF 
-   * 
-   * @return true on success, false otherwise 
-   */
-  static Bool_t SetupProof(TUrl& url, const char* opt,
-			   const char* extra)
-  {
-    Long_t ret = 0;
-    gROOT->LoadClass("TProof", "libProof");
-    ret = gROOT->ProcessLine(Form("TProof::Reset(\"%s\")",url.GetUrl()));
-    ret = gROOT->ProcessLine(Form("TProof::Open(\"%s\")",url.GetUrl()));
-    if (!ret) {
-      Printf("Error: FastAnalysis::SetupProof: Failed to connect");
-      return false;
-    }
-    ret = ProofExec("ClearCache()");
 
-    TString phy = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
-    TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
-    TString fwd = phy + "/PWGLF/FORWARD/analysis2";
-    TString mkLib = gSystem->GetMakeSharedLib();
-    mkLib.ReplaceAll("-std=c++14", "-std=c++98");
-    gROOT->SetMacroPath(Form("%s:%s/sim", 
-			     gROOT->GetMacroPath(), fwd.Data()));
-    ProofExec(Form("Exec(\"gSystem->SetMakeSharedLib(\\\"%s\\\")\")",
-		   mkLib.Data()));
-
-    if (!ProofLoad("FastMonitor.C", opt)) return false;
-    if (!ProofLoad("FastShortHeader.C", opt)) return false;
-    if (!ProofLoad("FastAnalysis.C", opt)) return false;
-    if (!ProofLoad("FastCentHelper.C", opt)) return false;
-    if (!extra || extra[0] == '\0') return true;
-    if (!ProofLoad(extra, opt)) return false;
-
-    return true;
-  }
 
   //==================================================================
   /**
@@ -865,8 +789,7 @@ struct FastAnalysis : public TSelector
    * 
    * where 
    *
-   * - protocol can be @c local, @c lite, or @c proof 
-   * - user@password:host gives Proof credentials and master 
+   * - protocol is @c local
    * - file is either a data file, or contains a list of file names 
    * - options are options for the execution environment 
    * - treeName is the input tree name 
@@ -934,12 +857,7 @@ struct FastAnalysis : public TSelector
       return false;
     }
     
-    TString       proto    = u.GetProtocol();
-    Bool_t        isProof  = (proto.EqualTo("proof") || proto.EqualTo("lite"));
-    if (isProof) {
-      if (!SetupProof(u,opt,script)) return false;
-      chain->SetProof();
-    }
+
 
     Printf("===================================================\n"
 	   "\n"

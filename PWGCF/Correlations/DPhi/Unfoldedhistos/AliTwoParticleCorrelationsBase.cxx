@@ -210,7 +210,7 @@ AliTwoParticleCorrelationsBase::~AliTwoParticleCorrelationsBase() {
   delete[] fPhi;
   delete[] fPID;
 
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
       delete fOutput;
   }
 }

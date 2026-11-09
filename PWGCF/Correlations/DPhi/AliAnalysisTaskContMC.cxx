@@ -36,7 +36,6 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliHelperPID.h"
 #include "AliCentrality.h"
-#include "TProof.h"
 #include "AliPID.h"
 #include "AliVEvent.h"
 #include "AliPIDResponse.h"

@@ -36,7 +36,6 @@
 #include "AliAnalysisTaskESDfilter.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliCentrality.h"
-#include "TProof.h"
 #include "AliVEvent.h"
 #include "AliStack.h"
 #include <TMCProcess.h>

@@ -153,7 +153,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
 //___________________________________________________________________________
 AliAnalysisTaskCheckHFMCProd::~AliAnalysisTaskCheckHFMCProd(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if (fOutput) {
     delete fOutput;
     fOutput = 0;

@@ -10,21 +10,15 @@ class AliAnalysisGrid;
 
 //______________________________________________________________________________
 void runLukeAOD(
-				const char* runtype = "proof", // local, proof or grid
+				const char* runtype = "local", // local, proof or grid
 				const char *gridmode = "full", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
 				const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
 				const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
 				const Long64_t nentries = 10000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
-				const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-				const char *proofdataset/*CAF*/ = "/alice/data/LHC10h_000139037_p2_AOD073", //"/alice/sim/LHC11a10a_000138795_AOD048", //"/alice/data/LHC10h_000139507_p2_AOD049", //"/alice/data/LHC10e_000130375_p2", //"/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
-				//const char *proofdataset/*SKAF*/ = "/alice/data/LHC10h_000139510_AOD086_p2", //"/alice/sim/LHC11a10a_000138795_AOD048", //"/alice/data/LHC10h_000139507_p2_AOD049", //"/alice/data/LHC10e_000130375_p2", //"/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
-				const char *proofcluster/*CAF*/ = "hanratty@alice-caf.cern.ch", //"alice-caf.cern.ch", //"hanratty@skaf.saske.sk", //"alice-caf.cern.ch", // which proof cluster to use in proof mode
-				//const char *proofcluster/*SKAF*/ = "hanratty@skaf.saske.sk", //"alice-caf.cern.ch", //"hanratty@skaf.saske.sk", //"alice-caf.cern.ch", // which proof cluster to use in proof mode
-				const char *taskname = "example_task" // sets name of grid generated macros
-				)
+				const Long64_t firstentry = 0)
 {
     // check run type
-    if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+    if(runtype != "local" && runtype != "grid"){
         Printf("\n\tIncorrect run option, check first argument of run macro");
         Printf("\tint runtype = local, proof or grid\n");
         return;
@@ -51,7 +45,7 @@ void runLukeAOD(
     AliAnalysisManager* mgr = new AliAnalysisManager(taskname);
     
     // create the alien handler and attach it to the manager
-    AliAnalysisGrid *plugin = CreateAlienHandler(taskname, gridmode, proofcluster, proofdataset); 
+    AliAnalysisGrid *plugin = CreateAlienHandler(taskname, gridmode);
     mgr->SetGridHandler(plugin);
     
     AliVEventHandler* aodH = new AliAODInputHandler();
@@ -91,7 +85,7 @@ void runLukeAOD(
 }
 
 //______________________________________________________________________________
-AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, const char *proofcluster, const char *proofdataset)
+AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode)
 {
     AliAnalysisAlien *plugin = new AliAnalysisAlien();
     // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
@@ -185,25 +179,16 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     //---      PROOF MODE SPECIFIC SETTINGS         ------------
     //---------------------------------------------------------- 
     // Proof cluster
-    plugin->SetProofCluster(proofcluster);
     // Dataset to be used   
-    plugin->SetProofDataSet(proofdataset);
     // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-    plugin->SetProofReset(0);
     // May limit number of workers
-    plugin->SetNproofWorkers(10);
     // May limit the number of workers per slave
-    plugin->SetNproofWorkersPerSlave(1);   
     // May use a specific version of root installed in proof
-    plugin->SetRootVersionForProof("VO_ALICE@ROOT::v5-33-02b");
     // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
-    plugin->SetAliRootMode("default"); // Loads AF libs by default
     // May request ClearPackages (individual ClearPackage not supported)
-    plugin->SetClearPackages(kFALSE);
     // Plugin test mode works only providing a file containing test file locations, used in "local" mode also
     plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
     // Request connection to alien upon connection to grid
-    plugin->SetProofConnectGrid(kFALSE);
 	
     return plugin;
 }

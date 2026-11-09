@@ -1,6 +1,5 @@
-enum anaModes {mLocal,mPROOF,mGrid};
+enum anaModes {mLocal=0,mGrid=2};
 //mLocal: Analyze locally files in your computer using aliroot
-//mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
 
 // CENTRALITY DEFINITION
@@ -91,9 +90,6 @@ void runTaskFlowOnMC(Int_t harmonic = 2,
   if(mode == mLocal) {
     mgr->StartAnalysis("local",chain);
   }
-  else if(mode == mPROOF) {
-    mgr->StartAnalysis("proof",dataDir,nEvents,offset);
-  }
   else if(mode == mGrid) {
     mgr->StartAnalysis("grid");
   }
@@ -129,7 +125,6 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles ) {
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   gSystem->Load("libMinuit");
 
   if (mode==mLocal || mode==mGrid)
@@ -166,40 +161,7 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles ) {
       gSystem->Load("libPWGflowTasks");
     }
   }
-  else if (mode==mPROOF)
-  {
-    TList* list = new TList();
-    list->Add(new TNamed("ALIROOT_MODE", "ALIROOT"));
-    if (useFlowParFiles)
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies"));
-    else
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies:PWG2flowCommon:PWG2flowTasks"));
 
-    //list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","PWG2/FLOW/AliFlowCommon:PWG2/FLOW/AliFlowTasks"));
-
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    //TProof* proof = TProof::Open("alice-caf.cern.ch");
-    TProof* proof = TProof::Open("skaf.saske.sk");
-
-    // list the data available
-    //gProof->ShowDataSets("/*/*");
-    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
-    //gProof->ShowDataSets("/alice/data/"); //for REAL Data
-
-    proof->ClearPackages();
-    proof->EnablePackage("VO_ALICE@AliRoot::v4-21-14-AN",list);
-
-    if (useFlowParFiles)
-    {
-      gProof->UploadPackage("PWG2flowCommon.par");
-      gProof->UploadPackage("PWG2flowTasks.par");
-    }
-
-    // Show enables Packages
-    gProof->ShowEnabledPackages();
-  }
 } // end of void LoadLibraries(const anaModes mode)
 
 // Helper macros for creating chains

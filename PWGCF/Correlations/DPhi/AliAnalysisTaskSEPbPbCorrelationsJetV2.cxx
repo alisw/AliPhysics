@@ -317,16 +317,16 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
 
 AliAnalysisTaskSEPbPbCorrelationsJetV2::~AliAnalysisTaskSEPbPbCorrelationsJetV2() {
   
-  if (fOutputList  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+  if (fOutputList  )
     delete fOutputList;
 
-  if (fOutputList1  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (fOutputList1  )
     delete fOutputList1;
 
-  if (flist_contQ  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (flist_contQ  )
     delete flist_contQ;
 
-  if (flist_Res  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (flist_Res  )
     delete flist_Res;
 
 }

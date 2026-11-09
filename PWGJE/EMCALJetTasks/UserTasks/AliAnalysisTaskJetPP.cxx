@@ -446,7 +446,7 @@ void AliAnalysisTaskJetPP::Terminate(Option_t *){
 //________________________________________________________________________
 AliAnalysisTaskJetPP::~AliAnalysisTaskJetPP(){
    // Destructor. Clean-up the output list, but not the histograms that are put inside
-   if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   if(fOutput ) {
       delete fOutput;
    }
    delete fHelperClass;

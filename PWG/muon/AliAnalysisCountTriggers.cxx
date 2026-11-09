@@ -26,11 +26,11 @@ AliAnalysisCountTriggers::~AliAnalysisCountTriggers()
 {
   /// dtor
 
-  if (fEventCounters && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (fEventCounters )
   {
     delete fEventCounters;
   }
-  if (fHTriggerMask && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (fHTriggerMask )
   {
     delete fHTriggerMask;
   }

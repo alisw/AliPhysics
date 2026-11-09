@@ -125,8 +125,9 @@ AliAnalysisEffTaskFilterBit768::AliAnalysisEffTaskFilterBit768(TString name, int
 AliAnalysisEffTaskFilterBit768::~AliAnalysisEffTaskFilterBit768()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

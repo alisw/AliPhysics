@@ -75,7 +75,7 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const c
 //_________________________________________________________________________
 AliAnalysisTaskCaloTrackCorrelation::~AliAnalysisTaskCaloTrackCorrelation() 
 {  
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   
   if (fOutputContainer)
   {

@@ -126,11 +126,11 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
     delete fOutput;
     fOutput = 0;
   }
-  if (fQASelection && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fQASelection ) {
     delete fQASelection;
     fQASelection = 0;
   }

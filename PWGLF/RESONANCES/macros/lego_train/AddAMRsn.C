@@ -1,7 +1,7 @@
 #ifndef __CINT__
 #include "AliRsnTrainManager.h"
 #endif
-Bool_t AddAMRsnTrain(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
+Bool_t AddAMRsnTrain(TString analysisSource = "local", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
 {
 
    Bool_t usePrivateTrain = kFALSE;

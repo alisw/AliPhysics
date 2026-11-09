@@ -125,8 +125,9 @@ AliAnalysisTaskEffDRPbPb::AliAnalysisTaskEffDRPbPb(TString name, int pidMethod, 
 AliAnalysisTaskEffDRPbPb::~AliAnalysisTaskEffDRPbPb()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

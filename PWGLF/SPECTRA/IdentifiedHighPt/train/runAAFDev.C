@@ -16,7 +16,6 @@ Float_t minCent = 0.0;
 Float_t maxCent = 100.0;
 
 void runAAF(Int_t nFilesMax, char* type = "local", char* textFileName = "esd.txt", Int_t task = 2);
-TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName);
 TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName);
 const Char_t* GetTreeName(Bool_t esdAna);
 
@@ -70,16 +69,9 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   cout << "MonteCarlo " << analysisMC << endl;
   
   const char* alirootver = "v5-02-17-AN";
-  Int_t mode = -1; // mode 1: PROOF, 2: GRID, 0: LOCAL
+  Int_t mode = -1; // mode 2: GRID, 0: LOCAL
   printf("===================================================================\n");
-  if(strstr(type,"proof") != NULL){ 
-    if(mode != -1){
-      printf("===== CONFLICTING TYPES =====\n");
-      return;
-    }
-    mode = 1; 
-    printf("===============   RUNNING ANALYSIS IN CAF MODE   ================\n");
-  }
+
   if(strstr(type,"grid") != NULL){
     if(mode != -1){
       printf("===== CONFLICTING TYPES =====\n");
@@ -162,26 +154,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
   cout << "mode " << mode << ", type " << type << endl;
 
-  if (mode == 1){
-    cout << "Connecting to CAF..." << endl;
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
 
-    //const char* AAF = "pchristi@skaf.saske.sk";    
-    const char* AAF = "aortizve@alice-caf.cern.ch";    
-
-    if(strstr(type,"reset") != NULL)
-       TProof::Reset(AAF,kFALSE);
-    //       TProof::Reset("pchristi@alice-caf.cern.ch",kTRUE);
-    //    TProof::Open(AAF);
-    TProof::Open(AAF, "workers=10");
-
-    TList *list = new TList();
-    list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "CDB"));
-
-    gProof->EnablePackage(Form("VO_ALICE@AliRoot::%s",alirootver), list);
-
-    cout << "Connected to " << AAF << endl;
-  }
 
  
   // Load the analysis macro (old version); should be removed when the library will be decided
@@ -193,24 +166,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
     sprintf(loadtask,"AliAnalysisTask%s.cxx++", taskname);
   }
   
-  if(mode == 1){ // PROOF
-    
-    // switch(task){
-    // case 1: // ch fluct
-    //   break;
-    // case 2: // high pt dedx
-    //gProof->Load("DebugClasses.C++g");
-    //   break;
-    // case 3: // high pt v0s
-    //   gProof->Load("DebugClasses.C++g");
-    //   break;
-    // default:
-    //   printf("Unknown task\n");
-    //   return;
-    // }
-
-    gProof->Load(loadtask);
-  }else{
+  {
 
     if(task==2) {
       
@@ -227,12 +183,6 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 
   // Dataset 
   switch(mode){
-  case 1: // PROOF
-    TFileCollection* proofColl = gProof->GetDataSet(textFileName);
-    TFileCollection* stagedColl = proofColl->GetStagedSubset();
-    TChain* chain = CreateChainCAF(nFilesMax, stagedColl, treeName);
-//    TChain* chain = CreateChainCAF(nFilesMax, textFileName, treeName, analysisMC);
-    break;
   case 2: // GRID
     //gSystem->Setenv("alien_CLOSE_SE", "ALICE::GSI::SE2");
     //    gSystem->Setenv("alien_CLOSE_SE", "ALICE::NIHAM::FILE");
@@ -356,9 +306,6 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
   if (mgr->InitAnalysis()){
     mgr->PrintStatus();
     switch(mode){
-    case 1: // PROOF
-      mgr->StartAnalysis("proof",chain);
-      break;
     case 2: // GRID
       mgr->StartAnalysis("grid");
       break;
@@ -373,26 +320,7 @@ void runAAF(Int_t nFilesMax, char* type, char* textFileName, Int_t task)
 }  
 
 //__________________________________________________________
-TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName)
-{
-  TIter iter(coll->GetList());
-  
-  TChain* target = new TChain(treeName);
-  
-  Int_t nFiles = 0;
-  
-  TFileInfo* fileInfo = 0;
-  while ((fileInfo = dynamic_cast<TFileInfo*> (iter())) && (nFiles<nFilesMax || nFilesMax == 0)){
-    if (fileInfo->GetFirstUrl()) {
-      target->Add(fileInfo->GetFirstUrl()->GetUrl());
-      nFiles++;
-    }
-  }
-  
-  Printf("Added %d files to chain", target->GetListOfFiles()->GetEntries());
-  
-  return target;
-}
+
 
 //__________________________________________________________
 TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)

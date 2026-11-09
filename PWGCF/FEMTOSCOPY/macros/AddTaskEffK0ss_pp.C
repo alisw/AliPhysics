@@ -30,15 +30,6 @@ AliAnalysisTaskEffK0ss_pp *AddTaskEffK0ss_pp(TString containerName="femtolist",i
   //===========================================================================
 //  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
 
-//   if (TProofMgr::GetListOfManagers()->GetEntries()) {
-// //     if (dynamic_cast<TProofLite *> gProof) {
-// //       char *macrocommand[10000];
-// //       sprintf(macrocommand, ".L %s", configMacroName);
-// //       gProof->Exec(macrocommand);
-// //     }
-// //     else
-//     gProof->Load(configMacroName);
-//   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskEffK0ss_pp *taskEffK0spp = new AliAnalysisTaskEffK0ss_pp("EffTaskK0spp",method,filterbit);

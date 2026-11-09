@@ -286,11 +286,13 @@ AliAnalysisTaskEmcalJetBtagSV::~AliAnalysisTaskEmcalJetBtagSV()
   AliInfo(MSGINFO("+++ Executing Destructor +++"));
 
   // Do not delete outputs in proof mode or merging will fail
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     if (fOutputList)  delete fOutputList;
     if (fHFvertexing) delete fHFvertexing;
     if (fV0gTrkMap)   delete fV0gTrkMap;
-  }
+
+}
   
   if (fTagger)     delete fTagger;
   if (fCutsHFjets) delete fCutsHFjets;

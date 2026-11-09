@@ -134,7 +134,7 @@ AliRsnMiniMonitorTask::~AliRsnMiniMonitorTask()
 //
 
 
-   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   if (fOutput ) {
       delete fOutput;
    }
 }

@@ -252,7 +252,9 @@ AliAnalysisTaskTree_MCut::~AliAnalysisTaskTree_MCut() {
   //destructor
   //
   Info("~AliAnalysisTaskTree_MCut","Calling Destructor");
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis) delete fOutputTree;
+  {
+delete fOutputTree;
+}
 }
 
 //___________________________________________________________________________

@@ -509,7 +509,7 @@ AliAnalysisTaskEMCALPhotonIsolation::~AliAnalysisTaskEMCALPhotonIsolation(){
 
     // Destructor
 
-  if ( AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) return;
+
 
   if ( fOutput ) delete fOutput;
 

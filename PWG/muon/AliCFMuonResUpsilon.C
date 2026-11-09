@@ -181,7 +181,7 @@ Bool_t AliCFMuonResUpsilon(
 	// ----------------------------------------------
 
 	// check run type
-	if(runtype != "local" && runtype != "proof" && runtype != "grid") {
+	if(runtype != "local" && runtype != "grid") {
 		printf("Incorrect runtype! choose \"local\", \"prootf\" or \"grid\"\n");
 		return;
 	}

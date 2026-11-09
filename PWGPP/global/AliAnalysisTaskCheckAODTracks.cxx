@@ -247,7 +247,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
 //___________________________________________________________________________
 AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistGenPilTag;

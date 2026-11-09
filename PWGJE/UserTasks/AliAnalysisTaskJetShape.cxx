@@ -140,7 +140,7 @@ ClassImp(AliAnalysisTaskJetShape)
 
 AliAnalysisTaskJetShape::~AliAnalysisTaskJetShape()
 {
-   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   if (fOutputList ) {
     printf("Deleteing output\n");
 
     if(fOutputList){

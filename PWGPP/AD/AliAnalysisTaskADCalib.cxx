@@ -64,8 +64,7 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
 }
 
 AliAnalysisTaskADCalib::~AliAnalysisTaskADCalib() {
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
-    return;
+
 
   SafeDelete(fList);
   SafeDelete(fADESDFriendUtils);

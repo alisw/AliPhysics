@@ -12,7 +12,6 @@
 #define PARHELPER_C
 #ifndef __CINT__
 # include <TString.h>
-# include <TProof.h>
 # include <TSystem.h>
 # include <TError.h>
 # include <TFile.h>
@@ -24,7 +23,6 @@
 #else
 class TString;
 class Railway;
-class TProof; // Autoload 
 #endif
 
 // ===================================================================
@@ -87,38 +85,10 @@ struct ParUtilities
    * @deprecated Use Find  and Build instead
    * @return true on success
    */
-  static Bool_t Load(const TString& name) 
+  static Bool_t Load(const TString& name)
   {
     if (name.IsNull()) return true;
-    if (!gProof) { 
-      Error("ParUtilities::Load", "No connection to a Proof cluster");
-      return false;
-    }
-
-    // Load par library 
-    TString fn(name);
-    Info("ParUtilities::LoadLibrary", "Uploading %s", name.Data());
-
-    TString parFile(name);
-    if (!parFile.EndsWith(".par")) parFile.Append(".par");
-    TString src;
-    if (!DoFind(parFile, src)) return false;
-    
-    // First check in current directory
-    Int_t ret = gProof->UploadPackage(src, TProof::kRemoveOld);
-    
-    if (ret < 0) {
-      // IF not found, bark 
-      Error("ParUtilities::Load", 
-	    "Could not upload module %s.par", name.Data());
-      return false;
-    }
-    
-    ret = gProof->EnablePackage(name);
-    Info("ParUtilities::Load", "Enabled package %s (from %s)", 
-	 name.Data(), fn.Data());
-    
-    return true;
+    return Find(name) && Build(name);
   }
   /** 
    * Unpack, build, and load a PAR file. 
@@ -661,10 +631,6 @@ struct ParUtilities
 	// from the package cache directory
 	out << "void SETUP()\n"
 	    << "{\n"
-	    << "  if (!gProofServ) {\n"
-	    << "    Info(\"SETUP\",\"Not in Proof Session, nothing to do\");\n"
-	    << "    return;\n"
-	    << "  }\n"
 	    << "  TString oldDir(gSystem->WorkingDirectory());\n"
 	    << "  TSystemDirectory* dir = new TSystemDirectory(\".\",\".\");\n"
 	    << "  TList*  files = dir->GetListOfFiles();\n"
@@ -680,7 +646,7 @@ struct ParUtilities
 	    << "  }\n"
 	    << "  files->Sort();\n"
 	    << "  TString pkgDir = gSystem->WorkingDirectory();\n"
-	    << "  TString sesDir = gProofServ->GetSessionDir();\n"
+	    << "  TString sesDir(gSystem->DirName(pkgDir.Data()));\n"
 	    << "  Info(\"\",\"Session dir: %s\",sesDir);\n"
 	    << "  TIter next(files);\n"
 	    << "  TSystemFile* file = 0;\n"

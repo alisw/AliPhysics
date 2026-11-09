@@ -24,7 +24,6 @@ void runGrid(TString mode="test",Bool_t mc=0,Int_t day=19,Int_t month=7, Int_t y
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libProof");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libSTEER");
   //__________________________________________________________________________

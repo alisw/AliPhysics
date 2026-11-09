@@ -127,7 +127,7 @@ AliAnalysisTaskDiMuonCorrelations::~AliAnalysisTaskDiMuonCorrelations() {
   delete fPtAxis;
   delete fEtaAxis;
 
-  if (fOutputList  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
+  if (fOutputList  ) delete fOutputList;
 
 }
 

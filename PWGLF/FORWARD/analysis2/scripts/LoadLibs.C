@@ -31,7 +31,6 @@ LoadLibs(bool alsoBase=false, bool alsoHit=false)
   LoadOne("AliAODForwardMult",       "libPWGLFforward2");
 
   if (!alsoBase) return;
-  LoadOne("TProof",                  "libProof");
   LoadOne("TGFrame",                 "libGui");
   LoadOne("TSAXParser",              "libXMLParser");
   LoadOne("AliCDBManager",           "libCDB");

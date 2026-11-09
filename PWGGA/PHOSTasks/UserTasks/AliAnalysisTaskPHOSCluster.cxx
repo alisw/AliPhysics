@@ -127,11 +127,11 @@ AliAnalysisTaskPHOSCluster::AliAnalysisTaskPHOSCluster(const char* name)
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 AliAnalysisTaskPHOSCluster::~AliAnalysisTaskPHOSCluster() {
 
-  if (fClusterTree && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){ //delete tree before deleting the fOutput!
+  if (fClusterTree ){ //delete tree before deleting the fOutput!
     delete fClusterTree;
     fClusterTree = 0x0;
   }
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if (fOutput ){
     delete fOutput;
     fOutput = 0x0;
   }

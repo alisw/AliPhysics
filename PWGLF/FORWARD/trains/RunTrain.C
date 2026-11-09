@@ -66,11 +66,7 @@ BuildRailways(Bool_t verbose, Bool_t force, Bool_t debug,
 			    "Railway", 
 			    "TrainSetup",
 			    (all ? "LocalRailway" : 0), 
-			    "ProofRailway", 
-			    "LiteRailway", 
-			    "AAFRailway", 
 			    "PluginRailway", 
-			    "AAFPluginRailway", 
 			    "GridRailway", 
 			    0 };
   const char** ptr = scripts;

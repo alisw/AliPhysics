@@ -32,9 +32,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   cout << "Found " <<type << " event handler" << endl;
 
   //...Create the task, add it to manager.
-  if (TProofMgr::GetListOfManagers()->GetEntries()) {
-    gProof->Load(configMacroName);
-  }
+
   //local test:
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
   //train:

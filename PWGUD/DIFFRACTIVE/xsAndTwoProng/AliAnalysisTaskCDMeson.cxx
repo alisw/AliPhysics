@@ -390,8 +390,7 @@ AliAnalysisTaskCDMeson::~AliAnalysisTaskCDMeson()
 	if (!(fAnalysisStatus & AliCDMesonBase::kBitEEStudy)) { // normal operation
 		if ((!fAnalysisStatus || (fAnalysisStatus && AliCDMesonBase::kBitTHnMother))
 		    && fThnMother
-		    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-		        AliAnalysisManager::kProofAnalysis)) {
+		    ) {
 			delete fThnMother;
 			fThnMother = 0x0;
 		}
@@ -399,37 +398,32 @@ AliAnalysisTaskCDMeson::~AliAnalysisTaskCDMeson()
 		     || ((fAnalysisStatus && AliCDMesonBase::kBitSoftTracks)
 		         && (fAnalysisStatus && AliCDMesonBase::kBitTHnMother)))
 		    && fThnMotherSoft
-		    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-		        AliAnalysisManager::kProofAnalysis)) {
+		    ) {
 			delete fThnMotherSoft;
 			fThnMotherSoft = 0x0;
 		}
 		if ((!fAnalysisStatus
 		     || (fAnalysisStatus && AliCDMesonBase::kBitMultStudy))
 		    && fThnMultiplicity
-		    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-		        AliAnalysisManager::kProofAnalysis)) {
+		    ) {
 			delete fThnMultiplicity;
 			fThnMultiplicity = 0x0;
 		}
 		if ((!fAnalysisStatus || (fAnalysisStatus && AliCDMesonBase::kBitTHnMC))
 		    && fThnMC
-		    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-		        AliAnalysisManager::kProofAnalysis)) {
+		    ) {
 			delete fThnMC;
 			fThnMC = 0x0;
 		}
 	}
 	else { // empty event study
 		if (fPhysicsSelection
-		    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-		        AliAnalysisManager::kProofAnalysis)) {
+		    ) {
 			delete fPhysicsSelection;
 			fPhysicsSelection = 0x0;
 		}
 		if (fThnEmptyEvents
-		    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-		        AliAnalysisManager::kProofAnalysis)) {
+		    ) {
 			delete fThnEmptyEvents;
 			fThnEmptyEvents = 0x0;
 		}
@@ -437,8 +431,7 @@ AliAnalysisTaskCDMeson::~AliAnalysisTaskCDMeson()
 
 	/*
 	if (fHist
-	    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-	        AliAnalysisManager::kProofAnalysis)) {
+	    ) {
 		fHist->Clear();
 		delete fHist;
 		fHist = 0x0;
@@ -446,8 +439,7 @@ AliAnalysisTaskCDMeson::~AliAnalysisTaskCDMeson()
 	*/
 
 	if (fTracks
-	    && (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-	        AliAnalysisManager::kProofAnalysis)) {
+	    ) {
 		delete fTracks;
 		fTracks = 0x0;
 	}

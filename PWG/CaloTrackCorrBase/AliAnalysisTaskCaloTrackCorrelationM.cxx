@@ -72,7 +72,7 @@ AliAnalysisTaskCaloTrackCorrelationM::AliAnalysisTaskCaloTrackCorrelationM(const
 //_________________________________________________________________________
 AliAnalysisTaskCaloTrackCorrelationM::~AliAnalysisTaskCaloTrackCorrelationM() 
 {	
-  //  if(fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  //  if(fOutputContainer ){
   //    fOutputContainer->Clear() ; 
   //    delete fOutputContainer ;
   //  }

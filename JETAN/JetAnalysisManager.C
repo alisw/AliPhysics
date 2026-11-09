@@ -5,8 +5,6 @@ void JetAnalysisManager()
     //
     gSystem->Load("libTree");
     gSystem->Load("libNetx");
-    gSystem->Load("libProof");
-    gSystem->Load("libProofPlayer");
     gSystem->Load("libGeom");
     gSystem->Load("libEG");
 

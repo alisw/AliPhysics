@@ -1,6 +1,5 @@
-enum anaModes {mLocal,mPROOF,mGrid};
+enum anaModes {mLocal=0,mGrid=2};
 //mLocal: Analyze locally files in your computer using aliroot
-//mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
 
 // CENTRALITY DEFINITION
@@ -18,7 +17,7 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nEvents = 10,
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
-void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
+void runFlowTaskCentralityTrain( Int_t mode = mLocal,
                                  Bool_t useFlowParFiles = kFALSE,
                                  Bool_t DATA = kTRUE,
                                  const Char_t* dataDir = "/alice/data/LHC10h_000137162_p1_plusplusplus#esdTree",
@@ -102,10 +101,6 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   {
     mgr->StartAnalysis("local",chain);
   }
-  else if(mode == mPROOF)
-  {
-    mgr->StartAnalysis("proof",dataDir,nEvents,offset);
-  }
   else if(mode == mGrid)
   {
     mgr->StartAnalysis("grid");
@@ -143,7 +138,6 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   gSystem->Load("libMinuit");
 
   if (mode==mLocal || mode==mGrid)
@@ -179,40 +173,7 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
       gSystem->Load("libPWGflowTasks");
     }
   }
-  else if (mode==mPROOF)
-  {
-    TList* list = new TList();
-    list->Add(new TNamed("ALIROOT_MODE", "ALIROOT"));
-    if (useFlowParFiles)
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies"));
-    else
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies:PWGflowBase:PWGflowTasks"));
 
-    //list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","PWG/FLOW/Base:PWG/FLOW/Tasks"));
-
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    //TProof* proof = TProof::Open("alice-caf.cern.ch");
-    TProof* proof = TProof::Open("skaf.saske.sk");
-
-    // list the data available
-    //gProof->ShowDataSets("/*/*");
-    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
-    //gProof->ShowDataSets("/alice/data/"); //for REAL Data
-
-    proof->ClearPackages();
-    proof->EnablePackage("VO_ALICE@AliRoot::v4-21-14-AN",list);
-
-    if (useFlowParFiles)
-    {
-      gProof->UploadPackage("PWGflowBase.par");
-      gProof->UploadPackage("PWGflowTasks.par");
-    }
-
-    // Show enables Packages
-    gProof->ShowEnabledPackages();
-  }
 } // end of void LoadLibraries(const anaModes mode)
 
 // Helper macros for creating chains

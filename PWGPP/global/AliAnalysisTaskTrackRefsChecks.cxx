@@ -101,7 +101,7 @@ AliAnalysisTaskTrackRefsChecks::AliAnalysisTaskTrackRefsChecks() :
 //___________________________________________________________________________
 AliAnalysisTaskTrackRefsChecks::~AliAnalysisTaskTrackRefsChecks(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
 
   if(fOutput && !fOutput->IsOwner()){
     for (Int_t i = 0; i < 6; i++){

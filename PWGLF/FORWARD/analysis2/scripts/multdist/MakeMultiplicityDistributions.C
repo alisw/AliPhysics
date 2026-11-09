@@ -29,16 +29,13 @@ void MakeMultiplicityDistributions(const char* aoddir=".",
 				   Int_t    highCent= 0,
 				   char*       output="forward_multiplicity.root",	   
 				   Int_t       nBins= 500,
-				   Int_t       proof=0)
+				   Int_t /*legacyMode*/=0)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts/LoadPars.C");
-    LoadPars(proof);
-  }
+
   
   // --- Our data chain ----------------------------------------------
   std::cout << "making chain of files" << std::endl;
@@ -78,13 +75,13 @@ void MakeMultiplicityDistributions(const char* aoddir=".",
   // Some informative output 
   mgr->PrintStatus();
   // mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && !proof) 
+  if (mgr->GetDebugLevel() < 1)
     mgr->SetUseProgressBar(kTRUE,100);
 
   // Run the train 
   t.Start();
   Printf("=== RUNNING ANALYSIS ==================================");
-  mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
+  mgr->StartAnalysis("local", chain, nEvents);
   t.Stop();
   t.Print();
 }

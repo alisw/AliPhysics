@@ -93,7 +93,7 @@ AliAnalysisTaskKinksFilimon::~AliAnalysisTaskKinksFilimon() {
 
    // Clean-up the output container, but not the histograms that are put inside
    // (the container is owner and will clean-up these histograms). Protect in PROOF case.
-   if (fOutputCont && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   if (fOutputCont ) {
      delete fOutputCont;
    }
 }

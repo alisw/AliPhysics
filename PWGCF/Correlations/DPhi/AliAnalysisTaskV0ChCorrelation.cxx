@@ -371,7 +371,7 @@ AliAnalysisTaskV0ChCorrelation::~AliAnalysisTaskV0ChCorrelation()
 {
    // Destructor. Clean-up the output list, but not the histograms that are put inside
    // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
       delete fOutput;
    }
  

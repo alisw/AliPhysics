@@ -29,10 +29,7 @@ AliAnalysisTaskSE * AddTaskTrigEff(const char * outname, Bool_t isMC, Int_t ntrk
   //===========================================================================
 
   TString loadTaskStr = "AliAnalysisTaskTrigEff.cxx+";
-  if (gProof != NULL) {
-    gProof->Load( loadTaskStr.Data() );
-  }
-  else {
+  {
     gROOT->LoadMacro( loadTaskStr.Data() );
   }
 

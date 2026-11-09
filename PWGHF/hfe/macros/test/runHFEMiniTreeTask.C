@@ -66,7 +66,7 @@ void runHFEMiniTreeTask(  const char *runtype     = RunType,
   cout << "Output Dir = : " << ctaskname.Data() << endl;
   
   
-  if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+  if(runtype != "local" && runtype != "grid"){
     Printf("\n\tIncorrect run option, check first argument of run macro");
     Printf("\tint runtype = local, proof or grid\n");
     return;
@@ -82,7 +82,6 @@ void runHFEMiniTreeTask(  const char *runtype     = RunType,
   gSystem->Load("libGui");
   gSystem->Load("libMinuit");
   gSystem->Load("libPhysics");
-  gSystem->Load("libProof");
   gSystem->Load("libMLP");
   gSystem->Load("libTreePlayer");
   gSystem->Load("libXMLIO");
@@ -328,28 +327,17 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
   //  else plugin->SetFileForTestMode("esd.txt"); 
   
   // Proof cluster
-  plugin->SetProofCluster(" ");
   // Dataset to be used   
-  //  plugin->SetProofDataSet("/default/sjena/test");
   // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-  plugin->SetProofReset(0);
   // May limit number of workers
-  // plugin->SetNproofWorkers(0);
   // May limit the number of workers per slave
-  //  plugin->SetNproofWorkersPerSlave(1);
   // May use a specific version of root installed in proof
-  //  plugin->SetRootVersionForProof("current");
   // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
-  //  plugin->SetAliRootMode("default"); // Loads AF libs by default
   // May request ClearPackages (individual ClearPackage not supported)
-  plugin->SetClearPackages(kFALSE);
   // Plugin test mode works only providing a file containing test file locations, used in "local" mode also
   //  plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
   // Request connection to alien upon connection to grid
-  plugin->SetProofConnectGrid(kFALSE);
   // Other PROOF specific parameters
-  plugin->SetProofParameter("PROOF_UseMergers","-1");
-  printf("Using: PROOF_UseMergers   : %s\n", plugin->GetProofParameter("PROOF_UseMergers"));
   return plugin;
 }
 

@@ -148,13 +148,13 @@ AliAnalysisTaskHighPtDeDxV0::~AliAnalysisTaskHighPtDeDxV0()
   // Destructor
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-  if (fListOfObjects && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fListOfObjects ) {
     delete fListOfObjects;
     fListOfObjects = 0;
   }
   
   // //for proof running; I cannot create tree do to memory limitations -> work with THnSparse 
-  // if (fListOfObjects  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
+  // if (fListOfObjects  ) delete fOutputList;
   
   
   

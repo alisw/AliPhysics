@@ -203,7 +203,6 @@ void LoadLibs()
   gSystem->Load("libXMLParser");
   gSystem->Load("libMinuit");
   gSystem->Load("libMinuit2");
-  gSystem->Load("libProof");
   gSystem->Load("libPhysics");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
@@ -296,7 +295,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }else tmpName +="_20130412_122423";
   */
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTender.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libJETAN.so libFASTJETAN.so  libPWGJE.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTender.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libsiscone.so libsiscone_spherical.so libfastjetplugins.so libfastjettools.so libfastjetcontribfragile.so libJETAN.so libFASTJETAN.so  libPWGJE.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");

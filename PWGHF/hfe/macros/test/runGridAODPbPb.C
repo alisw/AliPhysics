@@ -23,7 +23,6 @@ void runGridAODPbPb()
    gSystem->Load("libCORRFW");
 
    gSystem->Load("libTender"); 
-   gSystem->Load("libProof");
    gSystem->Load("libRAWDatabase");
    gSystem->Load("libSTEER");
    gSystem->Load("libTOFbase");

@@ -15,7 +15,6 @@ void RunGridHLT(const char* pluginmode = "full", Bool_t theMCon=kFALSE, Bool_t U
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
     gSystem->Load("libGui.so");
-    gSystem->Load("libProof.so");
     gSystem->Load("libMinuit.so");
     gSystem->Load("libRAWDatabase.so");
     gSystem->Load("libRAWDatarec.so");
@@ -96,7 +95,7 @@ Bool_t theMCon=kFALSE)
     plugin->SetGridWorkingDir("BGMonitorQA_HLT/20160509_02");
     plugin->SetGridOutputDir("output");
     plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TOF -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include");
-    plugin->SetAdditionalLibs("AliAnalysisBGMonitorQAHLT.h AliAnalysisBGMonitorQAHLT.cxx libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libANALYSIS.so  libANALYSISalice.so libXMLIO.so libXMLParser.so libCDB.so libSTEERBase.so libSTEER.so libSTAT.so"); //libOADB.so
+    plugin->SetAdditionalLibs("AliAnalysisBGMonitorQAHLT.h AliAnalysisBGMonitorQAHLT.cxx libGui.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libANALYSIS.so  libANALYSISalice.so libXMLIO.so libXMLParser.so libCDB.so libSTEERBase.so libSTEER.so libSTAT.so"); //libOADB.so
     plugin->SetAnalysisSource("AliAnalysisBGMonitorQAHLT.cxx");
     plugin->SetDefaultOutputs(kFALSE);
     // merging via

@@ -272,10 +272,12 @@ AliEbyEPhiDistNewMC::AliEbyEPhiDistNewMC( const char *name )
 //---------------------------------------------------------------------------------
 AliEbyEPhiDistNewMC::~AliEbyEPhiDistNewMC() {
   
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fThnList;
     //delete [] fPtArray;
-  }
+
+}
 }
 
 //---------------------------------------------------------------------------------

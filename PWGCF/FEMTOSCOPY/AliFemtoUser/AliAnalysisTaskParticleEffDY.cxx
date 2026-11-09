@@ -125,8 +125,9 @@ AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pid
 AliAnalysisTaskParticleEffDY::~AliAnalysisTaskParticleEffDY()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

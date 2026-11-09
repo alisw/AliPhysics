@@ -453,8 +453,8 @@ AliAnalysisTaskPidPidCorrelations::~AliAnalysisTaskPidPidCorrelations()
   if (fPtAxis) 	{ delete fPtAxis; fPtAxis = 0x0; }
   if (fEtaAxis) 	{ delete fEtaAxis; fEtaAxis = 0x0; }  
 
-  if (fList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fList; fList = 0x0; }
-  if (fMyCFCont && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) { delete fMyCFCont; fMyCFCont = 0x0;  }
+  if (fList ) { delete fList; fList = 0x0; }
+  if (fMyCFCont ) { delete fMyCFCont; fMyCFCont = 0x0;  }
   if (fPoolMgr) { delete fPoolMgr; fPoolMgr = 0x0; }
   if (fPIDResponse) { delete fPIDResponse; fPIDResponse = 0x0; }
 }

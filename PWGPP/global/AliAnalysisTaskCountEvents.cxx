@@ -62,7 +62,7 @@ AliAnalysisTaskCountEvents::AliAnalysisTaskCountEvents() :
 //___________________________________________________________________________
 AliAnalysisTaskCountEvents::~AliAnalysisTaskCountEvents(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEventsPhysSel;
     delete fHistNEventsSPDVert;

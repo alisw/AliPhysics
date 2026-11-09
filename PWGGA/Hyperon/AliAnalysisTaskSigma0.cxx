@@ -508,8 +508,8 @@ AliAnalysisTaskSigma0::~AliAnalysisTaskSigma0()
 //------------------------------------------------
 // DESTRUCTOR
 //------------------------------------------------
-    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() !=
-        AliAnalysisManager::kProofAnalysis) {
+    {
+
         
         if(fOutputContainer){
             fOutputContainer->Clear() ;
@@ -575,7 +575,8 @@ AliAnalysisTaskSigma0::~AliAnalysisTaskSigma0()
             }
         }
         
-    }
+
+}
 }
 //_____________________________________________________
 void AliAnalysisTaskSigma0::Init()

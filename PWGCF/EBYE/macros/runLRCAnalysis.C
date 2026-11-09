@@ -20,15 +20,15 @@ runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml",Bool_t
 // Version 3.6.6
 
 
-if(mode!="Local" && mode!="Interactive" && mode!="PROOF" && mode!="GRID")
+if(mode!="Local" && mode!="Interactive" && mode!="GRID")
 {
-cout<<" ! Mode must be : Local , Interactive, PROOF, GRID \n";
+cout<<" ! Mode must be : Local , Interactive, GRID \n";
 cout<<" ! Unknown mode :"<<mode<< " \n";
 return;
 }
 
 if(mode=="Local")runLRCLocal(inputName,LoadTaskLocal);
-if(mode=="PROOF")runLRCProof(inputName,LoadTaskLocal);
+
 if(mode=="Interactive")runLRCInteractive(inputName,LoadTaskLocal);
 if(mode=="GRID")runLRCInteractive(inputName,LoadTaskLocal);
 
@@ -122,48 +122,7 @@ void runLRCLocal(const char* inputName= "ESDs.lst",Bool_t LoadTaskLocal=kFALSE,B
   timer.Print();
 }
 
-void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small",Bool_t LoadTaskLocal=kFALSE,const char* proofLink="anivanov@alice-caf.cern.ch",Bool_t runKine=kFALSE,Bool_t runAOD=kFALSE)
-{
-  printf("  ------------------------------------------\n");
-  printf(" # LRC PROOF run manager \n");
-  cout<<"  # Task from :"<<gSystem->pwd()<<"\n";
-  cout<<"  # Dataset :"<<inputName<<"\n";
-
-
-	TProof::Open(proofLink);
-	//TProof::Open("anivanov@localhost");.
-
-	
-  cout<<"  # Loadnig libs...\n";
-
-
-
-gProof->EnablePackage("VO_ALICE@AliRoot::v4-20-13-AN");
-
-  // Use AliRoot includes to compile our task
-  if(LoadTaskLocal){
- //	gROOT->ProcessLine(".include $ALICE_ROOT/include");
-	cout<<"  # Compiling AliLRCBase\n";
-	gProof->Load("AliLRCBase.cxx+g");	
-	cout<<"  # Compiling AliLRCProcess\n";
-	gProof->Load("AliLRCProcess.cxx+g");
-	gProof->Load("AliLRCAnalyser.cxx+g");
-  	cout<<"  # Compiling analysis task\n";
-  	gProof->Load("AliAnalysisTaskLRC.cxx+g");   
-  }
-
-  if (!CreateLRCManager("ProofLRCTest",runKine,runAOD)) return;
-  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
-  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-   
-  gROOT->LoadMacro("AddTaskLRC.C");
-  AddTaskLRC(runKine);
-
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr->InitAnalysis()) return;
-  mgr->PrintStatus();
-  mgr->StartAnalysis("proof", inputName);
-};
+;
 
 void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFALSE,Bool_t runKine=kFALSE,Bool_t runAOD=kFALSE) {
   

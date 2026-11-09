@@ -166,10 +166,12 @@ AliAnalysisTaskJPsiMC_DG::~AliAnalysisTaskJPsiMC_DG()
 {
     // destructor
 
-    if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+    {
+
         delete fOutputList;
         fOutputList = 0x0;
-    }
+
+}
     if(fOutputList) {delete fOutputList;}
     if(fTreeJPsiMCRec) {delete fTreeJPsiMCRec;}
     if(fTreeJPsiMCGen) {delete fTreeJPsiMCGen;} 

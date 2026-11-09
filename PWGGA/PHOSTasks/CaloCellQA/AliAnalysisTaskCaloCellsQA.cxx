@@ -95,7 +95,9 @@ AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, Int_t n
 //________________________________________________________________
 AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
 {
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fCellsQA;
+  {
+delete fCellsQA;
+}
   if (fBadCells) delete [] fBadCells;
 }
 

@@ -145,7 +145,8 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(TString name) :
 AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
 {
   /// Destructor
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fMuonTrackCuts;
     delete fClusters;
     delete fEvents;
@@ -153,7 +154,8 @@ AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
     delete fChamberTTHistList;
     delete fChamberSDHistList;
     delete fExtraHistList;
-  }
+
+}
   delete fTransformer;
   delete fDEPlanes;
 }

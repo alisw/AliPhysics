@@ -32,10 +32,7 @@ Bool_t RunALICE(TString anSrc = "grid",
    if (!analysisPlugin) { Printf("Error : analysisPlugin is null !!!"); return kFALSE; }
    mgr->SetGridHandler(analysisPlugin);
    if (!dsName.IsNull()) {
-      if (!anSrc.CompareTo("proof") && !anMode.CompareTo("full")) {
-         analysisPlugin->SetProofDataSet(dsName.Data());
-         Printf(Form("Using DataSet %s ...",dsName.Data()));
-      } else {
+      {
          analysisPlugin->SetFileForTestMode(dsName.Data());
          Printf(Form("Using Test file %s ...",dsName.Data()));
       }
@@ -186,7 +183,7 @@ Bool_t AddAnalysisManager(TString managerMacro, TString anSrc, TString anMode,TS
    return gROOT->ProcessLine(Form("%s\(\"%s\",\"%s\",\"%s\"\,\"%s\",\"%s\",\"%s\"\);", managerMacro.Data(), anSrc.Data(), anMode.Data(),input.Data(),inputMC.Data(), postfix.Data(),idStr.Data()));
 }
 
-Bool_t RunAnalysisManager(TString anSrc = "proof", TString anMode = "test", Long64_t nEvents = 1e10, Long64_t nSkip = 0) {
+Bool_t RunAnalysisManager(TString anSrc = "local", TString anMode = "test", Long64_t nEvents = 1e10, Long64_t nSkip = 0) {
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -196,7 +193,7 @@ Bool_t RunAnalysisManager(TString anSrc = "proof", TString anMode = "test", Long
    mgr->InitAnalysis();
    mgr->PrintStatus();
 
-   if ((!anSrc.CompareTo("proof")) || (!anSrc.CompareTo("local"))) {
+   if ((!anSrc.CompareTo("local"))) {
       mgr->StartAnalysis(anSrc.Data(), nEvents, nSkip);
    } else {
       mgr->StartAnalysis(anSrc.Data());

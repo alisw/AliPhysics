@@ -87,8 +87,7 @@ AliAnalysisTaskHe3piKF::AliAnalysisTaskHe3piKF(bool isMC, TString taskname) : Al
 ///
 AliAnalysisTaskHe3piKF::~AliAnalysisTaskHe3piKF()
 {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
   if (fList)
     delete fList;
   if (fTree)

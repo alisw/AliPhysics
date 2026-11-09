@@ -21,15 +21,7 @@ format
 
     PROTOCOL://[HOST]/?[OPTIONS]
 
-where `PROTOCOL` can be one of
-
-* `local`: Run a single-thread simulation on the local machine.
-* `lite:`: Run a multi-thread simulation on the local machine, using
-  the ProofLite functionality
-* `proof`: Run a multi-thread simulation on a PROOF farm specified by
-  `HOST`.
-
-The `HOST` part only makes sense for `PROTOCOL=proof`.
+Use `PROTOCOL=local` to run the simulation on the local machine.
 
 `OPTIONS` is a list of options separated by ampersands &amp;, and can contain
 
@@ -63,22 +55,9 @@ The `HOST` part only makes sense for `PROTOCOL=proof`.
   * `beam1.z=CHARGE`: Charge of particles in beam1
   * `beam2.a=ATOMIC_NUMBER`: Atomic number of particles in beam2
   * `beam2.z=CHARGE`: Charge of particles in beam2
-* `save=MODE`: Only relevant for Proof(Lite). Values can be
-  * `none`: Do not retrieve the final `galice.root` and
-    `Kinematics.root` files.
-  * `split`: Return the final `galice.root` and `Kinematics.root`
-    files - one for each worker.  The files are moved to a
-    sub-directory on the client machine, and an collection of `TUrl`
-    objects is written to `index.root`.  One can easily define a chain
-    using this information. 
-  * `merge`: Does not work
-  
-`OPTIONS` can also contain options for the execution environment, such
-as `workers=N` for ProofLite.
-
 ### Example:
 
-    RunFast.C("lite:///?events=10000&eg=default&run=138190")
+    RunFast.C("local:///?events=10000&eg=default&run=138190")
 
 will make 10000 events using the default generator (Hijing), anchored
 in run 138190 (LHC10h, PbPb @ 2.76TeV).  The output file will be
@@ -109,8 +88,6 @@ by ampersands.  Valid options are
    * `MULTRefMult00d80`
    * `MULTRefMult00d50`
 
-`OPTIONS` can also contain options for the execution environment, such
-as `workers=N` for ProofLite.
 
 The `OUTPUT` argument specifies which ROOT file to write the results
 to.
@@ -119,7 +96,7 @@ to.
 
 Using the output from the above example
 
-    ProcessFast.C("lite:///${PWD}/Hijing_000138190_AA_02760_10k.root?events=1000&type=CENTV0M","out.root")
+    ProcessFast.C("local:///${PWD}/Hijing_000138190_AA_02760_10k.root?events=1000&type=CENTV0M","out.root")
 
 will analyze 1000 events from the above run, and build dN/deta per
 centrality bin, using a simulated V0M centrality estimator. 
@@ -152,7 +129,7 @@ For more details see README.md in this directory.
 <!--   mode: markdown -->
 <!--   ispell-dictionary: "british" -->
 <!-- End: -->
-<!--  LocalWords:  RunFast multi ProofLite GRP eg Hijing Pythia TeV
+<!--  LocalWords:  RunFast multi local execution GRP eg Hijing Pythia TeV
  -->
 <!--  LocalWords:  DpmJet ProcessFast PbPb LHC PWD INEL NSD CENTV dN
  -->

@@ -18,8 +18,8 @@
 //  - outputDir/singleMuAnalysis.root
 //--------------------------------------------------------------------------
 
-enum analysisMode {kMlocal, kMgridInteractive, kMgridBatch, kMproof};
-TString modeName[4] = {"local", "local", "grid", "proof"};
+enum analysisMode {kMlocal, kMgridInteractive, kMgridBatch};
+TString modeName[3] = {"local", "local", "grid"};
 
 void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Char_t *outputDir=".", Char_t *aodFilename = "AliAODs.root", Long64_t nRuns = -1, Long64_t offset = 0) {
   TStopwatch timer;
@@ -34,8 +34,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
 
-  if(mode==kMproof)
-    TProof::Open("alicecaf.cern.ch");
+
 
   if(isFullAliroot){
     gSystem->Load("libANALYSIS");
@@ -48,12 +47,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
   else {
     const Int_t nNeededPar = 6;
     TString parList[nNeededPar] = {"STEERBase", "ESD", "AOD", "ANALYSIS", "ANALYSISalice", "PWG3muon"};
-    if(mode==kMproof){
-      gProof->UploadPackage("AF-v4-15");
-      gProof->EnablePackage("AF-v4-15");
-      if(!SetupPar("PWG3muon")) return;
-    }
-    else {
+    {
       for(Int_t ipar=0; ipar<nNeededPar; ipar++){
 	if(!SetupPar(parList[ipar].Data())) return;
       }
@@ -71,7 +65,9 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
 
   // Get the chain.
   TChain* chain = 0x0;
-  if(mode!=kMproof) chain = CreateChain(mode, inputPath, aodFilename);
+  {
+chain = CreateChain(mode, inputPath, aodFilename);
+}
 
   //____________________________________________//
   // Make the analysis manager
@@ -92,10 +88,7 @@ void RunSingleMuonAnalysisFromAOD(Int_t mode=kMlocal, Char_t *inputPath=".", Cha
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
-  if(mode==kMproof)
-    mgr->StartAnalysis(modeName[mode].Data(), inputPath, nRuns, offset);
-  else 
-    mgr->StartAnalysis(modeName[mode].Data(),chain);
+  mgr->StartAnalysis(modeName[mode].Data(),chain);
 
   timer.Stop();
   timer.Print();

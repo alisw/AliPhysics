@@ -32,7 +32,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include "TGrid.h"
 #include "TGridCollection.h"
 #include "TGridResult.h"
-//#include "TProof.h"
 //#include "TFileCollection.h"
 //#include "TFileInfo.h"
 
@@ -101,7 +100,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 enum anaModes
 {
   mLocal  = 0, /// Analyze locally files in your computer.
-  mPROOF  = 1, /// Analyze files on GRID with Plugin
   mPlugin = 2, /// Analyze files on GRID with Plugin
   mGRID   = 3  /// Analyze files on GRID, jobs launched from aliensh
 };
@@ -117,7 +115,6 @@ Int_t  kFile    = 10;                         /// Maximum number of files to ana
 
 //---------------------------------------------------------------------------
 // Old PROOF settings, not used, here for historical reference
-// Dataset for proof analysis, mode=mPROOF
 // char * kDataset = (char*)"/alice/vernet/PbPb_LHC10h_ESD";
 //
 //char *  kDatasetPROOF     = (char*)"/alice/vernet/LHC11b_149646";
@@ -401,10 +398,8 @@ void CheckInputData(const anaModes mode)
    //------------------------------
    //PROOF files
    //-----------------------------
-//  else if(mode == mPROOF)
 //  {
 //    
-//    TFileCollection* coll  = gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
 //    
 //    TIter iter(coll->GetList());
 //    
@@ -722,10 +717,8 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
   //------------------------------
   // PROOF
   //------------------------------
-//  else if (mode == mPROOF) 
 //  {
 //    
-//    TFileCollection* ds= gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
 //    
 //#if defined(__CINT__)
 //    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/dataset_management/CreateChainFromDataSet.C");
@@ -955,15 +948,11 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
 //_____________________________
 void  LoadLibraries(Int_t /*mode*/)
 {
-  //  if (mode == mPROOF)
   //  {
-  //    //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
   //#if defined(__CINT__)
   //    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
   //#endif
-  //    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGPPEMCAL");
   //    
-  //    //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
   //    
   //    //     //proof->ClearPackages();
   //    //     proof->UploadPackage("STEERBase");
@@ -1607,8 +1596,7 @@ void ana ( anaModes mode = mGRID )
   mgr->PrintStatus();
   
   if      (mode == mPlugin) mgr->StartAnalysis("grid");
-  else if (mode == mPROOF ) mgr->StartAnalysis("proof",chain);
-  else                      mgr->StartAnalysis("local",chain);
+  else mgr->StartAnalysis("local",chain);
   
   cout <<" Analysis ended sucessfully "<< endl ;
 }

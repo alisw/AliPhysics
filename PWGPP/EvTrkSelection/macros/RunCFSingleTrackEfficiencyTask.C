@@ -28,7 +28,7 @@ void RunCFSingleTrackEfficiencyTask()
 
   const Bool_t readAOD = 1;
 
-  TString        analysisMode    =  "local"; // "local", "grid", or "proof"
+  TString        analysisMode    =  "local"; // "local", "grid"
   TString           inputMode    =  "list"; // "list", "xml", or "dataset"
   Long64_t           nentries    =   123567890,firstentry=0;
   Bool_t       useAlienPlugin    =   kTRUE;
@@ -94,9 +94,11 @@ void RunCFSingleTrackEfficiencyTask()
   if(!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   if(analysisMode=="grid" && !useAlienPlugin) analysisMode="local";
-  if(analysisMode!="proof") {
+  {
+
     mgr->StartAnalysis(analysisMode.Data(),analysisChain,nentries,firstentry);
-  }
+
+}
 	 
   benchmark.Stop("AliCFSingleTrackEfficiencyTask");
   benchmark.Show("AliCFSingleTrackEfficiencyTask");

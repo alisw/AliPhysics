@@ -41,14 +41,12 @@ void runTaskFlowHigherOrdersAllPID(
          const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
          const bool bMCphyssel = 1, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
          const Long64_t nentries = 50000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
-         const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-         TString proofdataset = "bunchPROOF", // path to dataset on proof cluster, for proof analysis
-         const char *proofcluster = "miweber@alice-caf.cern.ch", // which proof cluster to use in proof mode
+         const Long64_t firstentry = 0, // which proof cluster to use in proof mode
          const char *taskname = "BF_Syst_Test" // sets name of grid generated macros
          )
 {
     // check run type
-    if(runtype != "local" && runtype != "proof" && runtype != "grid") {
+    if(runtype != "local" && runtype != "grid") {
         Printf("\n\tIncorrect run option, check first argument of run macro");
         Printf("\tint runtype = local, proof or grid\n");
         return;
@@ -90,7 +88,7 @@ void runTaskFlowHigherOrdersAllPID(
     
     // create the alien handler and attach it to the manager
     if(runtype == "grid") {
-      AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode, proofcluster, Form("%s_%d.txt",proofdataset.Data(),bunchN)); 
+      AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode);
       mgr->SetGridHandler(plugin);
     }
     else if(runtype == "local") {
@@ -246,7 +244,7 @@ void runTaskFlowHigherOrdersAllPID(
 }
 
 //______________________________________________________________________________
-AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskname, const char *gridmode, const char *proofcluster, const char *proofdataset)
+AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskname, const char *gridmode)
 {
     AliAnalysisAlien *plugin = new AliAnalysisAlien();
     // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
@@ -493,25 +491,16 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskn
     //---      PROOF MODE SPECIFIC SETTINGS         ------------
     //---------------------------------------------------------- 
     // Proof cluster
-    plugin->SetProofCluster(proofcluster);
     // Dataset to be used   
-    plugin->SetProofDataSet(proofdataset);
     // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-    plugin->SetProofReset(0);
     // May limit number of workers
-    plugin->SetNproofWorkers(0);
     // May limit the number of workers per slave
-    plugin->SetNproofWorkersPerSlave(1);   
     // May use a specific version of root installed in proof
-    plugin->SetRootVersionForProof("current");
     // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
-    plugin->SetAliRootMode("default"); // Loads AF libs by default
     // May request ClearPackages (individual ClearPackage not supported)
-    plugin->SetClearPackages(kFALSE);
     // Plugin test mode works only providing a file containing test file locations, used in "local" mode also
     plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
     // Request connection to alien upon connection to grid
-    plugin->SetProofConnectGrid(kFALSE);
 
     plugin->Print();
 

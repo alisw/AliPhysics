@@ -159,7 +159,7 @@ fHOutleadPTPsi(0)
 AliFemtoEPSelectionTaskThird::~AliFemtoEPSelectionTaskThird()
 {
     // Destructor
-    if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+    if (fOutputList ){
         delete fOutputList;
         fOutputList = 0;
     }

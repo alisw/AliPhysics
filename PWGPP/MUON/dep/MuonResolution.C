@@ -14,7 +14,6 @@
 #include <TSystem.h>
 #include <TChain.h>
 #include <TGraphErrors.h>
-#include <TProof.h>
 #include <TList.h>
 #include <TCanvas.h>
 #include <TFile.h>
@@ -63,7 +62,7 @@
 
 #endif
 
-enum {kLocal, kInteractif_xml, kInteractif_ESDList, kProof, kGrid, kTerminate};
+enum {kLocal=0, kInteractif_xml=1, kInteractif_ESDList=2, kGrid=4, kTerminate=5};
 Int_t nDE = 200;
 
 Bool_t  Resume(Int_t mode, Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
@@ -73,7 +72,6 @@ Bool_t  Resume(Int_t mode, Int_t &firstStep, Double_t clusterResNB[10], Double_t
 	       Bool_t shiftDE, Double_t deShiftNB[200], Double_t deShiftB[200],
 	       TGraphErrors* clusterResXVsStep[10], TGraphErrors* clusterResYVsStep[10],
 	       TGraphErrors* halfChShiftXVsStep[20], TGraphErrors* halfChShiftYVsStep[20]);
-void    LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVersion, Int_t iStep);
 void CreateAlienHandler(TString runMode, TString& aliphysicsVersion, TString& runListName,
                         TString &dataDir, TString &dataPattern, TString &outDir, Int_t iStep,
                         TString runFormat, Int_t maxFilesPerJob, Int_t maxMergeFiles, Int_t maxMergeStages);
@@ -196,15 +194,7 @@ void MuonResolution(TString smode, TString inputFileName, Int_t nSteps,
   // Create input object
   TObject* inputObj = 0x0;
   if (mode != kGrid && mode != kTerminate) {
-    if (mode == kProof) {
-      if (inputFileName.EndsWith(".root")) {
-        TFile *inFile = TFile::Open(inputFileName.Data(),"READ");
-        if (inFile && inFile->IsOpen()) {
-          inputObj = dynamic_cast<TFileCollection*>(inFile->FindObjectAny("dataset"));
-          inFile->Close();
-        }
-      } else inputObj = new TObjString(inputFileName);
-    } else inputObj = CreateChain(mode, inputFileName);
+    inputObj = CreateChain(mode, inputFileName);
     if (!inputObj) return;
   }
 
@@ -220,8 +210,7 @@ void MuonResolution(TString smode, TString inputFileName, Int_t nSteps,
     if (!muonResolution) return;
     
     // prepare proof or grid environment
-    if (mode == kProof) LoadAlirootOnProof(smode, rootVersion, aliphysicsVersion, iStep-firstStep);
-    else if (mode == kGrid || mode == kTerminate) {
+    if (mode == kGrid || mode == kTerminate) {
       if (!gGrid) TGrid::Connect("alien://");
       TString resultDir = Form("%s/%s/step%d", gGrid->GetHomeDirectory(), outDir.Data(), iStep);
       if ((smode == "submit" || smode == "full") && AliAnalysisAlien::DirectoryExists(resultDir.Data())) {
@@ -244,11 +233,7 @@ void MuonResolution(TString smode, TString inputFileName, Int_t nSteps,
         mgr->StartAnalysis("grid");
         if (smode != "terminate") return; // stop here if we don't have yet the result of this step
       } else if (mode == kTerminate) mgr->StartAnalysis("grid terminate");
-      else if (mode == kProof) {
-        if (inputObj->IsA() == TFileCollection::Class())
-          mgr->StartAnalysis("proof", static_cast<TFileCollection*>(inputObj), nevents);
-        else mgr->StartAnalysis("proof", static_cast<TObjString*>(inputObj)->GetName(), nevents);
-      } else mgr->StartAnalysis("local", static_cast<TChain*>(inputObj), nevents);
+      else mgr->StartAnalysis("local", static_cast<TChain*>(inputObj), nevents);
     }
     
     // save the summary canvases and mchview display
@@ -471,40 +456,7 @@ Bool_t Resume(Int_t mode, Int_t &firstStep, Double_t clusterResNB[10], Double_t 
 }
 
 //______________________________________________________________________________
-void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVersion, Int_t iStep)
-{
-  /// Load aliroot packages and set environment on Proof
-  
-  // set general environment and close previous session
-  if (iStep == 0) gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  else gProof->Close("s");
-  
-  // connect
-  if (aaf == "saf3") TProof::Open("pod://");
-  else {
-    TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster2.in2p3.fr"; //"localhost:1093"
-    TString nWorkers = (aaf == "caf") ? "workers=80" : ""; //"workers=3x"
-    TString user = (gSystem->Getenv("alien_API_USER") == NULL) ? "" : Form("%s@",gSystem->Getenv("alien_API_USER"));
-    TProof::Mgr(Form("%s%s",user.Data(), location.Data()))->SetROOTVersion(Form("VO_ALICE@ROOT::%s",rootVersion.Data()));
-    TProof::Open(Form("%s%s/?N",user.Data(), location.Data()), nWorkers.Data());
-  }
-  if (!gProof) return;
-  
-  // set environment and load libraries on workers
-  TList* list = new TList();
-  list->Add(new TNamed("ALIROOT_MODE", "base"));
-  list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
-  if (aaf == "saf3") {
-    TString home = gSystem->Getenv("HOME");
-    gProof->UploadPackage(Form("%s/AliceVaf.par", home.Data()));
-    gProof->EnablePackage(Form("%s/AliceVaf.par", home.Data()), list, (iStep!=0));
-  } else gProof->EnablePackage(Form("VO_ALICE@AliPhysics::%s",aliphysicsVersion.Data()), list, kTRUE);
-//  gProof->UploadPackage("$ALICE_PHYSICS/PARfiles/PWGPPMUONdep.par");
-//  gProof->EnablePackage("$ALICE_PHYSICS/PARfiles/PWGPPMUONdep.par", kTRUE);
-//  gProof->UploadPackage("PWGPPMUONdep.par");
-//  gProof->EnablePackage("PWGPPMUONdep.par", kTRUE);
-  
-}
+
 
 //______________________________________________________________________________
 void CreateAlienHandler(TString runMode, TString& aliphysicsVersion, TString& runListName,
@@ -556,7 +508,7 @@ void CreateAlienHandler(TString runMode, TString& aliphysicsVersion, TString& ru
   plugin->SetOutputToRunNo();
   
   // Declare all libraries (other than the default ones for the framework)
-  plugin->SetAdditionalRootLibs("libGui.so libProofPlayer.so libXMLParser.so");
+  plugin->SetAdditionalRootLibs("libGui.so libXMLParser.so");
   
   // Optionally add include paths
   plugin->AddIncludePath("-I$ALICE_ROOT/include");
@@ -663,7 +615,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   else muonResolution->SetDefaultStorage("raw://");*/
   muonResolution->SetDefaultStorage("raw://");
 //  muonResolution->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2017/OCDB");
-  if (mode != kProof) muonResolution->ShowProgressBar();
+  if (true) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
   muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
@@ -919,8 +871,7 @@ Int_t GetMode(TString smode, TString input)
     if ( input.EndsWith(".xml") ) return kInteractif_xml;
     else if ( input.EndsWith(".txt") ) return kInteractif_ESDList;
     else if ( input.EndsWith(".root") ) return kLocal;    
-  } else if (smode == "caf" || smode == "saf" || smode == "saf3") return kProof;
-  else if ((smode == "test" || smode == "offline" || smode == "submit" || smode == "full" ||
+  } else if ((smode == "test" || smode == "offline" || smode == "submit" || smode == "full" ||
             smode == "merge" || smode == "terminate") && input.EndsWith(".txt")) return kGrid;
   else if (smode == "terminateonly") return kTerminate;
   return -1;

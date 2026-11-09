@@ -226,8 +226,7 @@ AliAnalysisTaskVdM::AliAnalysisTaskVdM(const char *name)
 AliAnalysisTaskVdM::~AliAnalysisTaskVdM()
 {
   const AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if (man && man->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
-    return;
+
 
   fTriggerIRs.Delete();
 

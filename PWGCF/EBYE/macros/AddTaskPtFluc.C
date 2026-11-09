@@ -16,12 +16,7 @@ AliAnalysisTask *AddTaskPtFluc(){
   //===============================================
   //            Load the task
   gROOT->LoadMacro(taskName.Data());
-  if (gProof){
-    TString taskSO=gSystem->pwd();
-    taskSO+="/";
-    taskSO+=taskName(0,taskName.First('.'))+"_cxx.so";
-    gProof->Exec(Form("gSystem->Load(\"%s\")",taskSO.Data()),kTRUE);
-  }
+
 
 
   //========= Add task to the ANALYSIS manager =====

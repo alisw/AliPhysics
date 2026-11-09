@@ -235,7 +235,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
 //___________________________________________________________________________
 AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
 
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;

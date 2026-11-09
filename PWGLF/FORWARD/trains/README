@@ -46,15 +46,11 @@ Code Organization:
     TrainSetup		      - Base class
     Helper		      - Base class for URL
         LocalHelper	      - Local analysis URLs
-    	ProofHelper	      - Proof URLs
-    	    LiteHelper	      - Proof-lite URLs
-    	    AAFHelper	      - AAF URLs (no AliEn)
         PluginHelper	      - Base class for URLs
-     	    AAFPluginHelper   - AAF URLs (w/AliEn)
     	    GridHelper        - Grid URLs
     Option  		      - Option handling
     AvailableSoftware	      - Find SW on AAF/Grid
-    ChainBuilder	      - Build local/lite chain
+    ChainBuilder	      - Build local chain
     OutputUtilities	      - Special output
     ParUtilities	      - PAR utilities
     RunTrain		      - Script to run train
@@ -71,7 +67,5 @@ End:
 LocalWords:  TrainSetup RunTrain MyTrain myTrain PWGLF aliroot url QA
 LocalWords:  runTrain AddTaskMyAnalysis AliAnalysisManager gROOT AAF
 LocalWords:  CreateTasks LoadLibrary MyAnalysis const ClassName AliEn
-LocalWords:  LocalHelper ProofHelper LiteHelper AAFHelper GridHelper
-LocalWords:  PluginHelper AAFPluginHelper AvailableSoftware QATrain
 LocalWords:  ChainBuilder OutputUtilities ParUtilities trainMain
 LocalWords:  CreateFileCollection

@@ -112,17 +112,17 @@ AliAnalysisTaskMuMu::~AliAnalysisTaskMuMu()
 {
   /// dtor
 
-  if (fHistogramCollection && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (fHistogramCollection )
   {
     delete fHistogramCollection;
   }
 
-  if (fEventCounters && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (fEventCounters )
   {
     delete fEventCounters;
   }
 
-  if (fBinning && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+  if (fBinning )
   {
     delete fBinning;
   }
