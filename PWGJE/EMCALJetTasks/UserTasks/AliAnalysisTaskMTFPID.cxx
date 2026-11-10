@@ -89,7 +89,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fTPCDefaultPriors(kFALSE)
   , fStoreCharge(kTRUE)
   , fUseMCidForGeneration(kTRUE)
-  , fUseConvolutedGaus(kFALSE) 
+  , fUseConvolutedGaus(kFALSE)
   , fkConvolutedGausNPar(3)
   , fAccuracyNonGaussianTail(1e-8)
   , fkDeltaPrimeLowLimit(0.02)
@@ -166,7 +166,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
-  , fhEventsTriggerSelVtxCut(0x0) 
+  , fhEventsTriggerSelVtxCut(0x0)
   , fhEventsProcessedNoPileUpRejection(0x0)
   , fChargedGenPrimariesTriggerSel(0x0)
   , fChargedGenPrimariesTriggerSelVtxCut(0x0)
@@ -184,7 +184,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
   , fTPCclusterStudies(0x0)
-  , fhclusterStudies(0x0) 
+  , fhclusterStudies(0x0)
   , fClusterStudiesPiMomentumFirstLow(0.45)
   , fClusterStudiesPiMomentumFirstHigh(0.55)
   , fClusterStudiesPiMomentumSecondLow(1.5)
@@ -192,7 +192,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fClusterStudiesKaMomentumLow(1.2)
   , fClusterStudiesKaMomentumHigh(1.3)
   , fClusterStudiesPrMomentumLow(2.0)
-  , fClusterStudiesPrMomentumHigh(2.1)  
+  , fClusterStudiesPrMomentumHigh(2.1)
   , fVicinityCut(0.2)
   , fIsUEPID(kFALSE)
   , fh2UEDensity(0x0)
@@ -200,39 +200,39 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fh3DCA_XY_Positive(0x0)
   , fh3DCA_XY_Primaries_Positive(0x0)
   , fh3DCA_XY_WeakDecays_Positive(0x0)
-  , fh3DCA_XY_Material_Positive(0x0) 
+  , fh3DCA_XY_Material_Positive(0x0)
   , fh3DCA_XY_Negative(0x0)
   , fh3DCA_XY_Primaries_Negative(0x0)
   , fh3DCA_XY_WeakDecays_Negative(0x0)
   , fh3DCA_XY_Material_Negative(0x0)
 {
   // default Constructor
-  
+
   AliLog::SetClassDebugLevel("AliAnalysisTaskMTFPID", AliLog::kInfo);
-  
+
   fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskMTFPID::ConvolutedGaus,
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
-                                      fkConvolutedGausNPar, "AliAnalysisTaskMTFPID", "ConvolutedGaus");
-  
+                                      fkConvolutedGausNPar);
+
   // Set some arbitrary parameteres, such that the function call will not crash
   // (although it should not be called with these parameters...)
   fConvolutedGausDeltaPrime->SetParameter(0, 0);
   fConvolutedGausDeltaPrime->SetParameter(1, 1);
   fConvolutedGausDeltaPrime->SetParameter(2, 2);
-  
-  
+
+
   // Initialisation of translation parameters is time consuming.
   // Therefore, default values will only be initialised if they are really needed.
   // Otherwise, it is left to the user to set the parameter properly.
   fConvolutedGaussTransitionPars[0] = -999;
   fConvolutedGaussTransitionPars[1] = -999;
   fConvolutedGaussTransitionPars[2] = -999;
-  
+
   // Fraction histos
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fFractionHists[i] = 0x0;
     fFractionSysErrorHists[i] = 0x0;
-    
+
     fPtResolution[i] = 0x0;
   }
 }
@@ -252,14 +252,14 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fDoTPCclusterStudies(kFALSE)
   , fDoDCATemplateGeneration(kFALSE)
   , fDCAUpperpTLimit(0.6)
-  , fSigmaFactorCutForDCATemplateGeneration(3.0)  
+  , fSigmaFactorCutForDCATemplateGeneration(3.0)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fStorePt(kTRUE)
   , fStoreZ(kTRUE)
   , fStoreXi(kTRUE)
   , fStoreRadialDistance(kTRUE)
-  , fStorejT(kTRUE)  
+  , fStorejT(kTRUE)
   , fTakeIntoAccountMuons(kFALSE)
   , fUseITS(kFALSE)
   , fUseTOF(kFALSE)
@@ -268,7 +268,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fTPCDefaultPriors(kFALSE)
   , fStoreCharge(kTRUE)
   , fUseMCidForGeneration(kTRUE)
-  , fUseConvolutedGaus(kFALSE) 
+  , fUseConvolutedGaus(kFALSE)
   , fkConvolutedGausNPar(3)
   , fAccuracyNonGaussianTail(1e-8)
   , fkDeltaPrimeLowLimit(0.02)
@@ -345,7 +345,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
-  , fhEventsTriggerSelVtxCut(0x0) 
+  , fhEventsTriggerSelVtxCut(0x0)
   , fhEventsProcessedNoPileUpRejection(0x0)
   , fChargedGenPrimariesTriggerSel(0x0)
   , fChargedGenPrimariesTriggerSelVtxCut(0x0)
@@ -363,7 +363,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
   , fTPCclusterStudies(0x0)
-  , fhclusterStudies(0x0)  
+  , fhclusterStudies(0x0)
   , fClusterStudiesPiMomentumFirstLow(0.45)
   , fClusterStudiesPiMomentumFirstHigh(0.55)
   , fClusterStudiesPiMomentumSecondLow(1.5)
@@ -371,58 +371,58 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fClusterStudiesKaMomentumLow(1.2)
   , fClusterStudiesKaMomentumHigh(1.3)
   , fClusterStudiesPrMomentumLow(2.0)
-  , fClusterStudiesPrMomentumHigh(2.1) 
-  , fVicinityCut(0.2)  
+  , fClusterStudiesPrMomentumHigh(2.1)
+  , fVicinityCut(0.2)
   , fIsUEPID(kFALSE)
   , fh2UEDensity(0x0)
   , fh1JetArea(0x0)
   , fh3DCA_XY_Positive(0x0)
   , fh3DCA_XY_Primaries_Positive(0x0)
   , fh3DCA_XY_WeakDecays_Positive(0x0)
-  , fh3DCA_XY_Material_Positive(0x0)  
+  , fh3DCA_XY_Material_Positive(0x0)
   , fh3DCA_XY_Negative(0x0)
   , fh3DCA_XY_Primaries_Negative(0x0)
   , fh3DCA_XY_WeakDecays_Negative(0x0)
-  , fh3DCA_XY_Material_Negative(0x0)  
+  , fh3DCA_XY_Material_Negative(0x0)
 {
   // Constructor
-  
+
   AliLog::SetClassDebugLevel("AliAnalysisTaskMTFPID", AliLog::kInfo);
-  
+
   fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskMTFPID::ConvolutedGaus,
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
-                                      fkConvolutedGausNPar, "AliAnalysisTaskMTFPID", "ConvolutedGaus");
-  
+                                      fkConvolutedGausNPar);
+
   // Set some arbitrary parameteres, such that the function call will not crash
   // (although it should not be called with these parameters...)
   fConvolutedGausDeltaPrime->SetParameter(0, 0);
   fConvolutedGausDeltaPrime->SetParameter(1, 1);
   fConvolutedGausDeltaPrime->SetParameter(2, 2);
-  
-  
+
+
   // Initialisation of translation parameters is time consuming.
   // Therefore, default values will only be initialised if they are really needed.
   // Otherwise, it is left to the user to set the parameter properly.
   fConvolutedGaussTransitionPars[0] = -999;
   fConvolutedGaussTransitionPars[1] = -999;
   fConvolutedGaussTransitionPars[2] = -999;
-  
+
   // Fraction histos
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     fFractionHists[i] = 0x0;
     fFractionSysErrorHists[i] = 0x0;
-    
+
     fPtResolution[i] = 0x0;
   }
-  
+
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
 
   DefineOutput(1, TObjArray::Class());
-  
+
   DefineOutput(2, AliCFContainer::Class());
-  
+
   DefineOutput(3, TObjArray::Class());
 }
 
@@ -431,132 +431,132 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
 AliAnalysisTaskMTFPID::~AliAnalysisTaskMTFPID()
 {
   // dtor
-  
+
   CleanupParticleFractionHistos();
-  
+
   delete fPIDcombined;
   fPIDcombined = 0x0;
-  
+
   delete fPPVsMultUtils;
   fPPVsMultUtils = 0x0;
-  
+
   delete fOutputContainer;
   fOutputContainer = 0x0;
-  
+
   delete fQAContainer;
   fQAContainer = 0x0;
 
   delete fConvolutedGausDeltaPrime;
   fConvolutedGausDeltaPrime = 0x0;
-  
+
   delete fDeltaPrimeAxis;
   fDeltaPrimeAxis = 0x0;
-  
+
   delete [] fGenRespElDeltaPrimeEl;
   delete [] fGenRespElDeltaPrimeKa;
   delete [] fGenRespElDeltaPrimePi;
   delete [] fGenRespElDeltaPrimePr;
-  
+
   fGenRespElDeltaPrimeEl = 0x0;
   fGenRespElDeltaPrimeKa = 0x0;
   fGenRespElDeltaPrimePi = 0x0;
   fGenRespElDeltaPrimePr = 0x0;
-  
+
   delete [] fGenRespKaDeltaPrimeEl;
   delete [] fGenRespKaDeltaPrimeKa;
   delete [] fGenRespKaDeltaPrimePi;
   delete [] fGenRespKaDeltaPrimePr;
-  
+
   fGenRespKaDeltaPrimeEl = 0x0;
   fGenRespKaDeltaPrimeKa = 0x0;
   fGenRespKaDeltaPrimePi = 0x0;
   fGenRespKaDeltaPrimePr = 0x0;
-  
+
   delete [] fGenRespPiDeltaPrimeEl;
   delete [] fGenRespPiDeltaPrimeKa;
   delete [] fGenRespPiDeltaPrimePi;
   delete [] fGenRespPiDeltaPrimePr;
-  
+
   fGenRespPiDeltaPrimeEl = 0x0;
   fGenRespPiDeltaPrimeKa = 0x0;
   fGenRespPiDeltaPrimePi = 0x0;
   fGenRespPiDeltaPrimePr = 0x0;
-  
+
   delete [] fGenRespMuDeltaPrimeEl;
   delete [] fGenRespMuDeltaPrimeKa;
   delete [] fGenRespMuDeltaPrimePi;
   delete [] fGenRespMuDeltaPrimePr;
-  
+
   fGenRespMuDeltaPrimeEl = 0x0;
   fGenRespMuDeltaPrimeKa = 0x0;
   fGenRespMuDeltaPrimePi = 0x0;
   fGenRespMuDeltaPrimePr = 0x0;
-  
+
   delete [] fGenRespPrDeltaPrimeEl;
   delete [] fGenRespPrDeltaPrimeKa;
   delete [] fGenRespPrDeltaPrimePi;
   delete [] fGenRespPrDeltaPrimePr;
-  
+
   fGenRespPrDeltaPrimeEl = 0x0;
   fGenRespPrDeltaPrimeKa = 0x0;
   fGenRespPrDeltaPrimePi = 0x0;
   fGenRespPrDeltaPrimePr = 0x0;
-  
+
   delete fhMaxEtaVariation;
   fhMaxEtaVariation = 0x0;
-  
-  /*OLD with deltaSpecies 
+
+  /*OLD with deltaSpecies
   delete [] fGenRespElDeltaEl;
   delete [] fGenRespElDeltaKa;
   delete [] fGenRespElDeltaPi;
   delete [] fGenRespElDeltaPr;
-  
+
   fGenRespElDeltaEl = 0x0;
   fGenRespElDeltaKa = 0x0;
   fGenRespElDeltaPi = 0x0;
   fGenRespElDeltaPr = 0x0;
-  
+
   delete [] fGenRespKaDeltaEl;
   delete [] fGenRespKaDeltaKa;
   delete [] fGenRespKaDeltaPi;
   delete [] fGenRespKaDeltaPr;
-  
+
   fGenRespKaDeltaEl = 0x0;
   fGenRespKaDeltaKa = 0x0;
   fGenRespKaDeltaPi = 0x0;
   fGenRespKaDeltaPr = 0x0;
-  
+
   delete [] fGenRespPiDeltaEl;
   delete [] fGenRespPiDeltaKa;
   delete [] fGenRespPiDeltaPi;
   delete [] fGenRespPiDeltaPr;
-  
+
   fGenRespPiDeltaEl = 0x0;
   fGenRespPiDeltaKa = 0x0;
   fGenRespPiDeltaPi = 0x0;
   fGenRespPiDeltaPr = 0x0;
-  
+
   delete [] fGenRespMuDeltaEl;
   delete [] fGenRespMuDeltaKa;
   delete [] fGenRespMuDeltaPi;
   delete [] fGenRespMuDeltaPr;
-  
+
   fGenRespMuDeltaEl = 0x0;
   fGenRespMuDeltaKa = 0x0;
   fGenRespMuDeltaPi = 0x0;
   fGenRespMuDeltaPr = 0x0;
-  
+
   delete [] fGenRespPrDeltaEl;
   delete [] fGenRespPrDeltaKa;
   delete [] fGenRespPrDeltaPi;
   delete [] fGenRespPrDeltaPr;
-  
+
   fGenRespPrDeltaEl = 0x0;
   fGenRespPrDeltaKa = 0x0;
   fGenRespPrDeltaPi = 0x0;
   fGenRespPrDeltaPr = 0x0;
   */
-  
+
 //   delete fh2UEDensity;
 //   fh2UEDensity = 0x0;
 //   delete fh1JetArea;
@@ -569,7 +569,7 @@ AliAnalysisTaskMTFPID::~AliAnalysisTaskMTFPID()
 //   fh2DCA_XY_WeakDecays = 0x0;
 //   delete fh2DCA_XY_Material;
 //   fh2DCA_XY_Material = 0x0;
-  
+
 }
 
 
@@ -577,33 +577,33 @@ AliAnalysisTaskMTFPID::~AliAnalysisTaskMTFPID()
 void AliAnalysisTaskMTFPID::SetUpPIDcombined()
 {
   // Initialise the PIDcombined object
-  
+
   if (!fDoPID && !fDoDeDxCheck)
     return;
-  
+
   if(fDebug > 1)
     printf("File: %s, Line: %d: SetUpPIDcombined\n", (char*)__FILE__, __LINE__);
-  
+
   if (!fPIDcombined) {
     AliFatal("No PIDcombined object!\n");
     return;
   }
-  
+
   fPIDcombined->SetSelectedSpecies(AliPID::kSPECIESC);
   fPIDcombined->SetEnablePriors(fUsePriors);
- 
+
   if (fTPCDefaultPriors)
     fPIDcombined->SetDefaultTPCPriors();
-  
+
   //TODO use individual priors...
-  
+
   // Change detector mask (TPC,TOF,ITS)
   Int_t detectorMask = AliPIDResponse::kDetTPC;
-  
+
   // Reject mismatch mask - mismatch only relevant for TOF at the moment - other detectors do not use it
   Int_t rejectMismatchMask = AliPIDResponse::kDetTPC;
-  
-  
+
+
   if (fUseITS) {
     detectorMask = detectorMask | AliPIDResponse::kDetITS;
     rejectMismatchMask = rejectMismatchMask | AliPIDResponse::kDetITS;
@@ -612,10 +612,10 @@ void AliAnalysisTaskMTFPID::SetUpPIDcombined()
     detectorMask = detectorMask | AliPIDResponse::kDetTOF;
     rejectMismatchMask = rejectMismatchMask | AliPIDResponse::kDetTOF;
   }
-  
+
   fPIDcombined->SetDetectorMask(detectorMask);
   fPIDcombined->SetRejectMismatchMask(rejectMismatchMask);
-  
+
   if(fDebug > 1)
     printf("File: %s, Line: %d: SetUpPIDcombined done\n", (char*)__FILE__, __LINE__);
 }
@@ -626,28 +626,28 @@ Bool_t AliAnalysisTaskMTFPID::CalculateMaxEtaVariationMapFromPIDResponse()
 {
   // Calculate the maximum deviation from unity of the eta correction factors for each row in 1/dEdx(splines)
   // from the eta correction map of the TPCPIDResponse. The result is stored in fhMaxEtaVariation.
-  
+
   if (!fPIDResponse) {
     AliError("No PID response!");
     return kFALSE;
   }
-  
+
   delete fhMaxEtaVariation;
-  
+
   const TH2D* hEta = fPIDResponse->GetTPCResponse().GetEtaCorrMap();
   if (!hEta) {
     AliError("No eta correction map!");
     return kFALSE;
   }
-  
+
   // Take binning from hEta in Y for fhMaxEtaVariation
   fhMaxEtaVariation = hEta->ProjectionY("hMaxEtaVariation");
   fhMaxEtaVariation->SetDirectory(0);
   fhMaxEtaVariation->Reset();
-  
+
   // For each bin in 1/dEdx, loop of all tanTheta bins and find the maximum deviation from unity.
   // Store the result in fhMaxEtaVariation
-  
+
   for (Int_t binY = 1; binY <= fhMaxEtaVariation->GetNbinsX(); binY++) {
     Double_t maxAbs = -1;
     for (Int_t binX = 1; binX <= hEta->GetNbinsX(); binX++) {
@@ -655,18 +655,18 @@ Bool_t AliAnalysisTaskMTFPID::CalculateMaxEtaVariationMapFromPIDResponse()
       if (curr > maxAbs)
         maxAbs = curr;
     }
-    
+
     if (maxAbs < 1e-12) {
       AliError(Form("Maximum deviation from unity is zero for 1/dEdx = %f (bin %d)", hEta->GetYaxis()->GetBinCenter(binY), binY));
       delete fhMaxEtaVariation;
       return kFALSE;
     }
-    
+
     fhMaxEtaVariation->SetBinContent(binY, maxAbs);
   }
-  
+
   printf("AliAnalysisTaskMTFPID: Calculated max eta variation from map \"%s\".\n", hEta->GetTitle());
-  
+
   return kTRUE;
 }
 
@@ -679,27 +679,27 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
 
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserCreateOutputObjects\n", (char*)__FILE__, __LINE__);
-  
+
   // Setup basic things, like PIDResponse
   AliAnalysisTaskPIDV0base::UserCreateOutputObjects();
-  
+
   if (!fPIDResponse)
     AliFatal("PIDResponse object was not created");
-  
+
   SetUpPIDcombined();
-  
+
   OpenFile(1);
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(1) successful\n", (char*)__FILE__, __LINE__);
-  
+
   fOutputContainer = new TObjArray(1);
   fOutputContainer->SetName(GetName());
   fOutputContainer->SetOwner(kTRUE);
-  
+
   if (fDebug > 2)
     std::cout << "OutputContainer successfully created" << std::endl;
-  
+
   /* Old binning (coarser in the intermediate region and a real subset of the new binning)
   const Int_t nPtBins = 68;
   Double_t binsPt[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45,
@@ -714,42 +714,42 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     Double_t binsPt[nPtBins + 1] = {0.,  0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
                                   0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
                                    1.,  1.1, 1.2,  1.3, 1.4,  1.5, 1.6,  1.7, 1.8,  1.9,
-                                   2.,  2.1, 2.2,  2.3, 2.4,  2.5, 2.6,  2.7, 2.8,  2.9, 
+                                   2.,  2.1, 2.2,  2.3, 2.4,  2.5, 2.6,  2.7, 2.8,  2.9,
                                    3.,  3.2, 3.4,  3.6, 3.8,   4., 4.5,   5., 5.5,   6.,
                                   6.5,   7.,  8.,   9., 10.,  11., 12.,  13., 14.,  15.,
-                                  16.,  18., 20.,  22., 24.,  26., 28.,  30., 32.,  34., 
+                                  16.,  18., 20.,  22., 24.,  26., 28.,  30., 32.,  34.,
                                   36.,  40., 45.,  50. };
-                                                               
+
  //Bins for the Light flavor analysis
 //   const Int_t nPtBins = 59;
 //   Double_t binsPt[nPtBins + 1] = {0.01, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0};
-  
+
   const Bool_t useITSTPCtrackletsCentEstimatorWithNewBinning = fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0
                                                                && fStoreCentralityPercentile;
-  
+
 //   const Int_t nCentBinsGeneral = 12;
   const Int_t nCentBinsGeneral = 4;
   const Int_t nCentBinsNewITSTPCtracklets = 16;
-  
+
   const Int_t nCentBins = useITSTPCtrackletsCentEstimatorWithNewBinning ? nCentBinsNewITSTPCtracklets : nCentBinsGeneral;
-  
+
   Double_t binsCent[nCentBins+1];
   for (Int_t i = 0; i < nCentBins + 1; i++)
     binsCent[i] = -1;
-  
+
   //-1 for pp (unless explicitely requested); 90-100 has huge electro-magnetic impurities
 //   Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
   Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  10, 60, 100 };
-  
+
   // These centrality estimators deal with integers! This implies that the ranges are always [lowlim, uplim - 1]
   Double_t binsCentITSTPCTracklets[nCentBinsNewITSTPCtracklets+1] = { 0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 9999 };
 //   Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
   Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = {-1, 0,  10, 60, 100 };
-  
+
   // Special centrality binning for pp
 //   Double_t binsCentpp[nCentBinsGeneral+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
   Double_t binsCentpp[nCentBinsGeneral+1] = {-1, 0,  10, 60, 100 };
-  
+
   if (fCentralityEstimator.CompareTo("ITSTPCtrackletsOldPreliminaryBinning", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
     // Special binning for this centrality estimator; but keep number of bins!
     for (Int_t i = 0; i < nCentBinsGeneral+1; i++)
@@ -773,18 +773,18 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
 
 //   const Int_t nJetPtBins = 11;
 //   Double_t binsJetPt[nJetPtBins+1] = {0, 2, 5, 10, 15, 20, 30, 40, 60, 80, 120, 200};
-  
+
   const Int_t nJetPtBins = 4;
   Double_t binsJetPt[nJetPtBins+1] = {5, 10, 15, 20, 30};
-  
+
   const Int_t nChargeBins = 2;
   const Double_t binsCharge[nChargeBins+1] = { -1.0 - 1e-4, 0.0, 1.0 + 1e-4 };
-  
+
   const Int_t nBinsJets = kDataNumAxes;
   const Int_t nBinsNoJets = nBinsJets - fgkNumJetAxes;
-  
+
   const Int_t nBins = fStoreAdditionalJetInformation ? nBinsJets : nBinsNoJets;
- 
+
   // deltaPrimeSpecies binning
   const Int_t deltaPrimeNBins = 600;
   Double_t deltaPrimeBins[deltaPrimeNBins + 1];
@@ -798,33 +798,33 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
   for (Int_t i = 0 + 1; i <= deltaPrimeNBins; i++) {
     deltaPrimeBins[i] = factor * deltaPrimeBins[i - 1];
   }
-  
+
   fDeltaPrimeAxis = new TAxis(deltaPrimeNBins, deltaPrimeBins);
-  
+
   const Int_t nMCPIDbins = 5;
   const Double_t mcPIDmin = 0.;
   const Double_t mcPIDmax = 5.;
-  
+
   const Int_t nSelSpeciesBins = 4;
   const Double_t selSpeciesMin = 0.;
   const Double_t selSpeciesMax = 4.;
-  
+
   const Int_t nZBins = 20;
   const Double_t zMin = 0.;
   const Double_t zMax = 1.;
-  
+
   const Int_t nXiBins = 70;
   const Double_t xiMin = 0.;
   const Double_t xiMax = 7.;
-  
+
   const Int_t nTOFpidInfoBins = kNumTOFpidInfoBins;
   const Double_t tofPIDinfoMin = kNoTOFinfo;
   const Double_t tofPIDinfoMax = kNoTOFinfo + kNumTOFpidInfoBins;
-  
+
   const Int_t nDistanceBins = 15;
   const Double_t distanceBinsMin = 0.;
   const Double_t distanceBinsMax = 0.6;
-  
+
   // jT binning - to have binning down to zero and log binning at the same time,
   // use first bin from zero extending to real start of log binning
   const Int_t nJtBins = 15 + 1;
@@ -840,8 +840,8 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
   for (Int_t i = 0 + 1 + 1; i <= nJtBins; i++) {
     binsJt[i] = factorJt * binsJt[i - 1];
   }
-  
-  
+
+
   // MC PID, SelectSpecies, pT, deltaPrimeSpecies, centrality percentile, jet pT, z = track_pT/jet_pT, xi = log(1/z)
   Int_t binsNoJets[nBinsNoJets] =    { nMCPIDbins,
                                        nSelSpeciesBins,
@@ -850,7 +850,7 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
                                        nCentBins,
                                        nChargeBins,
                                        nTOFpidInfoBins };
-  
+
   Int_t binsJets[nBinsJets]     =    { nMCPIDbins,
                                        nSelSpeciesBins,
                                        nPtBins,
@@ -863,17 +863,17 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
                                        nTOFpidInfoBins,
                                        nDistanceBins,
                                        nJtBins };
-  
+
   Int_t *bins = fStoreAdditionalJetInformation ? &binsJets[0] : &binsNoJets[0];
-  
-  Double_t xminNoJets[nBinsNoJets] = { mcPIDmin,  
+
+  Double_t xminNoJets[nBinsNoJets] = { mcPIDmin,
                                        selSpeciesMin,
                                        binsPt[0],
                                        deltaPrimeBins[0],
                                        binsCent[0],
                                        binsCharge[0],
                                        tofPIDinfoMin };
-  
+
   Double_t xminJets[nBinsJets] =     { mcPIDmin,
                                        selSpeciesMin,
                                        binsPt[0],
@@ -886,21 +886,21 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
                                        tofPIDinfoMin,
                                        distanceBinsMin,
                                        binsJt[0] };
-  
+
   Double_t *xmin = fStoreAdditionalJetInformation? &xminJets[0] : &xminNoJets[0];
 
   Double_t xmaxNoJets[nBinsNoJets] = { mcPIDmax,
                                        selSpeciesMax,
                                        binsPt[nPtBins],
-                                       deltaPrimeBins[deltaPrimeNBins], 
+                                       deltaPrimeBins[deltaPrimeNBins],
                                        binsCent[nCentBins],
                                        binsCharge[nChargeBins],
                                        tofPIDinfoMax };
-  
+
   Double_t xmaxJets[nBinsJets] =     { mcPIDmax,
                                        selSpeciesMax,
                                        binsPt[nPtBins],
-                                       deltaPrimeBins[deltaPrimeNBins], 
+                                       deltaPrimeBins[deltaPrimeNBins],
                                        binsCent[nCentBins],
                                        binsJetPt[nJetPtBins],
                                        zMax,
@@ -909,15 +909,15 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
                                        tofPIDinfoMax,
                                        distanceBinsMax,
                                        binsJt[nJtBins] };
-  
+
   Double_t *xmax = fStoreAdditionalJetInformation? &xmaxJets[0] : &xmaxNoJets[0];
 
-  
+
   if (fUseConvolutedGaus) {
     fConvolutedGausDeltaPrime->SetNpx(deltaPrimeNBins);
-    
+
     if (fConvolutedGaussTransitionPars[1] < -998) {
-      // Transition parameters not yet set. In this case (can happen on grid) we have to recalculate transition parameters 
+      // Transition parameters not yet set. In this case (can happen on grid) we have to recalculate transition parameters
       SetConvolutedGaussLambdaParameter(fConvolutedGaussLambda);
     }
   }
@@ -927,11 +927,11 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     SetUpHist(fhPIDdataAll, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhPIDdataAll);
   }
-  
+
   // Generated histograms (so far, bins are the same as for primary THnSparse)
   const Int_t nGenBins = fStoreAdditionalJetInformation ? nBinsJets : nBinsNoJets;
   // MC PID, SelectSpecies, Pt, deltaPrimeSpecies, jet pT, z = track_pT/jet_pT, xi = log(1/z)
-  
+
   Int_t *genBins = fStoreAdditionalJetInformation ? &binsJets[0] : &binsNoJets[0];
   Double_t *genXmin = fStoreAdditionalJetInformation? &xminJets[0] : &xminNoJets[0];
   Double_t *genXmax = fStoreAdditionalJetInformation? &xmaxJets[0] : &xmaxNoJets[0];
@@ -940,57 +940,57 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     fhGenEl = new THnSparseD("hGenEl", "", nGenBins, genBins, genXmin, genXmax);
     SetUpGenHist(fhGenEl, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenEl);
-    
+
     fhGenKa = new THnSparseD("hGenKa", "", nGenBins, genBins, genXmin, genXmax);
     SetUpGenHist(fhGenKa, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenKa);
-    
+
     fhGenPi = new THnSparseD("hGenPi", "", nGenBins, genBins, genXmin, genXmax);
     SetUpGenHist(fhGenPi, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenPi);
-    
+
     if (fTakeIntoAccountMuons) {
       fhGenMu = new THnSparseD("hGenMu", "", nGenBins, genBins, genXmin, genXmax);
       SetUpGenHist(fhGenMu, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
       fOutputContainer->Add(fhGenMu);
     }
-    
+
     fhGenPr = new THnSparseD("hGenPr", "", nGenBins, genBins, genXmin, genXmax);
     SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenPr);
   }
-  
+
     if (fDebug > 2)
     std::cout << "Adding Event Histograms" << std::endl;
-  
+
   fhEventsProcessed = new TH1D("fhEventsProcessed",
-                               "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality Percentile", 
+                               "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality Percentile",
                                nCentBins, binsCent);
   fhEventsProcessed->Sumw2();
   fOutputContainer->Add(fhEventsProcessed);
-  
+
   fhEventsTriggerSelVtxCut = new TH1D("fhEventsTriggerSelVtxCut",
-                                      "Number of events passing trigger selection and vtx cut;Centrality Percentile", 
+                                      "Number of events passing trigger selection and vtx cut;Centrality Percentile",
                                       nCentBins, binsCent);
   fhEventsTriggerSelVtxCut->Sumw2();
   fOutputContainer->Add(fhEventsTriggerSelVtxCut);
-  
+
   fhEventsTriggerSel = new TH1D("fhEventsTriggerSel",
-                                "Number of events passing trigger selection;Centrality Percentile", 
+                                "Number of events passing trigger selection;Centrality Percentile",
                                 nCentBins, binsCent);
   fOutputContainer->Add(fhEventsTriggerSel);
   fhEventsTriggerSel->Sumw2();
-  
-  
+
+
   fhEventsProcessedNoPileUpRejection = new TH1D("fhEventsProcessedNoPileUpRejection",
-                                                "Number of events passing trigger selection, vtx and zvtx cuts;Centrality Percentile", 
+                                                "Number of events passing trigger selection, vtx and zvtx cuts;Centrality Percentile",
                                                 nCentBins, binsCent);
   fOutputContainer->Add(fhEventsProcessedNoPileUpRejection);
   fhEventsProcessedNoPileUpRejection->Sumw2();
-  
+
   if (fDebug > 2)
-    std::cout << "Event Histograms added" << std::endl;  
-  
+    std::cout << "Event Histograms added" << std::endl;
+
   // Generated yields within acceptance
   const Int_t nBinsGenYields = fStoreAdditionalJetInformation ? kGenYieldNumAxes : kGenYieldNumAxes - 5;
   Int_t genYieldsBins[kGenYieldNumAxes]    = { nMCPIDbins,         nPtBins,           nCentBins,            nJetPtBins, nZBins, nXiBins,
@@ -999,53 +999,53 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
   Double_t genYieldsXmin[kGenYieldNumAxes] = {   mcPIDmin,       binsPt[0],         binsCent[0],          binsJetPt[0],   zMin,   xiMin,
                                                binsCharge[0], distanceBinsMin, binsJt[0] };
   genYieldsXmin[GetIndexOfChargeAxisGenYield()] = binsCharge[0];
-  Double_t genYieldsXmax[kGenYieldNumAxes] = {   mcPIDmax, binsPt[nPtBins], binsCent[nCentBins], binsJetPt[nJetPtBins],   zMax,   xiMax, 
+  Double_t genYieldsXmax[kGenYieldNumAxes] = {   mcPIDmax, binsPt[nPtBins], binsCent[nCentBins], binsJetPt[nJetPtBins],   zMax,   xiMax,
                                                binsCharge[nChargeBins], distanceBinsMax, binsJt[nJtBins] };
   genYieldsXmax[GetIndexOfChargeAxisGenYield()] = binsCharge[nChargeBins];
-  
+
   if (fDoPID) {
-    fhMCgeneratedYieldsPrimaries = new THnSparseD("fhMCgeneratedYieldsPrimaries", 
-                                                  "Generated yields w/o reco and cuts inside acceptance (physical primaries)", 
+    fhMCgeneratedYieldsPrimaries = new THnSparseD("fhMCgeneratedYieldsPrimaries",
+                                                  "Generated yields w/o reco and cuts inside acceptance (physical primaries)",
                                                   nBinsGenYields, genYieldsBins, genYieldsXmin, genYieldsXmax);
     SetUpGenYieldHist(fhMCgeneratedYieldsPrimaries, binsPt, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhMCgeneratedYieldsPrimaries);
   }
-  
+
   if (fIsUEPID) {
     fh2UEDensity = new TH2D("fh2UEDensity", "p_{T} density of the Underlying event;Centrality Percentile;UE p_{T}/Event", nCentBins, binsCent, 10, 0.0, 4.0);
     fOutputContainer->Add(fh2UEDensity);
     fh1JetArea = new TH1D("fh1JetArea", "Jet Area (real)/#pi*#rho^{2} of the Jets used in the UE;Centrality Percentile",nCentBins,binsCent);
     fOutputContainer->Add(fh1JetArea);
   }
-  
+
   // Container with several process steps (generated and reconstructed level with some variations)
   if (fDoEfficiency) {
-    
+
     if (fDebug > 2)
-    std::cout << "Try OpenFile(2)" << std::endl;  
+    std::cout << "Try OpenFile(2)" << std::endl;
     OpenFile(2);
-    
+
     if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(2) successful\n", (char*)__FILE__, __LINE__);
-  
+
     // Array for the number of bins in each dimension
     // Dimensions: MC-ID, trackPt, trackEta, trackCharge, cenrality percentile, jetPt, z, xi, distance, jT
     const Int_t nEffDims = fStoreAdditionalJetInformation ? kEffNumAxes : kEffNumAxes - 5; // Number of dimensions for the efficiency
-    
+
     const Int_t nMCIDbins = AliPID::kSPECIES;
     Double_t binsMCID[nMCIDbins + 1];
-    
+
     for(Int_t i = 0; i <= nMCIDbins; i++) {
-      binsMCID[i]= i; 
+      binsMCID[i]= i;
     }
-    
+
     const Int_t nEtaBins = 18;
     const Double_t binsEta[nEtaBins+1] = {-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
                                           0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
-    
+
     const Int_t nEffBins[kEffNumAxes] = { nMCIDbins, nPtBins, nEtaBins, nChargeBins, nCentBins, nJetPtBins, nZBins, nXiBins,
                                           nDistanceBins, nJtBins };
-    
+
     fContainerEff = new AliCFContainer("containerEff", "Reconstruction Efficiency x Acceptance x Resolution and Secondary Correction",
                                       kNumSteps, nEffDims, nEffBins);
 
@@ -1062,7 +1062,7 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
       fContainerEff->SetBinLimits(kEffDistance, distanceBinsMin, distanceBinsMax);
       fContainerEff->SetBinLimits(kEffJt, binsJt);
     }
-    
+
     fContainerEff->SetVarTitle(kEffMCID,"MC ID");
     fContainerEff->SetVarTitle(kEffTrackPt,"p_{T} (GeV/c)");
     fContainerEff->SetVarTitle(kEffTrackEta,"#eta");
@@ -1075,25 +1075,25 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
       fContainerEff->SetVarTitle(kEffDistance, "R");
       fContainerEff->SetVarTitle(kEffJt, "j_{T} (GeV/c)");
     }
-    
+
     // Define clean MC sample
     fContainerEff->SetStepTitle(kStepGenWithGenCuts, "Particle level, cuts on particle level");
     // For Acceptance x Efficiency correction of primaries
-    fContainerEff->SetStepTitle(kStepRecWithGenCuts, "Detector level (rec) with cuts on particle level"); 
+    fContainerEff->SetStepTitle(kStepRecWithGenCuts, "Detector level (rec) with cuts on particle level");
     // For (pT) resolution correction
-    fContainerEff->SetStepTitle(kStepRecWithGenCutsMeasuredObs, 
+    fContainerEff->SetStepTitle(kStepRecWithGenCutsMeasuredObs,
                                 "Detector level (rec) with cuts on particle level with measured observables");
     // For secondary correction
-    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObs, 
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObs,
                                 "Detector level, all cuts on detector level with measured observables");
-    fContainerEff->SetStepTitle(kStepRecWithRecCutsPrimaries, 
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsPrimaries,
                                 "Detector level, all cuts on detector level, only MC primaries");
-    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsPrimaries, 
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsPrimaries,
                                 "Detector level, all cuts on detector level with measured observables, only MC primaries");
-    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsStrangenessScaled, 
+    fContainerEff->SetStepTitle(kStepRecWithRecCutsMeasuredObsStrangenessScaled,
                                 "Detector level (strangeness scaled), all cuts on detector level with measured observables");
   }
-  
+
   if (fDoPID || fDoEfficiency) {
     // Generated jets
     fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
@@ -1105,7 +1105,7 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     fh2FFJetPtGen->Sumw2();
     fOutputContainer->Add(fh2FFJetPtGen);
   }
-  
+
   // Pythia information
   fh1Xsec = new TProfile("fh1Xsec", "xsec from pyxsec.root", 1, 0, 1);
   fh1Xsec->Sumw2();
@@ -1113,26 +1113,26 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
   fh1Trials = new TH1D("fh1Trials", "trials from pyxsec.root", 1, 0, 1);
   fh1Trials->Sumw2();
   fh1Trials->GetXaxis()->SetBinLabel(1, "#sum{ntrials}");
-  
+
   fh1EvtsPtHardCut = new TH1F("fh1EvtsPtHardCut", "#events before and after MC #it{p}_{T,hard} cut;;Events",2,0,2);
   fh1EvtsPtHardCut->Sumw2();
   fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(1, "All");
   fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(2, "#it{p}_{T,hard}");
-  
+
   fOutputContainer->Add(fh1Xsec);
   fOutputContainer->Add(fh1Trials);
   fOutputContainer->Add(fh1EvtsPtHardCut);
-  
+
   if (fDoDeDxCheck || fDoPtResolution) {
     OpenFile(3);
     fQAContainer = new TObjArray(1);
     fQAContainer->SetName(Form("%s_QA", GetName()));
     fQAContainer->SetOwner(kTRUE);
-    
+
     if(fDebug > 2)
       printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(3) successful\n", (char*)__FILE__, __LINE__);
   }
-  
+
   if (fDoPtResolution) {
     const Int_t nPtBinsRes = 100;
     Double_t pTbinsRes[nPtBinsRes + 1];
@@ -1145,42 +1145,42 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     for (Int_t i = 0 + 1; i <= nPtBinsRes; i++) {
       pTbinsRes[i] = factorPtRes * pTbinsRes[i - 1];
     }
-    
+
     const Int_t nBinsPtResolution = kPtResNumAxes;
-    Int_t ptResolutionBins[kPtResNumAxes]    = { nJetPtBins,                       nPtBinsRes,            nPtBinsRes,             
+    Int_t ptResolutionBins[kPtResNumAxes]    = { nJetPtBins,                       nPtBinsRes,            nPtBinsRes,
                                                  nChargeBins,             nCentBins };
-    Double_t ptResolutionXmin[kPtResNumAxes] = { binsJetPt[0],                   pTbinsRes[0],          pTbinsRes[0],           
+    Double_t ptResolutionXmin[kPtResNumAxes] = { binsJetPt[0],                   pTbinsRes[0],          pTbinsRes[0],
                                                  binsCharge[0],           binsCent[0] };
-    Double_t ptResolutionXmax[kPtResNumAxes] = { binsJetPt[nJetPtBins], pTbinsRes[nPtBinsRes], pTbinsRes[nPtBinsRes], 
+    Double_t ptResolutionXmax[kPtResNumAxes] = { binsJetPt[nJetPtBins], pTbinsRes[nPtBinsRes], pTbinsRes[nPtBinsRes],
                                                  binsCharge[nChargeBins], binsCent[nCentBins] };
 
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-      fPtResolution[i] = new THnSparseD(Form("fPtResolution_%s", AliPID::ParticleShortName(i)), 
+      fPtResolution[i] = new THnSparseD(Form("fPtResolution_%s", AliPID::ParticleShortName(i)),
                                         Form("Pt resolution for primaries, %s", AliPID::ParticleLatexName(i)),
                                         nBinsPtResolution, ptResolutionBins, ptResolutionXmin, ptResolutionXmax);
       SetUpPtResHist(fPtResolution[i], pTbinsRes, binsJetPt, binsCent);
       fQAContainer->Add(fPtResolution[i]);
     }
-    
-    
+
+
     // Besides the pT resolution, also perform check on shared clusters
     const Int_t nBinsQASharedCls = kQASharedClsNumAxes;
     Int_t qaSharedClsBins[kQASharedClsNumAxes]    = { nJetPtBins, nPtBinsRes, 160, 160 };
     Double_t qaSharedClsXmin[kQASharedClsNumAxes] = { binsJetPt[0], pTbinsRes[0], 0, -1 };
     Double_t qaSharedClsXmax[kQASharedClsNumAxes] = { binsJetPt[nJetPtBins], pTbinsRes[nPtBinsRes], 160, 159 };
-    
+
     fQASharedCls = new THnSparseD("fQASharedCls", "QA shared clusters", nBinsQASharedCls, qaSharedClsBins, qaSharedClsXmin, qaSharedClsXmax);
-    
+
     SetUpSharedClsHist(fQASharedCls, pTbinsRes, binsJetPt);
     fQAContainer->Add(fQASharedCls);
   }
-  
-  
-  
+
+
+
   if (fDoDeDxCheck) {
     const Int_t nEtaAbsBins = 9;
     const Double_t binsEtaAbs[nEtaAbsBins+1] = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
-    
+
     const Double_t dEdxMin = 20;
     const Double_t dEdxMax = 110;
     const Int_t nDeDxBins = (Int_t) ((dEdxMax - dEdxMin) / 0.02);
@@ -1188,68 +1188,68 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     Int_t dEdxCheckBins[kDeDxCheckNumAxes]    = { nSelSpeciesBins, nPtBins, nJetPtBins, nEtaAbsBins, nDeDxBins };
     Double_t dEdxCheckXmin[kDeDxCheckNumAxes] = { selSpeciesMin, binsPt[0], binsJetPt[0], binsEtaAbs[0], dEdxMin };
     Double_t dEdxCheckXmax[kDeDxCheckNumAxes] = { selSpeciesMax, binsPt[nPtBins], binsJetPt[nJetPtBins], binsEtaAbs[nEtaAbsBins], dEdxMax };
-    
+
     fDeDxCheck = new THnSparseD("fDeDxCheck", "dEdx check", nBinsDeDxCheck, dEdxCheckBins, dEdxCheckXmin, dEdxCheckXmax);
     SetUpDeDxCheckHist(fDeDxCheck, binsPt, binsJetPt, binsEtaAbs);
     fQAContainer->Add(fDeDxCheck);
   }
-  
+
   if (fDoBinZeroStudy) {
     const Double_t etaLow = -0.9;
     const Double_t etaUp = 0.9;
     const Int_t nEtaBins = 18;
-    
+
     const Int_t nBinsBinZeroStudy = kBinZeroStudyNumAxes;
     Int_t binZeroStudyBins[nBinsBinZeroStudy]    = { nCentBins,                   nPtBins, nEtaBins };
     Double_t binZeroStudyXmin[nBinsBinZeroStudy] = { binsCent[0],               binsPt[0], etaLow   };
     Double_t binZeroStudyXmax[nBinsBinZeroStudy] = { binsCent[nCentBins], binsPt[nPtBins], etaUp    };
-    
+
     fChargedGenPrimariesTriggerSel = new THnSparseD("fChargedGenPrimariesTriggerSel", "Trigger sel.", nBinsBinZeroStudy, binZeroStudyBins,
                                                     binZeroStudyXmin, binZeroStudyXmax);
     SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSel, binsCent, binsPt);
     fOutputContainer->Add(fChargedGenPrimariesTriggerSel);
-    
+
     fChargedGenPrimariesTriggerSelVtxCut = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCut", "Vertex cut", nBinsBinZeroStudy,
                                                           binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
     SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCut, binsCent, binsPt);
     fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCut);
-    
+
     fChargedGenPrimariesTriggerSelVtxCutZ = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCutZ", "Vertex #it{z} cut", nBinsBinZeroStudy,
                                                           binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
     SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCutZ, binsCent, binsPt);
     fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCutZ);
-    
-    fChargedGenPrimariesTriggerSelVtxCutZPileUpRej = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCutZPileUpRej", "Vertex #it{z} cut", 
+
+    fChargedGenPrimariesTriggerSelVtxCutZPileUpRej = new THnSparseD("fChargedGenPrimariesTriggerSelVtxCutZPileUpRej", "Vertex #it{z} cut",
                                                                     nBinsBinZeroStudy, binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
     SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCutZPileUpRej, binsCent, binsPt);
     fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCutZPileUpRej);
   }
-  
+
   if (GetDoDCATemplateGeneration()) {
     std::cout << "Create Template Generation" << std::endl;
     const Int_t nPtBinsDCA = 22;
     Double_t ptBinsDCA[nPtBinsDCA + 1] = {0.01, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
-    
+
 //     const Int_t nPtBinsDCA = 19;
-//     Double_t ptBinsDCA[nPtBinsDCA + 1] = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.};   
-    
-    const Int_t nDCABins = 75;    
+//     Double_t ptBinsDCA[nPtBinsDCA + 1] = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.};
+
+    const Int_t nDCABins = 75;
     const Double_t DCABinlow = 0.0;
     const Double_t DCABinUp = 0.25;
     const Double_t DCAStep = (DCABinUp - DCABinlow)/nDCABins;
-    
+
     Double_t binsDCA[nDCABins + 1];
-    
+
     for (Int_t DCABin=0;DCABin<nDCABins + 1;DCABin++) {
       binsDCA[DCABin] = DCABinlow + DCAStep * DCABin;
     }
-    
+
     if (GetStoreAdditionalJetInformation()) {
       fh3DCA_XY_Positive = new TH3D("fh3DCA_XY_Positive","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
       fOutputContainer->Add(fh3DCA_XY_Positive);
       fh3DCA_XY_Primaries_Positive = new TH3D("fh3DCA_XY_Primaries_Positive","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
       fOutputContainer->Add(fh3DCA_XY_Primaries_Positive);
-      fh3DCA_XY_WeakDecays_Positive = new TH3D("fh3DCA_XY_WeakDecays_Positive","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);  
+      fh3DCA_XY_WeakDecays_Positive = new TH3D("fh3DCA_XY_WeakDecays_Positive","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
       fOutputContainer->Add(fh3DCA_XY_WeakDecays_Positive);
       fh3DCA_XY_Material_Positive = new TH3D("fh3DCA_XY_Material_Positive","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
       fOutputContainer->Add(fh3DCA_XY_Material_Positive);
@@ -1257,32 +1257,32 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
       fOutputContainer->Add(fh3DCA_XY_Negative);
       fh3DCA_XY_Primaries_Negative = new TH3D("fh3DCA_XY_Primaries_Negative","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
       fOutputContainer->Add(fh3DCA_XY_Primaries_Negative);
-      fh3DCA_XY_WeakDecays_Negative = new TH3D("fh3DCA_XY_WeakDecays_Negative","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);  
+      fh3DCA_XY_WeakDecays_Negative = new TH3D("fh3DCA_XY_WeakDecays_Negative","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
       fOutputContainer->Add(fh3DCA_XY_WeakDecays_Negative);
       fh3DCA_XY_Material_Negative = new TH3D("fh3DCA_XY_Material_Negative","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
-      fOutputContainer->Add(fh3DCA_XY_Material_Negative);      
+      fOutputContainer->Add(fh3DCA_XY_Material_Negative);
     }
     else {
       fh3DCA_XY_Positive = new TH3D("fh3DCA_XY_Positive","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
       fOutputContainer->Add(fh3DCA_XY_Positive);
       fh3DCA_XY_Primaries_Positive = new TH3D("fh3DCA_XY_Primaries_Positive","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
       fOutputContainer->Add(fh3DCA_XY_Primaries_Positive);
-      fh3DCA_XY_WeakDecays_Positive = new TH3D("fh3DCA_XY_WeakDecays_Positive","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);  
+      fh3DCA_XY_WeakDecays_Positive = new TH3D("fh3DCA_XY_WeakDecays_Positive","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
       fOutputContainer->Add(fh3DCA_XY_WeakDecays_Positive);
       fh3DCA_XY_Material_Positive = new TH3D("fh3DCA_XY_Material_Positive","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
-      fOutputContainer->Add(fh3DCA_XY_Material_Positive); 
-      
+      fOutputContainer->Add(fh3DCA_XY_Material_Positive);
+
       fh3DCA_XY_Negative = new TH3D("fh3DCA_XY_Negative","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
       fOutputContainer->Add(fh3DCA_XY_Negative);
       fh3DCA_XY_Primaries_Negative = new TH3D("fh3DCA_XY_Primaries_Negative","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
       fOutputContainer->Add(fh3DCA_XY_Primaries_Negative);
-      fh3DCA_XY_WeakDecays_Negative = new TH3D("fh3DCA_XY_WeakDecays_Negative","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);  
+      fh3DCA_XY_WeakDecays_Negative = new TH3D("fh3DCA_XY_WeakDecays_Negative","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
       fOutputContainer->Add(fh3DCA_XY_WeakDecays_Negative);
       fh3DCA_XY_Material_Negative = new TH3D("fh3DCA_XY_Material_Negative","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
-      fOutputContainer->Add(fh3DCA_XY_Material_Negative);       
+      fOutputContainer->Add(fh3DCA_XY_Material_Negative);
     }
   }
-  
+
   if (GetDoTPCclusterStudies()) {
     const Int_t nBinsPrime = 320;
     const Double_t primeLow = 0.4;
@@ -1290,28 +1290,28 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
     const Int_t arrNumbers = 4;
     fTPCclusterStudies = new TObjArray*[arrNumbers];
     const Int_t histNumbers = 3;
-    
+
     constexpr Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
     constexpr Float_t twopi = 2.0f * 3.14159265358979323846f;
-    
+
     Double_t binsPrime[nBinsPrime+1];
     for (Int_t i=0;i<=nBinsPrime;i++) {
       binsPrime[i] = primeLow + i*(primeHigh - primeLow)/nBinsPrime;
     }
-    
+
     constexpr Double_t binsYEta[nBinsY[0] + 1] = {-0.9, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.9};
     constexpr Double_t binsYPhi[nBinsY[1] + 1] = {0.0, twopi/4.0, twopi/2.0, 3.0 * twopi/4.0, twopi};
     constexpr Double_t binsYMult[nBinsY[2] + 1] = {0, 100, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000};
 //     for (Int_t i=0;i<nBinsY[2] + 1;++i) {
 //       binsYMult[i] = i * 5.0;
 //     }
-    
+
     constexpr Double_t binsYclusters[nBinsY[3] + 1] = {1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
     const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYclusters};
-    
+
 //     Double_t binsYNearTracks[nBinsY[3] + 1] = {0,1,2,3,4,5,6,7,8,9,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-//     const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYNearTracks};    
-    
+//     const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYNearTracks};
+
     fhclusterStudies = new TH1*[arrNumbers*histNumbers];
     TString arrNames[arrNumbers] = {"Pi first", "Pi second", "Ka", "Pr"};
     TString histNames[histNumbers] = {"fh2Eta", "fh2Phi", "fh3MultClusters" };
@@ -1325,21 +1325,21 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
           fhclusterStudies[i*histNumbers+j] = new TH2F(histNames[j], histNames[j], nBinsPrime, binsPrime, nBinsY[j], binsY[j]);
         else
           fhclusterStudies[i*histNumbers+j] = new TH3F(histNames[j], histNames[j], nBinsPrime, binsPrime, nBinsY[2], binsY[2], nBinsY[0], binsY[0]);
-            
+
         fTPCclusterStudies[i]->Add(fhclusterStudies[i*histNumbers+j]);
       }
     }
   }
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Posting output data\n", (char*)__FILE__, __LINE__);
-  
+
   PostData(1, fOutputContainer);
   if (fDoEfficiency)
     PostData(2, fContainerEff);
-  if (fDoDeDxCheck || fDoPtResolution) 
+  if (fDoDeDxCheck || fDoPtResolution)
     PostData(3, fQAContainer);
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);
 }
@@ -1353,11 +1353,11 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
 
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
-  
+
   // No processing of event, if input is fed in directly from another task
   if (fInputFromOtherTask)
     return;
-  
+
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec -> Processing started\n", (char*)__FILE__, __LINE__);
 
@@ -1366,17 +1366,17 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
     Printf("ERROR: fEvent not available");
     return;
   }
-  
+
   ConfigureTaskForCurrentEvent(fEvent);
-  
+
   fMC = dynamic_cast<AliMCEvent*>(MCEvent());
-  
+
   if (!fPIDResponse || !fPIDcombined)
     return;
-  
+
   Double_t centralityPercentile = -1;
-  Double_t centralityPercentileNoEventSelection = -1; 
-  
+  Double_t centralityPercentileNoEventSelection = -1;
+
   if (fStoreCentralityPercentile) {
     if (fCentralityEstimator.Contains("ITSTPCtracklets", TString::kIgnoreCase)) {
       // Special pp centrality estimator
@@ -1395,15 +1395,15 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       centralityPercentileNoEventSelection = centralityPercentile; // Event selection not really implemented for this....
     }
   }
-  
+
   const Bool_t nonNegativeCentralityPercentileNoEventSelection = centralityPercentileNoEventSelection >= 0;
   const Bool_t nonNegativeCentralityPercentile = centralityPercentile >= 0;
-  
+
   // MB
   Bool_t passedVertexSelectionMult, passedVertexZSelectionMult;
   Bool_t isPileUpMult;
   Bool_t passedDAQCheck, passedTrackClustCut;
-  
+
   //Checks for all run modes. Checks are different->Done in Functions
   // Check if vertex is ok, but don't apply cut on z position
   const Bool_t passedVertexSelectionMB = GetVertexIsOk(fEvent, kFALSE);
@@ -1411,11 +1411,11 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
   const Bool_t passedVertexZSelectionMB = GetVertexIsOk(fEvent, kTRUE);
   // Check pile-up
   const Bool_t isPileUpMB = GetIsPileUp(fEvent);
-  
+
   passedVertexSelectionMult = passedVertexZSelectionMult = kFALSE;
   isPileUpMult = kTRUE;
   passedDAQCheck = passedTrackClustCut = kFALSE;
-  
+
   if (GetRunMode() == kJetPIDMode) {
     // Mult (check only needed for non-negative centrality percentile, otherwise, event is not used anyway
     // Check if is INEL > 0 (slight abuse of notation with "vertex selection"....)
@@ -1432,24 +1432,24 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
     //Check Tracklet vs. Cluster Cut
     passedTrackClustCut = !fAnaUtils->IsSPDClusterVsTrackletBG(fEvent);
   }
-  
+
   if (fDoBinZeroStudy && fMC) {
-    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
+    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
       AliMCParticle *mcPart  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(iPart));
-      
+
       if (!mcPart)
           continue;
-      
-      if (!fMC->IsPhysicalPrimary(iPart)) 
+
+      if (!fMC->IsPhysicalPrimary(iPart))
           continue;
-      
+
       const Double_t etaGen = mcPart->Eta();
       const Double_t ptGen = mcPart->Pt();
-      
+
       Double_t values[kBinZeroStudyNumAxes] = { 0. };
       values[kBinZeroStudyGenPt] = ptGen;
       values[kBinZeroStudyGenEta] = etaGen;
-      
+
       // For multiplicity selection:
       if (nonNegativeCentralityPercentileNoEventSelection) {
         values[kBinZeroStudyCentrality] = centralityPercentileNoEventSelection;
@@ -1467,7 +1467,7 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
           }
         }
       }
-      
+
       // For MB selection:
       values[kBinZeroStudyCentrality] = -13;
       fChargedGenPrimariesTriggerSel->Fill(values);
@@ -1482,35 +1482,35 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       }
     }
   }
-  
+
   //Increment event counters (trigger selection, vertex cuts and pile-up rejection) for MB and mult:
   //MB
   //Flags that indicate whether the event passed all selections for MB and/or mult
   Bool_t isMBSelected = kFALSE;
   Bool_t isMultSelected = kFALSE;
-  
-  
+
+
   if(GetRunMode() == AliAnalysisTaskMTFPID::kJetPIDMode) {
     IncrementEventCounter(centralityPercentile, kTriggerSel);
     if (passedVertexSelectionMB) {
-      IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut); 
+      IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
       if (passedVertexZSelectionMB) {
 
         IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
         if (!isPileUpMB) {
   /*      ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
           which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
-          rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to 
+          rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to
           number of events. But if it does change the spectra, this must somehow be corrected for.
-          NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity 
-          bins. Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it. 
+          NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity
+          bins. Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it.
           Pile-up rejection has only a minor impact, so maybe there is no need to dig further.*/
           IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
           isMBSelected = kTRUE;
         }
       }
     }
-  
+
 //         Mult (again, only centrality percentile >= 0 considered)
     if (nonNegativeCentralityPercentileNoEventSelection) {
       IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSel);
@@ -1529,12 +1529,12 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       }
     }
   }
-  
+
   if (GetRunMode() == AliAnalysisTaskMTFPID::kLightFlavorMode) {
     if (passedDAQCheck && passedTrackClustCut && !isPileUpMB) {
       IncrementEventCounter(centralityPercentile, kTriggerSel);
       if (passedVertexSelectionMB) {
-        IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut); 
+        IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
         if (passedVertexZSelectionMB) {
           IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
 	  isMBSelected = kTRUE;
@@ -1542,64 +1542,64 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       }
     }
   }
-  
-  
+
+
 //   Done, if neither MB, nor mult requirements fulfilled.
   if (!isMBSelected && !isMultSelected)
     return;
-  
-  
-  
+
+
+
   Double_t magField = fEvent->GetMagneticField();
-  
+
   if (fMC) {
     if (fDoPID || fDoEfficiency) {
-      for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
+      for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
         AliMCParticle *mcPart  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(iPart));
-        
+
         if (!mcPart)
             continue;
-        
+
         // Define clean MC sample with corresponding particle level track cuts:
         // - MC-track must be in desired eta range
         // - MC-track must be physical primary
         // - Species must be one of those in question (everything else goes to the overflow bin of mcID)
-        
+
         // Geometrie should be the same as on the reconstructed level -> By definition analysis within this eta interval
         if (!IsInAcceptedEtaRange(TMath::Abs(mcPart->Eta()))) continue;
-        
+
         Int_t mcID = PDGtoMCID(mcPart->PdgCode());
-        
+
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t chargeMC = mcPart->Charge() / 3.;
-        
+
         if (TMath::Abs(chargeMC) < 0.01)
           continue; // Reject neutral particles (only relevant, if mcID is not used)
-        
-        if (!fMC->IsPhysicalPrimary(iPart)) 
+
+        if (!fMC->IsPhysicalPrimary(iPart))
             continue;
-        
+
         if (fDoPID) {
           Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
           valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
-          
+
           if (isMultSelected)
             fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
-          
+
           if (isMBSelected) {
             valuesGenYield[kGenYieldCentrality] = -13;
             fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
           }
         }
-        
-        
+
+
         if (fDoEfficiency) {
           Double_t valueEff[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
                                             -1, -1, -1, -1, -1 };
-          
-          if (isMultSelected)            
+
+          if (isMultSelected)
             fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
-          
+
           if (isMBSelected) {
             valueEff[kEffCentrality] = -13;
             fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
@@ -1608,7 +1608,7 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       }
     }
   }
-  
+
   // Track loop to fill a Train spectrum
   for (Int_t iTracks = 0; iTracks < fEvent->GetNumberOfTracks(); iTracks++) {
     AliVTrack* track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(iTracks));
@@ -1616,18 +1616,18 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve track %d", iTracks);
       continue;
     }
-    
-    
+
+
     // Apply detector level track cuts
     const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
                                  ((fPIDResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
     Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
     if (dEdxTPC <= 0)
       continue;
-    
+
     if(fTrackFilter && !fTrackFilter->IsSelected(track))
       continue;
-    
+
     if (GetUseTPCCutMIGeo()) {
       if (!TPCCutMIGeo(track, fEvent))
         continue;
@@ -1636,20 +1636,20 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
       if (!TPCnclCut(track))
         continue;
     }
-    
+
     if(fUsePhiCut) {
       if (!PhiPrimeCut(track, magField))
         continue; // reject track
     }
-    
+
     Int_t pdg =  0; // = 0 indicates data for the moment
     AliMCParticle* mcTrack = 0x0;
     Int_t mcID = AliPID::kUnknown;
     Int_t label = 0;
-    
+
     if (fMC) {
       label = track->GetLabel();
-    
+
       //if (label < 0)
       //  continue;
 
@@ -1658,32 +1658,32 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
         Printf("ERROR: Could not retrieve mcTrack with label %d for track %d", label, iTracks);
         continue;
       }
-      
+
       pdg = mcTrack->PdgCode();
       mcID = PDGtoMCID(mcTrack->PdgCode());
-      
+
       if (fDoEfficiency) {
         // For efficiency: Reconstructed track has survived all cuts on the detector level (excluding acceptance)
         // and has an associated MC track which is a physical primary and was generated inside the acceptance
         if (fMC->IsPhysicalPrimary(TMath::Abs(label)) &&
             IsInAcceptedEtaRange(TMath::Abs(mcTrack->Eta()))) {
-          
+
           // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
           Double_t value[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3.,
                                            centralityPercentile, -1, -1, -1, -1, -1 };
           if (isMultSelected)
             fContainerEff->Fill(value, kStepRecWithGenCuts);
-          
+
           if (isMBSelected) {
             value[kEffCentrality] = -13;
             fContainerEff->Fill(value, kStepRecWithGenCuts);
           }
-            
-          Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), 
+
+          Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()),
                                                centralityPercentile, -1, -1, -1, -1, -1 };
           if (isMultSelected)
             fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);
-          
+
           if (isMBSelected) {
             valueMeas[kEffCentrality] = -13;
             fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);
@@ -1691,48 +1691,48 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
         }
       }
     }
-   
-    // Only process tracks inside the desired eta window    
+
+    // Only process tracks inside the desired eta window
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
-   
-    if (fDoPID || fDoDeDxCheck || fDoPtResolution) 
+
+    if (fDoPID || fDoDeDxCheck || fDoPtResolution)
       ProcessTrack(track, pdg, centralityPercentile, -1, isMBSelected, isMultSelected, -1, -1); // No jet information in this case -> Set jet pT to -1
-    
+
     if (fDoPtResolution) {
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt(), mcTrack->Charge() / 3., centralityPercentile };
-        
+
         if (isMultSelected)
           FillPtResolution(mcID, valuePtRes);
-        
+
         if (isMBSelected) {
           valuePtRes[kPtResCentrality] = -13;
           FillPtResolution(mcID, valuePtRes);
         }
       }
     }
-    
+
     if (fDoEfficiency) {
       if (mcTrack) {
-        Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(), static_cast<Double_t>(track->Charge()), 
+        Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(), static_cast<Double_t>(track->Charge()),
                                                    centralityPercentile, -1, -1, -1, -1, -1 };
         Double_t weight = IsSecondaryWithStrangeMotherMC(fMC, TMath::Abs(label)) ? GetMCStrangenessFactorCMS(fMC, mcTrack) : 1.0;
-        
+
         if (isMultSelected) {
           fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
           fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
         }
-        
+
         if (isMBSelected) {
           valueRecAllCuts[kEffCentrality] = -13;
           fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
           fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
         }
-        
-        
+
+
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-        Double_t valueGenAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
+        Double_t valueGenAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3.,
                                                    centralityPercentile, -1, -1, -1, -1, -1 };
         if (fMC->IsPhysicalPrimary(TMath::Abs(label))) {
           if (isMultSelected) {
@@ -1749,22 +1749,22 @@ void AliAnalysisTaskMTFPID::UserExec(Option_t *)
         }
       }
     }
-    
+
     if (GetDoDCATemplateGeneration()) {
       FillDCA(track,dEdxTPC,fEvent->GetPrimaryVertex(),fMC);
     }
-    
-    
-  } //track loop 
-  
+
+
+  } //track loop
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserExec -> Processing done\n", (char*)__FILE__, __LINE__);
-  
+
   PostOutputData();
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserExec -> Done\n", (char*)__FILE__, __LINE__);
-}      
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskMTFPID::Terminate(const Option_t *)
@@ -1779,29 +1779,29 @@ void AliAnalysisTaskMTFPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
 {
   // Check whether at least one scale factor indicates the ussage of systematic studies
   // and set internal flag accordingly.
-  
+
   fDoAnySystematicStudiesOnTheExpectedSignal = kFALSE;
-  
-  
+
+
   if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
       (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon) || fMultBinSystematics) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
-  
+
   if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
       (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
-  
+
   if ((TMath::Abs(fSystematicScalingEtaSigmaParaBelowThreshold - 1.0) > fgkEpsilon) ||
       (TMath::Abs(fSystematicScalingEtaSigmaParaAboveThreshold - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
-  
-  if ((TMath::Abs(fSystematicScalingMultCorrectionLowMomenta - 1.0) > fgkEpsilon) || 
+
+  if ((TMath::Abs(fSystematicScalingMultCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
      (TMath::Abs(fSystematicScalingMultCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
@@ -1813,14 +1813,14 @@ void AliAnalysisTaskMTFPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
 void AliAnalysisTaskMTFPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
 {
   // Configure the task for the current event. In particular, this is needed if the run number changes
-  
+
   if (!event) {
     AliError("Could not set up task: no event!");
     return;
   }
-  
+
   Int_t run = event->GetRunNumber();
-  
+
   if (run != fRun){
     // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
     if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
@@ -1829,7 +1829,7 @@ void AliAnalysisTaskMTFPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
         AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
     }
   }
-  
+
   fRun = run;
 }
 
@@ -1839,7 +1839,7 @@ Int_t AliAnalysisTaskMTFPID::PDGtoMCID(Int_t pdg)
 {
   // Returns the corresponding AliPID index to the given pdg code.
   // Returns AliPID::kUnkown if pdg belongs to a not considered species.
-  
+
   Int_t absPDGcode = TMath::Abs(pdg);
   if (absPDGcode == 211) {//Pion
     return AliPID::kPion;
@@ -1850,13 +1850,13 @@ Int_t AliAnalysisTaskMTFPID::PDGtoMCID(Int_t pdg)
   else if (absPDGcode == 2212) {//Proton
     return AliPID::kProton;
   }
-  else if (absPDGcode == 11) {//Electron      
+  else if (absPDGcode == 11) {//Electron
     return AliPID::kElectron;
   }
   else if (absPDGcode == 13) {//Muon
     return AliPID::kMuon;
   }
-  
+
   return AliPID::kUnknown;
 }
 
@@ -1867,11 +1867,11 @@ void AliAnalysisTaskMTFPID::GetJetTrackObservables(Double_t trackPt, Double_t je
   // Uses trackPt and jetPt to obtain z and xi.
   z = (jetPt > 0 && trackPt >= 0) ? (trackPt / jetPt) : -1;
   xi = (z > 0) ? TMath::Log(1. / z) : -1;
-    
+
   if(trackPt > (1. - 1e-06) * jetPt && trackPt < (1. + 1e-06) * jetPt) { // case z=1 : move entry to last histo bin <1
     z  = 1. - 1e-06;
     xi = 1e-06;
-  }   
+  }
 }
 
 
@@ -1879,11 +1879,11 @@ void AliAnalysisTaskMTFPID::GetJetTrackObservables(Double_t trackPt, Double_t je
 void AliAnalysisTaskMTFPID::CleanupParticleFractionHistos()
 {
   // Delete histos with particle fractions
-  
+
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     delete fFractionHists[i];
     fFractionHists[i] = 0x0;
-    
+
     delete fFractionSysErrorHists[i];
     fFractionSysErrorHists[i] = 0x0;
   }
@@ -1898,10 +1898,10 @@ Double_t AliAnalysisTaskMTFPID::ConvolutedGaus(const Double_t* xx, const Double_
   const Double_t mean = par[0];
   const Double_t sigma = par[1];
   const Double_t lambda = par[2];
-  
+
   if(fDebug > 5)
     printf("File: %s, Line: %d: ConvolutedGaus: mean %e, sigma %e, lambda %e\n", (char*)__FILE__, __LINE__, mean, sigma, lambda);
-  
+
   return lambda/sigma*TMath::Exp(-lambda/sigma*(xx[0]-mean)+lambda*lambda*0.5)*0.5*TMath::Erfc((-xx[0]+mean+sigma*lambda)/sigma*fgkOneOverSqrt2);
 }
 
@@ -1913,7 +1913,7 @@ inline Double_t AliAnalysisTaskMTFPID::FastGaus(Double_t x, Double_t mean, Doubl
 
   if (sigma < fgkEpsilon)
     return 1.e30;
-  
+
   const Double_t arg = (x - mean) / sigma;
   return exp(-0.5 * arg * arg);
 }
@@ -1926,7 +1926,7 @@ inline Double_t AliAnalysisTaskMTFPID::FastNormalisedGaus(Double_t x, Double_t m
 
   if (sigma < fgkEpsilon)
     return 1.e30;
-  
+
   const Double_t arg = (x - mean) / sigma;
   const Double_t res = exp(-0.5 * arg * arg);
   return res / (2.50662827463100024 * sigma); //sqrt(2*Pi)=2.50662827463100024
@@ -1938,9 +1938,9 @@ Int_t AliAnalysisTaskMTFPID::FindBinWithinRange(TAxis* axis, Double_t value) con
 {
   // Find the corresponding bin of the axis. Values outside the range (also under and overflow) will be set to the first/last
   // available bin
-  
+
   Int_t bin = axis->FindFixBin(value);
-  
+
   if (bin <= 0)
     bin = 1;
   if (bin > axis->GetNbins())
@@ -1949,7 +1949,7 @@ Int_t AliAnalysisTaskMTFPID::FindBinWithinRange(TAxis* axis, Double_t value) con
   return bin;
 }
 
-  
+
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskMTFPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
                                                       Int_t zBin) const
@@ -1957,16 +1957,16 @@ Int_t AliAnalysisTaskMTFPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double
   // Kind of projects a TH3 to 1 bin combination in y and z
   // and looks for the first x bin above a threshold for this projection.
   // If no such bin is found, -1 is returned.
-  
+
   if (!hist)
     return -1;
-    
+
   Int_t nBinsX = hist->GetNbinsX();
   for (Int_t xBin = 1; xBin <= nBinsX; xBin++) {
     if (hist->GetBinContent(xBin, yBin, zBin) > threshold)
       return xBin;
   }
-  
+
   return -1;
 }
 
@@ -1975,19 +1975,19 @@ Int_t AliAnalysisTaskMTFPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double
 Int_t AliAnalysisTaskMTFPID::FindLastBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
                                                      Int_t zBin) const
 {
-  // Kind of projects a TH3 to 1 bin combination in y and z 
+  // Kind of projects a TH3 to 1 bin combination in y and z
   // and looks for the last x bin above a threshold for this projection.
   // If no such bin is found, -1 is returned.
-  
+
   if (!hist)
     return -1;
-    
+
   Int_t nBinsX = hist->GetNbinsX();
   for (Int_t xBin = nBinsX; xBin >= 1; xBin--) {
     if (hist->GetBinContent(xBin, yBin, zBin) > threshold)
       return xBin;
   }
-  
+
   return -1;
 }
 
@@ -2001,40 +2001,40 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFraction(Double_t trackPt, Double_t jet
   // Use jetPt = -1 for inclusive spectra and centralityPercentile = -1 for pp.
   // On success (return value kTRUE), fraction contains the particle fraction, fractionErrorStat(Sys) the sigma of its
   // statistical (systematic) error
-  
+
   fraction = -999.;
   fractionErrorStat = 999.;
   fractionErrorSys = 999.;
-  
+
   if (species > AliPID::kProton || species < AliPID::kElectron) {
     AliError(Form("Only fractions for species index %d to %d availabe, but not for the requested one: %d", 0, AliPID::kProton, species));
     return kFALSE;
   }
-  
+
   if (!fFractionHists[species]) {
     AliError(Form("Histo with particle fractions for species %d not loaded!", species));
-    
+
     return kFALSE;
   }
-  
+
   Int_t jetPtBin = FindBinWithinRange(fFractionHists[species]->GetYaxis(), jetPt);
   Int_t centBin  = FindBinWithinRange(fFractionHists[species]->GetZaxis(), centralityPercentile);
-  
+
   // The following interpolation takes the bin content of the first/last available bin,
   // if requested point lies beyond bin center of first/last bin.
   // The interpolation is only done for the x-axis (track pT), i.e. jetPtBin and centBin are fix,
   // because the analysis will anyhow be run in bins of jetPt and centrality and
   // it is not desired to correlate different jetPt bins via interpolation.
-  
+
   // The same procedure is used for the error of the fraction
   TAxis* xAxis = fFractionHists[species]->GetXaxis();
-  
+
   // No interpolation to values beyond the centers of the first/last bins (we don't know exactly where the spectra start or stop,
   // thus, search for the first and last bin above 0.0 to constrain the range
   Int_t firstBin = TMath::Max(1, FindFirstBinAboveIn3dSubset(fFractionHists[species], 0.0, jetPtBin, centBin));
-  Int_t lastBin  = TMath::Min(fFractionHists[species]->GetNbinsX(), 
+  Int_t lastBin  = TMath::Min(fFractionHists[species]->GetNbinsX(),
                               FindLastBinAboveIn3dSubset(fFractionHists[species], 0.0, jetPtBin, centBin));
-  
+
   if (trackPt <= xAxis->GetBinCenter(firstBin)) {
     fraction = fFractionHists[species]->GetBinContent(firstBin, jetPtBin, centBin);
     fractionErrorStat = fFractionHists[species]->GetBinError(firstBin, jetPtBin, centBin);
@@ -2049,7 +2049,7 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFraction(Double_t trackPt, Double_t jet
     Double_t x0 = 0., x1 = 0., y0 = 0., y1 = 0.;
     Double_t y0errStat = 0., y1errStat = 0., y0errSys = 0., y1errSys = 0.;
     Int_t trackPtBin = xAxis->FindFixBin(trackPt);
-    
+
     // Linear interpolation between nearest neighbours in trackPt
     if (trackPt <= xAxis->GetBinCenter(trackPtBin)) {
         y0 = fFractionHists[species]->GetBinContent(trackPtBin - 1, jetPtBin, centBin);
@@ -2075,13 +2075,13 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFraction(Double_t trackPt, Double_t jet
                                                    : 0.;
         x1 = xAxis->GetBinCenter(trackPtBin + 1);
     }
-    
+
     // Per construction: x0 < trackPt < x1
     fraction = y0 + (trackPt - x0) * ((y1 - y0) / (x1 - x0));
     fractionErrorStat = y0errStat + (trackPt - x0) * ((y1errStat - y0errStat) / (x1 - x0));
     fractionErrorSys = fFractionSysErrorHists[species] ? (y0errSys + (trackPt - x0) * ((y1errSys - y0errSys) / (x1 - x0))) : 0.;
   }
-  
+
   return kTRUE;
 }
 
@@ -2105,17 +2105,17 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
   // First, the systematic error uncertainty procedure will be performed (that is including re-scaling), then the statistical
   // uncertainty procedure.
   // On success, kTRUE is returned.
-  
+
   if (!prob || smearSpeciesByError >= AliPID::kSPECIES || takeIntoAccountSpeciesSysError >= AliPID::kSPECIES)
     return kFALSE;
-  
+
   Double_t probTemp[AliPID::kSPECIES];
   Double_t probErrorStat[AliPID::kSPECIES];
   Double_t probErrorSys[AliPID::kSPECIES];
-  
+
   Bool_t success = kTRUE;
   success = success && GetParticleFraction(trackPt, jetPt, centralityPercentile, AliPID::kElectron,
-                                           probTemp[AliPID::kElectron], probErrorStat[AliPID::kElectron], 
+                                           probTemp[AliPID::kElectron], probErrorStat[AliPID::kElectron],
                                            probErrorSys[AliPID::kElectron]);
   success = success && GetParticleFraction(trackPt, jetPt, centralityPercentile, AliPID::kMuon,
                                            probTemp[AliPID::kMuon], probErrorStat[AliPID::kMuon], probErrorSys[AliPID::kMuon]);
@@ -2125,52 +2125,52 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
                                            probTemp[AliPID::kKaon], probErrorStat[AliPID::kKaon], probErrorSys[AliPID::kKaon]);
   success = success && GetParticleFraction(trackPt, jetPt, centralityPercentile, AliPID::kProton,
                                            probTemp[AliPID::kProton], probErrorStat[AliPID::kProton], probErrorSys[AliPID::kProton]);
-  
+
   if (!success)
     return kFALSE;
-  
+
   // If desired, take into account the systematic error of the corresponding species and re-generate probTemp accordingly
   if (takeIntoAccountSpeciesSysError >= 0) {
     // Generate random fraction of the considered species "smearSpeciesByError" according to mean and sigma
-    Double_t generatedFraction = uniformSystematicError 
+    Double_t generatedFraction = uniformSystematicError
                                    ? fRandom->Rndm() * 2. * probErrorSys[takeIntoAccountSpeciesSysError]
                                      - probErrorSys[takeIntoAccountSpeciesSysError]
                                      + probTemp[takeIntoAccountSpeciesSysError]
                                    : fRandom->Gaus(probTemp[takeIntoAccountSpeciesSysError],
                                                    probErrorSys[takeIntoAccountSpeciesSysError]);
-    
+
     // Catch cases with invalid fraction (can happen for large errors), i.e. fraction < 0 or > 1
     if (generatedFraction < 0.)
       generatedFraction = 0.;
     else if (generatedFraction > 1.)
       generatedFraction = 1.;
-    
+
     // Calculate difference from original fraction (original fractions sum up to 1!)
     Double_t deltaFraction = generatedFraction - probTemp[takeIntoAccountSpeciesSysError];
-    
+
     // Fractions must (including errors) lie inside [0,1] -> Adapt weights accordingly by setting the errors
     if (deltaFraction > 0) {
       // Some part will be SUBTRACTED from the other fractions
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-        if (probTemp[i] - probErrorSys[i] < 0) 
+        if (probTemp[i] - probErrorSys[i] < 0)
           probErrorSys[i] = probTemp[i];
       }
     }
     else {
       // Some part will be ADDED to the other fractions
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-        if (probTemp[i] + probErrorSys[i] > 1) 
+        if (probTemp[i] + probErrorSys[i] > 1)
           probErrorSys[i] = 1. - probTemp[i];
       }
     }
-    
+
     // Compute summed weight of all fractions except for the considered one
     Double_t summedWeight = 0.;
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
       if (i != takeIntoAccountSpeciesSysError)
-        summedWeight += probErrorSys[i]; 
+        summedWeight += probErrorSys[i];
     }
-    
+
     // Compute the weight for the other species
     /*
     if (summedWeight <= 1e-13) {
@@ -2178,7 +2178,7 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
       printf("Error: summedWeight (sys error) ~ 0 for trackPt %f, jetPt %f, centralityPercentile %f. Setting flat weight!\n",
              trackPt, jetPt, centralityPercentile);
     }*/
-    
+
     Double_t weight[AliPID::kSPECIES];
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
       if (i != takeIntoAccountSpeciesSysError) {
@@ -2188,56 +2188,56 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
           weight[i] = probErrorSys[i] / (AliPID::kSPECIES - 1);
       }
     }
-    
+
     // For the final generated fractions, set the generated value for the considered species
     // and the generated value minus delta times statistical weight
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-      if (i != takeIntoAccountSpeciesSysError) 
+      if (i != takeIntoAccountSpeciesSysError)
         probTemp[i] = probTemp[i] - weight[i] * deltaFraction;
       else
         probTemp[i] = generatedFraction;
     }
   }
-  
+
   // Using the values of probTemp (either the original ones or those after taking into account the systematic error),
   // calculate the final fractions - if the statistical error is to be taken into account, smear the corresponding
   // fraction. If not, just write probTemp to the final result array.
   if (smearSpeciesByError >= 0) {
     // Generate random fraction of the considered species "smearSpeciesByError" according to mean and sigma
     Double_t generatedFraction = fRandom->Gaus(probTemp[smearSpeciesByError], probErrorStat[smearSpeciesByError]);
-    
+
     // Catch cases with invalid fraction (can happen for large errors), i.e. fraction < 0 or > 1
     if (generatedFraction < 0.)
       generatedFraction = 0.;
     else if (generatedFraction > 1.)
       generatedFraction = 1.;
-    
+
     // Calculate difference from original fraction (original fractions sum up to 1!)
     Double_t deltaFraction = generatedFraction - probTemp[smearSpeciesByError];
-    
+
     // Fractions must (including errors) lie inside [0,1] -> Adapt weights accordingly by setting the errors
     if (deltaFraction > 0) {
       // Some part will be SUBTRACTED from the other fractions
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-        if (probTemp[i] - probErrorStat[i] < 0) 
+        if (probTemp[i] - probErrorStat[i] < 0)
           probErrorStat[i] = probTemp[i];
       }
     }
     else {
       // Some part will be ADDED to the other fractions
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-        if (probTemp[i] + probErrorStat[i] > 1) 
+        if (probTemp[i] + probErrorStat[i] > 1)
           probErrorStat[i] = 1. - probTemp[i];
       }
     }
-    
+
     // Compute summed weight of all fractions except for the considered one
     Double_t summedWeight = 0.;
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
       if (i != smearSpeciesByError)
-        summedWeight += probErrorStat[i]; 
+        summedWeight += probErrorStat[i];
     }
-    
+
     // Compute the weight for the other species
     /*
     if (summedWeight <= 1e-13) {
@@ -2245,7 +2245,7 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
       printf("Error: summedWeight (stat error) ~ 0 for trackPt %f, jetPt %f, centralityPercentile %f. Setting flat weight!\n",
              trackPt, jetPt, centralityPercentile);
     }*/
-    
+
     Double_t weight[AliPID::kSPECIES];
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
       if (i != smearSpeciesByError) {
@@ -2255,11 +2255,11 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
           weight[i] = probErrorStat[i] / (AliPID::kSPECIES - 1);
       }
     }
-    
+
     // For the final generated fractions, set the generated value for the considered species
     // and the generated value minus delta times statistical weight
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-      if (i != smearSpeciesByError) 
+      if (i != smearSpeciesByError)
         prob[i] = probTemp[i] - weight[i] * deltaFraction;
       else
         prob[i] = generatedFraction;
@@ -2270,24 +2270,24 @@ Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t je
     for (Int_t i = 0; i < AliPID::kSPECIES; i++)
       prob[i] = probTemp[i];
   }
-  
-  
+
+
   // Should already be normalised, but make sure that it really is:
   Double_t probSum = 0.;
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     probSum += prob[i];
   }
-  
+
   if (probSum <= 0)
     return kFALSE;
-  
+
   if (TMath::Abs(probSum - 1.0) > 1e-4) {
     printf("Warning: Re-normalising sum of fractions: Sum is %e\n", probSum);
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
       prob[i] /= probSum;
     }
   }
-  
+
   return kTRUE;
 }
 
@@ -2297,7 +2297,7 @@ const TH3D* AliAnalysisTaskMTFPID::GetParticleFractionHisto(Int_t species, Bool_
 {
   if (species < AliPID::kElectron || species > AliPID::kProton)
     return 0x0;
-  
+
   return sysError ? fFractionSysErrorHists[species] : fFractionHists[species];
 }
 
@@ -2308,14 +2308,14 @@ Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Doubl
   // Strangeness ratio MC/data as function of mother pt from CMS data in |eta|<2.0
   // -> Based on function in PWGJE/AliAnalysisTaskFragmentationFunction, which uses
   // the following data from CMS pp @ 7 TeV inclusive (JHEP 05 (2011) 064)
-  
+
   Double_t fac = 1;
-  
+
   const Int_t absMotherPDG = TMath::Abs(motherPDG);
-  
+
   if (GetEventGenerator() == kPythia6Perugia2011) {
-    // Values from mcplots.cern.ch for Pythia 6.425, tune 350 (= Perugia 2011) 
-  
+    // Values from mcplots.cern.ch for Pythia 6.425, tune 350 (= Perugia 2011)
+
     if (absMotherPDG == 310 || absMotherPDG == 321) { // K0s / K+ / K-
       if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.873424;
       else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.854657;
@@ -2394,10 +2394,10 @@ Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Doubl
       else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.364368;
       else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.405848;
       else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.439721;
-    }  
+    }
   }
   else if (GetEventGenerator() == kPythia6Perugia0) {
-    // Values from mcplots.cern.ch for Pythia 6 (Perugia 0) 
+    // Values from mcplots.cern.ch for Pythia 6 (Perugia 0)
     if (absMotherPDG == 310 || absMotherPDG == 321) { // K0s / K+ / K-
       if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.768049;
       else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.732933;
@@ -2424,7 +2424,7 @@ Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Doubl
       else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.736365;
       else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 0.835865;
     }
-    
+
     if (absMotherPDG == 3122) { // Lambda
     //if (absMotherPDG == 3122 || absMotherPDG == 3112 || absMotherPDG == 3222) { // Lambda / Sigma- / Sigma+
       if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.645162;
@@ -2451,9 +2451,9 @@ Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Doubl
       else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.573815;
       else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.786984;
       else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 1.020021;
-    } 
-    
-    if (absMotherPDG == 3312 || absMotherPDG == 3322) { // xi 
+    }
+
+    if (absMotherPDG == 3312 || absMotherPDG == 3322) { // xi
       if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.666620;
       else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.575908;
       else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.433198;
@@ -2475,12 +2475,12 @@ Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Doubl
       else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.234550;
       else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.251689;
       else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.310204;
-      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.343492;  
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.343492;
     }
   }
-  
+
   const Double_t weight = 1. / fac;
-  
+
   return weight;
 }
 
@@ -2498,50 +2498,50 @@ Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, A
   AliMCParticle* currentDaughter = daughter;
 
 
-  // find first primary mother K0s, Lambda or Xi   
+  // find first primary mother K0s, Lambda or Xi
   while(1) {
-    Int_t daughterPDG = currentDaughter->PdgCode();  
+    Int_t daughterPDG = currentDaughter->PdgCode();
 
     Int_t motherLabel = currentDaughter->GetMother();
     if(motherLabel >= mcEvent->GetNumberOfTracks()){ // protection
-      currentMother = currentDaughter; 
-      break; 
+      currentMother = currentDaughter;
+      break;
     }
 
     currentMother = (AliMCParticle*)mcEvent->GetTrack(motherLabel);
 
-    if (!currentMother) { 
-      currentMother = currentDaughter; 
-      break; 
+    if (!currentMother) {
+      currentMother = currentDaughter;
+      break;
     }
 
-    Int_t motherPDG = currentMother->PdgCode();  
- 
-    // phys. primary found ?    
-    if (mcEvent->IsPhysicalPrimary(motherLabel))
-      break; 
+    Int_t motherPDG = currentMother->PdgCode();
 
-    if (TMath::Abs(daughterPDG) == 321) { 
+    // phys. primary found ?
+    if (mcEvent->IsPhysicalPrimary(motherLabel))
+      break;
+
+    if (TMath::Abs(daughterPDG) == 321) {
       // K+/K- e.g. from phi (ref data not feeddown corrected)
       currentMother = currentDaughter;
-      break; 
-    }   
-    if (TMath::Abs(motherPDG) == 310) { 
+      break;
+    }
+    if (TMath::Abs(motherPDG) == 310) {
       // K0s e.g. from phi (ref data not feeddown corrected)
-      break; 
-    }   
-    if (TMath::Abs(motherPDG) == 3212 && TMath::Abs(daughterPDG) == 3122) { 
+      break;
+    }
+    if (TMath::Abs(motherPDG) == 3212 && TMath::Abs(daughterPDG) == 3122) {
       // Mother Sigma0, daughter Lambda (this case not included in feeddown corr.)
       currentMother = currentDaughter;
-      break; 
+      break;
     }
 
     currentDaughter = currentMother;
   }
 
 
-  Int_t motherPDG = currentMother->PdgCode();  
-  Double_t motherGenPt = currentMother->Pt(); 
+  Int_t motherPDG = currentMother->PdgCode();
+  Double_t motherGenPt = currentMother->Pt();
 
   return GetMCStrangenessFactorCMS(motherPDG, motherGenPt);
 }
@@ -2554,12 +2554,12 @@ AliAnalysisTaskMTFPID::TOFpidInfo AliAnalysisTaskMTFPID::GetTOFType(const AliVTr
   if (!fStoreTOFInfo) {
     return kNoTOFinfo;
   }
-  
+
   if (!fPIDResponse) {
     Printf("ERROR: fPIDResponse not available -> Cannot determine TOF type!");
     return kNoTOFinfo;
   }
-  
+
   /*TODO still needs some further thinking how to implement it....
   // TOF PID status (kTOFout, kTIME) automatically checked by return value of ComputeTPCProbability;
   // also, probability array will be set there (no need to initialise here)
@@ -2567,23 +2567,23 @@ AliAnalysisTaskMTFPID::TOFpidInfo AliAnalysisTaskMTFPID::GetTOFType(const AliVTr
   const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->ComputeTPCProbability(track, AliPID::kSPECIES, p);
   if (tofStatus != AliPIDResponse::kDetPidOk)
     return kNoTOFinfo;
-  
+
   // Do not consider muons
   p[AliPID::kMuon] = 0.;
-  
+
   // Probabilities are not normalised yet
   Double_t sum = 0.;
   for (Int_t i = 0; i < AliPID::kSPECIES; i++)
     sum += p[i];
-  
+
   if (sum <= 0.)
     return kNoTOFinfo;
-  
+
   for (Int_t i = 0; i < AliPID::kSPECIES; i++)
     p[i] /= sum;
-  
+
   Double_t probThreshold = -999.;
-  
+
   // If there is only one distribution, the threshold corresponds to...
   if (tofMode == 0) {
     probThreshold = ;
@@ -2599,23 +2599,23 @@ AliAnalysisTaskMTFPID::TOFpidInfo AliAnalysisTaskMTFPID::GetTOFType(const AliVTr
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
     return kNoTOFinfo;
   }
-  
+
   */
-  
+
   ///* OLD: cut with n-sigmas (ATTENTION: Does not take into account properly the TOF tail!)
   // Check kTOFout, kTIME, mismatch
   const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   if (tofStatus != AliPIDResponse::kDetPidOk)
     return kNoTOFinfo;
-  
+
   Double_t nsigma[kNumTOFspecies + 1] = { -999., -999., -999., -999. };
   nsigma[kTOFpion]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
   nsigma[kTOFkaon]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
   nsigma[kTOFproton] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-  
+
   Double_t inclusion = -999;
   Double_t exclusion = -999;
-  
+
   if (tofMode == 0) {
     inclusion = 3.;
     exclusion = 2.5;
@@ -2632,7 +2632,7 @@ AliAnalysisTaskMTFPID::TOFpidInfo AliAnalysisTaskMTFPID::GetTOFType(const AliVTr
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
     return kNoTOFinfo;
   }
-  
+
   // Do not cut on nSigma electron because this would also remove pions in a large pT range.
   // The electron contamination of the pion sample can be treated by TPC dEdx fits afterwards.
   if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
@@ -2642,15 +2642,15 @@ AliAnalysisTaskMTFPID::TOFpidInfo AliAnalysisTaskMTFPID::GetTOFType(const AliVTr
   if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
     return kTOFproton;
   //*/
-  
+
   // There are no TOF electrons selected because the purity is rather bad, even for small momenta
   // (also a small mismatch probability significantly affects electrons because their fraction
-  // is small). There is no need for TOF electrons anyway, since the dEdx distribution of kaons and 
+  // is small). There is no need for TOF electrons anyway, since the dEdx distribution of kaons and
   // protons in a given pT bin (also at the dEdx crossings) is very different from that of electrons.
   // This is due to the steeply falling dEdx of p and K with momentum, whereas the electron dEdx stays
   // rather constant.
   // As a result, the TPC fit yields a more accurate electron fraction than the TOF selection can do.
-  
+
   return kNoTOFpid;
 }
 
@@ -2660,32 +2660,32 @@ Bool_t AliAnalysisTaskMTFPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent
 {
   // Check whether particle is a secondary with strange mother, i.e. returns kTRUE if a strange mother is found
   // and the particle is NOT a physical primary. In all other cases kFALSE is returned
-  
+
   if (!mcEvent || partLabel < 0)
     return kFALSE;
-  
+
   AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(partLabel);
-  
+
   if (!part)
     return kFALSE;
-  
+
   if (mcEvent->IsPhysicalPrimary(partLabel))
     return kFALSE;
-  
+
   Int_t iMother = part->GetMother();
   if (iMother < 0)
     return kFALSE;
-  
-  
+
+
   AliMCParticle* partM = (AliMCParticle*)mcEvent->GetTrack(iMother);
-  if (!partM) 
+  if (!partM)
    return kFALSE;
-  
+
   Int_t codeM = TMath::Abs(partM->PdgCode());
   Int_t mfl = Int_t(codeM / TMath::Power(10, Int_t(TMath::Log10(codeM))));
   if (mfl == 3 && codeM != 3) // codeM = 3 is for s quark
     return kTRUE;
-  
+
   return kFALSE;
 }
 
@@ -2694,25 +2694,25 @@ Bool_t AliAnalysisTaskMTFPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent
 Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHisto(const TH3D* hist, Int_t species, Bool_t sysError)
 {
   // Store a clone of hist (containing the particle fractions of the corresponding species with statistical error (sysError = kFALSE)
-  // or systematic error (sysError = kTRUE), respectively), internally 
-  
+  // or systematic error (sysError = kTRUE), respectively), internally
+
   if (species < AliPID::kElectron || species > AliPID::kProton) {
     AliError(Form("Only fractions for species index %d to %d can be set, but not for the requested one: %d", 0,
                   AliPID::kProton, species));
     return kFALSE;
   }
-  
+
   if (sysError) {
     delete fFractionSysErrorHists[species];
-    
+
     fFractionSysErrorHists[species] = new TH3D(*hist);
   }
   else {
     delete fFractionHists[species];
-  
+
     fFractionHists[species] = new TH3D(*hist);
   }
-  
+
   return kTRUE;
 }
 
@@ -2721,10 +2721,10 @@ Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHisto(const TH3D* hist, Int_t s
 Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHistosFromFile(const TString filePathName, Bool_t sysError)
 {
   // Loads particle fractions for all species from the desired file and returns kTRUE on success.
-  // The maps are assumed to be of Type TH3D, to sit in the main directory and to have names 
+  // The maps are assumed to be of Type TH3D, to sit in the main directory and to have names
   // Form("hFraction_%e", AliPID::ParticleName(i)) for sysError = kFALSE and
   // Form("hFractionSysError_%e", AliPID::ParticleName(i)) for sysError = kTRUE.
-  
+
   TFile* f = TFile::Open(filePathName.Data());
   if (!f)  {
     std::cout << "Failed to open file with particle fractions \"" << filePathName.Data() << "\"!" << std::endl;
@@ -2741,7 +2741,7 @@ Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHistosFromFile(const TString fi
       CleanupParticleFractionHistos();
       return kFALSE;
     }
-    
+
     if (!SetParticleFractionHisto(hist, i, sysError)) {
       std::cout << "Failed to load particle fractions for " << histName.Data() << "!";
       std::cout << std::endl << "Cleaning up particle fraction histos!" << std::endl;
@@ -2749,11 +2749,11 @@ Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHistosFromFile(const TString fi
       return kFALSE;
     }
   }
-  
+
   delete hist;
-  
+
   return kTRUE;
-  
+
 }
 
 
@@ -2762,26 +2762,26 @@ Double_t AliAnalysisTaskMTFPID::GetMaxEtaVariation(Double_t dEdxSplines)
 {
   // Returns the maximum eta variation (i.e. deviation of eta correction factor from unity) for the
   // given (spline) dEdx
-  
+
   if (dEdxSplines < 1. || !fhMaxEtaVariation) {
     Printf("Error GetMaxEtaVariation: No map or invalid dEdxSplines (%f)!", dEdxSplines);
     return 999.;
-  } 
-  
+  }
+
   Int_t bin = fhMaxEtaVariation->GetXaxis()->FindFixBin(1. / dEdxSplines);
-  
-  if (bin == 0) 
+
+  if (bin == 0)
     bin = 1;
   if (bin > fhMaxEtaVariation->GetXaxis()->GetNbins())
     bin = fhMaxEtaVariation->GetXaxis()->GetNbins();
-  
+
   return fhMaxEtaVariation->GetBinContent(bin);
 }
 
 
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskMTFPID::GetRandomParticleTypeAccordingToParticleFractions(Double_t trackPt, Double_t jetPt,
-                                                                            Double_t centralityPercentile, 
+                                                                            Double_t centralityPercentile,
                                                                             Bool_t smearByError,
                                                                             Bool_t takeIntoAccountSysError) const
 {
@@ -2796,16 +2796,16 @@ Int_t AliAnalysisTaskMTFPID::GetRandomParticleTypeAccordingToParticleFractions(D
   // Note that the fractions will be calculated first with only the systematic error taken into account (if desired), including
   // re-normalisation. Then, the resulting fractions will be used to calculate the final fractions - either with statistical error
   // or without. The species, for which the error will be used for smearing, is the same for sys and stat error.
-  
+
   Double_t prob[AliPID::kSPECIES];
   Int_t randomSpecies = (smearByError || takeIntoAccountSysError) ? (Int_t)(fRandom->Rndm() * AliPID::kSPECIES) : -1;
   Bool_t success = GetParticleFractions(trackPt, jetPt, centralityPercentile, prob, randomSpecies, randomSpecies);
-  
+
   if (!success)
     return AliPID::kUnknown;
-  
+
   Double_t rnd = fRandom->Rndm(); // Produce uniformly distributed floating point in ]0, 1]
-  
+
   if (rnd <= prob[AliPID::kPion])
     return AliPID::kPion;
   else if (rnd <= prob[AliPID::kPion] + prob[AliPID::kKaon])
@@ -2814,41 +2814,41 @@ Int_t AliAnalysisTaskMTFPID::GetRandomParticleTypeAccordingToParticleFractions(D
     return AliPID::kProton;
   else if (rnd <= prob[AliPID::kPion] + prob[AliPID::kKaon] + prob[AliPID::kProton] + prob[AliPID::kElectron])
     return AliPID::kElectron;
-  
+
   return AliPID::kMuon;  //else it must be a muon (only species left)
 }
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::GenerateDetectorResponse(AliAnalysisTaskMTFPID::ErrorCode errCode, 
+AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::GenerateDetectorResponse(AliAnalysisTaskMTFPID::ErrorCode errCode,
                                                                            Double_t mean, Double_t sigma,
-                                                                           Double_t* responses, Int_t nResponses, 
+                                                                           Double_t* responses, Int_t nResponses,
                                                                            Bool_t usePureGaus)
 {
   // Generate detector response. If a previous generation was not successful or there is something wrong with this signal generation,
-  // the function will return kFALSE  
+  // the function will return kFALSE
   if (!responses)
     return kError;
-  
+
   // Reset response array
   for (Int_t i = 0; i < nResponses; i++)
     responses[i] = -999;
-  
+
   if (errCode == kError)
     return kError;
-  
+
   ErrorCode ownErrCode = kNoErrors;
-  
+
   if (fUseConvolutedGaus && !usePureGaus) {
     // In case of convoluted gauss, calculate the probability density only once to save a lot of time!
-    
+
     TH1* hProbDensity = 0x0;
     ownErrCode = SetParamsForConvolutedGaus(mean, sigma);
     if (ownErrCode == kError)
       return kError;
 
     hProbDensity = fConvolutedGausDeltaPrime->GetHistogram();
-    
+
     for (Int_t i = 0; i < nResponses; i++) {
       responses[i] = hProbDensity->GetRandom();
       //responses[i] fConvolutedGausDeltaPrime->GetRandom(); // MUCH slower than using the binned version via the histogram
@@ -2859,11 +2859,11 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::GenerateDetectorResponse
       responses[i] = fRandom->Gaus(mean, sigma);
     }
   }
-  
+
   // If forwarded error code was a warning (error case has been handled before), return a warning
   if (errCode == kWarning)
     return kWarning;
-  
+
   return ownErrCode; // Forward success/warning
 }
 
@@ -2872,7 +2872,7 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::GenerateDetectorResponse
 void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
 {
   // Print current settings.
-  
+
   printf("\n\nSettings for task %s:\n", GetName());
   printf("Is pPb/Pbp: %d -> %s\n", GetIsPbpOrpPb(), GetIsPbpOrpPb() ? "Adapting vertex cuts" : "Using standard vertex cuts");
   printf("Track cuts: %s\n", fTrackFilter ? fTrackFilter->GetTitle() : "-");
@@ -2888,17 +2888,17 @@ void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
   if (GetUseTPCnclCut()) {
     printf("GetCutPureNcl: %d\n", GetCutPureNcl());
   }
-  
+
   printf("\n");
-  
+
   printf("Centrality estimator: %s\n", GetCentralityEstimator().Data());
-  
+
   printf("\n");
-  
+
   printf("Pile up rejection type: %d\n", (Int_t)GetPileUpRejectionType());
-  
+
   printf("\n");
-  
+
   printf("Use MC-ID for signal generation: %d\n", GetUseMCidForGeneration());
   printf("Use ITS: %d\n", GetUseITS());
   printf("Use TOF: %d\n", GetUseTOF());
@@ -2914,13 +2914,13 @@ void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("[0]: %e\n", GetConvolutedGaussTransitionPar(0));
   printf("[1]: %e\n", GetConvolutedGaussTransitionPar(1));
   printf("[2]: %e\n", GetConvolutedGaussTransitionPar(2));
-  
+
   printf("\n");
-  
+
   std::cout << "Run Mode: ";
   if (GetRunMode() == AliAnalysisTaskMTFPID::kJetPIDMode) {
     std::cout << "Jet PID Mode";
-  } 
+  }
   else if (GetRunMode() == AliAnalysisTaskMTFPID::kLightFlavorMode) {
     std::cout << "Light Flavor Mode";
   }
@@ -2928,13 +2928,13 @@ void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
     std::cout << "No recognized Run mode";
   }
   std::cout << std::endl;
-  
-  std::cout << "Store Charge: " << std::endl;  
+
+  std::cout << "Store Charge: " << std::endl;
   if (GetStoreCharge())
     std::cout << "true";
   else
     std::cout << "false";
-  
+
   std::cout << std::endl;
   printf("Do PID: %d\n", fDoPID);
   printf("Do Efficiency: %d\n", fDoEfficiency);
@@ -2953,13 +2953,13 @@ void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
       std::cout << "Strangeness weighting factor is 1.0" << std::endl;
     }
   }
-  
+
   printf("\n");
 
   printf("Input from other task: %d\n", GetInputFromOtherTask());
   printf("Store additional jet information: %d\n", GetStoreAdditionalJetInformation());
   printf("Store centrality percentile: %d", GetStoreCentralityPercentile());
-  
+
   if (printSystematicsSettings)
     PrintSystematicsSettings();
   else
@@ -2971,7 +2971,7 @@ void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
 void AliAnalysisTaskMTFPID::PrintSystematicsSettings() const
 {
   // Print current settings for systematic studies.
-  
+
   printf("\n\nSettings for systematics for task %s:\n", GetName());
   printf("SplinesThr:\t%f\n", GetSystematicScalingSplinesThreshold());
   printf("SplinesBelowThr:\t%f\n", GetSystematicScalingSplinesBelowThreshold());
@@ -2986,38 +2986,38 @@ void AliAnalysisTaskMTFPID::PrintSystematicsSettings() const
   printf("MultCorrLowP:\t%f\n", GetSystematicScalingMultCorrectionLowMomenta());
   printf("MultCorrHighP:\t%f\n", GetSystematicScalingMultCorrectionHighMomenta());
   printf("TOF mode: %d\n", GetTOFmode());
-  
+
   printf("\n\n");
 }
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile,
-                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected, 
-                                        Double_t radialDistanceToJet, Double_t jT) 
+                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected,
+                                        Double_t radialDistanceToJet, Double_t jT)
 {
-  
+
   // Process the track (generate expected response, fill histos, etc.).
   // particlePDGcode == 0 means data. Otherwise, the corresponding MC ID will be assumed.
-  
+
   //Printf("Debug: Task %s is starting to process track: dEdx %f, pTPC %f, eta %f, ncl %d\n", GetName(), track->GetTPCsignal(), track->GetTPCmomentum(),
   //       track->Eta(), track->GetTPCsignalN());
-  
+
   if(fDebug > 1)
     printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
-  
+
   if (!isMBSelected && !isMultSelected)
     return kTRUE; // Obviously, this event was not selected at all
-  
+
   if (!fDoPID && !fDoDeDxCheck && !fDoPtResolution)
     return kFALSE;
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Processing started\n", (char*)__FILE__, __LINE__);
-  
+
   const Bool_t isMC = (particlePDGcode == 0) ? kFALSE : kTRUE;
-  
+
   Int_t binMC = -1;
-  
+
   if (isMC) {
     if (TMath::Abs(particlePDGcode) == 211) {//Pion
       binMC = 3;
@@ -3028,7 +3028,7 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     else if (TMath::Abs(particlePDGcode) == 2212) {//Proton
       binMC = 4;
     }
-    else if (TMath::Abs(particlePDGcode) == 11) {//Electron      
+    else if (TMath::Abs(particlePDGcode) == 11) {//Electron
       binMC = 0;
     }
     else if (TMath::Abs(particlePDGcode) == 13) {//Muon
@@ -3038,36 +3038,36 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
          // or signal generation with PID response and the track is still there (as in data) - e.g. relevant w.r.t. deuterons.
          // This is important to be as much as possible consistent with data. And the tracks can still be removed by disabling the
          // underflow bin for the projections
-      binMC = -1; 
+      binMC = -1;
   }
-  
+
   // Momenta
   //Double_t p = track->GetP();
   const Double_t pTPC = track->GetTPCmomentum();
   Double_t pT = track->Pt();
-  
+
   Double_t z = -1, xi = -1;
   GetJetTrackObservables(pT, jetPt, z, xi);
-  
+
   Double_t trackCharge = fStoreCharge ? track->Charge() : -2;
-  
+
   // TPC signal
   const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
                                ((fPIDResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
   Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
-  
+
   if (dEdxTPC <= 0) {
     if (fDebug > 1)
       Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
              track->Eta(), track->GetTPCsignalN());
     return kFALSE;
   }
-  
+
   // Completely remove tracks from light nuclei defined by el and pr <dEdx> as function of pT.
   // A very loose cut to be sure not to throw away electrons and/or protons
   Double_t nSigmaPr = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
   Double_t nSigmaEl = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-  
+
   if ((pTPC >= 0.3 && (nSigmaPr > 10 && nSigmaEl > 10)) ||
       (pTPC <  0.3 && (nSigmaPr > 15 && nSigmaEl > 15))) {
     if (fDebug > 1)
@@ -3075,17 +3075,17 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
              track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
     return kFALSE;
   }
-  
-  
+
+
   Double_t dEdxEl, dEdxKa, dEdxPi, dEdxMu, dEdxPr;
   Double_t sigmaEl, sigmaKa, sigmaPi, sigmaMu, sigmaPr;
-  
+
   const Int_t currEvtMultiplicity = fPIDResponse->GetTPCResponse().GetCurrentEventMultiplicity();
-  
+
   if (fDoAnySystematicStudiesOnTheExpectedSignal) {
     // Get the uncorrected signal first and the corresponding correction factors.
     // Then modify the correction factors and properly recalculate the corrected dEdx
-    
+
     // Get pure spline values for dEdx_expected, without any correction
     dEdxEl = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kFALSE, kFALSE);
     dEdxKa = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, kFALSE, kFALSE);
@@ -3093,7 +3093,7 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     dEdxMu = !fTakeIntoAccountMuons ? -1 :
                             fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kFALSE, kFALSE);
     dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kFALSE, kFALSE);
-    
+
     // Scale splines, if desired
     if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
         (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon) || fMultBinSystematics) {
@@ -3108,46 +3108,46 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
           fSystematicScalingSplinesAboveThreshold = (1.0 - scalefactor) * fMultBinSystematics->GetBinContent(multBin - 1) + scalefactor * fMultBinSystematics->GetBinContent(multBin + 1);
         }
       }
-       
+
       // Tune turn-on of correction for pions (not so relevant for the other species, since at very large momenta)
       Double_t bg = 0;
       Double_t scaleFactor = 1.;
       Double_t usedSystematicScalingSplines = 1.;
-        
+
       bg = pTPC / AliPID::ParticleMass(AliPID::kElectron);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
       usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxEl *= usedSystematicScalingSplines;
-      
+
       bg = pTPC / AliPID::ParticleMass(AliPID::kKaon);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
       usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxKa *= usedSystematicScalingSplines;
-      
+
       bg = pTPC / AliPID::ParticleMass(AliPID::kPion);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
       usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxPi *= usedSystematicScalingSplines;
-      
+
       if (fTakeIntoAccountMuons) {
         bg = pTPC / AliPID::ParticleMass(AliPID::kMuon);
         scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
         usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
         dEdxMu *= usedSystematicScalingSplines;
       }
-      
-      
+
+
       bg = pTPC / AliPID::ParticleMass(AliPID::kProton);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
       usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxPr *= usedSystematicScalingSplines;
     }
-    
+
     // Get the eta correction factors for the (modified) expected dEdx
     Double_t etaCorrEl = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxEl) : 1.;
     Double_t etaCorrKa = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxKa) : 1.;
     Double_t etaCorrPi = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxPi) : 1.;
-    Double_t etaCorrMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCEtaCorrection() ? 
+    Double_t etaCorrMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCEtaCorrection() ?
                             fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxMu) : 1.;
     Double_t etaCorrPr = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxPr) : 1.;
 
@@ -3157,39 +3157,39 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
          TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon)) {
       // Since we do not want to scale the splines with this, but only the eta variation, only scale the deviation of the correction factor!
       // E.g. if we would have a flat eta depence fixed at 1.0, we would shift the whole thing equal to shifting the splines by the same factor!
-      
-      
+
+
       // Due to additional azimuthal effects, there is an additional eta dependence for low momenta which is not corrected successfully so far.
       // One can assign a different (higher) systematic scale factor for this low-p region and a threshold which separates low- and high-p.
       // An ERF will be used to get (as a function of p_TPC) from one correction factor to the other within roughly 0.2 GeV/c
       Double_t usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionHighMomenta;
-      
+
       if (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - fSystematicScalingEtaCorrectionLowMomenta) > fgkEpsilon) {
         const Double_t fractionHighMomentumScaleFactor = 0.5 * (1. + TMath::Erf((pTPC - fSystematicScalingEtaCorrectionMomentumThr) / 0.1));
         usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionLowMomenta * (1 - fractionHighMomentumScaleFactor)
                                              + fSystematicScalingEtaCorrectionHighMomenta * fractionHighMomentumScaleFactor;
       }
-      
+
       Double_t maxEtaVariationEl = GetMaxEtaVariation(dEdxEl);
       etaCorrEl = etaCorrEl * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrEl - 1.0) / maxEtaVariationEl);
-      
+
       Double_t maxEtaVariationKa = GetMaxEtaVariation(dEdxKa);
       etaCorrKa = etaCorrKa * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrKa - 1.0) / maxEtaVariationKa);
-      
+
       Double_t maxEtaVariationPi = GetMaxEtaVariation(dEdxPi);
       etaCorrPi = etaCorrPi * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrPi - 1.0) / maxEtaVariationPi);
-      
+
       if (fTakeIntoAccountMuons) {
         Double_t maxEtaVariationMu = GetMaxEtaVariation(dEdxMu);
         etaCorrMu = etaCorrMu * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrMu - 1.0) / maxEtaVariationMu);
       }
       else
         etaCorrMu = 1.0;
-      
+
       Double_t maxEtaVariationPr = GetMaxEtaVariation(dEdxPr);
       etaCorrPr = etaCorrPr * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrPr - 1.0) / maxEtaVariationPr);
-      
-      
+
+
       /*OLD
       etaCorrEl = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrEl - 1.0);
       etaCorrKa = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrKa - 1.0);
@@ -3198,36 +3198,36 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
       etaCorrPr = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrPr - 1.0);
       */
     }
-    
+
     // Get the multiplicity correction factors for the (modified) expected dEdx
-    
+
     Double_t multiplicityCorrEl = fPIDResponse->UseTPCMultiplicityCorrection() ? fPIDResponse->GetTPCResponse().GetMultiplicityCorrectionFast(track,
                                     dEdxEl * etaCorrEl, currEvtMultiplicity) : 1.;
     Double_t multiplicityCorrKa = fPIDResponse->UseTPCMultiplicityCorrection() ? fPIDResponse->GetTPCResponse().GetMultiplicityCorrectionFast(track,
                                     dEdxKa * etaCorrKa, currEvtMultiplicity) : 1.;
     Double_t multiplicityCorrPi = fPIDResponse->UseTPCMultiplicityCorrection() ? fPIDResponse->GetTPCResponse().GetMultiplicityCorrectionFast(track,
                                     dEdxPi * etaCorrPi, currEvtMultiplicity) : 1.;
-    Double_t multiplicityCorrMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCMultiplicityCorrection() ? 
+    Double_t multiplicityCorrMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCMultiplicityCorrection() ?
                                     fPIDResponse->GetTPCResponse().GetMultiplicityCorrectionFast(track, dEdxMu * etaCorrMu, currEvtMultiplicity) : 1.;
     Double_t multiplicityCorrPr = fPIDResponse->UseTPCMultiplicityCorrection() ? fPIDResponse->GetTPCResponse().GetMultiplicityCorrectionFast(track,
                                     dEdxPr * etaCorrPr, currEvtMultiplicity) : 1.;
-    
-    Double_t multiplicityCorrSigmaEl = fPIDResponse->UseTPCMultiplicityCorrection() ? 
+
+    Double_t multiplicityCorrSigmaEl = fPIDResponse->UseTPCMultiplicityCorrection() ?
                                         fPIDResponse->GetTPCResponse().GetMultiplicitySigmaCorrectionFast(dEdxEl * etaCorrEl, currEvtMultiplicity) : 1.;
-    Double_t multiplicityCorrSigmaKa = fPIDResponse->UseTPCMultiplicityCorrection() ? 
+    Double_t multiplicityCorrSigmaKa = fPIDResponse->UseTPCMultiplicityCorrection() ?
                                         fPIDResponse->GetTPCResponse().GetMultiplicitySigmaCorrectionFast(dEdxKa * etaCorrKa, currEvtMultiplicity) : 1.;
     Double_t multiplicityCorrSigmaPi = fPIDResponse->UseTPCMultiplicityCorrection() ?
                                         fPIDResponse->GetTPCResponse().GetMultiplicitySigmaCorrectionFast(dEdxPi * etaCorrPi, currEvtMultiplicity) : 1.;
-    Double_t multiplicityCorrSigmaMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCMultiplicityCorrection() ? 
+    Double_t multiplicityCorrSigmaMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCMultiplicityCorrection() ?
                                         fPIDResponse->GetTPCResponse().GetMultiplicitySigmaCorrectionFast(dEdxMu * etaCorrMu, currEvtMultiplicity) : 1.;
-    Double_t multiplicityCorrSigmaPr = fPIDResponse->UseTPCMultiplicityCorrection() ? 
+    Double_t multiplicityCorrSigmaPr = fPIDResponse->UseTPCMultiplicityCorrection() ?
                                         fPIDResponse->GetTPCResponse().GetMultiplicitySigmaCorrectionFast(dEdxPr * etaCorrPr, currEvtMultiplicity) : 1.;
-    
+
     // Scale multiplicity correction factors, if desired (and multiplicity correction functions are to be used, otherwise it is not possible!)
     if (fPIDResponse->UseTPCMultiplicityCorrection() && TMath::Abs(fSystematicScalingMultCorrectionHighMomenta - 1.0) > fgkEpsilon) {
-      
+
       Double_t usedSystematicScalingMultCorrection = fSystematicScalingMultCorrectionHighMomenta;
-      
+
       if (TMath::Abs(fSystematicScalingMultCorrectionHighMomenta - fSystematicScalingMultCorrectionLowMomenta) > fgkEpsilon) {
         const Double_t fractionHighMomentumScaleFactor = 0.5 * (1. + TMath::Erf((pTPC - fSystematicScalingMultCorrectionMomentumThreshold) / 0.1));
         usedSystematicScalingMultCorrection = fSystematicScalingMultCorrectionLowMomenta * (1 - fractionHighMomentumScaleFactor)
@@ -3235,14 +3235,14 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
       }
       // Since we do not want to scale the splines with this, but only the multiplicity variation, only scale the deviation of the correction factor!
       // E.g. if we would have a flat mult dependence fix at 1.0, we would shift the whole thing equal to shifting the splines by the same factor!
-      
+
       multiplicityCorrEl = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrEl - 1.0);
       multiplicityCorrKa = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrKa - 1.0);
       multiplicityCorrPi = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrPi - 1.0);
       multiplicityCorrMu = fTakeIntoAccountMuons ? (1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrMu - 1.0)) : 1.0;
       multiplicityCorrPr = 1.0 + usedSystematicScalingMultCorrection * (multiplicityCorrPr - 1.0);
     }
-    
+
     // eta correction must be enabled in order to use the new sigma parametrisation maps. Since this is the absolute sigma
     // for a track calculated with the unscaled paramaters, we have to devide out dEdxExpectedEtaCorrected and then need
     // to scale with the multiplicitySigmaCorrFactor * fSystematicScalingEtaSigmaPara. In the end, one has to scale with the
@@ -3250,11 +3250,11 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     // This means there is no extra parameter for the multiplicitySigmaCorrFactor, but only for the sigma map itself.
     // This is valid, since it appears only as a product. One has to assume a larger systematic shift in case of additional
     // multiplicity dependence....
-    
+
     Bool_t doSigmaSystematics = (TMath::Abs(fSystematicScalingEtaSigmaParaBelowThreshold - 1.0) > fgkEpsilon) ||
                                 (TMath::Abs(fSystematicScalingEtaSigmaParaAboveThreshold - 1.0) > fgkEpsilon);
-    
-    
+
+
     Double_t dEdxElExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
                                                                                kTRUE, kFALSE);
     Double_t systematicScalingEtaSigmaParaEl = 1.;
@@ -3266,9 +3266,9 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     Double_t sigmaRelEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
                                                                           kTRUE, kFALSE)
                           / dEdxElExpected * systematicScalingEtaSigmaParaEl * multiplicityCorrSigmaEl;
-    
-    
-    Double_t dEdxKaExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, 
+
+
+    Double_t dEdxKaExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault,
                                                                                kTRUE, kFALSE);
     Double_t systematicScalingEtaSigmaParaKa = 1.;
     if (doSigmaSystematics) {
@@ -3279,8 +3279,8 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     Double_t sigmaRelKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault,
                                                                           kTRUE, kFALSE)
                           / dEdxKaExpected * systematicScalingEtaSigmaParaKa * multiplicityCorrSigmaKa;
-    
-    
+
+
     Double_t dEdxPiExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
                                                                                kTRUE, kFALSE);
     Double_t systematicScalingEtaSigmaParaPi = 1.;
@@ -3292,11 +3292,11 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     Double_t sigmaRelPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
                                                                           kTRUE, kFALSE)
                           / dEdxPiExpected * systematicScalingEtaSigmaParaPi * multiplicityCorrSigmaPi;
-    
-    
+
+
     Double_t sigmaRelMu = 999.;
     if (fTakeIntoAccountMuons) {
-      Double_t dEdxMuExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, 
+      Double_t dEdxMuExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault,
                                                                                  kTRUE, kFALSE);
       Double_t systematicScalingEtaSigmaParaMu = 1.;
       if (doSigmaSystematics) {
@@ -3307,8 +3307,8 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
       sigmaRelMu = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
                    / dEdxMuExpected * systematicScalingEtaSigmaParaMu * multiplicityCorrSigmaMu;
     }
-    
-    
+
+
     Double_t dEdxPrExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
                                                                                kTRUE, kFALSE);
     Double_t systematicScalingEtaSigmaParaPr = 1.;
@@ -3320,121 +3320,121 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     Double_t sigmaRelPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
                                                                           kTRUE, kFALSE)
                           / dEdxPrExpected * systematicScalingEtaSigmaParaPr * multiplicityCorrSigmaPr;
-    
+
     // Now scale the (possibly modified) spline values with the (possibly modified) correction factors
     dEdxEl *= etaCorrEl * multiplicityCorrEl;
     dEdxKa *= etaCorrKa * multiplicityCorrKa;
     dEdxPi *= etaCorrPi * multiplicityCorrPi;
     dEdxMu *= etaCorrMu * multiplicityCorrMu;
     dEdxPr *= etaCorrPr * multiplicityCorrPr;
-    
+
     // Finally, get the absolute sigma
     sigmaEl = sigmaRelEl * dEdxEl;
     sigmaKa = sigmaRelKa * dEdxKa;
     sigmaPi = sigmaRelPi * dEdxPi;
     sigmaMu = sigmaRelMu * dEdxMu;
     sigmaPr = sigmaRelPr * dEdxPr;
-    
+
   }
   else {
     // No systematic studies on expected signal - just take it as it comes from the TPCPIDResponse
-    dEdxEl = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, 
+    dEdxEl = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    dEdxKa = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, 
+    dEdxKa = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    dEdxPi = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, 
+    dEdxPi = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
     dEdxMu = !fTakeIntoAccountMuons ? -1 :
-                            fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, 
+                            fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault,
                                                                              fPIDResponse->UseTPCEtaCorrection(),
                                                                              fPIDResponse->UseTPCMultiplicityCorrection());
-    dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+    dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    
-    sigmaEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, 
+
+    sigmaEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    sigmaKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, 
+    sigmaKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    sigmaPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, 
+    sigmaPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    sigmaMu = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, 
+    sigmaMu = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    sigmaPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+    sigmaPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
-                                                              fPIDResponse->UseTPCMultiplicityCorrection()); 
+                                                              fPIDResponse->UseTPCMultiplicityCorrection());
   }
-  
+
   Double_t deltaPrimeElectron = (dEdxEl > 0) ? dEdxTPC / dEdxEl : -1;
   if (dEdxEl <= 0)  {
     Printf("Error: Expected TPC signal <= 0 for electron hypothesis");
     return kFALSE;
   }
-    
+
   Double_t deltaPrimeKaon = (dEdxKa > 0) ? dEdxTPC / dEdxKa : -1;
   if (dEdxKa <= 0)  {
     Printf("Error: Expected TPC signal <= 0 for kaon hypothesis");
     return kFALSE;
   }
-  
+
   Double_t deltaPrimePion = (dEdxPi > 0) ? dEdxTPC / dEdxPi : -1;
   if (dEdxPi <= 0)  {
     Printf("Error: Expected TPC signal <= 0 for pion hypothesis");
     return kFALSE;
   }
-  
+
   Double_t deltaPrimeProton = (dEdxPr > 0) ? dEdxTPC / dEdxPr : -1;
   if (dEdxPr <= 0)  {
     Printf("Error: Expected TPC signal <= 0 for proton hypothesis");
     return kFALSE;
   }
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Compute probabilities\n", (char*)__FILE__, __LINE__);
-  
-  
+
+
   // Use probabilities to weigh the response generation for the different species.
   // Also determine the most probable particle type.
   Double_t prob[AliPID::kSPECIESC];
   for (Int_t i = 0; i < AliPID::kSPECIESC; i++)
     prob[i] = 0;
-  
+
 //   //For Testing
-//   
-  
+//
+
   fPIDcombined->ComputeProbabilities(track, fPIDResponse, prob);
-  
-  
+
+
   //Testing
-  
+
 //   if (track->GetTPCsignal()<=50 && track->GetTPCmomentum()>=2.5) {
 //     std::cout << "Centrality in PID-Task: " << fPIDResponse->GetCurrentCentrality() << std::endl;
 //     std::cout << "Track: dEdx " << track->GetTPCsignal() << " pTPC " << track->GetTPCmomentum() << std::endl;
 //     Double_t priors[AliPID::kSPECIESC];
-//     memset(priors,0,AliPID::kSPECIESC*sizeof(Double_t));  
+//     memset(priors,0,AliPID::kSPECIESC*sizeof(Double_t));
 //     fPIDcombined->GetPriors(track,priors,fPIDResponse->GetCurrentCentrality(),kTRUE);
 //     for (Int_t i=0;i<AliPID::kSPECIESC;i++) {
 //       std::cout << "Probabilities: " << prob[i] << std::endl;
 //     }
 //     for (Int_t i=0;i<AliPID::kSPECIESC;i++) {
 //       std::cout << "Priors: " << priors[i] << std::endl;
-//     }  
+//     }
 //     std::cout << std::endl;
 //   }
-//   
+//
   //End of Test
-  
+
   // If muons are not to be taken into account, just set their probability to zero and normalise the remaining probabilities later
   if (!fTakeIntoAccountMuons)
     prob[AliPID::kMuon] = 0;
-  
+
   // Priors might cause problems in case of mismatches, i.e. mismatch particles will be identified as pions.
   // Can be easily caught for low p_TPC by just setting pion (and muon) probs to zero, if dEdx is larger than
   // expected dEdx of electrons and kaons
@@ -3442,12 +3442,12 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     prob[AliPID::kMuon] = 0;
     prob[AliPID::kPion] = 0;
   }
-  
-  
+
+
   // Bug: One can set the number of species for PIDcombined, but PIDcombined will call PIDresponse, which writes without testing
   // the probs for kSPECIESC (including light nuclei) into the array.
   // In this case, when only kSPECIES are considered, the probabilities have to be rescaled!
-  
+
   // Exceptions:
   // 1. If the most probable PID is a light nucleus and above expected dEdx + 5 sigma of el to be sure not to mix up things in the
   //    high-pT region (also contribution there completely negligable!)
@@ -3457,15 +3457,15 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
   // In these cases:
   // The highest expected dEdx is either for pr or for el. Assign 100% probability to the species with highest expected dEdx then.
   // In all other cases: Throw away light nuclei probs and rescale other probs to 100%.
-  
-  // Find most probable species for the ID 
+
+  // Find most probable species for the ID
   Int_t maxIndex = TMath::LocMax(AliPID::kSPECIESC, prob);
 
   if ((prob[maxIndex] > 0 && maxIndex >= AliPID::kSPECIES && dEdxTPC > dEdxEl + 5. * sigmaEl) ||
       (dEdxTPC > dEdxEl + 5. * sigmaEl && dEdxTPC > dEdxPr + 5. * sigmaPr)) {
     for (Int_t i = 0; i < AliPID::kSPECIESC; i++)
       prob[i] = 0;
-    
+
     if (dEdxEl > dEdxPr) {
       prob[AliPID::kElectron] = 1.;
       maxIndex = AliPID::kElectron;
@@ -3478,35 +3478,35 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
   else {
     for (Int_t i = AliPID::kSPECIES; i < AliPID::kSPECIESC; i++)
       prob[i] = 0;
-    
+
     Double_t probSum = 0.;
     for (Int_t i = 0; i < AliPID::kSPECIES; i++)
       probSum += prob[i];
-    
+
     if (probSum > 0) {
       for (Int_t i = 0; i < AliPID::kSPECIES; i++)
         prob[i] /= probSum;
     }
-    
+
     // If all probabilities are equal (should only happen if no priors are used), set most probable PID to pion
     // because LocMax returns just the first maximal value (i.e. AliPID::kElectron)
     if (TMath::Abs(prob[maxIndex] - 1. / AliPID::kSPECIES) < 1e-5)
       maxIndex = AliPID::kPion;
-    
+
     // In all other cases, the maximum remains untouched from the scaling (and is < AliPID::kSPECIES by construction)
   }
-  
+
   if (fDoDeDxCheck) {
     // Generate the expected responses in DeltaPrime and translate to real dEdx. Only take responses for exactly that species
     // (i.e. with pre-PID)
-    
+
     Int_t numGenEntries = fgkMaxNumGenEntries; // fgkMaxNumGenEntries = 500
-    
+
     ErrorCode errCode = kNoErrors;
-  
+
     if(fDebug > 2)
       printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check\n", (char*)__FILE__, __LINE__);
-    
+
     // Electrons
     errCode = GenerateDetectorResponse(errCode, 1., sigmaEl / dEdxEl, fGenRespElDeltaPrimeEl, numGenEntries);
 
@@ -3518,18 +3518,18 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
 
     // Protons
     errCode = GenerateDetectorResponse(errCode, 1., sigmaPr / dEdxPr, fGenRespPrDeltaPrimePr, numGenEntries);
-    
+
     if (errCode == kNoErrors) {
       Double_t genEntry[kDeDxCheckNumAxes];
       genEntry[kDeDxCheckJetPt] = jetPt;
       genEntry[kDeDxCheckEtaAbs] = TMath::Abs(track->Eta());
       genEntry[kDeDxCheckP] = pTPC;
-      
-        
+
+
       for (Int_t n = 0; n < numGenEntries; n++)  {
         // If no MC info is available or shall not be used, use weighting with priors to generate entries for the different species
         Double_t rnd = fRandom->Rndm(); // Produce uniformly distributed floating point in ]0, 1]
-        
+
         // Consider generated response as originating from...
         if (rnd <= prob[AliPID::kElectron]) {
           genEntry[kDeDxCheckPID] = 0; // ... an electron
@@ -3547,15 +3547,15 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
           genEntry[kDeDxCheckPID] = 3;  // ... a proton
           genEntry[kDeDxCheckDeDx] = fGenRespPrDeltaPrimePr[n] * dEdxPr;
         }
-     
+
         fDeDxCheck->Fill(genEntry);
       }
     }
-    
+
     if(fDebug > 2)
       printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check done\n", (char*)__FILE__, __LINE__);
   }
-  
+
   if (fDoPtResolution) {
     // Check shared clusters, which is done together with the pT resolution
     Double_t qaEntry[kQASharedClsNumAxes];
@@ -3563,7 +3563,7 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     qaEntry[kQASharedClsPt] = pT;
     qaEntry[kDeDxCheckP] = pTPC;
     qaEntry[kQASharedClsNumSharedCls] = track->GetTPCSharedMapPtr()->CountBits();
-    
+
     Int_t iRowInd = -1;
     // iRowInd == -1 for "all rows w/o multiple counting"
     qaEntry[kQASharedClsPadRow] = iRowInd;
@@ -3577,10 +3577,10 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
       }
     }
   }
-  
+
   if (!fDoPID)
     return kTRUE;
-  
+
   if (!isMC) {
     // Clean up the most probable PID for low momenta (not an issue for the probabilities, since fractions small,
     // but to get clean (and nice looking) templates (if most probable PID is used instead of generated responses), it should be done).
@@ -3590,29 +3590,29 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     // can replace the K and p templates with the most probable PID distributions, so all other species templates remain the same.
     // I.e. it doesn't hurt if the most probable PID is distributed incorrectly between el, pi, mu.
     Bool_t maxIndexSetManually = kFALSE;
-    
+
     if (pTPC < 1.) {
       Double_t probManualTPC[AliPID::kSPECIES];
        for (Int_t i = 0; i < AliPID::kSPECIES; i++)
         probManualTPC[i] = 0;
-      
+
       probManualTPC[AliPID::kElectron] = TMath::Exp(-0.5*(dEdxTPC-dEdxEl)*(dEdxTPC-dEdxEl)/(sigmaEl*sigmaEl))/sigmaEl;
       // Muons are not important here, just ignore and save processing time
       probManualTPC[AliPID::kMuon] = 0.;//TMath::Exp(-0.5*(dEdxTPC-dEdxMu)*(dEdxTPC-dEdxMu)/(sigmaMu*sigmaMu))/sigmaMu;
       probManualTPC[AliPID::kPion] = TMath::Exp(-0.5*(dEdxTPC-dEdxPi)*(dEdxTPC-dEdxPi)/(sigmaPi*sigmaPi))/sigmaPi;
       probManualTPC[AliPID::kKaon] = TMath::Exp(-0.5*(dEdxTPC-dEdxKa)*(dEdxTPC-dEdxKa)/(sigmaKa*sigmaKa))/sigmaKa;
       probManualTPC[AliPID::kProton] = TMath::Exp(-0.5*(dEdxTPC-dEdxPr)*(dEdxTPC-dEdxPr)/(sigmaPr*sigmaPr))/sigmaPr;
-      
+
       const Int_t maxIndexManualTPC = TMath::LocMax(AliPID::kSPECIES, probManualTPC);
       // Should always be > 0, but in case the dEdx is far off such that the machine accuracy sets every prob to zero,
       // better take the "old" result
       if (probManualTPC[maxIndexManualTPC] > 0.)
         maxIndex = maxIndexManualTPC;
-      
+
       maxIndexSetManually = kTRUE;
     }
-    
-    
+
+
     // Translate from AliPID numbering to numbering of this class
     if (prob[maxIndex] > 0 || maxIndexSetManually) {
       if (maxIndex == AliPID::kElectron)
@@ -3633,20 +3633,20 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
       binMC = -1;
     }
   }
-  
+
   /*
   //For testing: Swap p<->pT to analyse pure p-dependence => Needs to be removed later
   Double_t temp = pT;
   pT = pTPC;
   pTPC = temp;
   */
-  
+
   TOFpidInfo tofPIDinfo = GetTOFType(track, fTOFmode);
-  
+
   Double_t entry[fStoreAdditionalJetInformation ? kDataNumAxes : kDataNumAxes - fgkNumJetAxes];
   entry[kDataMCID] = binMC;
   entry[kDataPt] = GetStorePt() ? pT : -1;
-  
+
   if (fStoreAdditionalJetInformation) {
     entry[kDataJetPt] = jetPt;
     entry[kDataZ] = GetStoreZ() ? z : -1;
@@ -3654,52 +3654,52 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     entry[kDataDistance] = GetStoreRadialDistance() ? radialDistanceToJet : -1;
     entry[kDataJt] = GetStorejT() ? jT : -1;
   }
-  
+
   entry[GetIndexOfChargeAxisData()] = trackCharge;
   entry[GetIndexOfTOFpidInfoAxisData()] = tofPIDinfo;
-  
+
   // Now consider both cases MB and mult and set centrality to negative value for MB
   for (Int_t k = 0; k < 2; k++) {
     if (k == 0) {
       if (!isMultSelected)
         continue;
-      
+
       entry[kDataCentrality] = centralityPercentile;
     }
     else {
       if (!isMBSelected)
         continue;
-      
+
       entry[kDataCentrality] = -13;
     }
-    
+
     entry[kDataSelectSpecies] = 0;
     entry[kDataDeltaPrimeSpecies] = deltaPrimeElectron;
     fhPIDdataAll->Fill(entry);
-    
+
     entry[kDataSelectSpecies] = 1;
     entry[kDataDeltaPrimeSpecies] = deltaPrimeKaon;
     fhPIDdataAll->Fill(entry);
-    
+
     entry[kDataSelectSpecies] = 2;
     entry[kDataDeltaPrimeSpecies] = deltaPrimePion;
     fhPIDdataAll->Fill(entry);
-    
+
     entry[kDataSelectSpecies] = 3;
     entry[kDataDeltaPrimeSpecies] = deltaPrimeProton;
     fhPIDdataAll->Fill(entry);
   }
-  
-  
+
+
   // Construct the expected shape for the transition p -> pT
-  
+
   Double_t genEntry[fStoreAdditionalJetInformation ? kGenNumAxes : kGenNumAxes - fgkNumJetAxes];
   genEntry[kGenMCID] = binMC;
   genEntry[kGenSelectSpecies] = 0;
   genEntry[kGenPt] = entry[kDataPt];
   genEntry[kGenDeltaPrimeSpecies] = -999;
   genEntry[kGenCentrality] = centralityPercentile;
-  
+
   if (fStoreAdditionalJetInformation) {
     genEntry[kGenJetPt] = jetPt;
     genEntry[kGenZ] = entry[kDataZ];
@@ -3707,21 +3707,21 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     genEntry[kGenDistance] = entry[kDataDistance];
     genEntry[kGenJt] = entry[kDataJt];
   }
-  
+
   genEntry[GetIndexOfChargeAxisGen()] = trackCharge;
   genEntry[GetIndexOfTOFpidInfoAxisGen()] = tofPIDinfo;
-  
+
   // Generate numGenEntries "responses" with fluctuations around the expected values.
   // fgkMaxNumGenEntries = 500 turned out to give reasonable templates even for highest track pT in 15-20 GeV/c jet pT bin.
   Int_t numGenEntries = fgkMaxNumGenEntries; // fgkMaxNumGenEntries = 500
-  
+
   /*OLD: Different number of responses depending on pT and jet pT for fgkMaxNumGenEntries = 1000
    * => Problem: If threshold to higher number of responses inside a bin (or after rebinning), then the template
    * is biased to the higher pT.
   // Generate numGenEntries "responses" with fluctuations around the expected values.
   // The higher the (transverse) momentum, the more "responses" will be generated in order not to run out of statistics too fast.
   Int_t numGenEntries = 10;
- 
+
   // Jets have even worse statistics, therefore, scale numGenEntries further
   if (jetPt >= 40)
     numGenEntries *= 20;
@@ -3729,20 +3729,20 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     numGenEntries *= 10;
   else if (jetPt >= 10)
     numGenEntries *= 2;
-  
-  
-  
+
+
+
   // Do not generate more entries than available in memory!
   if (numGenEntries > fgkMaxNumGenEntries)// fgkMaxNumGenEntries = 1000
     numGenEntries = fgkMaxNumGenEntries;
   */
-  
-  
+
+
   ErrorCode errCode = kNoErrors;
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Generate Responses\n", (char*)__FILE__, __LINE__);
-  
+
   // Electrons
   errCode = GenerateDetectorResponse(errCode, 1.,              sigmaEl / dEdxEl, fGenRespElDeltaPrimeEl, numGenEntries);
   errCode = GenerateDetectorResponse(errCode, dEdxEl / dEdxKa, sigmaEl / dEdxKa, fGenRespElDeltaPrimeKa, numGenEntries);
@@ -3768,40 +3768,40 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
     errCode = GenerateDetectorResponse(errCode, dEdxMu / dEdxPi, sigmaMu / dEdxPi, fGenRespMuDeltaPrimePi, numGenEntries);
     errCode = GenerateDetectorResponse(errCode, dEdxMu / dEdxPr, sigmaMu / dEdxPr, fGenRespMuDeltaPrimePr, numGenEntries);
   }
-  
+
   // Protons
   errCode = GenerateDetectorResponse(errCode, dEdxPr / dEdxEl, sigmaPr / dEdxEl, fGenRespPrDeltaPrimeEl, numGenEntries);
   errCode = GenerateDetectorResponse(errCode, dEdxPr / dEdxKa, sigmaPr / dEdxKa, fGenRespPrDeltaPrimeKa, numGenEntries);
   errCode = GenerateDetectorResponse(errCode, dEdxPr / dEdxPi, sigmaPr / dEdxPi, fGenRespPrDeltaPrimePi, numGenEntries);
   errCode = GenerateDetectorResponse(errCode, 1.,              sigmaPr / dEdxPr, fGenRespPrDeltaPrimePr, numGenEntries);
-  
+
   if (errCode != kNoErrors) {
     if (errCode == kWarning && fDebug > 1) {
       Printf("Warning: Questionable detector response for track, most likely due to very low number of PID clusters! Debug output (dEdx_expected, sigma_expected):");
     }
-    else 
+    else
       Printf("Error: Failed to generate detector response for track - skipped! Debug output (dEdx_expected, sigma_expected):");
-    
+
     if (fDebug > 1) {
       Printf("Pr: %e, %e", dEdxPr, sigmaPr);
       Printf("Pi: %e, %e", dEdxPi, sigmaPi);
       Printf("El: %e, %e", dEdxEl, sigmaEl);
       Printf("Mu: %e, %e", dEdxMu, sigmaMu);
       Printf("Ka: %e, %e", dEdxKa, sigmaKa);
-      Printf("track: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), track->GetTPCmomentum(), track->Eta(), 
+      Printf("track: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), track->GetTPCmomentum(), track->Eta(),
             track->GetTPCsignalN());
     }
-    
+
     if (errCode != kWarning) {
       return kFALSE;// Skip generated response in case of error
     }
   }
-  
+
   for (Int_t n = 0; n < numGenEntries; n++)  {
     if (!isMC || !fUseMCidForGeneration) {
       // If no MC info is available or shall not be used, use weighting with priors to generate entries for the different species
       Double_t rnd = fRandom->Rndm(); // Produce uniformly distributed floating point in ]0, 1]
-      
+
       // Consider generated response as originating from...
       if (rnd <= prob[AliPID::kElectron])
         genEntry[kGenMCID] = 0; // ... an electron
@@ -3814,115 +3814,115 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
       else
         genEntry[kGenMCID] = 4;  // ... a proton
     }
-    
+
     // Now consider both cases MB and mult and set centrality to negative value for MB
     for (Int_t k = 0; k < 2; k++) {
       if (k == 0) {
         if (!isMultSelected)
           continue;
-        
+
         genEntry[kGenCentrality] = centralityPercentile;
       }
       else {
         if (!isMBSelected)
           continue;
-        
+
         genEntry[kGenCentrality] = -13;
       }
-      
-      
+
+
       // Electrons
       genEntry[kGenSelectSpecies] = 0;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeEl[n];
       fhGenEl->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 1;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimeKa[n];
       fhGenEl->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 2;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePi[n];
       fhGenEl->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 3;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespElDeltaPrimePr[n];
       fhGenEl->Fill(genEntry);
-      
+
       // Kaons
       genEntry[kGenSelectSpecies] = 0;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeEl[n];
       fhGenKa->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 1;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimeKa[n];
       fhGenKa->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 2;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePi[n];
       fhGenKa->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 3;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespKaDeltaPrimePr[n];
       fhGenKa->Fill(genEntry);
-      
+
       // Pions
       genEntry[kGenSelectSpecies] = 0;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeEl[n];
       fhGenPi->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 1;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimeKa[n];
       fhGenPi->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 2;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePi[n];
       fhGenPi->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 3;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPiDeltaPrimePr[n];
       fhGenPi->Fill(genEntry);
-      
+
       if (fTakeIntoAccountMuons) {
         // Muons, if desired
         genEntry[kGenSelectSpecies] = 0;
         genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeEl[n];
         fhGenMu->Fill(genEntry);
-        
+
         genEntry[kGenSelectSpecies] = 1;
         genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimeKa[n];
         fhGenMu->Fill(genEntry);
-        
+
         genEntry[kGenSelectSpecies] = 2;
         genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePi[n];
         fhGenMu->Fill(genEntry);
-        
+
         genEntry[kGenSelectSpecies] = 3;
         genEntry[kGenDeltaPrimeSpecies] = fGenRespMuDeltaPrimePr[n];
         fhGenMu->Fill(genEntry);
       }
-      
+
       // Protons
       genEntry[kGenSelectSpecies] = 0;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeEl[n];
       fhGenPr->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 1;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimeKa[n];
       fhGenPr->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 2;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePi[n];
       fhGenPr->Fill(genEntry);
-      
+
       genEntry[kGenSelectSpecies] = 3;
       genEntry[kGenDeltaPrimeSpecies] = fGenRespPrDeltaPrimePr[n];
       fhGenPr->Fill(genEntry);
     }
   }
-  
+
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Done\n", (char*)__FILE__, __LINE__);
-  
+
   return kTRUE;
 }
 
@@ -3934,7 +3934,7 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
   // Set the lambda parameter of the convolution to the desired value. Automatically
   // calculates the parameters for the transition (restricted) gauss -> convoluted gauss.
   fConvolutedGaussTransitionPars[2] = lambda;
-  
+
   // Save old parameters and settings of function to restore them later:
   Double_t* oldFuncParams = new Double_t[fkConvolutedGausNPar];
   for (Int_t i = 0; i < fkConvolutedGausNPar; i++)
@@ -3942,18 +3942,18 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
   Int_t oldFuncNpx = fConvolutedGausDeltaPrime->GetNpx();
   Double_t oldFuncRangeLow = 0, oldFuncRangeUp = 100;
   fConvolutedGausDeltaPrime->GetRange(oldFuncRangeLow, oldFuncRangeUp);
-    
+
   // Choose some sufficiently large range
   const Double_t rangeStart = 0.5;
   const Double_t rangeEnd = 2.0;
-  
+
   // To get the parameters for the transition, just choose arbitrarily input parameters for mu and sigma
   // (it makes sense to choose typical values). The ratio sigma_gauss / sigma_convolution is independent
   // of mu and as well the difference mu_gauss - mu_convolution.
   Double_t muInput = 1.0;
   Double_t sigmaInput = fgkSigmaReferenceForTransitionPars;
-  
-  
+
+
   // Step 1: Generate distribution with input parameters
   const Int_t nPar = 3;
   Double_t inputPar[nPar] = { muInput, sigmaInput, lambda };
@@ -3977,21 +3977,21 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
     // Resolution scales with 1/sqrt(ncl)
     fConvolutedGausDeltaPrime->SetParameter(1, inputPar[1] * sqrt(nclEnd) / sqrt(ncl));
     TH1* hProbDensity = fConvolutedGausDeltaPrime->GetHistogram();
-    
-    for (Int_t i = 0; i < 50000000 / nclSteps; i++)  
+
+    for (Int_t i = 0; i < 50000000 / nclSteps; i++)
       hInput->Fill(hProbDensity->GetRandom());
   }
   */
-  
+
   TH1* hProbDensity = fConvolutedGausDeltaPrime->GetHistogram();
-  
+
   for (Int_t i = 0; i < 50000000; i++)
     hInput->Fill(hProbDensity->GetRandom());
-  
+
   // Step 2: Fit generated distribution with restricted gaussian
   Int_t maxBin = hInput->GetMaximumBin();
   Double_t max = hInput->GetBinContent(maxBin);
-  
+
   UChar_t usedBins = 1;
   if (maxBin > 1) {
     max += hInput->GetBinContent(maxBin - 1);
@@ -4002,16 +4002,16 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
     usedBins++;
   }
   max /= usedBins;
-  
+
   // NOTE: The range (<-> fraction of maximum) should be the same
   // as for the spline and eta maps creation
   const Double_t lowThreshold = hInput->GetXaxis()->GetBinLowEdge(hInput->FindFirstBinAbove(0.1 * max));
   const Double_t highThreshold = hInput->GetXaxis()->GetBinUpEdge(hInput->FindLastBinAbove(0.1 * max));
-  
+
   TFitResultPtr fitResGaussFirstStep = hInput->Fit("gaus", "QNRS", "", lowThreshold, highThreshold);
-  
+
   TFitResultPtr fitResGauss;
-  
+
   if ((Int_t)fitResGaussFirstStep == 0) {
     TF1 fGauss("fGauss", "[0]*TMath::Gaus(x, [1], [2], 1)", rangeStart, rangeEnd);
     fGauss.SetParameter(0, fitResGaussFirstStep->GetParams()[0]);
@@ -4027,10 +4027,10 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
   }
   //OLD TFitResultPtr fitResGauss = hInput->Fit("gaus", "QNRS", "", hInput->GetXaxis()->GetBinLowEdge(hInput->FindFirstBinAbove(0.1 * max)),
   //                                        hInput->GetXaxis()->GetBinUpEdge(hInput->FindLastBinAbove(0.1 * max)));
-  
-  
+
+
   // Step 3: Use parameters from gaussian fit to obtain parameters for the transition "restricted gauss" -> "convoluted gauss"
-  
+
   // 3.1 The ratio sigmaInput / sigma_gaussFit ONLY depends on lambda (which is fixed per period) -> Calculate this first
   // for an arbitrary (here: typical) sigma. The ratio is then ~the same for ALL sigma for given lambda!
   if ((Int_t)fitResGauss != 0) {
@@ -4038,86 +4038,86 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
     fConvolutedGausDeltaPrime->SetParameters(oldFuncParams);
     fConvolutedGausDeltaPrime->SetNpx(oldFuncNpx);
     fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
-    
+
     delete hInput;
     delete [] oldFuncParams;
-    
-    return kFALSE; 
+
+    return kFALSE;
   }
-  
+
   if (fitResGauss->GetParams()[2] <= 0) {
     AliError("Not able to calculate parameters for the transition \"restricted gauss\" -> \"convoluted gauss\": Sigma of gauss fit <= 0!\n");
     fConvolutedGausDeltaPrime->SetParameters(oldFuncParams);
     fConvolutedGausDeltaPrime->SetNpx(oldFuncNpx);
     fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
-    
+
     delete hInput;
     delete [] oldFuncParams;
-    
+
     return kFALSE;
   }
-  
+
   // sigma correction factor
   fConvolutedGaussTransitionPars[1] = sigmaInput / fitResGauss->GetParams()[2];
-  
+
   // 3.2 Now that sigma und lambda are determined, one can calculate mu by shifting the maximum to the desired position,
   // i.e. the maximum of the input distribution should coincide with that of the re-calculated distribution,
   // which is achieved by getting the same mu for the same sigma.
   // NOTE: For fixed lambda, the shift is proportional to sigma and independent of mu!
   // So, one can calculate the shift for an arbitrary fixed (here: typical)
   // sigma and then simply use this shift for any other sigma by scaling it correspondingly!!!
-  
+
   // Mu shift correction:
   // Shift in mu (difference between mean of gauss and mean of convolution) is proportional to sigma!
-  // Thus, choose a reference sigma (typical -> 0.05), such that for arbitrary sigma one can simple scale 
+  // Thus, choose a reference sigma (typical -> 0.05), such that for arbitrary sigma one can simple scale
   // this shift correction with sigma / referenceSigma.
   fConvolutedGaussTransitionPars[0] = (fitResGauss->GetParams()[1] - muInput);
-  
-  
+
+
   /*Changed on 03.07.2013
-  
+
   // Maximum of fConvolutedGausDeltaPrime should agree with maximum of input
   Double_t par[nPar] = { fitResGauss->GetParams()[1], // just as a guess of the maximum position
                          sigmaInput,
                          lambda };
-                         
+
   fConvolutedGausDeltaPrime->SetParameters(par);
-  
+
   Double_t maxXInput = fConvolutedGausDeltaPrime->GetMaximumX(TMath::Max(0.001, muInput - 3. * sigmaInput),
                                                               muInput + 10. * sigmaInput,
                                                               0.0001);
-                                                              
+
   // Maximum shifts proportional to sigma and is linear in mu (~mean of gauss)
-  // Maximum should be typically located within [gaussMean, gaussMean + 3 gaussSigma]. 
+  // Maximum should be typically located within [gaussMean, gaussMean + 3 gaussSigma].
   // -> Larger search range for safety reasons (also: sigma and/or mean might be not 100% accurate).
-  Double_t maxXconvoluted = fConvolutedGausDeltaPrime->GetMaximumX(TMath::Max(0.001, 
+  Double_t maxXconvoluted = fConvolutedGausDeltaPrime->GetMaximumX(TMath::Max(0.001,
                                                                               fitResGauss->GetParams()[1] - 3. * fitResGauss->GetParams()[2]),
                                                                    fitResGauss->GetParams()[1] + 10. * fitResGauss->GetParams()[2],
                                                                    0.0001);
   if (maxXconvoluted <= 0) {
     AliError("Not able to calculate parameters for the transition \"restricted gauss\" -> \"convoluted gauss\": Maximum of fConvolutedGausDeltaPrime <= 0!\n");
-    
+
     fConvolutedGausDeltaPrime->SetParameters(oldFuncParams);
     fConvolutedGausDeltaPrime->SetNpx(oldFuncNpx);
     fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
-    
+
     delete hInput;
     delete [] oldFuncParams;
-    
+
     return kFALSE;
   }
-  
+
   // maxX perfectly shifts as par[0] (scaled by sigma) -> Can shift maxX to input value.
   // Mu shift correction:
   fConvolutedGaussTransitionPars[0] = maxXconvoluted - maxXInput;
   */
-  
-  
-  
+
+
+
   fConvolutedGausDeltaPrime->SetParameters(oldFuncParams);
   fConvolutedGausDeltaPrime->SetNpx(oldFuncNpx);
   fConvolutedGausDeltaPrime->SetRange(oldFuncRangeLow, oldFuncRangeUp);
-  
+
   delete hInput;
   delete [] oldFuncParams;
 
@@ -4126,53 +4126,53 @@ Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma) 
+AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma)
 {
   // Set parameters for convoluted gauss using parameters for a pure gaussian.
   // If SetConvolutedGaussLambdaParameter has not been called before to initialise the translation parameters,
   // some default parameters will be used and an error will show up.
-  
+
   if(fDebug > 1)
     printf("File: %s, Line: %d: SetParamsForConvolutedGaus: mean %e, sigma %e\n", (char*)__FILE__, __LINE__, gausMean, gausSigma);
-  
+
   if (fConvolutedGaussTransitionPars[1] < -998) {
     AliError("Transition parameters not initialised! Default parameters will be used. Please call SetConvolutedGaussLambdaParameter(...) before any calculations!");
     SetConvolutedGaussLambdaParameter(2.0);
-    AliError(Form("Parameters set to:\n[0]: %f\n[1]: %f\n[2]: %f\n", fConvolutedGaussTransitionPars[0],           
+    AliError(Form("Parameters set to:\n[0]: %f\n[1]: %f\n[2]: %f\n", fConvolutedGaussTransitionPars[0],
                   fConvolutedGaussTransitionPars[1], fConvolutedGaussTransitionPars[2]));
   }
-  
+
   Double_t par[fkConvolutedGausNPar];
   par[2] = fConvolutedGaussTransitionPars[2];
   par[1] = fConvolutedGaussTransitionPars[1] * gausSigma;
   // maxX perfectly shifts as par[0] (scaled by sigma) -> Can shift maxX so that it sits at the right place.
   par[0] = gausMean - fConvolutedGaussTransitionPars[0] * par[1] / fgkSigmaReferenceForTransitionPars;
-  
+
   ErrorCode errCode = kNoErrors;
-  
+
   fConvolutedGausDeltaPrime->SetParameters(par);
-  
+
   if(fDebug > 3)
     printf("File: %s, Line: %d: SetParamsForConvolutedGaus -> Parameters set to: %e, %e, %e (transition pars: %e, %e, %e, %e)\n",
-           (char*)__FILE__, __LINE__, par[0], par[1], par[2], fConvolutedGaussTransitionPars[0], fConvolutedGaussTransitionPars[1], 
+           (char*)__FILE__, __LINE__, par[0], par[1], par[2], fConvolutedGaussTransitionPars[0], fConvolutedGaussTransitionPars[1],
            fConvolutedGaussTransitionPars[2], fgkSigmaReferenceForTransitionPars);
-  
+
   fConvolutedGausDeltaPrime->SetNpx(20); // Small value speeds up following algorithm (valid, since extrema far apart)
 
   // Accuracy of 10^-5 is enough to get 0.1% precise peak for MIPS w.r.t. to dEdx = 2000 of protons
   // (should boost up the algorithm, because 10^-10 is the default value!)
-  Double_t maxX= fConvolutedGausDeltaPrime->GetMaximumX(TMath::Max(0.001, gausMean - 2. * gausSigma), 
+  Double_t maxX= fConvolutedGausDeltaPrime->GetMaximumX(TMath::Max(0.001, gausMean - 2. * gausSigma),
                                                         gausMean + 6. * gausSigma, 1.0E-5);
-  
+
   const Double_t maximum = fConvolutedGausDeltaPrime->Eval(maxX);
   const Double_t maximumFraction = maximum * fAccuracyNonGaussianTail;
-  
+
   // Estimate lower boundary for subsequent search:
   Double_t lowBoundSearchBoundLow = TMath::Max(1e-4, maxX - 5. * gausSigma);
   Double_t lowBoundSearchBoundUp = maxX;
-  
+
   Bool_t lowerBoundaryFixedAtZero = kFALSE;
-  
+
   while (fConvolutedGausDeltaPrime->Eval(lowBoundSearchBoundLow) >= maximumFraction) {
     if (lowBoundSearchBoundLow <= 0) {
       // This should only happen to low dEdx particles with very few clusters and therefore large sigma, such that the gauss goes below zero deltaPrime
@@ -4189,33 +4189,33 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGa
           return kError;
         }
       }
-      
+
       /*
       printf("Warning: LowBoundSearchBoundLow gets smaller zero -> Set left boundary to zero! Debug output: maximumFraction * fAccuracyNonGaussianTail = %e * %e = %e maxX %f, par[0] %f, par[1] %f, par[2] %f, gausMean %f, gausSigma %f\n",
              fConvolutedGausDeltaPrime->Eval(maxX), fAccuracyNonGaussianTail, maximumFraction, maxX, par[0], par[1], par[2], gausMean, gausSigma);
       */
-      
+
       lowerBoundaryFixedAtZero = kTRUE;
-      
+
       if (errCode != kError)
         errCode = kWarning;
-      
+
       break;
     }
-    
+
     lowBoundSearchBoundUp -= gausSigma;
     lowBoundSearchBoundLow -= gausSigma;
-    
+
     if (lowBoundSearchBoundLow < 0) {
       lowBoundSearchBoundLow = 0;
       lowBoundSearchBoundUp += gausSigma;
     }
   }
-  
+
   // Determine lower boundary inside estimated range. For small values of the maximum: Need more precision, since finer binning!
   Double_t rangeStart = lowerBoundaryFixedAtZero ? 0 :
                         fConvolutedGausDeltaPrime->GetX(maximumFraction, lowBoundSearchBoundLow, lowBoundSearchBoundUp, (maxX < 0.4) ? 1e-5 : 0.001);
-  
+
   // .. and the same for the upper boundary
   Double_t rangeEnd = 0;
   // If distribution starts beyond upper boundary, everything ends up in the overflow bin. So, just reduce range and Npx to minimum
@@ -4232,10 +4232,10 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGa
       upBoundSearchBoundUp += gausSigma;
       upBoundSearchBoundLow += gausSigma;
     }
-  
+
     //  For small values of the maximum: Need more precision, since finer binning!
     rangeEnd = fConvolutedGausDeltaPrime->GetX(maximumFraction, upBoundSearchBoundLow, upBoundSearchBoundUp, (maxX < 0.4) ? 1e-5 : 0.001);
-    
+
     if (!fDeltaPrimeAxis) {
       const Int_t deltaPrimeNBins = 600;
       Double_t deltaPrimeBins[deltaPrimeNBins + 1];
@@ -4249,23 +4249,23 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGa
       for (Int_t i = 0 + 1; i <= deltaPrimeNBins; i++) {
         deltaPrimeBins[i] = factor * deltaPrimeBins[i - 1];
       }
-      
+
       fDeltaPrimeAxis = new TAxis(deltaPrimeNBins, deltaPrimeBins);
     }
-    
+
     fConvolutedGausDeltaPrime->SetRange(rangeStart,rangeEnd);
     fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
-    
+
     fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
     //fConvolutedGausDeltaPrime->SetNpx(fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindFixBin(rangeEnd)
     //                                  - fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindFixBin(rangeStart) + 1);
     //fConvolutedGausDeltaPrime->SetNpx((rangeEnd - rangeStart) / fDeltaPrimeBinWidth + 1);
   }
-  
+
   if(fDebug > 3)
     printf("File: %s, Line: %d: SetParamsForConvolutedGaus -> range %f - %f, error code %d\n", (char*)__FILE__, __LINE__,
            rangeStart, rangeEnd, errCode);
-  
+
   return errCode;
 }
 
@@ -4275,16 +4275,16 @@ void AliAnalysisTaskMTFPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Doub
                                       Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
-  
+
   hist->SetBinEdges(kGenPt, binsPt);
   hist->SetBinEdges(kGenDeltaPrimeSpecies, binsDeltaPrime);
   hist->SetBinEdges(kGenCentrality, binsCent);
-  
+
   if (fStoreAdditionalJetInformation) {
     hist->SetBinEdges(kGenJetPt, binsJetPt);
     hist->SetBinEdges(kGenJt, binsJt);
   }
-  
+
   // Set axes titles
   hist->GetAxis(kGenMCID)->SetTitle("MC PID");
   hist->GetAxis(kGenMCID)->SetBinLabel(1, "e");
@@ -4292,33 +4292,33 @@ void AliAnalysisTaskMTFPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Doub
   hist->GetAxis(kGenMCID)->SetBinLabel(3, "#mu");
   hist->GetAxis(kGenMCID)->SetBinLabel(4, "#pi");
   hist->GetAxis(kGenMCID)->SetBinLabel(5, "p");
-  
+
   hist->GetAxis(kGenSelectSpecies)->SetTitle("Select Species");
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(1, "e");
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(2, "K");
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(3, "#pi");
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(4, "p");
-  
+
   hist->GetAxis(kGenPt)->SetTitle("p_{T} (GeV/c)");
-  
+
   hist->GetAxis(kGenDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
-  
+
   hist->GetAxis(kGenCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
-  
+
   if (fStoreAdditionalJetInformation) {
     hist->GetAxis(kGenJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
-    
+
     hist->GetAxis(kGenZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
-    
+
     hist->GetAxis(kGenXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
-    
+
     hist->GetAxis(kGenDistance)->SetTitle("R");
-  
+
     hist->GetAxis(kGenJt)->SetTitle("j_{T} (GeV/c)");
   }
-  
+
   hist->GetAxis(GetIndexOfChargeAxisGen())->SetTitle("Charge (e_{0})");
-  
+
   hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetTitle("TOF PID Info");
   // Offset is (TMath::Abs(kNoTOFinfo) + 1), such that bin 1 (= first label) corresponds to kNoTOFinfo (< 0)
   hist->GetAxis(GetIndexOfTOFpidInfoAxisGen())->SetBinLabel(kNoTOFinfo + (TMath::Abs(kNoTOFinfo) + 1), "No TOF Info");
@@ -4333,35 +4333,35 @@ void AliAnalysisTaskMTFPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Doub
 void AliAnalysisTaskMTFPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt, Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
-  
+
   hist->SetBinEdges(kGenYieldPt, binsPt);
   hist->SetBinEdges(kGenYieldCentrality, binsCent);
-  
+
   if (fStoreAdditionalJetInformation) {
     hist->SetBinEdges(kGenYieldJetPt, binsJetPt);
     hist->SetBinEdges(kGenYieldJt, binsJt);
   }
-  
+
   for (Int_t i = 0; i < 5; i++)
     hist->GetAxis(kGenYieldMCID)->SetBinLabel(i + 1, AliPID::ParticleLatexName(i));
-  
+
   // Set axes titles
   hist->GetAxis(kGenYieldMCID)->SetTitle("MC PID");
   hist->GetAxis(kGenYieldPt)->SetTitle("p_{T}^{gen} (GeV/c)");
   hist->GetAxis(kGenYieldCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
-  
+
   if (fStoreAdditionalJetInformation) {
     hist->GetAxis(kGenYieldJetPt)->SetTitle("p_{T}^{jet, gen} (GeV/c)");
-    
+
     hist->GetAxis(kGenYieldZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
-    
+
     hist->GetAxis(kGenYieldXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
-    
+
     hist->GetAxis(kGenYieldDistance)->SetTitle("R");
-  
+
     hist->GetAxis(kGenYieldJt)->SetTitle("j_{T} (GeV/c)");
   }
-  
+
   hist->GetAxis(GetIndexOfChargeAxisGenYield())->SetTitle("Charge (e_{0})");
 }
 
@@ -4371,16 +4371,16 @@ void AliAnalysisTaskMTFPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_
                                    Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
-  
+
   hist->SetBinEdges(kDataPt, binsPt);
   hist->SetBinEdges(kDataDeltaPrimeSpecies, binsDeltaPrime);
   hist->SetBinEdges(kDataCentrality, binsCent);
-  
+
   if (fStoreAdditionalJetInformation) {
     hist->SetBinEdges(kDataJetPt, binsJetPt);
     hist->SetBinEdges(kDataJt, binsJt);
   }
-  
+
   // Set axes titles
   hist->GetAxis(kDataMCID)->SetTitle("MC PID");
   hist->GetAxis(kDataMCID)->SetBinLabel(1, "e");
@@ -4388,33 +4388,33 @@ void AliAnalysisTaskMTFPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_
   hist->GetAxis(kDataMCID)->SetBinLabel(3, "#mu");
   hist->GetAxis(kDataMCID)->SetBinLabel(4, "#pi");
   hist->GetAxis(kDataMCID)->SetBinLabel(5, "p");
-  
+
   hist->GetAxis(kDataSelectSpecies)->SetTitle("Select Species");
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(1, "e");
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(2, "K");
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(3, "#pi");
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(4, "p");
-  
+
   hist->GetAxis(kDataPt)->SetTitle("p_{T} (GeV/c)");
-    
+
   hist->GetAxis(kDataDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
-  
+
   hist->GetAxis(kDataCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
-  
+
   if (fStoreAdditionalJetInformation) {
     hist->GetAxis(kDataJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
-  
+
     hist->GetAxis(kDataZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
-  
+
     hist->GetAxis(kDataXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
-    
+
     hist->GetAxis(kDataDistance)->SetTitle("R");
-  
+
     hist->GetAxis(kDataJt)->SetTitle("j_{T} (GeV/c)");
   }
-  
+
   hist->GetAxis(GetIndexOfChargeAxisData())->SetTitle("Charge (e_{0})");
-  
+
   hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetTitle("TOF PID Info");
   // Offset is (TMath::Abs(kNoTOFinfo) + 1), such that bin 1 (= first label) corresponds to kNoTOFinfo (< 0)
   hist->GetAxis(GetIndexOfTOFpidInfoAxisData())->SetBinLabel(kNoTOFinfo + (TMath::Abs(kNoTOFinfo) + 1), "No TOF Info");
@@ -4429,17 +4429,17 @@ void AliAnalysisTaskMTFPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_
 void AliAnalysisTaskMTFPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
-  
+
   hist->SetBinEdges(kPtResJetPt, binsJetPt);
   hist->SetBinEdges(kPtResGenPt, binsPt);
   hist->SetBinEdges(kPtResRecPt, binsPt);
   hist->SetBinEdges(kPtResCentrality, binsCent);
-  
+
   // Set axes titles
   hist->GetAxis(kPtResJetPt)->SetTitle("p_{T}^{jet, rec} (GeV/c)");
   hist->GetAxis(kPtResGenPt)->SetTitle("p_{T}^{gen} (GeV/c)");
-  hist->GetAxis(kPtResRecPt)->SetTitle("p_{T}^{rec} (GeV/c)");  
-  
+  hist->GetAxis(kPtResRecPt)->SetTitle("p_{T}^{rec} (GeV/c)");
+
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
   hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
 }
@@ -4449,16 +4449,16 @@ void AliAnalysisTaskMTFPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Do
 void AliAnalysisTaskMTFPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
-  
+
   hist->SetBinEdges(kQASharedClsJetPt, binsJetPt);
   hist->SetBinEdges(kQASharedClsPt, binsPt);
-  
+
   // Set axes titles
   hist->GetAxis(kQASharedClsJetPt)->SetTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
   hist->GetAxis(kQASharedClsPt)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hist->GetAxis(kQASharedClsNumSharedCls)->SetTitle("#it{N}_{shared}^{cls}");
   hist->GetAxis(kQASharedClsPadRow)->SetTitle("Pad row");
-  
+
 }
 
 
@@ -4469,18 +4469,18 @@ void AliAnalysisTaskMTFPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* 
   hist->SetBinEdges(kDeDxCheckP, binsPt);
   hist->SetBinEdges(kDeDxCheckJetPt, binsJetPt);
   hist->SetBinEdges(kDeDxCheckEtaAbs, binsEtaAbs);
-  
-  
+
+
   // Set axes titles
   hist->GetAxis(kDeDxCheckPID)->SetTitle("PID");
   hist->GetAxis(kDeDxCheckPID)->SetBinLabel(1, "e");
   hist->GetAxis(kDeDxCheckPID)->SetBinLabel(2, "K");
   hist->GetAxis(kDeDxCheckPID)->SetBinLabel(3, "#pi");
   hist->GetAxis(kDeDxCheckPID)->SetBinLabel(4, "p");
-  
+
   hist->GetAxis(kDeDxCheckJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
-  hist->GetAxis(kDeDxCheckEtaAbs)->SetTitle("|#eta|");  
-  hist->GetAxis(kDeDxCheckP)->SetTitle("p_{TPC} (GeV/c)"); 
+  hist->GetAxis(kDeDxCheckEtaAbs)->SetTitle("|#eta|");
+  hist->GetAxis(kDeDxCheckP)->SetTitle("p_{TPC} (GeV/c)");
   hist->GetAxis(kDeDxCheckDeDx)->SetTitle("TPC dE/dx (arb. unit)");
 }
 
@@ -4491,11 +4491,11 @@ void AliAnalysisTaskMTFPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_
   // Sets bin limits for axes which are not standard binned and the axes titles.
   hist->SetBinEdges(kBinZeroStudyCentrality, binsCent);
   hist->SetBinEdges(kBinZeroStudyGenPt, binsPt);
-  
+
   // Set axes titles
   hist->GetAxis(kBinZeroStudyCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
-  hist->GetAxis(kBinZeroStudyGenEta)->SetTitle("#it{#eta}^{gen}");  
-  hist->GetAxis(kBinZeroStudyGenPt)->SetTitle("#it{p}_{T}^{gen} (GeV/#it{c})"); 
+  hist->GetAxis(kBinZeroStudyGenEta)->SetTitle("#it{#eta}^{gen}");
+  hist->GetAxis(kBinZeroStudyGenPt)->SetTitle("#it{p}_{T}^{gen} (GeV/#it{c})");
 }
 
 
@@ -4515,12 +4515,12 @@ void AliAnalysisTaskMTFPID::FillJetArea(Double_t cent, Double_t area) {
 void AliAnalysisTaskMTFPID::NormalizeJetArea(Double_t jetParameter) {
   if (!fIsUEPID)
     return;
-  
+
   if (!fh2FFJetPtRec || !fh1JetArea) {
     std::cout << "Cannot normalize Jet Area" << std::endl;
     return;
   }
-  
+
   Double_t givenJetArea = jetParameter * jetParameter * TMath::Pi();
   for (Int_t i=0;i<=fh1JetArea->GetNbinsX();++i) {
     Double_t binContent = fh1JetArea->GetBinContent(i);
@@ -4533,61 +4533,61 @@ void AliAnalysisTaskMTFPID::NormalizeJetArea(Double_t jetParameter) {
       AliWarningStream() << "No Jets recognised in slice " << i << " when normalizing jet are, unexpected." << std::endl;
       continue;
     }
-    
+
     fh1JetArea->SetBinContent(i,binContent/(givenJetArea * nOfRecJetsInSlice));
   }
 }
 
 void AliAnalysisTaskMTFPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const AliVVertex* primvtx, AliMCEvent* mcEvent, Double_t jetPt) {
-  
+
   if (!GetDoDCATemplateGeneration())
     return;
-  
+
   if (!track || !fPIDResponse) {
     std::cout << "Track: " << track << std::endl;
     std::cout << "fPIDResponse: " << fPIDResponse << std::endl;
     return;
   }
-  
+
   const AliESDtrack* esdtrack = dynamic_cast<AliESDtrack*>(track);
-  
+
   if (!primvtx && !esdtrack) {
     std::cout << "Cannot Fill DCA Template Generation. " << std::endl;
     std::cout << "Primary Vertex pointer: " << primvtx << std::endl;
     std::cout << "esdtrack pointer: " << esdtrack << std::endl;
     return;
   }
-  
+
   if (dEdxTPC < 0.0)
     dEdxTPC = track->GetTPCsignal();
-  
+
   Double_t trackpT = track->Pt();
-  
+
   if (trackpT < GetDCAUpperpTLimit()) {
-    
-    Double_t dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+
+    Double_t dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
-    Double_t sigmaPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+    Double_t sigmaPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
                                                               fPIDResponse->UseTPCEtaCorrection(),
-                                                              fPIDResponse->UseTPCMultiplicityCorrection()); 
-     
+                                                              fPIDResponse->UseTPCMultiplicityCorrection());
+
     Double_t tightfactor = 1.0;
     if (trackpT >= 0.6)
       tightfactor = 0.6;
-    
+
     if (TMath::Abs(dEdxTPC - dEdxPr) <= tightfactor * GetSigmaFactorCutForDCATemplateGeneration() * sigmaPr) {
-      
+
       Bool_t positiveCharge = track->Charge() > 0.0;
-      
+
       Double_t dca;
-      
+
       if (esdtrack) {
         //Standard method for determining the dca
         Float_t dca_arr[2] = {0.0,0.0};
         Float_t cov[3] = {0.0,0.0,0.0};
         esdtrack->GetImpactParameters(dca_arr, cov);
-        
+
         dca = dca_arr[0];
       }
       else {
@@ -4595,26 +4595,26 @@ void AliAnalysisTaskMTFPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const Al
         Double_t pos[3] = {0.0,0.0,0.0};
         primvtx->GetXYZ(v);
         track->GetXYZ(pos);
-        
-        dca = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));         
+
+        dca = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
       }
-      
+
       if (jetPt < 0.0)
         jetPt = 0.5;
-      
-      if (positiveCharge) 
+
+      if (positiveCharge)
         fh3DCA_XY_Positive->Fill(trackpT, dca, jetPt);
       else
         fh3DCA_XY_Negative->Fill(trackpT, dca, jetPt);
-      
+
       if (mcEvent) {
-      
+
         AliStack* stack = mcEvent->Stack();
         if (!stack)
           return;
-        
+
         Int_t label = TMath::Abs(track->GetLabel());
-        
+
         if (positiveCharge) {
           if (mcEvent->IsPhysicalPrimary(label))
             fh3DCA_XY_Primaries_Positive->Fill(trackpT, dca, jetPt);
@@ -4639,38 +4639,38 @@ void AliAnalysisTaskMTFPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const Al
 void AliAnalysisTaskMTFPID::DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, Int_t multiplicity, Double_t dEdx, Int_t PiTracksEnabled, AliTrackContainer* trackContainer) {
   if (!GetDoTPCclusterStudies())
     return;
-  
+
 //   Double_t momentum = track->Pt();
 //   if (dEdx < 0)
 //     dEdx = track->GetTPCsignal();
-//   
+//
 //   const Int_t nparam = 4;
 //   Double_t param[nparam] = {track->Eta(), track->Phi(), (Double_t)multiplicity, 0.0};
-//   
+//
 //   if (track->GetTPCsignalN() < 140)
 //     return;
-//   
+//
 //   if (!trackContainer)
 //     param[3] = track->GetTPCsignalN();
-//   
+//
 //   Char_t v0tagAllCharges = TMath::Abs(v0tag);
-//   
+//
 //   Bool_t isV0pi = (v0tagAllCharges == 15);
-//   
+//
 //   Double_t deltaPrime = 0.0;
-//   
+//
 //   if (isV0pi && TMath::Abs(PiTracksEnabled) == 1) {
 //     if (momentum > GetClusterStudiesPiMomentumFirstLow() && momentum < GetClusterStudiesPiMomentumFirstHigh()) {
 //       if (trackContainer)
 //         param[3] = GetNumberOfNearTracks(track, trackContainer);
-//       
+//
 //       deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
 //       FillTPCclusterStudiesHistograms(fTPCclusterStudies[0], deltaPrime, nparam, param);
 //     }
 //     if (momentum > GetClusterStudiesPiMomentumSecondLow() && momentum < GetClusterStudiesPiMomentumSecondHigh()) {
 //       if (trackContainer)
 //         param[3] = GetNumberOfNearTracks(track, trackContainer);
-//       
+//
 //       deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
 //       FillTPCclusterStudiesHistograms(fTPCclusterStudies[1], deltaPrime, nparam, param);
 //     }
@@ -4680,20 +4680,20 @@ void AliAnalysisTaskMTFPID::DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, I
 //       if (momentum > GetClusterStudiesKaMomentumLow() && momentum < GetClusterStudiesKaMomentumHigh() && TMath::Abs(fPIDResponse->GetNumberOfSigmasTOF(track, AliPID::kKaon)) < 1.0) {
 //         if (trackContainer)
 //           param[3] = GetNumberOfNearTracks(track, trackContainer);
-//         
+//
 //         deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
 //         FillTPCclusterStudiesHistograms(fTPCclusterStudies[2], deltaPrime, nparam, param);
 //       }
 //       else if (momentum > GetClusterStudiesPrMomentumLow() && momentum < GetClusterStudiesPrMomentumHigh() && TMath::Abs(fPIDResponse->GetNumberOfSigmasTOF(track, AliPID::kProton)) < 1.0) {
 //         if (trackContainer)
 //           param[3] = GetNumberOfNearTracks(track, trackContainer);
-//         
+//
 //         deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
 //         FillTPCclusterStudiesHistograms(fTPCclusterStudies[3], deltaPrime, nparam, param);
 //       }
 //     }
 //   }
-    
+
   return;
 }
 
@@ -4717,22 +4717,22 @@ Int_t AliAnalysisTaskMTFPID::GetNumberOfNearTracks(AliVTrack* track, AliTrackCon
   Int_t nOfNearTracks = 0;
   Double_t phi = track->Phi();
   Double_t theta = track->Theta();
-  
+
   for (auto part : trackContainer->accepted()) {
-    
+
     if (!part)
       continue;
 
     if (part->GetID() == track->GetID())
       continue;
-    
+
     Double_t phi_distance = part->Phi() - phi;
     Double_t theta_distance = part->Theta() - theta;
-    
-    
+
+
     if (TMath::Sqrt(phi_distance * phi_distance + theta_distance * theta_distance) < fVicinityCut)
       nOfNearTracks++;
   }
-  
+
   return nOfNearTracks;
 }

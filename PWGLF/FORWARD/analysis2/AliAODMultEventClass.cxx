@@ -2,10 +2,11 @@
 #include <iostream>
 #include <TString.h>
 #include <TAxis.h>
+#include <TMath.h>
 
 //____________________________________________________________________
 const Int_t*
-AliAODMultEventClass::GetBins() 
+AliAODMultEventClass::GetBins()
 {
   static const Int_t bins[] = { 1,  3,  6,  9,
 				14, 19, 24, 29,
@@ -15,17 +16,17 @@ AliAODMultEventClass::GetBins()
 }
 //____________________________________________________________________
 const TAxis*
-AliAODMultEventClass::GetAxis() 
+AliAODMultEventClass::GetAxis()
 {
   static TAxis* ret = 0;
   if (!ret) {
     // Count the number of bins
-    const Int_t* arr   = AliAODMultEventClass::GetBins();    
+    const Int_t* arr   = AliAODMultEventClass::GetBins();
     const Int_t* tmp   = arr;
     Int_t        n     = 0;
     while ((*tmp >= 0)) { n++; tmp++; }
 
-    // Now create temporary array 
+    // Now create temporary array
     TArrayD bins(n+2);
     bins[0] = 0;
     Int_t i = 1;
@@ -178,4 +179,4 @@ AliAODMultEventClass::Print(Option_t*) const
 }
 //
 // EOF
-// 
+//

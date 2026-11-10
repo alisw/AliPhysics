@@ -1025,7 +1025,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   /*Fit Bkg*/
 
 
-  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
+  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar);
   cout<<"Function name = "<<funcbkg->GetName()<<endl<<endl;
 
   funcbkg->SetLineColor(2); //red
@@ -1101,7 +1101,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
     //cout<<"fNFinalPars = "<<fNFinalPars<<"\tbkgPar = "<<bkgPar<<endl;
 
-    funcbkg1 = new TF1(bkg1name.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
+    funcbkg1 = new TF1(bkg1name.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar);
     cout<<"Function name = "<<funcbkg1->GetName()<<endl;
 
     funcbkg1->SetLineColor(2); //red
@@ -1211,7 +1211,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     sgnInt=(-1)*sgnInt;
   }
   /*Fit All Mass distribution with exponential + gaussian (+gaussian braodened) */
-  TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitter::FitFunction4MassDistr,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitter","FitFunction4MassDistr");
+  TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitter::FitFunction4MassDistr,fminMass,fmaxMass,fNFinalPars);
   cout<<"Function name = "<<funcmass->GetName()<<endl<<endl;
   funcmass->SetLineColor(4); //blue
 
@@ -1381,7 +1381,7 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
   TString bkgname="funcbkgonly";
   fSideBands = kFALSE;
 
-  TF1* funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");
+  TF1* funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3);
 
   funcbkg->SetLineColor(kBlue+3); //dark blue
 
@@ -1605,7 +1605,7 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     }
 
     bkgname += "FullRange";
-    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");
+    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3);
     //cout<<bfullrange->GetName()<<endl;
     for(Int_t i=0;i<fNFinalPars-3;i++){
       bfullrange->SetParName(i,b->GetParName(i));
@@ -1617,7 +1617,7 @@ void AliHFMassFitter::AddFunctionsToHisto(){
 
     bkgnamesave += "Recalc";
 
-    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");
+    TF1 *blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,fNFinalPars-3);
 
     TF1 *mass=fhistoInvMass->GetFunction("funcmass");
 
@@ -2218,7 +2218,7 @@ TH1F* AliHFMassFitter::GetOverBackgroundResidualsAndPulls(Double_t minrange,Doub
   // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
 
   //  TF1 *fbackCp=(TF1*)fback->Clone("ftmpback");
-  TF1 *fbackCp=new TF1("ftmpback",this,&AliHFMassFitter::FitFunction4Bkg,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars-3,"AliHFMassFitter","FitFunction4Bkg");;
+  TF1 *fbackCp=new TF1("ftmpback",this,&AliHFMassFitter::FitFunction4Bkg,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars-3);;
   for(Int_t i=0;i< fNFinalPars-3;i++){
     fbackCp->SetParameter(i,fback->GetParameter(i));
   }
@@ -2264,7 +2264,7 @@ TH1F* AliHFMassFitter::GetAllRangeResidualsAndPulls(Double_t minrange,Double_t m
   }
 
   // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
-  TF1 *fmassCp=new TF1("fmassCp",this,&AliHFMassFitter::FitFunction4MassDistr,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars,"AliHFMassFitter","FitFunction4MassDistr");
+  TF1 *fmassCp=new TF1("fmassCp",this,&AliHFMassFitter::FitFunction4MassDistr,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars);
   for(Int_t i=0;i< fNFinalPars;i++){
     fmassCp->SetParameter(i,f->GetParameter(i));
   }

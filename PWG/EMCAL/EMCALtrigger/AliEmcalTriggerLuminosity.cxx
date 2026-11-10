@@ -33,6 +33,7 @@
 #include <TH2.h>
 #include <TKey.h>
 #include <TList.h>
+#include <TMath.h>
 #include "AliEmcalTriggerLuminosity.h"
 
 ClassImp(PWG::EMCAL::AliEmcalTriggerLuminosity)
@@ -79,7 +80,7 @@ AliEmcalTriggerLuminosity::AliEmcalTriggerLuminosity(TList *luminosityHistograms
 }
 
 AliEmcalTriggerLuminosity::~AliEmcalTriggerLuminosity() {
-  delete fLuminosityHist; 
+  delete fLuminosityHist;
   for(auto clustercounter : fClusterCounters) delete clustercounter.second;
 }
 
@@ -104,15 +105,15 @@ void AliEmcalTriggerLuminosity::LoadHistograms(const TList &histlist) {
   auto yearhist = dynamic_cast<TH1 *>(histlist.FindObject("hYear"));
   if(yearhist) {
     fYear = determineYear(yearhist);
-    std::cout << "Auto-detected year " << fYear << std::endl; 
+    std::cout << "Auto-detected year " << fYear << std::endl;
   } else {
     std::cout << "Output does not contain the histogram for years, the year must be set manually" << std::endl;
   }
   auto collhist = dynamic_cast<TH1 *>(histlist.FindObject("hCollisionSystem"));
   if(collhist) {
     fCollisionType = determineCollisionType(collhist);
-    std::cout << "Auto-detected collsion system " << getCollisionLabel(fCollisionType) << std::endl; 
-  } else { 
+    std::cout << "Auto-detected collsion system " << getCollisionLabel(fCollisionType) << std::endl;
+  } else {
     std::cout << "Output does not contain the histogram for collision systems, the collision system must be set manually" << std::endl;
   }
 }
@@ -158,7 +159,7 @@ void AliEmcalTriggerLuminosity::Evaluate() {
   case CollisionType_t::kPPB8TeV:
     evaluatePPB8TeV();
     break;
-  
+
   default:
     std::cout << "Evaluation for collision system " << getCollisionLabel(fCollisionType) << " not (yet) implemented" << std::endl;
     break;
@@ -225,7 +226,7 @@ void AliEmcalTriggerLuminosity::evaluatePP13TeV() {
     }
     double correctedCounts = rawcounts * clustercorrection;
     double luminosity = correctedCounts / xrefPB;
-    std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl; 
+    std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl;
     fLuminosities[triggerclass] = luminosity;
     fCountsCorr  [triggerclass] = correctedCounts;
   }
@@ -420,7 +421,7 @@ void AliEmcalTriggerLuminosity::evaluatePPB8TeV() {
     }
     double correctedCounts = rawcounts * clustercorrection;
     double luminosity = correctedCounts / xrefPB;
-    std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl; 
+    std::cout << "Trigger class " << triggerclass << ": raw counts " << rawcounts << ", corrected counts " << correctedCounts << ", luminosity " << luminosity << " pb-1" << std::endl;
     fLuminosities[triggerclass] = luminosity;
     fCountsCorr  [triggerclass] = correctedCounts;
   }
@@ -495,7 +496,7 @@ AliEmcalTriggerLuminosity::CollisionType_t AliEmcalTriggerLuminosity::determineC
     }
   }
   if(binsNonZero.size() > 1) throw AmbiguityException("year");
-  std::string bintitle = collisionhist->GetXaxis()->GetBinLabel(binsNonZero[0]+1);  
+  std::string bintitle = collisionhist->GetXaxis()->GetBinLabel(binsNonZero[0]+1);
   return getCollisionType(bintitle);
 }
 
@@ -508,7 +509,7 @@ double AliEmcalTriggerLuminosity::getConversionToPB(LuminosityUnit_t unit) const
   switch(unit){
     case LuminosityUnit_t::kPb: conversion = 1.; break;
     case LuminosityUnit_t::kNb: conversion = 1e3; break;
-    case LuminosityUnit_t::kMub: conversion = 1e6; break; 
+    case LuminosityUnit_t::kMub: conversion = 1e6; break;
     case LuminosityUnit_t::kMb: conversion = 1e9; break;
     case LuminosityUnit_t::kB: conversion = 1e12; break;
   };
@@ -518,7 +519,7 @@ double AliEmcalTriggerLuminosity::getConversionToPB(LuminosityUnit_t unit) const
 std::string AliEmcalTriggerLuminosity::getCollisionLabel(AliEmcalTriggerLuminosity::CollisionType_t coltype) const {
   switch(coltype) {
     case CollisionType_t::kPP13TeV: return "pp, 13 TeV";
-    case CollisionType_t::kPP5TeV: return "pp, 5.02 TeV"; 
+    case CollisionType_t::kPP5TeV: return "pp, 5.02 TeV";
     case CollisionType_t::kPPB5TeV: return "p-Pb, 5.02 TeV";
     case CollisionType_t::kPPB8TeV: return "p-Pb, 8.16 TeV";
     case CollisionType_t::kPBPB5TeV: return "Pb-Pb, 5.02 TeV";
@@ -527,10 +528,10 @@ std::string AliEmcalTriggerLuminosity::getCollisionLabel(AliEmcalTriggerLuminosi
 }
 
 AliEmcalTriggerLuminosity::CollisionType_t AliEmcalTriggerLuminosity::getCollisionType(const std::string &collabel) const {
-  std::map<std::string, CollisionType_t> collisionsystems = {{"pp, 13 TeV", CollisionType_t::kPP13TeV}, 
-                                                             {"pp, 5.02 TeV", CollisionType_t::kPP5TeV}, 
-                                                             {"p-Pb, 5.02 TeV", CollisionType_t::kPPB5TeV}, 
-                                                             {"p-Pb, 8.16 TeV", CollisionType_t::kPPB8TeV}, 
+  std::map<std::string, CollisionType_t> collisionsystems = {{"pp, 13 TeV", CollisionType_t::kPP13TeV},
+                                                             {"pp, 5.02 TeV", CollisionType_t::kPP5TeV},
+                                                             {"p-Pb, 5.02 TeV", CollisionType_t::kPPB5TeV},
+                                                             {"p-Pb, 8.16 TeV", CollisionType_t::kPPB8TeV},
                                                              {"Pb-Pb, 5.02 TeV", CollisionType_t::kPBPB5TeV}};
   auto found = collisionsystems.find(collabel);
   if(found == collisionsystems.end()) return CollisionType_t::kUnknown;

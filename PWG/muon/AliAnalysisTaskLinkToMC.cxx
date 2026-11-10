@@ -105,7 +105,7 @@ void AliAnalysisTaskLinkToMC::HardCutLimitX(Double_t value)
 {
 	/// Sets the absolute maximum distance in centimetres between the cluster
 	/// and track reference that is allowed in the X direction.
-	
+
 	if (value >= 0)
 	{
 		fHardCutLimitX = value;
@@ -124,7 +124,7 @@ void AliAnalysisTaskLinkToMC::HardCutLimitY(Double_t value)
 {
 	/// Sets the absolute maximum distance in centimetres between the cluster
 	/// and track reference that is allowed in the Y direction.
-	
+
 	if (value >= 0)
 	{
 		fHardCutLimitY = value;
@@ -143,7 +143,7 @@ void AliAnalysisTaskLinkToMC::HardCutLimitZ(Double_t value)
 {
 	/// Sets the absolute maximum distance in centimetres between the cluster
 	/// and track reference that is allowed in the Z direction.
-	
+
 	if (value >= 0)
 	{
 		fHardCutLimitZ = value;
@@ -162,7 +162,7 @@ Double_t AliAnalysisTaskLinkToMC::SigmaCut() const
 {
 	/// Returns the maximum sigma value to allow for each X and Y dimension
 	/// between clusters and track references.
-	
+
 	return TMath::Sqrt(fSigmaCut2);
 }
 
@@ -172,7 +172,7 @@ Bool_t AliAnalysisTaskLinkToMC::ChamberMustMatch(Int_t chamber) const
 	/// Returns the flag indicating if the ESD track cluster on the given
 	/// chamber must match a corresponding track reference to be valid.
 	/// \param chamber The chamber number must be in the range 1 to 14.
-	
+
 	if (chamber >= 1 and chamber <= 14)
 	{
 		return fChamberMustMatch[chamber-1];
@@ -194,7 +194,7 @@ void AliAnalysisTaskLinkToMC::ChamberMustMatch(Int_t chamber, Bool_t value)
 	/// must match a corresponding track reference to be valid.
 	/// \param chamber The chamber number must be in the range 1 to 14.
 	/// \param value  The new value to set to.
-	
+
 	if (chamber >= 1 and chamber <= 14)
 	{
 		fChamberMustMatch[chamber-1] = value;
@@ -215,7 +215,7 @@ Bool_t AliAnalysisTaskLinkToMC::StationMustMatch(Int_t station) const
 	/// given station must match a corresponding track reference to be valid.
 	/// \param station The station number must be in the range 1..7. Station
 	///     1 to 5 are the tracking stations while 6 is MT1 and 7 is MT2.
-	
+
 	if (station >= 1 and station <= 7)
 	{
 		return fStationMustMatch[station-1];
@@ -238,7 +238,7 @@ void AliAnalysisTaskLinkToMC::StationMustMatch(Int_t station, Bool_t value)
 	/// \param station The station number must be in the range 1..7. Station
 	///     1 to 5 are the tracking stations while 6 is MT1 and 7 is MT2.
 	/// \param value  The new value to set to.
-	
+
 	if (station >= 1 and station <= 7)
 	{
 		fStationMustMatch[station-1] = value;
@@ -278,7 +278,7 @@ AliAnalysisTaskLinkToMC::AliAnalysisTaskLinkToMC() :
 	/// The output histograms generated are to cross check the quality of the
 	/// correlation and their generation can be turned off with
 	/// AliAnalysisTaskLinkToMC::GenerateHistograms(false).
-	
+
 	// Do not force any matching for particular chambers by default.
 	for (Int_t i = 0; i < 14; i++)
 	{
@@ -293,7 +293,7 @@ AliAnalysisTaskLinkToMC::AliAnalysisTaskLinkToMC() :
 	{
 		fStationMustMatch[i] = false;
 	}
-	
+
 	DefineOutput(1, TList::Class());
 }
 
@@ -323,7 +323,7 @@ AliAnalysisTaskLinkToMC::AliAnalysisTaskLinkToMC(const char* name) :
 	/// storing histograms generated to cross check the quility of the
 	/// correlation.
 	/// \param name  The name of the task.
-	
+
 	// Do not force any matching for particular chambers by default.
 	for (Int_t i = 0; i < 14; i++)
 	{
@@ -338,7 +338,7 @@ AliAnalysisTaskLinkToMC::AliAnalysisTaskLinkToMC(const char* name) :
 	{
 		fStationMustMatch[i] = false;
 	}
-	
+
 	DefineOutput(1, TList::Class());
 }
 
@@ -349,40 +349,40 @@ void AliAnalysisTaskLinkToMC::UserCreateOutputObjects()
 	/// and fake tracks. The binning range for all histograms is 30 bins along
 	/// the pT dimension (X direction) from 0 to 20 GeV/c and 30 bins in the
 	/// rapidity dimension (Y direction) form -4 to -2.4 units.
-	
+
 	fHistos = new TList;
-	
+
 	char name[1024];
 	char title[1024];
-	
+
 	Int_t nBinsX = 30;
 	Double_t minX = 0.;
 	Double_t maxX = 20.;
 	Int_t nBinsY = 30;
 	Double_t minY = -4.;
 	Double_t maxY = -2.4;
-	
+
 	snprintf(name, 1024, "findableTracksHist");
 	snprintf(title, 1024, "Findable tracks");
 	fFindableHist = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFindableHist->SetXTitle("p_{T} [GeV/c]");
 	fFindableHist->SetYTitle("Rapidity (Y)");
 	fHistos->Add(fFindableHist);
-	
+
 	snprintf(name, 1024, "foundTracksHistMC");
 	snprintf(title, 1024, "Found tracks (filled with Monte Carlo kinematic information)");
 	fFoundHistMC = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFoundHistMC->SetXTitle("p_{T} [GeV/c]");
 	fFoundHistMC->SetYTitle("Rapidity (Y)");
 	fHistos->Add(fFoundHistMC);
-	
+
 	snprintf(name, 1024, "foundTracksHist");
 	snprintf(title, 1024, "Found tracks (filled with reconstructed kinematic information)");
 	fFoundHist = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFoundHist->SetXTitle("p_{T} [GeV/c]");
 	fFoundHist->SetYTitle("Rapidity (Y)");
 	fHistos->Add(fFoundHist);
-	
+
 	snprintf(name, 1024, "fakeTracksHist");
 	snprintf(title, 1024, "Fake tracks");
 	fFakeHist = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
@@ -407,7 +407,7 @@ void AliAnalysisTaskLinkToMC::UserExec(Option_t* /*option*/)
 	/// label is filled with -1.
 	/// Finally the checking histograms are further filled with the ESD
 	/// information based on the ESD to MC track map.
-	
+
 	if (fMakeHists and
 	    (fFindableHist == NULL or fFoundHistMC == NULL or fFoundHist == NULL or fFakeHist == NULL)
 	   )
@@ -415,9 +415,9 @@ void AliAnalysisTaskLinkToMC::UserExec(Option_t* /*option*/)
 		AliError("Histograms have not been created.");
 		return;
 	}
-	
+
 	if (fMakeHists and MCEvent() != NULL) FillHistsFromMC();
-	
+
 	if (InputEvent() != NULL)
 	{
 		if (InputEvent()->IsA() == AliESDEvent::Class())
@@ -441,7 +441,7 @@ void AliAnalysisTaskLinkToMC::UserExec(Option_t* /*option*/)
 				));
 		}
 	}
-	
+
 	if (fMakeHists) PostData(1, fHistos);
 }
 
@@ -451,7 +451,7 @@ void AliAnalysisTaskLinkToMC::Terminate(Option_t* /*option*/)
 	/// The terminate method will draw the histograms filled by this task if
 	/// they were filled by setting appropriate flag with the
 	/// GenerateHistograms(true) method, which is the default.
-	
+
 	if (fMakeHists)
 	{
 		gStyle->SetPalette(1);
@@ -463,7 +463,7 @@ void AliAnalysisTaskLinkToMC::Terminate(Option_t* /*option*/)
 		fFoundHist->DrawCopy("colz");
 		new TCanvas;
 		fFakeHist->DrawCopy("colz");
-		
+
 		AliInfo(Form("Findable tracks = %d", Int_t(fFindableHist->GetEntries()) ));
 		AliInfo(Form("Found tracks    = %d", Int_t(fFoundHistMC->GetEntries()) ));
 		AliInfo(Form("Fake tracks     = %d", Int_t(fFakeHist->GetEntries()) ));
@@ -486,7 +486,7 @@ bool AliAnalysisTaskLinkToMC::IsFindable(AliMCParticle* track) const
 
 	// Select only muons.
 	if (TMath::Abs(track->Particle()->GetPdgCode()) != 13) return false;
-	
+
 	// Build hit mask for chambers.
 	bool hitOnCh[14];
 	for (Int_t i = 0; i < 14; i++)
@@ -503,14 +503,14 @@ bool AliAnalysisTaskLinkToMC::IsFindable(AliMCParticle* track) const
 			hitOnCh[chamberId] = true;
 		}
 	}
-	
+
 	// Check that enough hits are available on all tracking chambers.
 	bool hitOnSt1 = hitOnCh[0] or hitOnCh[1];
 	bool hitOnSt2 = hitOnCh[2] or hitOnCh[3];
 	bool hitOnSt3 = hitOnCh[4] or hitOnCh[5];
 	bool hitOnSt4 = hitOnCh[6] or hitOnCh[7];
 	bool hitOnSt5 = hitOnCh[8] or hitOnCh[9];
-	
+
 	return (hitOnSt1 and hitOnSt2 and hitOnSt3 and hitOnSt4 and hitOnSt5);
 }
 
@@ -520,11 +520,11 @@ void AliAnalysisTaskLinkToMC::FillHistsFromMC()
 	/// Fills the histogram containing findable tracks from the MC event information.
 	/// Only MC tracks for which the IsFindable method returns true are added
 	/// to the histogram.
-	
+
 	for (Int_t i = 0; i < MCEvent()->GetNumberOfTracks(); i++)
 	{
 		AliMCParticle* mcTrack = (AliMCParticle*) MCEvent()->GetTrack(i);
-		
+
 		// Select only reconstructible tracks to fill into findable hist.
 		if (IsFindable(mcTrack))
 		{
@@ -544,7 +544,7 @@ void AliAnalysisTaskLinkToMC::FillHistsFromLinks(TMap& links)
 	/// \param links  This contains the mapping between ESD muon tracks and
 	///    MC tracks. ESD tracks for which no MC track could be matched should
 	///    have the "value" of the key/value pair in the mapping set to NULL.
-	
+
 	TIter itmap(links.GetTable());
 	TPair* pair = NULL;
 	while ( (pair = static_cast<TPair*>(itmap())) != NULL )
@@ -553,7 +553,7 @@ void AliAnalysisTaskLinkToMC::FillHistsFromLinks(TMap& links)
 		{
 			AliESDMuonTrack* esdTrack = static_cast<AliESDMuonTrack*>(pair->Key());
 			fFoundHist->Fill(esdTrack->Pt(), esdTrack->Y());
-			
+
 			AliMCParticle* mcTrack = static_cast<AliMCParticle*>(pair->Value());
 			fFoundHistMC->Fill(mcTrack->Pt(), mcTrack->Y());
 		}
@@ -571,59 +571,59 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 	/// This code is copied from AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD with
 	/// modifications to fill the MC track label using the ESD to MC track mapping.
 	/// \param links  This is the mapping between ESD tracks and MC tracks.
-	
+
 	// ESD Muon Filter analysis task executed for each event
 	AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
         // CHECK
         if ( ! esd ) {
           AliError("Cannot get input event");
           return;
-        }  
-	
+        }
+
 	// Define arrays for muons
 	Double_t pos[3];
 	Double_t p[3];
 	//	Double_t pid[10];
-	
+
 	// has to be changed once the muon pid is provided by the ESD
 	// for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
 	// pid[AliAODTrack::kMuon]=1.;
-	
+
 	AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
 	if(!header) AliFatal("Not a standard AOD");
 	AliAODTrack *aodTrack = 0x0;
 	AliESDMuonTrack *esdMuTrack = 0x0;
-	
+
 	// Access to the AOD container of tracks
 	TClonesArray &tracks = *(AODEvent()->GetTracks());
 	Int_t jTracks = tracks.GetEntriesFast();
-	
-	// Read primary vertex from AOD event 
+
+	// Read primary vertex from AOD event
 	AliAODVertex *primary = AODEvent()->GetPrimaryVertex();
 	if (primary != NULL) primary->Print();
-	
+
 	// Loop on muon tracks to fill the AOD track branch
 	Int_t nMuTracks = esd->GetNumberOfMuonTracks();
 	printf("Number of Muon Tracks=%d\n",nMuTracks);
-	
+
 	// Update number of positive and negative tracks from AOD event (M.G.)
 	Int_t nPosTracks = header->GetRefMultiplicityPos();
 	Int_t nNegTracks = header->GetRefMultiplicityNeg();
-	
+
 	for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack)
 	{
 		esdMuTrack = esd->GetMuonTrack(nMuTrack);
-		
+
 		//if (!esdMuTrack->ContainTrackerData()) continue;
-		
+
 		UInt_t selectInfo = 0;
-		
-		p[0] = esdMuTrack->Px(); 
-		p[1] = esdMuTrack->Py(); 
+
+		p[0] = esdMuTrack->Px();
+		p[1] = esdMuTrack->Py();
 		p[2] = esdMuTrack->Pz();
-		
-		pos[0] = esdMuTrack->GetNonBendingCoor(); 
-		pos[1] = esdMuTrack->GetBendingCoor(); 
+
+		pos[0] = esdMuTrack->GetNonBendingCoor();
+		pos[1] = esdMuTrack->GetBendingCoor();
 		pos[2] = esdMuTrack->GetZ();
 
 		Int_t label = -1;
@@ -637,7 +637,7 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 				AliWarning("The MC track was set to -1.");
 			}
 		}
-		
+
 		aodTrack = new(tracks[jTracks++]) AliAODTrack(
 				esdMuTrack->GetUniqueID(), // ID
 				label, // label
@@ -655,7 +655,7 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 				AliAODTrack::kPrimary,// track type
 				selectInfo
 			);
-		
+
 		aodTrack->SetPIDForTracking(AliPID::kMuon);
 		aodTrack->SetXYAtDCA(esdMuTrack->GetNonBendingCoorAtDCA(), esdMuTrack->GetBendingCoorAtDCA());
 		aodTrack->SetPxPyPzAtDCA(esdMuTrack->PxAtDCA(), esdMuTrack->PyAtDCA(), esdMuTrack->PzAtDCA());
@@ -670,17 +670,17 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 		aodTrack->SetMUONtrigHitsMapTrk(esdMuTrack->GetHitsPatternInTrigChTrk());
 		aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
 		aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
-		
+
 		if (primary != NULL) primary->AddDaughter(aodTrack);
-		
+
 		if (esdMuTrack->Charge() > 0) nPosTracks++;
 		else nNegTracks++;
 	}
-	
-	header->SetRefMultiplicity(jTracks); 
+
+	header->SetRefMultiplicity(jTracks);
 	header->SetRefMultiplicityPos(nPosTracks);
 	header->SetRefMultiplicityNeg(nNegTracks);
-	
+
 	// Note: we do not have to call PostData for the AOD because the AliAnalysisTaskSE
 	// base class already does so just after the UserExec.
 }
@@ -736,7 +736,7 @@ void AliAnalysisTaskLinkToMC::FindLinksToMC(TMap& links)
 	//     return (compatible, chi^2)
 	//   else:
 	//     return (not compatible, 1e100)
-	
+
 	AliESDEvent* esd = static_cast<AliESDEvent*>(InputEvent());
 
 	TObjArray esdTracks;
@@ -749,7 +749,7 @@ void AliAnalysisTaskLinkToMC::FindLinksToMC(TMap& links)
 	{
 		mcTracks.Add(MCEvent()->GetTrack(i));
 	}
-	
+
 	while (not esdTracks.IsEmpty() and not mcTracks.IsEmpty())
 	{
 		Double_t bestQuality = 1e100;
@@ -760,7 +760,7 @@ void AliAnalysisTaskLinkToMC::FindLinksToMC(TMap& links)
 		TIter itmc(&mcTracks);
 		AliESDMuonTrack* esdTrack = NULL;
 		AliMCParticle* mcTrack = NULL;
-		
+
 		// Find the ESD and MC track pair that matches the best.
 		while ( (esdTrack = static_cast<AliESDMuonTrack*>(itesd())) != NULL )
 		{
@@ -781,24 +781,24 @@ void AliAnalysisTaskLinkToMC::FindLinksToMC(TMap& links)
 			}
 			itmc.Reset();
 		}
-		
+
 		// If no track pair could be matched then we are done because we
 		// will not be able to match anything more next time.
 		if (bestMcTrack == NULL) break;
-		
+
 		links.Add(bestEsdTrack, bestMcTrack);
-		
+
 		esdTracks.Remove(bestEsdTrack);
 		mcTracks.Remove(bestMcTrack);
 	}
-	
+
 	// Add all remaining ESD tracks which could not be matched to any MC track
 	// to the mapping but with NULL for the MC track.
 	TIter itesd(&esdTracks);
 	AliESDMuonTrack* esdTrack = NULL;
 	while ( (esdTrack = static_cast<AliESDMuonTrack*>(itesd())) != NULL )
 	{
-		links.Add(esdTrack, NULL);
+		links.Add(esdTrack, static_cast<TObject*>(nullptr));
 	}
 }
 
@@ -826,12 +826,12 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 	/// [in] \param esdTrack  The ESD track we are trying to match.
 	/// [in] \param mcTrack  The MC track we are trying to match the ESD track to.
 	/// [out] \param tracksCompatible  Filled with true if the given esdTrack
-	///     and mcTrack are compatible. 
+	///     and mcTrack are compatible.
 	/// [out] \param chi2  Filled with the total chi-squared calculated for all
 	///     matched clusters.
 	/// [out] \param noOfClusters  Filled with the number of clusters that were
 	///     matched to at least one track reference.
-	
+
 	chi2 = 0;
 	noOfClusters = 0;
 	tracksCompatible = false;
@@ -844,7 +844,7 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 	bool stationMatched[7] = {
 			false, false, false, false, false, false, false
 		};
-	
+
 	for (Int_t i = 0; i < esdTrack->GetNClusters(); i++)
 	{
 		AliESDMuonCluster* cluster = esdTrack->GetESDEvent()->FindMuonCluster(esdTrack->GetClusterId(i));
@@ -854,19 +854,19 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 		// if the default is also not set.
 		if (varX == 0) varX = fVarX != 0 ? fVarX : 1.;
 		if (varY == 0) varY = fVarY != 0 ? fVarY : 1.;
-		
+
 		Double_t chi2A = 1e100;
 		AliTrackReference* refA = NULL;
 		Double_t chi2B = 1e100;
 		AliTrackReference* refB = NULL;
-		
+
 		for (Int_t j = 0; j < mcTrack->GetNumberOfTrackReferences(); j++)
 		{
 			AliTrackReference* ref = mcTrack->GetTrackReference(j);
-			
+
 			if (ref->DetectorId() != AliTrackReference::kMUON) continue;
 			if (ref->UserId() != cluster->GetDetElemId()) continue;
-			
+
 			Double_t dx = ref->X() - cluster->GetX();
 			if (TMath::Abs(dx) > fHardCutLimitX) continue;
 			Double_t dy = ref->Y() - cluster->GetY();
@@ -876,7 +876,7 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 				Double_t dz = ref->Z() - cluster->GetZ();
 				if (TMath::Abs(dz) > fHardCutLimitZ) continue;
 			}
-			
+
 			Double_t chi2sum = dx*dx / varX + dy*dy / varY;
 			if (chi2sum < chi2A)
 			{
@@ -893,7 +893,7 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 				refB = ref;
 			}
 		}
-		
+
 		Double_t x = 0, y = 0;
 		if (refA != NULL and refB != NULL)
 		{
@@ -910,15 +910,15 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 		{
 			continue;  // no track reference hit found.
 		}
-		
+
 		Double_t dx = x - cluster->GetX();
 		Double_t dy = y - cluster->GetY();
-		
+
 		Double_t chi2x = dx*dx / varX;
 		if (chi2x > fSigmaCut2) continue;
 		Double_t chi2y = dy*dy / varY;
 		if (chi2y > fSigmaCut2) continue;
-		
+
 		chi2 += chi2x + chi2y;
 		noOfClusters++;
 		if (cluster->GetChamberId() >= 0 and cluster->GetChamberId() < 4)
@@ -929,17 +929,17 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 		{
 			noOfClustersSt45++;
 		}
-		
+
 		if (0 <= cluster->GetChamberId() and cluster->GetChamberId() < 14)
 		{
 			chamberMatched[cluster->GetChamberId()] = true;
 			stationMatched[cluster->GetChamberId()/2] = true;
 		}
 	}
-	
+
 	// Need to check that all the chambers and stations that had to match we
 	// actually found matching track references.
-	
+
 	bool forcedChambersMatched = true;
 	for (Int_t i = 0; i < 14; i++)
 	{
@@ -956,7 +956,7 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 			forcedStationsMatched = false;
 		}
 	}
-	
+
 	if (noOfClusters >= fMinClusters and
 	    noOfClustersSt12 >= fMinClustersInSt12 and
 	    noOfClustersSt45 >= fMinClustersInSt45 and
@@ -966,4 +966,3 @@ void AliAnalysisTaskLinkToMC::CalculateTrackCompatibility(
 		tracksCompatible = true;
 	}
 }
-

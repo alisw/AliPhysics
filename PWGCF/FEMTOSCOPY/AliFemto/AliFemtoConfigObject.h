@@ -15,6 +15,7 @@
 #include <utility>
 #include <iostream>
 #include <iterator>
+#include <cmath>
 
 #include <TBuffer.h>
 #include <TString.h>

@@ -10,7 +10,9 @@
 #include "AliSignalMC.h"
 #endif
 
+#include <TMath.h>
 #include <iostream>
+
 using std::cout;
 using std::endl;
 
@@ -31,22 +33,22 @@ AliSignalMC::AliSignalMC(Int_t nProngs /*=1*/, Int_t nGenerations /*=kNMaxGenera
   fCommonAncestorIdx(0)
 {
    if(nProngs<1 || nProngs>kNMaxProngs) {
-      cout << "WARNING in AliSignalMC(nProngs, nGenerations):  Attempt to build an AliSignalMC object with " 
-      << nProngs << " prongs!" << endl; 
+      cout << "WARNING in AliSignalMC(nProngs, nGenerations):  Attempt to build an AliSignalMC object with "
+      << nProngs << " prongs!" << endl;
       cout << "WARNING in AliSignalMC(nProngs, nGenerations):  Allowed number of prongs: 1 - " << kNMaxProngs << endl;
       fNProngs = 1;
    }
-   else 
+   else
       fNProngs = nProngs;
    if(nGenerations<1 || nGenerations>kNMaxGenerations) {
-      cout << "WARNING in AliSignalMC(nProngs, nGenerations):  Attempt to build an AliReducedSignal object with " 
-      << nGenerations << " generations!" << endl; 
+      cout << "WARNING in AliSignalMC(nProngs, nGenerations):  Attempt to build an AliReducedSignal object with "
+      << nGenerations << " generations!" << endl;
       cout << "WARNING in AliSignalMC(nProngs, nGenerations):  Allowed number of generations: 1 - " << kNMaxGenerations << endl;
       fNGenerations = kNMaxGenerations;
    }
-   else 
+   else
       fNGenerations = nGenerations;
-   
+
    for(UInt_t p=0;p<fNProngs;++p) {
       for(UInt_t g=0;g<fNGenerations;++g) {
          fPDGcodes[p][g] = kPDGnotAssigned;
@@ -74,22 +76,22 @@ fUseANDonSourceBitMap(),
 fCommonAncestorIdx(0)
 {
    if(nProngs<1 || nProngs>kNMaxProngs) {
-      cout << "WARNING in AliSignalMC(name, title, nProngs, nGenerations):  Attempt to build an AliSignalMC object with " 
-      << nProngs << " prongs!" << endl; 
+      cout << "WARNING in AliSignalMC(name, title, nProngs, nGenerations):  Attempt to build an AliSignalMC object with "
+      << nProngs << " prongs!" << endl;
       cout << "WARNING in AliSignalMC(name, title, nProngs, nGenerations):  Allowed number of prongs: 1 - " << kNMaxProngs << endl;
       fNProngs = 1;
    }
    else
       fNProngs = nProngs;
    if(nGenerations<1 || nGenerations>kNMaxGenerations) {
-      cout << "WARNING in AliSignalMC(name, title, nProngs, nGenerations):  Attempt to build an AliSignalMC object with " 
-      << nGenerations << " generations!" << endl; 
+      cout << "WARNING in AliSignalMC(name, title, nProngs, nGenerations):  Attempt to build an AliSignalMC object with "
+      << nGenerations << " generations!" << endl;
       cout << "WARNING in AliSignalMC(name, title, nProngs, nGenerations):  Allowed number of generations: 1 - " << kNMaxGenerations << endl;
       fNGenerations = kNMaxGenerations;
    }
-   else 
+   else
       fNGenerations = nGenerations;
-   
+
    for(UInt_t p=0;p<fNProngs;++p) {
       for(UInt_t g=0;g<fNGenerations;++g) {
          fPDGcodes[p][g] = kPDGnotAssigned;
@@ -147,7 +149,7 @@ void AliSignalMC::SetCommonAncestorIdx(UInt_t idx) {
 }
 
 //________________________________________________________________________________________________________________
-void AliSignalMC::SetProngHistory(UInt_t prong, UInt_t pdgCodes[], Bool_t checkBothCharges[], UInt_t sourceBits[], 
+void AliSignalMC::SetProngHistory(UInt_t prong, UInt_t pdgCodes[], Bool_t checkBothCharges[], UInt_t sourceBits[],
                                   Bool_t excludePDG[] /* = 0x0*/, UInt_t excludeSources[] /* = 0x0*/, Bool_t useANDonSourceBits[] /*=0x0*/) {
    //
    // set the entire prong history
@@ -225,10 +227,10 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
    //
    if(prong<0 || prong>=fNProngs) return kFALSE;
    if(generation<0 || generation>=fNGenerations) return kFALSE;
-   
+
    Bool_t decision = kTRUE;
    Int_t absPDG = TMath::Abs(pdg);
-   
+
    switch(TMath::Abs(fPDGcodes[prong][generation])) {
       case kPDGnotAssigned:
          // PDG not required (any code will do fine)
@@ -335,7 +337,7 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
             if(fPDGcodes[prong][generation]<0) decision = pdg>=-429 && pdg<=-420;
          }
          break;
-         
+
       case 406:     // charged open charmed mesons with s quark
          if(fCheckBothCharges[prong][generation])
             decision = (absPDG>=430 && absPDG<=439);
@@ -344,7 +346,7 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
             if(fPDGcodes[prong][generation]<0) decision = (pdg>=-439 && pdg<=-430);
          }
          break;
-         
+
       case 4000:     // all charmed baryons
          if(fCheckBothCharges[prong][generation])
             decision = absPDG>=4000 && absPDG<=4999;
@@ -399,7 +401,7 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
                (pdg>=-5999 && pdg<=-5000);
          }
          break;
-         
+
       case 504:     // neutral open beauty mesons NO s quark
          if(fCheckBothCharges[prong][generation])
             decision = (absPDG>=510 && absPDG<=519);
@@ -416,7 +418,7 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
             if(fPDGcodes[prong][generation]<0) decision = pdg>=-529 && pdg<=-520;
          }
          break;
-         
+
       case 506:     // charged open beauty mesons with s quark
          if(fCheckBothCharges[prong][generation])
             decision = (absPDG>=530 && absPDG<=539);
@@ -425,7 +427,7 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
             if(fPDGcodes[prong][generation]<0) decision = (pdg>=-539 && pdg<=-530);
          }
          break;
-         
+
       case 5000:      // all beauty baryons
          if(fCheckBothCharges[prong][generation])
             decision = absPDG>=5000 && absPDG<=5999;
@@ -476,7 +478,7 @@ Bool_t AliSignalMC::TestPDG(UInt_t prong, UInt_t generation, Int_t pdg) {
          else
             decision = (fPDGcodes[prong][generation]==pdg);
    }
-   
+
    if(fPDGcodes[prong][generation] && fExcludePDG[prong][generation]) decision = !decision;
    return decision;
 }

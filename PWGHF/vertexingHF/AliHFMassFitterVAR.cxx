@@ -859,7 +859,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   }
 
   /*Fit Bkg*/
-  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
+  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack);
   //   TF1 *funcbkg = GetBackgroundFunc();
   cout<<"Function name = "<<funcbkg->GetName()<<endl<<endl;
 
@@ -947,7 +947,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
 
   //  Double_t sgnInt=diffUnderBands;
   if(sgnInt<0)sgnInt=0.1*totInt;
-  TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitterVAR::FitFunction4MassDistr,fminMass,fmaxMass,fNFinalPars,"AliHFMassFitterVAR","FitFunction4MassDistr");
+  TF1 *funcmass = new TF1(massname.Data(),this,&AliHFMassFitterVAR::FitFunction4MassDistr,fminMass,fmaxMass,fNFinalPars);
   cout<<"Function name = "<<funcmass->GetName()<<endl<<endl;
   funcmass->SetLineColor(4); //blue
 
@@ -1076,7 +1076,7 @@ Bool_t AliHFMassFitterVAR::PrepareHighPolFit(TF1 *fback){
   fpolbackdegreeTayHelp=2;
   TF1 *funcbkg,*funcPrev=0x0;  
   while(fpolbackdegreeTayHelp<=fpolbackdegreeTay){        
-    funcbkg = new TF1(Form("temp%d",fpolbackdegreeTayHelp),this,&AliHFMassFitterVAR::BackFitFuncPolHelper,fminMass,fmaxMass,fpolbackdegreeTayHelp+1,"AliHFMassFitterVAR","BackFitFuncPolHelper");
+    funcbkg = new TF1(Form("temp%d",fpolbackdegreeTayHelp),this,&AliHFMassFitterVAR::BackFitFuncPolHelper,fminMass,fmaxMass,fpolbackdegreeTayHelp+1);
     if(funcPrev){
       for(Int_t j=0;j<fpolbackdegreeTayHelp;j++){// now is +1 degree w.r.t. previous fit funct
         funcbkg->SetParameter(j,funcPrev->GetParameter(j));
@@ -1128,7 +1128,7 @@ Bool_t AliHFMassFitterVAR::RefitWithBkgOnly(Bool_t draw){
   fSideBands = kFALSE;
   Int_t typesSave=ftypeOfFit4Sgn;
   if(ftypeOfFit4Sgn==2)ftypeOfFit4Sgn=0;
-  TF1* funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
+  TF1* funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack);
 
   funcbkg->SetLineColor(kBlue+3); //dark blue
 
@@ -1275,7 +1275,7 @@ void AliHFMassFitterVAR::AddFunctionsToHisto(){
     }
 
     bkgname += "FullRange";
-    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
+    TF1 *bfullrange=new TF1(bkgname.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack);
     //cout<<bfullrange->GetName()<<endl;
     for(Int_t i=0;i<fNparBack;i++){
       bfullrange->SetParName(i,b->GetParName(i));
@@ -1289,8 +1289,8 @@ void AliHFMassFitterVAR::AddFunctionsToHisto(){
     bkgnamesave += "Recalc";
 
     TF1 *blastpar;
-    if(ftypeOfFit4Sgn<2)blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
-    else blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4BkgAndReflDraw");
+    if(ftypeOfFit4Sgn<2)blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4Bkg,fminMass,fmaxMass,fNparBack);
+    else blastpar=new TF1(bkgnamesave.Data(),this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl);
 
     TF1 *mass=fhistoInvMass->GetFunction("funcmass");
 
@@ -1531,7 +1531,7 @@ void AliHFMassFitterVAR::PlotFitVAR(TVirtualPad* pd,Double_t nsigma,Int_t writeF
 
       TF1 *fitCp;
       if(ftypeOfFit4Sgn==2){// drawing background function w/o reflection contribution
-        fitCp= new TF1("fbackcpfordrawing",this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4BkgAndReflDraw");
+        fitCp= new TF1("fbackcpfordrawing",this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fminMass,fmaxMass,fNparBack+fNparRefl);
         fitCp->SetParameter(fNparBack,0);// set to 0 reflection normalization
 
         for(Int_t ibk=0;ibk<fNparBack;ibk++){
@@ -2010,8 +2010,8 @@ TH1F* AliHFMassFitterVAR::GetOverBackgroundResidualsAndPulls(Double_t minrange,D
 
   // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
   TF1 *fbackCp;
-  if(ftypeOfFit4Sgn<2)fbackCp=new TF1("ftmpback",this,&AliHFMassFitterVAR::FitFunction4Bkg,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNparBack,"AliHFMassFitterVAR","FitFunction4Bkg");
-  else fbackCp=new TF1("ftmpback",this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1),fNparBack+fNparRefl,"AliHFMassFitterVAR","FitFunction4BkgAndReflDraw");
+  if(ftypeOfFit4Sgn<2)fbackCp=new TF1("ftmpback",this,&AliHFMassFitterVAR::FitFunction4Bkg,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNparBack);
+  else fbackCp=new TF1("ftmpback",this,&AliHFMassFitterVAR::FitFunction4BkgAndReflDraw,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1),fNparBack+fNparRefl);
 
   for(Int_t i=0;i<fback->GetNpar();i++){
     fbackCp->SetParameter(i,fback->GetParameter(i));
@@ -2053,7 +2053,7 @@ TH1F* AliHFMassFitterVAR::GetAllRangeResidualsAndPulls(Double_t minrange,Double_
   }
 
   // THIS LONG WAY TO CP THE FUNC IS NEEDED ONLY TO EXTEND THE RANGE OF THE FUNCTION: NOT POSSIBLE OTHERWISE (WHY??? REALLY UNCOMFORTABLE)
-  TF1 *fmassCp=new TF1("fmassCp",this,&AliHFMassFitterVAR::FitFunction4MassDistr,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars,"AliHFMassFitterVAR","FitFunction4MassDistr");
+  TF1 *fmassCp=new TF1("fmassCp",this,&AliHFMassFitterVAR::FitFunction4MassDistr,fhistoInvMass->GetBinLowEdge(1),fhistoInvMass->GetBinLowEdge(fhistoInvMass->GetNbinsX()+1), fNFinalPars);
   for(Int_t i=0;i< f->GetNpar();i++){
     fmassCp->SetParameter(i,f->GetParameter(i));
   }

@@ -1430,7 +1430,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( TGraphAsymmErrors* trendGrap
     Int_t nPars = 2*(istep+1);
     Double_t xMin = trendGraph->GetXaxis()->GetXmin();
     Double_t xMax = trendGraph->GetXaxis()->GetXmax();
-    func = new TF1("rangeFunc",this,&AliMTRChEffAnalysis::FitRangesFunc,xMin,xMax,nPars,"AliMTRChEffAnalysis","FitRanges");
+    func = new TF1("rangeFunc",this,&AliMTRChEffAnalysis::FitRangesFunc,xMin,xMax,nPars);
     func->FixParameter(0,istep);
     for ( Int_t ipar=1; ipar<nPars; ipar++ ) {
 //      if ( ipar >= 2*istep ) {

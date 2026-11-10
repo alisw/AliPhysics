@@ -258,8 +258,8 @@ Bool_t AliHFVnVsMassFitter::SimultaneusFit(Bool_t drawFit) {
   initpars.push_back(0.10); //initial parameter for signal vn
   if(fSecondPeak && fDoSecondPeakVn) {initpars.push_back(0.10);} //initial parameter for second peak vn
 
-  fMassTotFunc = new TF1("fMassTotFunc",this,&AliHFVnVsMassFitter::MassFunc,fMassMin,fMassMax,nparsmass,"AliHFVnVsMassFitter","MassFunc");
-  fVnTotFunc = new TF1("fVnTotFunc",this,&AliHFVnVsMassFitter::vnFunc,fMassMin,fMassMax,nparsvn,"AliHFVnVsMassFitter","vnFunc");
+  fMassTotFunc = new TF1("fMassTotFunc",this,&AliHFVnVsMassFitter::MassFunc,fMassMin,fMassMax,nparsmass);
+  fVnTotFunc = new TF1("fVnTotFunc",this,&AliHFVnVsMassFitter::vnFunc,fMassMin,fMassMax,nparsvn);
   SetParNames();
 
   ROOT::Math::WrappedMultiTF1 wfTotMass(*fMassTotFunc,1);
@@ -313,12 +313,12 @@ Bool_t AliHFVnVsMassFitter::SimultaneusFit(Bool_t drawFit) {
   result.Print(std::cout);
 
   //set parameters in every function
-  fVnBkgFunc = new TF1("fVnBkgFunc",this,&AliHFVnVsMassFitter::vnBkgFunc,fMassMin,fMassMax,fNParsVnBkg,"AliHFVnVsMassFitter","vnBkgFunc");
-  fMassBkgFunc = new TF1("fMassBkgFunc",this,&AliHFVnVsMassFitter::MassBkg,fMassMin,fMassMax,fNParsMassBkg,"AliHFVnVsMassFitter","MassBkg");
-  fMassSgnFunc = new TF1("fMassSgnFunc",this,&AliHFVnVsMassFitter::MassSignal,fMassMin,fMassMax,fNParsMassSgn,"AliHFVnVsMassFitter","MassSignal");
-  if(fReflections) {fMassRflFunc = new TF1("fMassRflFunc",this,&AliHFVnVsMassFitter::MassRfl,fMassMin,fMassMax,fNParsRfl,"AliHFVnVsMassFitter","MassRfl");}
-  if(fReflections) {fMassBkgRflFunc = new TF1("fMassBkgRflFunc",this,&AliHFVnVsMassFitter::MassBkgRfl,fMassMin,fMassMax,fNParsMassBkg+fNParsRfl,"AliHFVnVsMassFitter","MassBkgRfl");}
-  if(fSecondPeak) {fMassSecPeakFunc = new TF1("fMassSecPeakFunc",this,&AliHFVnVsMassFitter::MassSecondPeak,fMassMin,fMassMax,fNParsSec,"AliHFVnVsMassFitter","MassSecondPeak");}
+  fVnBkgFunc = new TF1("fVnBkgFunc",this,&AliHFVnVsMassFitter::vnBkgFunc,fMassMin,fMassMax,fNParsVnBkg);
+  fMassBkgFunc = new TF1("fMassBkgFunc",this,&AliHFVnVsMassFitter::MassBkg,fMassMin,fMassMax,fNParsMassBkg);
+  fMassSgnFunc = new TF1("fMassSgnFunc",this,&AliHFVnVsMassFitter::MassSignal,fMassMin,fMassMax,fNParsMassSgn);
+  if(fReflections) {fMassRflFunc = new TF1("fMassRflFunc",this,&AliHFVnVsMassFitter::MassRfl,fMassMin,fMassMax,fNParsRfl);}
+  if(fReflections) {fMassBkgRflFunc = new TF1("fMassBkgRflFunc",this,&AliHFVnVsMassFitter::MassBkgRfl,fMassMin,fMassMax,fNParsMassBkg+fNParsRfl);}
+  if(fSecondPeak) {fMassSecPeakFunc = new TF1("fMassSecPeakFunc",this,&AliHFVnVsMassFitter::MassSecondPeak,fMassMin,fMassMax,fNParsSec);}
   for(Int_t iPar=0; iPar<nparsvn; iPar++) {
     fVnTotFunc->SetParameter(iPar,result.Parameter(iPar));
     fVnTotFunc->SetParError(iPar,result.ParError(iPar));
@@ -548,7 +548,7 @@ Bool_t AliHFVnVsMassFitter::VnSBPrefit() {
       gVnVsMassSB->SetPointError(iBin,fVnVsMassHisto->GetBinWidth(iBin+1)/2,fVnVsMassHisto->GetBinError(iBin+1));
     }
   }
-  fVnBkgFuncSb = new TF1("fVnBkgFuncSb",this,&AliHFVnVsMassFitter::vnBkgFunc,fMassMin,fMassMax,fNParsVnBkg,"AliHFVnVsMassFitter","vnBkgFunc");
+  fVnBkgFuncSb = new TF1("fVnBkgFuncSb",this,&AliHFVnVsMassFitter::vnBkgFunc,fMassMin,fMassMax,fNParsVnBkg);
   switch(fVnBkgFuncType) {
     case 1:
       fVnBkgFuncSb->SetParName(0,"ConstVnBkg");

@@ -1632,8 +1632,8 @@ void AliV0Module::DoAnalysis() {
         h1dPanosCorrections->SetYTitle("#epsilon_{GEANT3} / #epsilon_{FLUKA}");
 
         //TF1 *fitGeant3FlukaCorr = 0x0; declared outside this scope
-        if(fWhichParticle == "Lambda") fitGeant3FlukaCorr = new TF1("fitGeant3FlukaCorr", this, &AliV0Module::MyGeant3FlukaCorrectionForProtons,     0.25, 1.1, 3, "AliV0Module","MyGeant3FlukaCorrectionForProtons");
-        if(fWhichParticle == "AntiLambda") fitGeant3FlukaCorr = new TF1("fitGeant3FlukaCorr", this, &AliV0Module::MyGeant3FlukaCorrectionForAntiProtons, 0.25, 1.1, 4, "AliV0Module", "MyGeant3FlukaCorrectionForAntiProtons");
+        if(fWhichParticle == "Lambda") fitGeant3FlukaCorr = new TF1("fitGeant3FlukaCorr", this, &AliV0Module::MyGeant3FlukaCorrectionForProtons,     0.25, 1.1, 3);
+        if(fWhichParticle == "AntiLambda") fitGeant3FlukaCorr = new TF1("fitGeant3FlukaCorr", this, &AliV0Module::MyGeant3FlukaCorrectionForAntiProtons, 0.25, 1.1, 4);
 
         h1dPanosCorrections->Fit("fitGeant3FlukaCorr","rime+0"); // Chi2
 
@@ -1912,7 +1912,7 @@ void AliV0Module::DoAnalysis() {
 
         Double_t lProducedXi[100];
 
-        TF1 *lLevyFitXiFeedDown = new TF1("LevyFitXiFeedDown",this ,&AliV0Module::MyLevyPtXi, 0.0,15,3, "AliV0Module","MyLevyPXi");
+        TF1 *lLevyFitXiFeedDown = new TF1("LevyFitXiFeedDown",this ,&AliV0Module::MyLevyPtXi, 0.0,15,3);
 
         //Set Parameters Adequately, as in paper
         //FIXME: These are the 7TeV Xi- parameters!!!

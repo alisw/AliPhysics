@@ -24,21 +24,21 @@ public:
     AliAnalysisTaskHFEemcQA();
     AliAnalysisTaskHFEemcQA(const char *name);
     virtual ~AliAnalysisTaskHFEemcQA();
-    
+
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
-    
+
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
-    
+
     Bool_t GetElecIDsparse() {return fFlagSparse;};
     void SetElecIDsparse(Bool_t flagelecIDsparse){fFlagSparse = flagelecIDsparse;};
-    
+
     Bool_t GetTenderSwitch() {return fUseTender;};
     void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
-    
+
     Bool_t GetEMCalTriggerEG1() { return fEMCEG1; };
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
@@ -47,14 +47,14 @@ public:
     Bool_t GetEMCalTriggerDG2() { return fDCalDG2; };
     void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
     void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
-    
+
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-    
+
     void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
-    
+
     void CheckMCgen(AliAODMCHeader* mcHeader, Int_t &NpureMC, Int_t &NpureMCproc);
     void GetTrackMCinfo(Int_t &ilabel, std::vector<double> &MCinfo, Int_t &NpureMC, Int_t &NpureMCproc);
     void GetRawTrackInfo(AliAODTrack* rtrack);
@@ -65,17 +65,17 @@ public:
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void FindMotherWboson(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
-    
+
     Bool_t  ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
     void    SetFilterBitOption(Int_t bitOption){fBitOption = bitOption;};
-    
-    Bool_t SetMC_W(Bool_t Wevt) {flagWevt = Wevt;};
+
+    void SetMC_W(Bool_t Wevt) {flagWevt = Wevt;};
 
 private:
     enum{
         kAODanalysis = BIT(20),
     };
-    
+
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
@@ -83,43 +83,43 @@ private:
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
     AliTPCParamSR    *fTPCparam; //!Access to TPC parameters //rh add
-    
+
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
-    
+
     Bool_t    fEMCEG1;//EMcal Threshold EG1
     Bool_t    fEMCEG2;//EMcal Threshold EG2
     Bool_t    fDCalDG1;//DCal Threshold DG1
     Bool_t    fDCalDG2;//DCal Threshold DG2
-    
+
     Bool_t    flagWevt; // MC for W production
 
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
-    
+
     AliAODMCParticle  *fMCparticle;//! MC particle
     TClonesArray  *fMCarray;//! MC array
-    
+
     AliMultSelection *fMultSelection;
-    
+
     TClonesArray *fTriggersInfo;//TClonesArray to access container from EMCalTriggerMaker
     Int_t fThresholdEG2;// Threshold for EG2 trigger in ADC for trigger patches
     Int_t fThresholdEG1;// Threshold for EG1 trigger in ADC for trigger patches
-    
+
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
-    
+
     Int_t   fcentMim; // mim. centrality
     Int_t   fcentMax; // max. centrality
-    
+
     Int_t   fBitOption;// filter bit option - Global or ITSconstrained
-    
+
     TString fCentralityEstimator;         // Centrality Estimator
     //Int_t   fCentBin; //rh add
-      
+
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
-    TH1F        *fCent;//! centrality    
+    TH1F        *fCent;//! centrality
     TH2F        *fMult;//! track multiplicity vs centrality
     TH2F        *fEvPlaneV0;//! V0 event plane
     TH2F        *fEvPlaneV0A;//! V0A event plane
@@ -223,14 +223,14 @@ private:
     TH2F        *fMCneutral;//!
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!
-    
+
     TH1F        *fCompTrackPt;//!
     TH1F        *fCompTrackPtinEMCreg;//!
     TH1F        *fCompTrackPtMatch;//!
     TH1F        *fCompTrackPtMatchwithEMC;//!
- 
-    TH2F        *fMCcheckPi0decay;    
-    TH2F        *fMCcheckEtadecay;    
+
+    TH2F        *fMCcheckPi0decay;
+    TH2F        *fMCcheckEtadecay;
 
     TH1F        *fHistWpos;
     TH1F        *fHistWele;
@@ -239,10 +239,10 @@ private:
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
-    
+
     AliAnalysisTaskHFEemcQA(const AliAnalysisTaskHFEemcQA&); // not implemented
     AliAnalysisTaskHFEemcQA& operator=(const AliAnalysisTaskHFEemcQA&); // not implemented
-    
+
     ClassDef(AliAnalysisTaskHFEemcQA, 1); // example of analysis
 };
 

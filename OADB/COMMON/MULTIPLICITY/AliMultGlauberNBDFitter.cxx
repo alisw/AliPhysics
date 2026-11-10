@@ -25,7 +25,7 @@
 
 ClassImp(AliMultGlauberNBDFitter);
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter() : TNamed(), 
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter() : TNamed(),
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),
@@ -48,17 +48,17 @@ fFitNpx(5000)
   fNpart = new Double_t[fMaxNpNcPairs];
   fNcoll = new Double_t[fMaxNpNcPairs];
   fContent = new Long_t[fMaxNpNcPairs];
-  
+
   //Ancestor histo
   fhNanc = new TH1D("fhNanc", "", 1000, -0.5, 999.5);
-  
+
   //NBD
   fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,45000);
   fNBD->SetNpx(45000);
-  
+
   //master function
   fGlauberNBD = new TF1("fGlauberNBD", this, &AliMultGlauberNBDFitter::ProbDistrib,
-                        0, 50000, 4 , "AliMultGlauberNBDFitter", "ProbDistrib");
+                        0, 50000, 4);
   fGlauberNBD->SetParameter(0,fMu);
   fGlauberNBD->SetParameter(1,fk);
   fGlauberNBD->SetParameter(2,ff);
@@ -88,17 +88,17 @@ fFitNpx(5000)
   fNpart = new Double_t[fMaxNpNcPairs];
   fNcoll = new Double_t[fMaxNpNcPairs];
   fContent = new Long_t[fMaxNpNcPairs];
-  
+
   //Ancestor histo
   //fhNanc = new TH1D("fhNanc", "", fAncestorMode==2?10000:1000, -0.5, 999.5);
-  
+
   //NBD
   fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,45000);
   fNBD->SetNpx(45000);
-  
+
   //master function
   fGlauberNBD = new TF1("fGlauberNBD", this, &AliMultGlauberNBDFitter::ProbDistrib,
-                        0, 50000, 4 , "AliMultGlauberNBDFitter", "ProbDistrib");
+                        0, 50000, 4);
   fGlauberNBD->SetParameter(0,fMu);
   fGlauberNBD->SetParameter(1,fk);
   fGlauberNBD->SetParameter(2,ff);
@@ -127,20 +127,20 @@ AliMultGlauberNBDFitter::~AliMultGlauberNBDFitter() {
 //______________________________________________________
 Double_t AliMultGlauberNBDFitter::ProbDistrib(Double_t *x, Double_t *par)
 //Master fitter function
-{ 
+{
   Double_t lMultValue = x[0];
   Double_t lProbability = 0.0;
   ffChanged = kTRUE;
 
   //Comment this line in order to make the code evaluate Nancestor all the time
   if ( TMath::Abs( fCurrentf - par[2] ) < kAlmost0 ) ffChanged = kFALSE ;
-  
+
   //______________________________________________________
   //Recalculate the ancestor distribution in case f changed
   if( ffChanged ){
     fCurrentf = par[2];
     fhNanc->Reset();
-    
+
     for(int ibin=0;ibin<fNNpNcPairs;ibin++){
       Double_t lOption0 = (Int_t)(fNpart[ibin]*par[2] + fNcoll[ibin]*(1.0-par[2]));
       Double_t lOption1 = TMath::Floor(fNpart[ibin]*par[2] + fNcoll[ibin]*(1.0-par[2]) + 0.5);
@@ -163,7 +163,7 @@ Double_t AliMultGlauberNBDFitter::ProbDistrib(Double_t *x, Double_t *par)
     Double_t lNancestors = fhNanc->GetBinCenter(iNanc);
     Double_t lNancestorCount = fhNanc->GetBinContent(iNanc);
     //if(lNancestorCount<1e-12&&lNancestors>10) break;
-    
+
     Double_t lThisMu = (((Double_t)lNancestors))*par[0];
     Double_t lThisk = (((Double_t)lNancestors))*par[1];
     Double_t lpval = TMath::Power(1.0+lThisMu/lThisk,-1);
@@ -238,28 +238,28 @@ Bool_t AliMultGlauberNBDFitter::DoFit(){
     cout<<"---> Initialization of Npart x Ncoll correlation info failed!"<<endl;
     return kFALSE ;
   }
-  
+
   TStopwatch* timer = new TStopwatch();
   timer->Start ( kTRUE );
   if( fAncestorMode == 0 ) cout<<"---> Config: Nancestors will be truncated"<<endl;
   if( fAncestorMode == 1 ) cout<<"---> Config: Nancestors will be rounded"<<endl;
   if( fAncestorMode == 2 ) cout<<"---> Config: Nancestors will be taken as float"<<endl;
   cout<<"---> Now fitting, please wait..."<<endl;
-   
+
   fGlauberNBD->SetNpx(fFitNpx);
   TFitResultPtr fitptr;
   fFitOptions.Append("S");
   fitptr = fhV0M->Fit("fGlauberNBD",fFitOptions.Data());
-  
+
   timer->Stop();
   Double_t lTotalTime = timer->RealTime();
   cout<<"---> Fitting took "<<lTotalTime<<" seconds"<<endl;
-  
+
   fMu   = fGlauberNBD -> GetParameter(0);
   fk    = fGlauberNBD -> GetParameter(1);
   ff    = fGlauberNBD -> GetParameter(2);
   fnorm = fGlauberNBD -> GetParameter(3);
-  
+
   return fitptr.Get()->IsValid();
 }
 
@@ -299,10 +299,10 @@ Double_t AliMultGlauberNBDFitter::ContinuousNBD(Double_t n, Double_t mu, Double_
   //This function would actually also be fine with integers;
   //in fact it is equivalent to that if 'n' is typecast as
   //an integer prior to use
-  
+
   Double_t F;
   Double_t f;
-  
+
   if (n+k > 100.0) {
     // log method for handling large numbers
     F  = TMath::LnGamma(n + k)- TMath::LnGamma(n + 1.)- TMath::LnGamma(k);
@@ -320,12 +320,12 @@ Double_t AliMultGlauberNBDFitter::ContinuousNBD(Double_t n, Double_t mu, Double_
 
 void AliMultGlauberNBDFitter::CalculateAvNpNc(TProfile *lNPartProf, TProfile *lNCollProf){
   cout<<"Calculating <Npart>, <Ncoll> in centrality bins..."<<endl;
-  
+
   //2-fold nested loop:
   // + looping over all Nancestor combinations
   // + looping over all possible final multiplicities
   // ^---> final product already multiplicity-binned
-  
+
   //______________________________________________________
   Double_t lLoRange, lHiRange;
   fGlauberNBD->GetRange(lLoRange,lHiRange);
