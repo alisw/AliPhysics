@@ -18,6 +18,7 @@
 #include "TLine.h"
 #include "TCanvas.h"
 #include "TString.h"
+#include "TMath.h"
 
 #include "AliLog.h"
 #include "AliTRDtrendingManager.h"
@@ -48,7 +49,7 @@ void AliTRDtrendingManager::Terminate()
   // instances cannot be requested anymore
   // This function can be called several times.
   //
-  
+
 /*  fgTerminated = kTRUE;*/
   if (fgInstance != NULL) {
     if(TFile::Open("TRD.Trend.root", "RECREATE")){
@@ -60,7 +61,7 @@ void AliTRDtrendingManager::Terminate()
 }
 
 //____________________________________________
-AliTRDtrendingManager::AliTRDtrendingManager() 
+AliTRDtrendingManager::AliTRDtrendingManager()
   : TObject()
   ,fEntries(NULL)
 {
@@ -91,7 +92,7 @@ void AliTRDtrendingManager::AddValue(
 // Add a trend value to the map already loaded
 // If no map loaded create a new one from scratch
 //
-// class_name : name of the performance task 
+// class_name : name of the performance task
 // name       : name of the value to be trended
 // title      : description of the value to be trended
 // messages   : array of alarm messages for each alarm level
@@ -268,7 +269,7 @@ Bool_t AliTRDtrendingManager::ModifyValue(
 {
 // Expert Function !!!
 // Modify a trend value in the map already loaded
-// see function AddValue() for explanation of input format. 
+// see function AddValue() for explanation of input format.
 
   if(!fEntries){
     AliError("No trending map loaded.");
@@ -277,24 +278,24 @@ Bool_t AliTRDtrendingManager::ModifyValue(
   AliWarning("*** EXPERT FUNCTION *** This function is modifying one trending value to the current DB. Continue if you know what yout do!");
 
   AliTRDtrendValue *fValue(NULL);
-  if(!(fValue = GetValue(name))) { 
+  if(!(fValue = GetValue(name))) {
     AliError(Form("Missing trending value %s", name));
     return kFALSE;
-  }  
-  
+  }
+
   fValue->SetTitle(title);
   fValue->Set(mean, sgm);
-  if(messages){ 
+  if(messages){
     for(Int_t ilevel(AliTRDtrendValue::kNlevels); ilevel--;) fValue->SetAlarm(ilevel, messages[ilevel]);
   }
   TString s;
   TObjArray *r(NULL);
-  if(responsible){ 
+  if(responsible){
     s=responsible;
     r=s.Tokenize("/");
-    if(r->GetEntriesFast()!=2){ 
+    if(r->GetEntriesFast()!=2){
       AliWarning("Responsible name/email incorrectly formated.");
-    } else { 
+    } else {
       fValue->SetResponsible(((TObjString*)r->At(0))->String().Data(), ((TObjString*)r->At(1))->String().Data());
     }
     r->Delete(); delete r;
@@ -305,9 +306,9 @@ Bool_t AliTRDtrendingManager::ModifyValue(
     for(Int_t in(0); in<TMath::Min(AliTRDtrendValue::kNnotifiable, n->GetEntriesFast()); in++){
       TString ss(((TObjString*)n->At(in))->String());
       r=ss.Tokenize("/");
-      if(r->GetEntriesFast()!=2){ 
+      if(r->GetEntriesFast()!=2){
         AliWarning(Form("Notifiable person name/email incorrectly formated for [%s].", ss.Data()));
-      } else { 
+      } else {
         fValue->SetNotifiable(((TObjString*)r->At(0))->String().Data(), ((TObjString*)r->At(1))->String().Data());
       }
       r->Delete(); delete r;

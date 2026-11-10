@@ -118,18 +118,18 @@ fcRes(0x0),
 fcRat(0x0)
 {
   /// Constructor
-  
+
   // Output slot #1 writes into a TObjArray container
   DefineOutput(1,TObjArray::Class());
   DefineOutput(2,AliCounterCollection::Class());
-  
+
 }
 
 //________________________________________________________________________
 AliAnalysisTaskGenTuner::~AliAnalysisTaskGenTuner()
 {
   /// Destructor
-  
+
   {
 
     delete fList;
@@ -148,108 +148,108 @@ AliAnalysisTaskGenTuner::~AliAnalysisTaskGenTuner()
   delete fRunWeights;
   delete fcRes;
   delete fcRat;
-  
+
 }
 
 //___________________________________________________________________________
 void AliAnalysisTaskGenTuner::UserCreateOutputObjects()
 {
   /// Create histograms
-  
+
   // initialize histos
   fList = new TObjArray(2000);
   fList->SetOwner();
-  
+
   TH1* hPtGen = new TH1D("hPtGen","generated p_{T} distribution;p_{T} (GeV/c);dN/dp_{T}", 300, 0., 30.);
   hPtGen->Sumw2();
   fList->AddAtAndExpand(hPtGen, kPtGen);
   TH1* hPtRec = new TH1D("hPtRec","reconstructed p_{T} distribution;p_{T} (GeV/c);dN/dp_{T}", 300, 0., 30.);
   hPtRec->Sumw2();
   fList->AddAtAndExpand(hPtRec, kPtRec);
-  
+
   TH1* hYGen = new TH1D("hYGen","generated y distribution;y;dN/dy", 250, -4.5, -2.);
   hYGen->Sumw2();
   fList->AddAtAndExpand(hYGen, kYGen);
   TH1* hYRec = new TH1D("hYRec","reconstructed y distribution;y;dN/dy", 250, -4.5, -2.);
   hYRec->Sumw2();
   fList->AddAtAndExpand(hYRec, kYRec);
-  
+
   TH1* hPhiGen = new TH1D("hPhiGen","generated #phi distribution;#phi (deg);dN/d#phi", 360, 0., 360.);
   hPhiGen->Sumw2();
   fList->AddAtAndExpand(hPhiGen, kPhiGen);
   TH1* hPhiRec = new TH1D("hPhiRec","reconstructed #phi distribution;#phi (deg);dN/d#phi", 360, 0., 360.);
   hPhiRec->Sumw2();
   fList->AddAtAndExpand(hPhiRec, kPhiRec);
-  
+
   TH1* hSignGen = new TH1D("hSignGen","generated sign distribution;sign;dN/dsign", 2, -2., 2.);
   hSignGen->Sumw2();
   fList->AddAtAndExpand(hSignGen, kSignGen);
   TH1* hSignRec = new TH1D("hSignRec","reconstructed sign distribution;sign;dN/dsign", 2, -2., 2.);
   hSignRec->Sumw2();
   fList->AddAtAndExpand(hSignRec, kSignRec);
-  
+
   // initialize event counters
   fEventCounters = new AliCounterCollection(GetOutputSlot(2)->GetContainer()->GetName());
   fEventCounters->AddRubric("run", 100000);
   fEventCounters->Init();
-  
+
   // Post data at least once per task to ensure data synchronisation (required for merging)
   PostData(1, fList);
   PostData(2, fEventCounters);
-  
+
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskGenTuner::NotifyRun()
 {
   /// Prepare processing of new run: load corresponding OADB objects...
-  
+
   // get the trackCuts for this run
   if (!fMuonTrackCuts) AliFatal("You must specify the requested selections (AliMuonTrackCut obj is missing)");
   fMuonTrackCuts->SetRun(fInputHandler);
-  
+
   // set the current run weight
   if (fRunWeights) {
     TParameter<Double_t> *weight = static_cast<TParameter<Double_t>*>(fRunWeights->FindObject(Form("%d", fCurrentRunNumber)));
     fRunWeight = weight ? weight->GetVal() : 0.;
   }
-  
+
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskGenTuner::UserExec(Option_t *)
 {
   /// process event
-  
+
   // get AOD event
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
   if ( !aod ) return;
-  
+
   // trigger selection
   //if (!aod->GetFiredTriggerClasses().Contains("CINT7-B-NOPF-MUFAST")) return;
-  
+
   // select the centrality range
   AliMultSelection *multSelection = static_cast<AliMultSelection*>(aod->FindListObject("MultSelection"));
   Float_t centrality = multSelection ? multSelection->GetMultiplicityPercentile("V0M") : -1.;
   if (centrality < fCentMin || centrality > fCentMax) return;
-  
+
   // analyzed events
   fEventCounters->Count(Form("run:%d", fCurrentRunNumber));
-  
+
   // fill the MC part if running on MC
   TArrayD weight;
   if (MCEvent()) {
-    
+
     weight.Set(MCEvent()->GetNumberOfTracks());
     for (Int_t i = 0; i < MCEvent()->GetNumberOfTracks(); i++) {
-      
+
       AliAODMCParticle *mctrack = static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(i));
       weight[i] = 0.;
-      
+
       if (!mctrack->IsPrimary()) continue;
-      
+
       if (fCharge*mctrack->Charge() < 0) continue;
-      
+
       // compute the weights for all primary particles (other weights are 0)
       Double_t y = mctrack->Y();
       Double_t pT = mctrack->Pt();
@@ -264,46 +264,46 @@ void AliAnalysisTaskGenTuner::UserExec(Option_t *)
 	  weight[i] = 0.;
 	}
       } else weight[i] = 1.;
-      
+
       Double_t w = fRunWeight * weight[i];
       ((TH1*)fList->UncheckedAt(kPtGen))->Fill(pT, w);
       ((TH1*)fList->UncheckedAt(kYGen))->Fill(y, w);
       ((TH1*)fList->UncheckedAt(kPhiGen))->Fill(mctrack->Phi()*TMath::RadToDeg(), w);
       ((TH1*)fList->UncheckedAt(kSignGen))->Fill((mctrack->Charge() < 0.) ? -1. : 1., w);
-      
+
     }
-    
+
   }
-  
+
   // fill the reconstructed part
   for (Int_t i = 0; i < aod->GetNumberOfTracks(); i++){
-    
+
     AliAODTrack *track = static_cast<AliAODTrack*>(aod->GetTrack(i));
-    
+
     Double_t pT = track->Pt();
     Int_t mcLabel = track->GetLabel();
     if (!fMuonTrackCuts->IsSelected(track) || (fPtCut > 0. && pT < fPtCut) ||
 	fCharge*track->Charge() < 0 || (MCEvent() && mcLabel < 0)) continue;
-    
+
     Double_t w = (weight.GetSize() > 0) ? fRunWeight * weight[mcLabel] : fRunWeight;
     ((TH1*)fList->UncheckedAt(kPtRec))->Fill(pT, w);
     ((TH1*)fList->UncheckedAt(kYRec))->Fill(track->Y(), w);
     ((TH1*)fList->UncheckedAt(kPhiRec))->Fill(track->Phi()*TMath::RadToDeg(), w);
     ((TH1*)fList->UncheckedAt(kSignRec))->Fill(track->Charge(), w);
-    
+
   }
-  
+
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(1, fList);
   PostData(2, fEventCounters);
-  
+
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskGenTuner::Terminate(Option_t *)
 {
   /// post-processing
-  
+
   // get current results
   Int_t hIndex[8] = {kPtGen, kYGen, kPhiGen, kSignGen, kPtRec, kYRec, kPhiRec, kSignRec};
   fList = static_cast<TObjArray*>(GetOutputData(1));
@@ -312,7 +312,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
     h[i] = static_cast<TH1*>(fList->UncheckedAt(hIndex[i])->Clone());
     h[i]->SetDirectory(0);
   }
-  
+
   // get the fit ranges
   Double_t fitRangeMC[4][2];
   fitRangeMC[0][0] = GetFitLowEdge(*(h[0]));
@@ -332,13 +332,13 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
   fitRange[2][1] = h[6]->GetXaxis()->GetXmax();
   fitRange[3][0] = h[7]->GetXaxis()->GetXmin();
   fitRange[3][1] = h[7]->GetXaxis()->GetXmax();
-  
+
   // compute acc*eff corrections if it is simulated data
   TH1 *hAccEff[4] = {0x0, 0x0, 0x0, 0x0};
   for (Int_t i = 0; i < 4 && h[i]->GetEntries() > 0; i++) {
     hAccEff[i] = ComputeAccEff(*(h[i]), *(h[i+4]), Form("%sOverGen",h[i+4]->GetName()), "Acc#{times}Eff");
   }
-  
+
   // get reference data if provided
   TH1 *hRef[8] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
   if (!fDataFile.IsNull()) {
@@ -354,14 +354,14 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
     }
     dataFile->Close();
   }
-  
+
   // compute corrected data
   for (Int_t i = 0; i < 4 && hRef[i+4] && hAccEff[i]; i++) {
     hRef[i] = static_cast<TH1*>(hRef[i+4]->Clone(Form("%sCorr",hRef[i+4]->GetName())));
     hRef[i]->SetTitle("corrected data");
     hRef[i]->Divide(hAccEff[i]);
   }
-  
+
   // get the (weighted) number of generated(corrected)/reconstructed muons
   Double_t nMu[2] = {0., 0.};
   nMu[0] = h[3]->Integral();
@@ -369,7 +369,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
   Double_t nMuRef[2] = {0., 0.};
   if (hRef[3]) nMuRef[0] = hRef[3]->Integral();
   if (hRef[7]) nMuRef[1] = hRef[7]->Integral();
-  
+
   // normalize histograms
   Bool_t normalized = kFALSE;
   for (Int_t i = 0; i < 4 && hRef[i]; i++) {
@@ -383,7 +383,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
     hRef[i+4]->Scale(norm);
     normalized = kTRUE;
   }
-  
+
   // compute data/MC ratios
   TH1 *hRat[8] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
   for (Int_t i = 0; i < 8; i++) {
@@ -393,7 +393,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
       hRat[i]->Divide(h[i]);
     }
   }
-  
+
   // prepare fitting functions depending whether the original distributions are weighted or not
   if (hAccEff[0]) {
     if (fWeight && fPtFuncNew) {
@@ -459,7 +459,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
       }
     }
   }
-  
+
   // plot and fit results
   TLegend *lRes = new TLegend(0.5,0.55,0.85,0.75);
   fcRes = new TCanvas("cRes", "results", 1200, 600);
@@ -516,7 +516,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
       hRef[i]->Draw("e0sames");
     }
   }
-  
+
   // normalize functions to their integral in the range used in MC
   if (hAccEff[0] && fPtFunc) {
     fPtFunc->SetRange(fitRangeMC[0][0], fitRangeMC[0][1]);
@@ -540,7 +540,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
     fYFuncNew->SetRange(fitRangeMC[1][0], fitRangeMC[1][1]);
     NormFunc(fYFuncNew, fitRangeMC[1][0], fitRangeMC[1][1]);
   }
-  
+
   // Get fractions of mu+
   if (hAccEff[3]) {
     Double_t sum  = h[3]->GetBinContent(1) + h[3]->GetBinContent(2);
@@ -550,11 +550,11 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
     Double_t sum  = hRef[3]->GetBinContent(1) + hRef[3]->GetBinContent(2);
     if (sum > 0.) fMuPlusFracNew = hRef[3]->GetBinContent(2) / sum;
   }
-  
+
   // prepare data/MC function ratios
-  TF1 *ptRat = (hRat[0] && fPtFunc && fPtFuncNew) ? new TF1("ptRat", this, &AliAnalysisTaskGenTuner::PtRat, fitRangeMC[0][0], hRat[0]->GetXaxis()->GetXmax(), 0, "AliAnalysisTaskGenTuner", "PtRat") : 0x0;
-  TF1 *yRat = (hRat[1] && fYFunc && fYFuncNew) ? new TF1("yRat", this, &AliAnalysisTaskGenTuner::YRat, fitRangeMC[1][0], fitRangeMC[1][1], 0, "AliAnalysisTaskGenTuner", "YRat") : 0x0;
-  
+  TF1 *ptRat = (hRat[0] && fPtFunc && fPtFuncNew) ? new TF1("ptRat", this, &AliAnalysisTaskGenTuner::PtRat, fitRangeMC[0][0], hRat[0]->GetXaxis()->GetXmax(), 0) : 0x0;
+  TF1 *yRat = (hRat[1] && fYFunc && fYFuncNew) ? new TF1("yRat", this, &AliAnalysisTaskGenTuner::YRat, fitRangeMC[1][0], fitRangeMC[1][1], 0) : 0x0;
+
   // plot ratios
   fcRat = new TCanvas("cRat", "ratios", 1200, 600);
   fcRat->Divide(4,2);
@@ -566,7 +566,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
       else if (i == 1 && yRat) yRat->Draw("sames");
     }
   }
-  
+
   // print fitting ranges
   if (fPtFuncMC && fYFuncMC) {
     printf("\npT fitting range MC = [%g, %g]\n", fitRangeMC[0][0], fitRangeMC[0][1]);
@@ -576,7 +576,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
     printf("pT fitting range = [%g, %g]\n", fitRange[0][0], fitRange[0][1]);
     printf("y fitting range = [%g, %g]\n\n", fitRange[1][0], fitRange[1][1]);
   }
-  
+
   // print parameters
   if (fPtFuncMC) {
     printf("Double_t oldPtParamMC[%d] = {", fPtFuncMC->GetNpar());
@@ -612,7 +612,7 @@ void AliAnalysisTaskGenTuner::Terminate(Option_t *)
   if (hRef[3]) printf("Double_t newMuPlusFrac = %f\n\n", fMuPlusFracNew);
   if (hAccEff[3]) printf("MC  muons: generated (MC range): %g ; reconstructed (reco range): %g --> ratio = %g\n", nMu[0], nMu[1], (nMu[0]>0.) ? nMu[1]/nMu[0] : 0.);
   if (hRef[7]) printf("Ref muons: corrected (MC range): %g ; reconstructed (reco range): %g\n\n", nMuRef[0], nMuRef[1]);
-  
+
 }
 
 //________________________________________________________________________
@@ -623,18 +623,18 @@ void AliAnalysisTaskGenTuner::SetOriginPtFunc(TString formula, const Double_t *p
   /// It must be in the form [0]*(...) to allow for global normalization.
   /// The [xMin,xMax] range is used to normalized the function.
   /// Some parameters can be fixed when fitting the generated distribution for cross-check.
-  
+
   assert(param);
-  
+
   delete fPtFuncOld;
   fPtFuncOld = new TF1("fPtFuncOld", formula.Data(), xMin, xMax);
-  
+
   fPtFuncOld->SetParameters(param);
   if (fixParam) for (Int_t i = 0; i < fPtFuncOld->GetNpar(); ++i)
     if (fixParam[i]) fPtFuncOld->FixParameter(i, fPtFuncOld->GetParameter(i));
-  
+
   NormFunc(fPtFuncOld, xMin, xMax);
-  
+
 }
 
 //________________________________________________________________________
@@ -645,18 +645,18 @@ void AliAnalysisTaskGenTuner::SetNewPtFunc(TString formula, const Double_t *para
   /// It must be in the form [0]*(...) to allow for global normalization.
   /// The [xMin,xMax] range is used to normalized the function.
   /// Some parameters can be fixed when fitting the generated distribution.
-  
+
   assert(param);
-  
+
   delete fPtFuncNew;
   fPtFuncNew = new TF1("fPtFuncNew", formula.Data(), xMin, xMax);
-  
+
   fPtFuncNew->SetParameters(param);
   if (fixParam) for (Int_t i = 0; i < fPtFuncNew->GetNpar(); ++i)
     if (fixParam[i]) fPtFuncNew->FixParameter(i, fPtFuncNew->GetParameter(i));
-  
+
   NormFunc(fPtFuncNew, xMin, xMax);
-  
+
 }
 
 //________________________________________________________________________
@@ -667,18 +667,18 @@ void AliAnalysisTaskGenTuner::SetOriginYFunc(TString formula, const Double_t *pa
   /// It must be in the form [0]*(...) to allow for global normalization.
   /// The [xMin,xMax] range is used to normalized the function.
   /// Some parameters can be fixed when fitting the generated distribution for cross-check.
-  
+
   assert(param);
-  
+
   delete fYFuncOld;
   fYFuncOld = new TF1("fYFuncOld", formula.Data(), xMin, xMax);
-  
+
   fYFuncOld->SetParameters(param);
   if (fixParam) for (Int_t i = 0; i < fYFuncOld->GetNpar(); ++i)
     if (fixParam[i]) fYFuncOld->FixParameter(i, fYFuncOld->GetParameter(i));
-  
+
   NormFunc(fYFuncOld, xMin, xMax);
-  
+
 }
 
 //________________________________________________________________________
@@ -689,18 +689,18 @@ void AliAnalysisTaskGenTuner::SetNewYFunc(TString formula, const Double_t *param
   /// It must be in the form [0]*(...) to allow for global normalization.
   /// The [xMin,xMax] range is used to normalized the function.
   /// Some parameters can be fixed when fitting the generated distribution.
-  
+
   assert(param);
-  
+
   delete fYFuncNew;
   fYFuncNew = new TF1("fYFuncNew", formula.Data(), xMin, xMax);
-  
+
   fYFuncNew->SetParameters(param);
   if (fixParam) for (Int_t i = 0; i < fYFuncNew->GetNpar(); ++i)
     if (fixParam[i]) fYFuncNew->FixParameter(i, fYFuncNew->GetParameter(i));
-  
+
   NormFunc(fYFuncNew, xMin, xMax);
-  
+
 }
 
 //________________________________________________________________________
@@ -708,7 +708,7 @@ TH1* AliAnalysisTaskGenTuner::ComputeAccEff(TH1 &hGen, TH1 &hRec, const Char_t *
 {
   /// Compute acc*eff and binomial errors by hand, i.e. not using TGraphAsymmErrors
   /// Result is identical to divide histograms with option "B", except here error is forced > 1/gen
-  
+
   Int_t nbins = hGen.GetNbinsX();
   TH1* hAcc = new TH1D(name,title, nbins, hGen.GetXaxis()->GetXmin(), hGen.GetXaxis()->GetXmax());
   for (Int_t i = 1; i <= nbins; i++) {
@@ -727,7 +727,7 @@ TH1* AliAnalysisTaskGenTuner::ComputeAccEff(TH1 &hGen, TH1 &hRec, const Char_t *
     hAcc->SetBinContent(i, accEff);
     hAcc->SetBinError(i, accEffErr);
   }
-  
+
   return hAcc;
 }
 
@@ -775,153 +775,152 @@ Double_t AliAnalysisTaskGenTuner::YRat(const Double_t *x, const Double_t */*p*/)
 void AliAnalysisTaskGenTuner::RunWeight(TString &fileName)
 {
   /// weight each run using the values in the given text file
-  
+
   if (!gSystem->GetFromPipe(Form("file %s", fileName.Data())).Contains("text"))
     AliFatal("weights must be in a text file");
-  
+
   delete fRunWeights;
   fRunWeights = LoadRunWeights(fileName);
-  
+
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskGenTuner::RunWeight(TString &fileNameOrigin, TString &fileNameNew)
 {
   /// weight each run using the original/new number of events in the given text of root files
-  
+
   delete fRunWeights;
   fRunWeights = new THashList(1000);
   fRunWeights->SetOwner();
-  
+
   THashList *nEvsOld = LoadRunWeights(fileNameOrigin);
   if (!nEvsOld) return;
   nEvsOld->Sort();
-  
+
   THashList *nEvsNew = LoadRunWeights(fileNameNew);
   if (!nEvsNew) return;
   nEvsNew->Sort();
-  
+
   if (nEvsOld->GetSize() != nEvsNew->GetSize()) AliFatal("the 2 files do not contain the same number of runs");
-  
+
   TIter nextRunOld(nEvsOld);
   TIter nextRunNew(nEvsNew);
   TParameter<Double_t> *nEvOld = 0x0, *nEvNew = 0x0;
   while ((nEvOld = static_cast<TParameter<Double_t>*>(nextRunOld())) &&
          (nEvNew = static_cast<TParameter<Double_t>*>(nextRunNew()))) {
-    
+
     const char *run = nEvNew->GetName();
     if (!strstr(nEvOld->GetName(), run)) AliFatal("the 2 files do not contain the same runs");
-    
+
     Double_t weight = (nEvOld->GetVal() > 0) ? nEvNew->GetVal() / nEvOld->GetVal() : 0.;
     fRunWeights->Add(new TParameter<Double_t>(run, weight));
-    
+
   }
-  
+
   delete nEvsOld;
   delete nEvsNew;
-  
+
 }
 
 //________________________________________________________________________
 THashList* AliAnalysisTaskGenTuner::LoadRunWeights(const TString &fileName)
 {
   /// Load the weights (or number of events) per run
-  
+
   TString fileType = gSystem->GetFromPipe(Form("file %s", fileName.Data()));
-  
+
   if (fileType.Contains("ROOT")) return LoadRunWeightsFromRootFile(fileName);
   else if (fileType.Contains("text")) return LoadRunWeightsFromTextFile(fileName);
   else if (fileType.Contains("No such file")) AliFatal(Form("file %s not found", fileName.Data()));
   else AliFatal("number of events must be either in a text file or in an AliCounterCollection in a root file");
-  
+
   return 0x0;
-  
+
 }
 
 //________________________________________________________________________
 THashList* AliAnalysisTaskGenTuner::LoadRunWeightsFromTextFile(const TString &fileName)
 {
   /// Load the weights (or number of events) per run from the given text file
-  
+
   THashList *weights = new THashList(1000);
   weights->SetOwner();
-  
+
   ifstream inFile(fileName);
   if (!inFile.is_open()) AliFatal(Form("cannot open file %s", fileName.Data()));
-  
+
   TString line;
   while (! inFile.eof() ) {
-    
+
     line.ReadLine(inFile,kTRUE);
     if(line.IsNull()) continue;
-    
+
     TObjArray *param = line.Tokenize(" ");
     if (param->GetEntries() != 2) AliFatal(Form("bad input line %s", line.Data()));
-    
+
     Int_t run = ((TObjString*)param->UncheckedAt(0))->String().Atoi();
     if (run < 0) AliFatal(Form("invalid run number: %d", run));
-    
+
     Float_t weight = ((TObjString*)param->UncheckedAt(1))->String().Atof();
     if (weight < 0.) AliFatal(Form("invalid weight: %g", weight));
-    
+
     if (weights->FindObject(Form("%d",run))) AliFatal(Form("weight for run %d already exist", run));
-    
+
     weights->Add(new TParameter<Double_t>(Form("%d",run), weight));
-    
+
     delete param;
   }
-  
+
   inFile.close();
-  
+
   return weights;
-  
+
 }
 
 //________________________________________________________________________
 THashList* AliAnalysisTaskGenTuner::LoadRunWeightsFromRootFile(const TString &fileName)
 {
   /// Load the number of events per run from the AliCounterCollection in the given root file
-  
+
   THashList *weights = new THashList(1000);
   weights->SetOwner();
-  
+
   TFile* inFile = TFile::Open(fileName.Data(),"READ");
   if (!inFile || !inFile->IsOpen()) {
     AliFatal(Form("cannot open file %s", fileName.Data()));
     return 0x0;
   }
-  
+
   AliCounterCollection* eventCounters = static_cast<AliCounterCollection*>(inFile->FindObjectAny("eventCounters"));
   if (!eventCounters) {
     AliFatal(Form("cannot find eventCounters in file %s", fileName.Data()));
     return 0x0;
   }
-  
+
   TH1D *hnEvs = eventCounters->Get("run", "");
   if (!hnEvs) {
     AliFatal(Form("invalid eventCounters in file %s", fileName.Data()));
     return 0x0;
   }
   hnEvs->SetDirectory(0);
-  
+
   for (Int_t irun = 1; irun <= hnEvs->GetNbinsX(); ++irun) {
-    
+
     Int_t run = atoi(hnEvs->GetXaxis()->GetBinLabel(irun));
     if (run < 0) AliFatal(Form("invalid run number: %d", run));
-    
+
     Double_t weight = hnEvs->GetBinContent(irun);
     if (weight < 0.) AliFatal(Form("invalid weight: %g", weight));
-    
+
     if (weights->FindObject(Form("%d",run))) AliFatal(Form("weight for run %d already exist", run));
-    
+
     weights->Add(new TParameter<Double_t>(Form("%d",run), weight));
-    
+
   }
-  
+
   delete hnEvs;
   inFile->Close();
-  
-  return weights;
-  
-}
 
+  return weights;
+
+}

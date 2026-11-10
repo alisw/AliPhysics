@@ -1764,7 +1764,7 @@ void AliAnalysisMuMuJpsiResult::FitPSICB2()
   // par[5] = alpha'
   // par[6] = n'
 
-  TF1* fitTotal = new TF1("signal",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fitRangeLow,fitRangeHigh,7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* fitTotal = new TF1("signal",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fitRangeLow,fitRangeHigh,7);
 
   fitTotal->SetParNames(Form("k%s",particleName.Data()),Form("m%s",particleName.Data()),Form("s%s",particleName.Data()),Form("al%s",particleName.Data()),
   //                                 0                                1                              2                                 3
@@ -1815,7 +1815,7 @@ void AliAnalysisMuMuJpsiResult::FitPSICB2()
     fitResult = fHisto->Fit(fitTotal,"SERL","");
   }
 
-  TF1* signal = new TF1("signal",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","SignalCB2");
+  TF1* signal = new TF1("signal",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
 
   signal->SetParameters(fitTotal->GetParameter(0),fitTotal->GetParameter(1),fitTotal->GetParameter(2),fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6));
 
@@ -1916,7 +1916,7 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
   // par[9] = alphaLeft
   // par[10] = alphaRight
 
-  TF1* fitTotal = new TF1("fitSignal",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fitRangeLow,fitRangeHigh,11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* fitTotal = new TF1("fitSignal",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fitRangeLow,fitRangeHigh,11);
 
   fitTotal->SetParNames(Form("k%s",particleName.Data()),Form("m%s",particleName.Data()),Form("s%s",particleName.Data()),Form("p1L%s",particleName.Data()),
         //                                 0                                1                              2                                 3
@@ -1988,7 +1988,7 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
 //    // try again...
 //    fitResult = fHisto->Fit(fitTotal,"SER","");
 //  }
-  TF1* signal = new TF1("signal",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","SignalNA60New");
+  TF1* signal = new TF1("signal",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signal->SetParameters(fitTotal->GetParameter(0),fitTotal->GetParameter(1),fitTotal->GetParameter(2),fitTotal->GetParameter(3),fitTotal->GetParameter(4),fitTotal->GetParameter(5),fitTotal->GetParameter(6),fitTotal->GetParameter(7),fitTotal->GetParameter(8),fitTotal->GetParameter(9));
   signal->SetParameter(10,fitTotal->GetParameter(10));
@@ -2047,7 +2047,7 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
 
 //     //  std::cout << "Tails parameters: " << msg.Data() << std::endl;
 //     //Create pointer and configure signal+bck fit functions
-//     TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalOneCB2VWG,fitRangeLow,fitRangeHigh,11,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2VWG");
+//     TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalOneCB2VWG,fitRangeLow,fitRangeHigh,11);
 
 //     fitTotal->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi",
 //     //                        0      1       2       3       4      5      6
@@ -2056,7 +2056,7 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
 
 
 //     // Create pointer for bck function
-//     TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+//     TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4);
 
 //     const char* fitOption = "SERLI"; //We can add NO to avoid plotting
 
@@ -2083,7 +2083,7 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
 // //        }
 // //#endif
 //     // Create pointer for bck fitting
-//     TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,1.,6.,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+//     TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,1.,6.,4);
 //     // To set first parameter
 //     Int_t bin = fHisto->FindBin(0.26);
 //     // Setting parameters
@@ -2229,7 +2229,7 @@ void AliAnalysisMuMuJpsiResult::FitPSINA60NEW()
 //     Set("mJPsi",fitTotal->GetParameter(5),fitTotal->GetParError(5));
 //     Set("sJPsi",fitTotal->GetParameter(6),fitTotal->GetParError(6));
 //     // Create JPsi function and set parameters
-//     TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+//     TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
 //     signalJPsi->SetParameters(fitTotal->GetParameter(4),
 //                               fitTotal->GetParameter(5),
 //                               fitTotal->GetParameter(6),
@@ -2365,7 +2365,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
 
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWG,fitRangeLow,fitRangeHigh,12,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2VWG");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWG,fitRangeLow,fitRangeHigh,12);
 
   fitTotal->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi",
 //                        0      1       2       3       4      5      6
@@ -2374,13 +2374,13 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
   fitTotal->SetParName(11, "kPsiP");
 //                            11
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4);
 
   //___________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,1.8,10.,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,1.8,10.,4);
 
   Int_t bin = fHisto->FindBin(0.27);
 
@@ -2507,7 +2507,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
   Set("mJPsi",fitTotal->GetParameter(5),fitTotal->GetParError(5));
   Set("sJPsi",fitTotal->GetParameter(6),fitTotal->GetParError(6));
 
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(4),
                      fitTotal->GetParameter(5),
                      fitTotal->GetParameter(6),
@@ -2516,7 +2516,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG()
                      fitTotal->GetParameter(9),
                      fitTotal->GetParameter(10));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(11),
                         fitTotal->GetParameter(5) + (3.68609-3.096916),
                         fitTotal->GetParameter(6)*paramSPsiP, // /3.096916*3.68609,
@@ -2679,7 +2679,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
 
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWG2,fitRangeLow,fitRangeHigh,13,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2VWG2");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWG2,fitRangeLow,fitRangeHigh,13);
 
   fitTotal->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
 //                        0        1       2        3        4      5      6        7       8           9       10
@@ -2688,11 +2688,11 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   fitTotal->SetParName(12, "kPsiP");
 //                            12
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,fitRangeLow,fitRangeHigh,5);
   //___________
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,1.8,6.,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG2");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,1.8,6.,5);
   Int_t bin = fHisto->FindBin(0.26);
 
 
@@ -2789,7 +2789,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   Set("mJPsi",fitTotal->GetParameter(6),fitTotal->GetParError(6));
   Set("sJPsi",fitTotal->GetParameter(7),fitTotal->GetParError(7));
 
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(5),
                      fitTotal->GetParameter(6),
                      fitTotal->GetParameter(7),
@@ -2798,7 +2798,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
                      fitTotal->GetParameter(10),
                      fitTotal->GetParameter(11));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(12),
                         fitTotal->GetParameter(6) + (3.68609 - 3.096916),
                         fitTotal->GetParameter(7)*paramSPsiP, // /3.096916*3.68609,
@@ -2908,7 +2908,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWG2()
   //__________________________
 
   // playground
-    // TF1* fitTotalCopy = new TF1("signal+bckCopy",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWG2,fitRangeLow,fitRangeHigh,13,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2VWG2");
+    // TF1* fitTotalCopy = new TF1("signal+bckCopy",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWG2,fitRangeLow,fitRangeHigh,13);
     // for (int i = 0; i < 13; ++i)
     // {
     //   if (i == 12 ) fitTotalCopy->SetParameter(i,fitTotal->GetParameter(5)*0.024); // kJpsi * N_PsiP(13TeV)/JPsi(13TeV)
@@ -2963,7 +2963,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL1POL2()
 
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol1Pol2,fitRangeLow,fitRangeHigh,13,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2Pol1Pol2");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol1Pol2,fitRangeLow,fitRangeHigh,13);
 
   fitTotal->SetParNames("a","b","a'","b'","c'","kJPsi","mJPsi","sJPsi",
 //                        0  1   2    3    4      5      6       7
@@ -2974,13 +2974,13 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL1POL2()
   fitTotal->SetParName(12, "kPsiP");
 //                            12
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol1Pol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,fitRangeLow,fitRangeHigh,5);
 
   //___________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,1.7,6.,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol1Pol2");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,1.7,6.,5);
 
   Int_t bin = fHisto->FindBin(0.70);
   // Int_t bin = fHisto->FindBin(1.2); // just after a low mass pick
@@ -3123,7 +3123,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL1POL2()
   Set("mJPsi",fitTotal->GetParameter(6),fitTotal->GetParError(6));
   Set("sJPsi",fitTotal->GetParameter(7),fitTotal->GetParError(7));
 
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(5),
                      fitTotal->GetParameter(6),
                      fitTotal->GetParameter(7),
@@ -3132,7 +3132,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL1POL2()
                      fitTotal->GetParameter(10),
                      fitTotal->GetParameter(11));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(12),
                         fitTotal->GetParameter(6) + (3.68609 - 3.096916),
                         fitTotal->GetParameter(7)*paramSPsiP, // /3.096916*3.68609,
@@ -3294,7 +3294,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   AliDebug(1,Form("Fit with jpsi + psiprime POL2/POL3 %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol2Pol3,fitRangeLow,fitRangeHigh,15,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2Pol2Pol3");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol2Pol3,fitRangeLow,fitRangeHigh,15);
 
   fitTotal->SetParNames("a","b","c","a'","b'","c'","d'","kJPsi","mJPsi","sJPsi","alJPsi");
 //                        0  1   2   3    4    5    6    7         8      9       10
@@ -3307,12 +3307,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   fitTotal->SetParName(14,"kPsiP");
 //                            14
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,fitRangeLow,fitRangeHigh,7,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,fitRangeLow,fitRangeHigh,7);
   //___________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,1.9,6.,7,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,1.9,6.,7);
 
   Int_t bin = fHisto->FindBin(0.7);
 
@@ -3408,7 +3408,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
   Set("mJPsi",fitTotal->GetParameter(8),fitTotal->GetParError(8));
   Set("sJPsi",fitTotal->GetParameter(9),fitTotal->GetParError(9));
 
-   TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+   TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(7),
                      fitTotal->GetParameter(8),
                      fitTotal->GetParameter(9),
@@ -3417,7 +3417,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3()
                      fitTotal->GetParameter(12),
                      fitTotal->GetParameter(13));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(14),
                         3.68609+(fitTotal->GetParameter(8)-3.096916)/3.096916*3.68609,
                         fitTotal->GetParameter(9)*paramSPsiP, // /3.096916*3.68609,
@@ -3541,7 +3541,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3V2()
   AliDebug(1,Form("Fit with jpsi + psiprime POL2/POL3 %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol2Pol3V2,fitRangeLow,fitRangeHigh,14,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2Pol2Pol3V2");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol2Pol3V2,fitRangeLow,fitRangeHigh,14);
 
   fitTotal->SetParNames("a","b","c","a'","b'","c'","kJPsi","mJPsi","sJPsi","alJPsi");
 //                        0  1   2   3    4    5     6       7         8      9
@@ -3554,12 +3554,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3V2()
   fitTotal->SetParName(13,"kPsiP");
 //                            13
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3V2,fitRangeLow,fitRangeHigh,6,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3V2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3V2,fitRangeLow,fitRangeHigh,6);
   //___________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3V2,1.7,8.,6,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3V2");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3V2,1.7,8.,6);
 
   Int_t bin = fHisto->FindBin(0.7);
   bckInit->SetParameters(0.,0.,bin,1.,0.,0.);
@@ -3641,7 +3641,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3V2()
   Set("mJPsi",fitTotal->GetParameter(8),fitTotal->GetParError(8));
   Set("sJPsi",fitTotal->GetParameter(9),fitTotal->GetParError(9));
 
-   TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+   TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(6),
                      fitTotal->GetParameter(7),
                      fitTotal->GetParameter(8),
@@ -3650,7 +3650,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2POL3V2()
                      fitTotal->GetParameter(11),
                      fitTotal->GetParameter(12));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(13),
                         3.68609+(fitTotal->GetParameter(7)-3.096916)/3.096916*3.68609,
                         fitTotal->GetParameter(8)*paramSPsiP, // /3.096916*3.68609,
@@ -3780,7 +3780,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWGINDEPTAILS()
 
   // Add fit with indep tails
 
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWGINDEPTAILS,fitRangeLow,fitRangeHigh,16,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2VWGINDEPTAILS");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2VWGINDEPTAILS,fitRangeLow,fitRangeHigh,16);
 
   fitTotal->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi",
   //                        0      1       2       3       4      5      6
@@ -3813,7 +3813,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWGINDEPTAILS()
   //                            15
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4);
 
   const char* fitOption = "SER";
 
@@ -4017,7 +4017,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWGINDEPTAILS()
   Set("mPsiP",fitTotal->GetParameter(5) + (3.68609-3.096916),fitTotal->GetParError(5)/3.096916*3.68609);
   Set("sPsiP",fitTotal->GetParameter(6)*paramSPsiP,fitTotal->GetParError(6)*paramSPsiP);
 
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(4),
                         fitTotal->GetParameter(5),
                         fitTotal->GetParameter(6),
@@ -4026,7 +4026,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2VWGINDEPTAILS()
                         fitTotal->GetParameter(9),
                         fitTotal->GetParameter(10));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(11),
                             fitTotal->GetParameter(5) + (3.68609-3.096916),
                             fitTotal->GetParameter(6)*paramSPsiP, // /3.096916*3.68609,
@@ -4140,7 +4140,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
   AliDebug(1,Form("Fit with jpsi + psiprime Pol2 x Exp %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol2Exp,fitRangeLow,fitRangeHigh,12,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2Pol2Exp");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol2Exp,fitRangeLow,fitRangeHigh,12);
 
   fitTotal->SetParNames("pol0","pol1","pol2","exp","kJPsi","mJPsi","sJPsi","alJPsi",
   //                      0      1       2     3      4      5       6       7
@@ -4149,12 +4149,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
   fitTotal->SetParName(11,"kPsiP");
   //                            11
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
   //__________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,1.7,6.,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,1.7,6.,4);
 
   Int_t bin = fHisto->FindBin(0.26);
 
@@ -4262,7 +4262,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
   Set("mJPsi",fitTotal->GetParameter(5),fitTotal->GetParError(5));
   Set("sJPsi",fitTotal->GetParameter(6),fitTotal->GetParError(6));
 
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(4),
                             fitTotal->GetParameter(5),
                             fitTotal->GetParameter(6),
@@ -4271,7 +4271,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL2EXP()
                             fitTotal->GetParameter(9),
                             fitTotal->GetParameter(10));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(11),
                             fitTotal->GetParameter(5) + (3.68609-3.096916),
                             fitTotal->GetParameter(6)*paramSPsiP, // /3.096916*3.68609,
@@ -4409,7 +4409,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL4EXP()
   AliDebug(1,Form("Fit with jpsi + psiprime Pol4 x Exp %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol4Exp,fitRangeLow,fitRangeHigh,14,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoCB2Pol4Exp");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoCB2Pol4Exp,fitRangeLow,fitRangeHigh,14);
 
   fitTotal->SetParNames("pol0","pol1","pol2","pol3","pol4","exp","kJPsi",
   //                      0       1      2      3     4       5     6
@@ -4423,12 +4423,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL4EXP()
   //                         13
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,fitRangeLow,fitRangeHigh,6,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,fitRangeLow,fitRangeHigh,6);
   //__________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,1.6,7.,6,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Exp");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,1.6,7.,6);
 
   Int_t bin = fHisto->FindBin(1.6);
 
@@ -4539,7 +4539,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL4EXP()
   Set("mJPsi",fitTotal->GetParameter(7),fitTotal->GetParError(7));
   Set("sJPsi",fitTotal->GetParameter(8),fitTotal->GetParError(8));
 
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalJPsi->SetParameters(fitTotal->GetParameter(6),
                             fitTotal->GetParameter(7),
                             fitTotal->GetParameter(8),
@@ -4548,7 +4548,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMECB2POL4EXP()
                             fitTotal->GetParameter(11),
                             fitTotal->GetParameter(12));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7,"AliAnalysisMuMuJpsiResult","FitFunctionSignalCrystalBallExtended");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionSignalCrystalBallExtended,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),7);
   signalPsiP->SetParameters(fitTotal->GetParameter(13),
                             3.68609+(fitTotal->GetParameter(7)-3.096916)/3.096916*3.68609,
                             fitTotal->GetParameter(8)*paramSPsiP, // /3.096916*3.68609,
@@ -4710,7 +4710,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG()
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and VWG %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewVWG,fitRangeLow,fitRangeHigh,16,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoNA60NewVWG");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewVWG,fitRangeLow,fitRangeHigh,16);
 
   fitTotal->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi",
   //                       0      1      2       3       4       5       6
@@ -4728,13 +4728,13 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG()
   //                           15
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,fitRangeLow,fitRangeHigh,4);
 
   //__________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,1.7,6.,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG,1.7,6.,4);
 
   Int_t bin = fHisto->FindBin(0.25);
 
@@ -4810,7 +4810,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG()
   delete bckInit;//Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalJPsi->SetParameters(fitTotal->GetParameter(4),
                             fitTotal->GetParameter(5),
@@ -4825,7 +4825,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG()
 
   signalJPsi->SetParameter(10,fitTotal->GetParameter(14));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalPsiP->SetParameters(fitTotal->GetParameter(15),
                             fitTotal->GetParameter(5) + (3.68609-3.096916),
@@ -5012,7 +5012,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and VWG %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewVWG2,fitRangeLow,fitRangeHigh,17,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoNA60NewVWG2");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewVWG2,fitRangeLow,fitRangeHigh,17);
 
   fitTotal->SetParNames("kVWG","mVWG","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   //                       0      1      2       3       4       5       6      7         8         9        10
@@ -5029,12 +5029,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
   fitTotal->SetParName(16, "kPsiP");
   //                           16
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,fitRangeLow,fitRangeHigh,5);
   //__________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,1.9,5.,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundVWG2");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundVWG2,1.9,5.,5);
 
   Int_t bin = fHisto->FindBin(0.26);
 
@@ -5104,7 +5104,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
   delete bckInit;//Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalJPsi->SetParameters(fitTotal->GetParameter(5),
                             fitTotal->GetParameter(6),
@@ -5119,7 +5119,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWVWG2()
 
   signalJPsi->SetParameter(10,fitTotal->GetParameter(15));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalPsiP->SetParameters(fitTotal->GetParameter(16),
                             fitTotal->GetParameter(6) + (3.68609 - 3.096916),
@@ -5283,7 +5283,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL1POL2()
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and pol1/pol2 %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol1Pol2,fitRangeLow,fitRangeHigh,17,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoNA60NewPol1Pol2");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol1Pol2,fitRangeLow,fitRangeHigh,17);
 
   fitTotal->SetParNames("a","b","a'","b'","c'","kJPsi","mJPsi","sJPsi",
   //                     0   1   2    3    4      5       6       7
@@ -5303,12 +5303,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL1POL2()
   //                           16
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol1Pol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,fitRangeLow,fitRangeHigh,5);
   //___________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,1.7,6.,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol1Pol2");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol1Pol2,1.7,6.,5);
   Int_t bin = fHisto->FindBin(0.70);
 
 
@@ -5391,7 +5391,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL1POL2()
   delete bckInit;//Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalJPsi->SetParameters(fitTotal->GetParameter(5),
                             fitTotal->GetParameter(6),
@@ -5406,7 +5406,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL1POL2()
 
   signalJPsi->SetParameter(10,fitTotal->GetParameter(15));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalPsiP->SetParameters(fitTotal->GetParameter(16),
                             fitTotal->GetParameter(6) + (3.68609 - 3.096916),
@@ -5589,7 +5589,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and pol2/pol3 %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol2Pol3,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoNA60NewPol2Pol3");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol2Pol3,fitRangeLow,fitRangeHigh,19);
 
   fitTotal->SetParNames("a","b","c","a'","b'","c'","d'","kJPsi","mJPsi","sJPsi",
   //                     0   1   2   3    4    5    6      7      8       9
@@ -5612,11 +5612,11 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
   fitTotal->SetParName(18, "kPsiP");
   //                           18
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,fitRangeLow,fitRangeHigh,7,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,fitRangeLow,fitRangeHigh,7);
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,1.9,6.,7,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Pol3");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Pol3,1.9,6.,7);
 
   Int_t bin = fHisto->FindBin(0.7);
 
@@ -5694,7 +5694,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
   delete bckInit;//Delete the initial background funtion
 
   //___________Set parameters and fit functions to store in the result
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalJPsi->SetParameters(fitTotal->GetParameter(7),
                             fitTotal->GetParameter(8),
@@ -5709,7 +5709,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2POL3()
 
   signalJPsi->SetParameter(10,fitTotal->GetParameter(17));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","FitFunctionNA60New");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalPsiP->SetParameters(fitTotal->GetParameter(18),
                             3.68609+(fitTotal->GetParameter(8)-3.096916)/3.096916*3.68609,
@@ -5886,7 +5886,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2EXP()
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and pol4 x exp %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol2Exp,fitRangeLow,fitRangeHigh,16,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoNA60NewPol2Exp");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol2Exp,fitRangeLow,fitRangeHigh,16);
 
   fitTotal->SetParNames("pol0","pol1","pol2","exp","kJPsi","mJPsi","sJPsi",
   //                      0      1       2      3     4      5       6
@@ -5905,13 +5905,13 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2EXP()
   //                           15
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   //__________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,1.7,6.,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,1.7,6.,4);
 
   Int_t bin = fHisto->FindBin(0.26);
 
@@ -5980,7 +5980,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2EXP()
 
 
   //___________Set parameters and fit functions to store in the result
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","SignalNA60New");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalJPsi->SetParameters(fitTotal->GetParameter(4),
                             fitTotal->GetParameter(5),
@@ -5995,7 +5995,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL2EXP()
 
   signalJPsi->SetParameter(10,fitTotal->GetParameter(14));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","SignalNA60New");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalPsiP->SetParameters(fitTotal->GetParameter(15),
                             fitTotal->GetParameter(5) + (3.68609-3.096916),
@@ -6165,7 +6165,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL4EXP()
   AliDebug(1,Form("Fit with jpsi + psiprime NA60 new and pol4 x exp %s",msg.Data()));
 
   //__________ Define the function to fit the spectrum, and the background just for plotting
-  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol4Exp,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionTotalTwoNA60NewPol4Exp");
+  TF1* fitTotal = new TF1("signal+bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionTotalTwoNA60NewPol4Exp,fitRangeLow,fitRangeHigh,18);
 
   fitTotal->SetParNames("pol0","pol1","pol2","pol3","pol4","exp","kJPsi",
   //                        0    1       2      3      4     5      6
@@ -6188,12 +6188,12 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL4EXP()
   //                           17
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,fitRangeLow,fitRangeHigh,6,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,fitRangeLow,fitRangeHigh,6);
   //________
 
 
   //__________ Fit background only for initial parameters
-  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,1.6,7.,6,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Exp");
+  TF1* bckInit = new TF1("bckInit",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Exp,1.6,7.,6);
 
   Int_t bin = fHisto->FindBin(1.6);
 
@@ -6265,7 +6265,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL4EXP()
 
 
   //___________Set parameters and fit functions to store in the result
-  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","SignalNA60New");
+  TF1* signalJPsi = new TF1("signalJPsi",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalJPsi->SetParameters(fitTotal->GetParameter(6),
                             fitTotal->GetParameter(7),
@@ -6280,7 +6280,7 @@ void AliAnalysisMuMuJpsiResult::FitPSIPSIPRIMENA60NEWPOL4EXP()
 
   signalJPsi->SetParameter(10,fitTotal->GetParameter(16));
 
-  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11,"AliAnalysisMuMuJpsiResult","SignalNA60New");
+  TF1* signalPsiP = new TF1("signalPsiP",this,&AliAnalysisMuMuJpsiResult::FitFunctionNA60New,fHisto->GetXaxis()->GetXmin(),fHisto->GetXaxis()->GetXmax(),11);
 
   signalPsiP->SetParameters(fitTotal->GetParameter(17),
                             3.68609+(fitTotal->GetParameter(7)-3.096916)/3.096916*3.68609,
@@ -6447,7 +6447,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2()
 
   TProfile::Approximate(); // Recalculates the error for low stat bins
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(3.,1.,0.);
 
@@ -6460,7 +6460,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2,fitRangeLow,fitRangeHigh,17,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2,fitRangeLow,fitRangeHigh,17);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -6576,7 +6576,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2()
 
   TProfile::Approximate(); // Recalculates the error for low stat bins
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(3.,1.,0.);
 
@@ -6589,7 +6589,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL1POL2POL2,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2POL1POL2POL2");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL1POL2POL2,fitRangeLow,fitRangeHigh,18);
 
   fitMeanpt->SetParNames("a","b","a'","b'","c'","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
   fitMeanpt->SetParName(11,"nuJPsi");
@@ -6706,7 +6706,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(3.,-2.,0.4,-0.0);
 
@@ -6719,7 +6719,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2EXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2EXP");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2EXP,fitRangeLow,fitRangeHigh,18);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -6794,7 +6794,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL2EXP()
       printf("--------> Warning : problem with error estimation for back parameters <-------\n");
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(13),fitMeanpt->GetParameter(14),fitMeanpt->GetParameter(15),fitMeanpt->GetParameter(16));
 
@@ -6846,7 +6846,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2EXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(3.,-2.,0.4,-0.0);
 
@@ -6858,7 +6858,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL1POL2POL2EXP,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2POL1POL2POL2EXP");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL1POL2POL2EXP,fitRangeLow,fitRangeHigh,19);
 
   fitMeanpt->SetParNames("a","b","a'","b'","c'","kJPsi","mJPsi","sJPsi","alJPsi","auJPsi","nlJPsi");
   fitMeanpt->SetParName(11,"nuJPsi");
@@ -6933,7 +6933,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL1POL2_BKGMPTPOL2EXP()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(14),fitMeanpt->GetParameter(15),fitMeanpt->GetParameter(16),fitMeanpt->GetParameter(17));
 
@@ -6985,7 +6985,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(3.,1.,0.);
 
@@ -6999,7 +6999,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL2EXPPOL2,fitRangeLow,fitRangeHigh,17,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2POL2EXPPOL2");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL2EXPPOL2,fitRangeLow,fitRangeHigh,17);
 
   fitMeanpt->SetParNames("pol0","pol1","pol2","exp","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -7063,7 +7063,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(13),fitMeanpt->GetParameter(14),fitMeanpt->GetParameter(15));
 
@@ -7115,7 +7115,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(3.,-1.,0.4,-0.1);
   bck->SetParLimits(0, 0.,5.0);
@@ -7128,7 +7128,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL2EXPPOL2EXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2POL2EXPPOL2EXP");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2POL2EXPPOL2EXP,fitRangeLow,fitRangeHigh,18);
 
   fitMeanpt->SetParNames("pol0","pol1","pol2","exp","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -7203,7 +7203,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2POL2EXP_BKGMPTPOL2EXP()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(13),fitMeanpt->GetParameter(14),fitMeanpt->GetParameter(15),fitMeanpt->GetParameter(16));
 
@@ -7260,7 +7260,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(3.,1.,0.);
   bck->SetParLimits(0, 0.,5.0);
@@ -7274,7 +7274,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2()
 
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2,fitRangeLow,fitRangeHigh,21,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2NA60NEWVWGPOL2");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2,fitRangeLow,fitRangeHigh,21);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi","p1RJPsi");
   fitMeanpt->SetParName(11,"p2RJPsi");
@@ -7349,7 +7349,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2()
       printf("--------> Warning : problem with <pt>PsiP error estimation <-------\n");
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(17),fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19));
 
@@ -7408,7 +7408,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2()
 
   // --- fit the background ---
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(2.,1.,0.);
   bck->SetParLimits(0, 0.,5.0);
@@ -7423,7 +7423,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2()
 
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2NA60NEWPOL1POL2POL2");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2,fitRangeLow,fitRangeHigh,22);
 
   fitMeanpt->SetParNames("a","b","a'","b'","c'","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   fitMeanpt->SetParName(11,"p1RJPsi");
@@ -7498,7 +7498,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19),fitMeanpt->GetParameter(20));
 
@@ -7555,7 +7555,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(2.5,-1.,0.2,-0.05);
   bck->SetParLimits(0, 0.,5.0);
@@ -7567,7 +7567,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2EXP,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2NA60NEWVWGPOL2EXP");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWVWGPOL2EXP,fitRangeLow,fitRangeHigh,22);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi","p1RJPsi");
   fitMeanpt->SetParName(11,"p2RJPsi");
@@ -7652,7 +7652,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP()
   }
 
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(17),fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19),fitMeanpt->GetParameter(20));
 
@@ -7710,7 +7710,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2EXP()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(2.5,-1.,0.2,-0.05);
   bck->SetParLimits(0, 0.,5.0);
@@ -7722,7 +7722,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2EXP,fitRangeLow,fitRangeHigh,23,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2NA60NEWPOL1POL2POL2EXP");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL1POL2POL2EXP,fitRangeLow,fitRangeHigh,23);
 
   fitMeanpt->SetParNames("a","b","a'","b'","c'","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   fitMeanpt->SetParName(11,"p1RJPsi");
@@ -7806,7 +7806,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL1POL2_BKGMPTPOL2EXP()
   }
 
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19),fitMeanpt->GetParameter(20),fitMeanpt->GetParameter(21));
 
@@ -7863,7 +7863,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(3.,1.,0.);
   bck->SetParLimits(0, 0.,5.0);
@@ -7876,7 +7876,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2,fitRangeLow,fitRangeHigh,21,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2,fitRangeLow,fitRangeHigh,21);
 
   fitMeanpt->SetParNames("pol0","pol1","pol2","exp","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi","p1RJPsi");
   fitMeanpt->SetParName(11,"p2RJPsi");
@@ -7950,7 +7950,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(17),fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19));
 
@@ -8005,7 +8005,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP()
 
   TProfile::Approximate();
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(2.8,-0.5,0.2,0.05);
   bck->SetParLimits(0, 0.,5.0);
@@ -8018,7 +8018,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP()
   SetFitRejectRange();
 
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2EXP,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2EXP");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2NA60NEWPOL2EXPPOL2EXP,fitRangeLow,fitRangeHigh,22);
 
   fitMeanpt->SetParNames("pol0","pol1","pol2","exp","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi","p1RJPsi");
   fitMeanpt->SetParName(11,"p2RJPsi");
@@ -8100,7 +8100,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(17),fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19),fitMeanpt->GetParameter(20));
 
@@ -8151,7 +8151,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL3()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol3,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol3");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol3,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(3.,1.,-0.4,0.05);
   bck->SetParLimits(0, 0.,5.0);
@@ -8163,7 +8163,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL3()
 
   SetFitRejectRange();
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL3,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL3");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL3,fitRangeLow,fitRangeHigh,18);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -8227,7 +8227,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL3()
     std::cout << "FitResult=" << static_cast<int>(fitResult) << std::endl;
   }
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(13),fitMeanpt->GetParameter(14),fitMeanpt->GetParameter(15),fitMeanpt->GetParameter(16));
 
@@ -8267,7 +8267,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTLIN()
 
   //  TString resultName(Form("MEANPTFIT_%salphalow=%5.2fnlow=%5.2falphaup=%5.2fnup=%5.2f",fitName.Data(),par[7],par[8],par[9],par[10]));
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundLin,fitRangeLow,fitRangeHigh,2,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundLin");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundLin,fitRangeLow,fitRangeHigh,2);
 
   bck->SetParameters(3.,0.);
   bck->SetParLimits(0, 0.,5.0);
@@ -8277,7 +8277,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTLIN()
 
   SetFitRejectRange();
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2Lin,fitRangeLow,fitRangeHigh,16,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2Lin");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2Lin,fitRangeLow,fitRangeHigh,16);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -8317,7 +8317,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTLIN()
 
   TFitResultPtr fitResult = fHisto->Fit(fitMeanpt,fitOption,"");
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(13),fitMeanpt->GetParameter(14));
 
@@ -8362,7 +8362,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWGINDEPTAILS_BKGMPTPOL2()
   Double_t fitRangeLow = GetValue(kFitRangeLow);
   Double_t fitRangeHigh = GetValue(kFitRangeHigh);
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2INDEPTAILS,fitRangeLow,fitRangeHigh,21,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2INDEPTAILS");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2INDEPTAILS,fitRangeLow,fitRangeHigh,21);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -8416,7 +8416,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWGINDEPTAILS_BKGMPTPOL2()
 
   TFitResultPtr fitResult = fHisto->Fit(fitMeanpt,fitOption,"");
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanpt->GetParameter(17),fitMeanpt->GetParameter(18),fitMeanpt->GetParameter(19));
 
@@ -8467,7 +8467,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL4()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5);
 
   bck->SetParameters(3.,-0.5,-0.5,1.5,-0.01);
   bck->SetParLimits(0, 0.,5.0);
@@ -8479,7 +8479,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSIPSIPRIMECB2VWG_BKGMPTPOL4()
 
   SetFitRejectRange();
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL4,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL4");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL4,fitRangeLow,fitRangeHigh,19);
 
   fitMeanpt->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanpt->SetParName(11,"kPsiP");
@@ -8598,7 +8598,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2()
   TProfile::Approximate();
 
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   // bck->SetParameters(.3,-0.5,0.5,1.5,-0.01);
   // bck->SetParameters(-5.,-90.,90.,-30,3.);
@@ -8620,7 +8620,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2,fitRangeLow,fitRangeHigh,17,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2,fitRangeLow,fitRangeHigh,17);
 
   fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanv2->SetParName(11,"kPsiP");
@@ -8748,7 +8748,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
 
   TProfile::Approximate();
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(.1,1.,0.4,-0.0);
   // bck->SetParameters(.1,1.,0.);
@@ -8758,7 +8758,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
   // SetFitRejectRange(2.7,4.); //2.6,3.4
   SetFitRejectRange(2.5,3.5);
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
   //
   //  bck->SetParameters(1,0,0,0);
 
@@ -8773,7 +8773,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
 
   SetFitRejectRange();
   std::cout << "range : " << fitRangeLow << " - " << fitRangeHigh << std::endl;
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2EXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL2EXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL2EXP,fitRangeLow,fitRangeHigh,18);
 
   fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -8852,7 +8852,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL2EXP()
   // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
   // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanv2->GetParameter(13),fitMeanv2->GetParameter(14),fitMeanv2->GetParameter(15),fitMeanv2->GetParameter(16));
 
@@ -8902,7 +8902,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL3()
 
   TProfile::Approximate();
 
-    TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol3,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol3");
+    TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol3,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(3.,1.,0.,0.05);
 
@@ -8923,7 +8923,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL3()
   SetFitRejectRange();
 
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL3,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL3");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL3,fitRangeLow,fitRangeHigh,18);
 
   fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanv2->SetParName(11,"kPsiP");
@@ -9001,7 +9001,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL3()
   // Set("<v2>JPsi",fitMeanv2->GetParameter(12),fitMeanv2->GetParError(12));
   // Set("mv2PsiP",fitMeanv2->GetParameter(16),fitMeanv2->GetParError(16));
 
-  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  //  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(fitMeanv2->GetParameter(13),fitMeanv2->GetParameter(14),fitMeanv2->GetParameter(15),fitMeanv2->GetParameter(16));
 
@@ -9052,7 +9052,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL4()
 
   TProfile::Approximate();
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5);
 
   // bck->SetParameters(.3,-0.5,0.5,1.5,-0.01);
   // bck->SetParameters(-5.,-90.,90.,-30,3.);
@@ -9072,7 +9072,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG_BKGMV2POL4()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL4,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtS2CB2VWGPOL4");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtS2CB2VWGPOL4,fitRangeLow,fitRangeHigh,19);
 
   fitMeanv2->SetParNames("kVWG","mVWG","sVWG1","sVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi","nuJPsi");
   fitMeanv2->SetParName(11,"kPsiP");
@@ -9198,7 +9198,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSI_HFUNCTION()
 
   TProfile::Approximate();
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::hFunction,2.5,3.29,6,"AliAnalysisMuMuJpsiResult","hFunction");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::hFunction,2.5,3.29,6);
   bck->SetParameter(0,12864.7);
   bck->SetParameter(1,ah);
   bck->SetParameter(2,bh);
@@ -9208,7 +9208,7 @@ void AliAnalysisMuMuJpsiResult::FitMPTPSI_HFUNCTION()
 
   p->Fit(bck,"SRL","");
 
-  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtHFunction,fitRangeLow,fitRangeHigh,8,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtHFunction");
+  TF1* fitMeanpt = new TF1("fitMeanpt",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtHFunction,fitRangeLow,fitRangeHigh,8);
 
   fitMeanpt->SetParNames("<pt>JPsi","ah","bh","ch","dh","eh","fh","gh");
 
@@ -9295,7 +9295,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POLEXP()
 
   TProfile::Approximate();
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3);
    bck->SetParameters(BG0_init,BG1_init,BGexp_init);
   SetFitRejectRange(rejRl,rejRh);
 
@@ -9308,7 +9308,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POLEXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POLEXP,fitRangeLow,fitRangeHigh,18,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POLEXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POLEXP,fitRangeLow,fitRangeHigh,18);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -9449,7 +9449,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
 
   TProfile::Approximate();
   //_____________
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
   bck->SetParameters(1.7,-1.3,0.2,-0.7);
   SetFitRejectRange(2.4,3.6);
 
@@ -9462,7 +9462,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL2EXP,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POL2EXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL2EXP,fitRangeLow,fitRangeHigh,19);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -9650,7 +9650,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4()
 
   TProfile::Approximate();
   //_____________
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5);
   bck->SetParameters(.1,-.1,.01,0.,0.);
   SetFitRejectRange(2.5,3.5);
 
@@ -9663,7 +9663,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POL4");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4,fitRangeLow,fitRangeHigh,19);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -9819,7 +9819,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4Cheb()
 
   TProfile::Approximate();
   //_____________
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5);
 
 
   bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
@@ -9834,7 +9834,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2VWG2_BKGMV2POL4Cheb()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4Cheb,fitRangeLow,fitRangeHigh,19,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2VWG2POL4Cheb");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2VWG2POL4Cheb,fitRangeLow,fitRangeHigh,19);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","alJPsi","nlJPsi","auJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -9986,7 +9986,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(BG0_init,BG1_init,BG2_init);
 
@@ -10001,7 +10001,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2,fitRangeLow,fitRangeHigh,20,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL2");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2,fitRangeLow,fitRangeHigh,20);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -10152,7 +10152,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POLEXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3);
   bck->SetParameters(BG0_init,BG1_init,BGexp_init);
 
   SetFitRejectRange(rejRl,rejRh);
@@ -10166,7 +10166,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POLEXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3_POLEXP,fitRangeLow,fitRangeHigh,20,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3_POLEXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3_POLEXP,fitRangeLow,fitRangeHigh,20);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -10309,7 +10309,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2EXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(.4,-.2,.02);
   SetFitRejectRange(2.6,3.4);
@@ -10323,7 +10323,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2EXP,fitRangeLow,fitRangeHigh,21,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL2EXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL2EXP,fitRangeLow,fitRangeHigh,21);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -10478,7 +10478,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4Cheb()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5);
 
   bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
 
@@ -10493,7 +10493,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4Cheb()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4Cheb,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL4Cheb");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4Cheb,fitRangeLow,fitRangeHigh,22);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -10638,7 +10638,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5);
 
   bck->SetParameters(.4,-.2,.02);
   SetFitRejectRange(2.6,3.4);
@@ -10652,7 +10652,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMECB2POL2POL3_BKGMV2POL4()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSCB2POL2POL3POL4");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSCB2POL2POL3POL4,fitRangeLow,fitRangeHigh,22);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","alJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -10809,7 +10809,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(BG0_init,BG1_init,BG2_init);
   SetFitRejectRange(rejRl,rejRh);
@@ -10823,7 +10823,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL2");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2,fitRangeLow,fitRangeHigh,22);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -10984,7 +10984,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POLEXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(BG0_init,BG1_init,BGexp_init);
   SetFitRejectRange(rejRl,rejRh);
@@ -10998,7 +10998,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POLEXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POLEXP,fitRangeLow,fitRangeHigh,22,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POLEXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POLEXP,fitRangeLow,fitRangeHigh,22);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -11145,7 +11145,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2EXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(1.8,-1.,.1,-.7);
   bck->SetParLimits(0,0.,10.);
@@ -11160,7 +11160,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2EXP,fitRangeLow,fitRangeHigh,23,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL2EXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL2EXP,fitRangeLow,fitRangeHigh,23);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -11309,7 +11309,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5);
 
   bck->SetParameters(.6,-.4,.03,0.015,-0.003);
   bck->SetParLimits(0,0.,2.);
@@ -11325,7 +11325,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL4");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4,fitRangeLow,fitRangeHigh,24);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -11486,7 +11486,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4Cheb()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5);
   bck->SetParameters(BG0_init,BG1_init,BG2_init,BG3_init,BG4_init);
   SetFitRejectRange(rejRl,rejRh);
 
@@ -11499,7 +11499,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWVWG2_BKGMV2POL4Cheb()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4Cheb,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWVWG2POL4Cheb");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWVWG2POL4Cheb,fitRangeLow,fitRangeHigh,24);
 
   fitMeanv2->SetParNames("kVWG2","mVWG2","s1VWG2","s2VWG2","gVWG2","kJPsi","mJPsi","sJPsi","p1LJPsi","p2LJPsi","p3LJPsi");
   //                        0      1      2       3       4       5       6       7         8        9        10
@@ -11662,7 +11662,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2,fitRangeLow,fitRangeHigh,3);
 
   bck->SetParameters(BG0_init,BG1_init,BG2_init);
   SetFitRejectRange(rejRl,rejRh);
@@ -11676,7 +11676,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL2");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2,fitRangeLow,fitRangeHigh,24);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -11842,7 +11842,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POLEXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPolExp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPolExp,fitRangeLow,fitRangeHigh,3);
 
   // bck->SetParameters(1.2,-.3,-1.);
   bck->SetParameters(BG0_init,BG1_init,BGexp_init);
@@ -11860,7 +11860,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POLEXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP,fitRangeLow,fitRangeHigh,24,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3_POLEXP,fitRangeLow,fitRangeHigh,24);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -12019,7 +12019,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2EXP()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol2Exp");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol2Exp,fitRangeLow,fitRangeHigh,4);
 
   bck->SetParameters(1.8,-1.,.1,-.7);
 
@@ -12034,7 +12034,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL2EXP()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP,fitRangeLow,fitRangeHigh,25,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2EXP,fitRangeLow,fitRangeHigh,25);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -12194,7 +12194,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4()
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4,fitRangeLow,fitRangeHigh,5);
 
   bck->SetParameters(.4,-.2,.02,0.,0.);
   SetFitRejectRange(2.6,3.4);
@@ -12208,7 +12208,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4()
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2,fitRangeLow,fitRangeHigh,26,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL2");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL2,fitRangeLow,fitRangeHigh,26);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10
@@ -12380,7 +12380,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4Cheb(
 
   //_____________
 
-  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5,"AliAnalysisMuMuJpsiResult","FitFunctionBackgroundPol4Cheb");
+  TF1* bck = new TF1("bck",this,&AliAnalysisMuMuJpsiResult::FitFunctionBackgroundPol4Cheb,fitRangeLow,fitRangeHigh,5);
 
   bck->SetParameters(.4,-.2,.02,0.,0.);
   SetFitRejectRange(2.6,3.4);
@@ -12398,7 +12398,7 @@ void AliAnalysisMuMuJpsiResult::FitMV2PSIPSIPRIMENA60NEWPOL2POL3_BKGMV2POL4Cheb(
 
   SetFitRejectRange();
 
-  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL4Cheb,fitRangeLow,fitRangeHigh,26,"AliAnalysisMuMuJpsiResult","FitFunctionMeanPtSNA60NEWPOL2POL3POL4Cheb");
+  TF1* fitMeanv2 = new TF1("fitMeanv2",this,&AliAnalysisMuMuJpsiResult::FitFunctionMeanPtSNA60NEWPOL2POL3POL4Cheb,fitRangeLow,fitRangeHigh,26);
 
   fitMeanv2->SetParNames("a","b","c","ap","bp","cp","dp","kJPsi","mJPsi","sJPsi","p1LJPsi");
   //                      0   1   2    3    4    5   6       7       8       9      10

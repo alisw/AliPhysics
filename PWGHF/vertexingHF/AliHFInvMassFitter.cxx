@@ -513,7 +513,7 @@ TF1* AliHFInvMassFitter::CreateBackgroundFitFunction(TString fname, Double_t int
   ///
 
   SetNumberOfParams();
-  TF1* funcbkg =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Bkg,fMinMass,fMaxMass,fNParsBkg,"AliHFInvMassFitter","FitFunction4Bkg");
+  TF1* funcbkg =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Bkg,fMinMass,fMaxMass,fNParsBkg);
   switch (fTypeOfFit4Bkg) {
   case 0: //gaus+expo
     funcbkg->SetParNames("BkgInt","Slope");
@@ -562,7 +562,7 @@ TF1* AliHFInvMassFitter::CreateSecondPeakFunction(TString fname, Double_t integs
   /// Creates a function for a gaussian peak in the background fit function
   /// Can be used e.g. to include the D+->KKpi peak in the D_s inv. mass fit
 
-  TF1* funcsec =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4SecPeak,fMinMass,fMaxMass,3,"AliHFInvMassFitter","FitFunction4SecPeak");
+  TF1* funcsec =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4SecPeak,fMinMass,fMaxMass,3);
   funcsec->SetParameter(0,integsig);
   funcsec->SetParameter(1,fSecMass);
   if(fFixSecMass) funcsec->FixParameter(1,fSecMass);
@@ -575,7 +575,7 @@ TF1* AliHFInvMassFitter::CreateSecondPeakFunction(TString fname, Double_t integs
 TF1* AliHFInvMassFitter::CreateReflectionFunction(TString fname){
   /// Creates a function for reflections contribution
   /// in the D0->Kpi inv. mass distribution
-  TF1* funcrfl =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Refl,fMinMass,fMaxMass,1,"AliHFInvMassFitter","FitFunction4Refl");
+  TF1* funcrfl =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Refl,fMinMass,fMaxMass,1);
   funcrfl->SetParameter(0,fRflOverSig);
   funcrfl->SetParLimits(0,0.,1.);
   if(fFixRflOverSig) funcrfl->FixParameter(0,fRflOverSig);
@@ -588,7 +588,7 @@ TF1* AliHFInvMassFitter::CreateBackgroundPlusReflectionFunction(TString fname){
   ///
   SetNumberOfParams();
   Int_t totParams=fNParsBkg+fNParsRfl;
-  TF1* fbr=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4BkgAndRefl,fMinMass,fMaxMass,totParams,"AliHFInvMassFitter","FitFunction4BkgAndRefl");
+  TF1* fbr=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4BkgAndRefl,fMinMass,fMaxMass,totParams);
   for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
     fbr->SetParameter(ipar,fBkgFunc->GetParameter(ipar));
     fbr->SetParName(ipar,fBkgFunc->GetParName(ipar));
@@ -606,7 +606,7 @@ TF1* AliHFInvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsi
   ///
 
   SetNumberOfParams();
-  TF1* funcsig =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Sgn,fMinMass,fMaxMass,fNParsSig,"AliHFInvMassFitter","FitFunction4Sgn");
+  TF1* funcsig =  new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Sgn,fMinMass,fMaxMass,fNParsSig);
   if(fTypeOfFit4Sgn==kGaus){
     funcsig->SetParameter(0,integsig);
     if(fFixedRawYield>-0.1) funcsig->FixParameter(0,fFixedRawYield);
@@ -664,7 +664,7 @@ TF1* AliHFInvMassFitter::CreateTotalFitFunction(TString fname){
 
   SetNumberOfParams();
   Int_t totParams=fNParsBkg+fNParsRfl+fNParsSec+fNParsSig;
-  TF1* ftot=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Mass,fMinMass,fMaxMass,totParams,"AliHFInvMassFitter","FitFunction4Mass");
+  TF1* ftot=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Mass,fMinMass,fMaxMass,totParams);
   for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
     ftot->SetParameter(ipar,fBkgFunc->GetParameter(ipar));
     ftot->SetParName(ipar,fBkgFunc->GetParName(ipar));
@@ -1008,7 +1008,7 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
   fCurPolDegreeBkg=2;
   TF1 *funcbkg,*funcPrev=0x0;
   while(fCurPolDegreeBkg<=fPolDegreeBkg){
-    funcbkg = new TF1(Form("temp%d",fCurPolDegreeBkg),this,&AliHFInvMassFitter::BackFitFuncPolHelper,fMinMass,fMaxMass,fCurPolDegreeBkg+1,"AliHFInvMassFitter","BackFitFuncPolHelper");
+    funcbkg = new TF1(Form("temp%d",fCurPolDegreeBkg),this,&AliHFInvMassFitter::BackFitFuncPolHelper,fMinMass,fMaxMass,fCurPolDegreeBkg+1);
     if(funcPrev){
       for(Int_t j=0;j<fCurPolDegreeBkg;j++){// now is +1 degree w.r.t. previous fit funct
 	funcbkg->SetParameter(j,funcPrev->GetParameter(j));

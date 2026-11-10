@@ -146,7 +146,7 @@ void AliDielectronBtoJPSItoEleCDFfitFCNfitter::SetPseudoProperBkgParameters(Doub
  fFCN->SetFMinus(xBkgPar[2]);//2
  fFCN->SetFSym(xBkgPar[3]);//3
  fFCN->SetLamPlus(xBkgPar[4]); //4
- fFCN->SetLamMinus(xBkgPar[5]); // 5	
+ fFCN->SetLamMinus(xBkgPar[5]); // 5
  fFCN->SetLamSym(xBkgPar[6]); // 6
 
 }
@@ -170,7 +170,7 @@ void AliDielectronBtoJPSItoEleCDFfitFCNfitter::GetPseudoProperBkgParameters(TArr
 TH1F* AliDielectronBtoJPSItoEleCDFfitFCNfitter::FitInvMassSignal(Double_t norm,Double_t mMin, Double_t mMax)
 {
  //
- // Fit on the invariant mass signal distribution ( Crystal ball params ) 
+ // Fit on the invariant mass signal distribution ( Crystal ball params )
  //
  if(!fInvMass){
   printf("no histogram...exiting\n");
@@ -234,15 +234,15 @@ void AliDielectronBtoJPSItoEleCDFfitFCNfitter::GetPseudoProperParameters(TArrayD
  //
  xPar.Reset();
  xPar.Set(kPseudo);
- xPar.AddAt(fFCN->GetNormGaus1ResFunc(type),0); 
- xPar.AddAt(fFCN->GetNormGaus2ResFunc(type),3); 
- xPar.AddAt(fFCN->GetResMean1(type),1); 
- xPar.AddAt(fFCN->GetResSigma1(type),2); 
- xPar.AddAt(fFCN->GetResMean2(type),4); 
- xPar.AddAt(fFCN->GetResSigma2(type),5); 
- xPar.AddAt(fFCN->GetResAlfa(type),6); 
- xPar.AddAt(fFCN->GetResLambda(type),7); 
- xPar.AddAt(fFCN->GetResNormExp(type),8); 
+ xPar.AddAt(fFCN->GetNormGaus1ResFunc(type),0);
+ xPar.AddAt(fFCN->GetNormGaus2ResFunc(type),3);
+ xPar.AddAt(fFCN->GetResMean1(type),1);
+ xPar.AddAt(fFCN->GetResSigma1(type),2);
+ xPar.AddAt(fFCN->GetResMean2(type),4);
+ xPar.AddAt(fFCN->GetResSigma2(type),5);
+ xPar.AddAt(fFCN->GetResAlfa(type),6);
+ xPar.AddAt(fFCN->GetResLambda(type),7);
+ xPar.AddAt(fFCN->GetResNormExp(type),8);
 }
 //__________________________________________________________________________________________
 TH1F * AliDielectronBtoJPSItoEleCDFfitFCNfitter::FitResolutionFunction(Double_t xMin, Double_t xMax, Int_t type, Double_t norm)
@@ -293,7 +293,7 @@ TH2F * AliDielectronBtoJPSItoEleCDFfitFCNfitter::FitBkgPsudoProper(Double_t xMin
  GetPseudoProperBkgParameters(bkgParam);
 
  TF2 *psProperBkgnd = new TF2("bkgPseudoProper",this,
-   &AliDielectronBtoJPSItoEleCDFfitFCNfitter::PsProperBackFitFunc,xMin,xMax,-0.5,2.5,8,"AliDielectronBtoJPSItoEleCDFfitFCNfitter","PsProperBackFitFunc");
+   &AliDielectronBtoJPSItoEleCDFfitFCNfitter::PsProperBackFitFunc,xMin,xMax,-0.5,2.5,8);
 
  for(Int_t i=0; i< kPseudoBkg ; i++) {
   if(fParameterXbkgToFix[i]) psProperBkgnd->FixParameter(i,bkgParam.At(i));
@@ -338,7 +338,7 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCNfitter::CDFInvMassTotal(const Double_
 Double_t AliDielectronBtoJPSItoEleCDFfitFCNfitter::CDFResolutionFunction(const Double_t *x,const Double_t *par)
 {
  //
- // function 
+ // function
  //
 //  Double_t resParam[kPseudo];
 //  for(Int_t i=0; i<kPseudo; i++) {
@@ -349,13 +349,13 @@ Double_t AliDielectronBtoJPSItoEleCDFfitFCNfitter::CDFResolutionFunction(const D
 }
 //__________________________________________________________________________________________
 Double_t AliDielectronBtoJPSItoEleCDFfitFCNfitter::PsProperBackFitFunc(const Double_t* x, const Double_t* par)
-{	
+{
  //
- // function 
+ // function
  //
  Int_t type = TMath::Nint(x[1]);
  Double_t params[7];
- for(Int_t i=0; i<7; i++) params[i]=par[i]; 
- SetPseudoProperBkgParameters(params);		
+ for(Int_t i=0; i<7; i++) params[i]=par[i];
+ SetPseudoProperBkgParameters(params);
  return fFCN->EvaluateCDFDecayTimeBkgDistr(x[0],type)*par[7]*fFCN->GetResWeight(type);
 }

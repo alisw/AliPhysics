@@ -97,16 +97,16 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(const AliJAcceptanceCorrectio
  */
 AliJAcceptanceCorrection::~AliJAcceptanceCorrection(){
   // destructor
-  
+
   delete fDEtaDPhi3DNearAcceptanceCalculation;
-  
+
 }
 
 /*
  * Equal sign operator
  */
 AliJAcceptanceCorrection&  AliJAcceptanceCorrection::operator=(const AliJAcceptanceCorrection& a){
-  //operator = 
+  //operator =
   if(this != &a){
     fCard = a.fCard;
     fDEtaNearAcceptance = a.fDEtaNearAcceptance;
@@ -131,19 +131,19 @@ AliJAcceptanceCorrection&  AliJAcceptanceCorrection::operator=(const AliJAccepta
  */
 void AliJAcceptanceCorrection::Generate3DAcceptanceCorrection(){
   // Generate 3D near side acceptance correction
-  
+
   // Read the eta range from card
   double etaRange = fCard->Get("EtaRange");
-  
+
   // Define the function for calculating the acceptance correction
   AliJAcceptanceFunctions *functionWrapper = new AliJAcceptanceFunctions();
-  TF1 *acceptanceCorrectionFunction = new TF1("acceptanceCorrectionFunction",functionWrapper,&AliJAcceptanceFunctions::AcceptanceCorrection3DNearSide,-2*etaRange,2*etaRange,2,"AliJAcceptanceFunctions","AcceptanceCorrection3DNearSide");
+  TF1 *acceptanceCorrectionFunction = new TF1("acceptanceCorrectionFunction",functionWrapper,&AliJAcceptanceFunctions::AcceptanceCorrection3DNearSide,-2*etaRange,2*etaRange,2);
   acceptanceCorrectionFunction->SetParameter(1,etaRange);
-  
+
   // Create the two dimensional histogram to store the values
   // This needs to have a lot of bins to have a decent accuracy
   fDEtaDPhi3DNearAcceptanceCalculation = new TH2D("acceptanceCalculation","acceptanceCalculation",800*etaRange,-2*etaRange,2*etaRange,1280,-TMath::Pi(),TMath::Pi());
-  
+
   // Fill the histogram with values from the function
   // The reason why the function is not used directly is the time it takes to make numerical
   // solving needed to get a number out of the function.
@@ -161,10 +161,10 @@ void AliJAcceptanceCorrection::Generate3DAcceptanceCorrection(){
       fDEtaDPhi3DNearAcceptanceCalculation->SetBinContent(binX,binY,binContent);
     }
   }
-  
+
   delete functionWrapper;
   delete acceptanceCorrectionFunction;
-  
+
 }
 
 /*
@@ -177,11 +177,11 @@ void AliJAcceptanceCorrection::Generate3DAcceptanceCorrection(){
  */
 void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
   // read the mixed event histograms
-  
+
   TPMERegexp sep("::");
   int ncol = sep.Split( fileName );
   TString filename = sep[0];
-  
+
   if (TString(fileName).BeginsWith("alien:"))  TGrid::Connect("alien:");
   TFile *inclusiveFile = TFile::Open(filename);
   TDirectory * dir =  (TDirectory*) inclusiveFile;
@@ -194,7 +194,7 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
 
   AliJHistManager *histogramReader = new AliJHistManager("hst",sep[1]);
   histogramReader->LoadConfig();
-  
+
   // Check if the new acceptance histogram exists in the inclusive file.
   // This check is done for backwards compatibility. If the histogram is
   // found, flag this so we know it in fursther algorithms.
@@ -206,7 +206,7 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     std::cout << "Could not find histogram: hDEtaNearMixAcceptance" << std::endl;
     std::cout << "Inclusive histograms for traditional 1D acceptance correction are not loaded! " << std::endl;
   }
-  
+
   // Load the mixed event deltaPhi deltaEta histogram in the traditional near side
   if(histogramReader->HistogramExists("hDphiDetaPta")){
     fDEtaDPhiNearAcceptance = histogramReader->GetTH2D("hDphiDetaPta");
@@ -216,7 +216,7 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     std::cout << "Could not find histogram: hDphiDetaPta" << std::endl;
     std::cout << "Inclusive histograms for traditional 2D acceptance correction are not loaded! " << std::endl;
   }
-  
+
   // Load the mixed event deltaPhi deltaEta histogram in the 3D near side
   if(histogramReader->HistogramExists("hDphiDetaXlong")){
     fDEtaDPhi3DNearAcceptance = histogramReader->GetTH2D("hDphiDetaXlong");
@@ -226,10 +226,10 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     std::cout << "Could not find histogram: hDphiDetaXlong" << std::endl;
     std::cout << "Inclusive histograms for 3D near side acceptance correction are not loaded! " << std::endl;
   }
-  
+
   // Only read track merge histograms if track merge correction is applied
   if(fCard->Get("TrackMergeSystematics")==1){
-    
+
     // Load the mixed event deltaPhi deltaEta histogram in the 3D near side
     if(histogramReader->HistogramExists("hDphiDetaXlong")){
       if(histogramReader->HistogramExists("hDphiDetaTrackMerge")){
@@ -246,9 +246,9 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     }
   }
 
-  
+
   delete histogramReader;
-  
+
 }
 
 /*
@@ -261,32 +261,32 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
  */
 void AliJAcceptanceCorrection::NormalizeAcceptanceTraditional(AliJTH1D &acceptanceHisto, corrType assocType){
   // Method for normalizing and rebinning the inclusive acceptance histograms
-  
+
   // Find the correct binning
   int numCent  = fCard->GetNoOfBins(kCentrType);
   int numPtt   = fCard->GetNoOfBins(kTriggType);
   int numAssoc = fCard->GetNoOfBins(assocType);
-  
+
   // Variables for the loop
   int rebin;
   double counts;
   double maxValue;
-  
+
   // Get the number of bins in the histograms
   const int nBins = acceptanceHisto[0][0][0]->GetNbinsX();
-  
+
   // Loop over the input histograms and find the correct normalization
   for (int iCent = 0; iCent < numCent; iCent++) {
     for (int iPtt = 0; iPtt < numPtt; iPtt++){
       for (int iAssoc = 0; iAssoc < numAssoc; iAssoc++){
-        
+
         // Do rebinning requiring at least fMinCountsPerBinInclusive counts in every bin in the histogram.  Maximum rebin is 16
         counts  = acceptanceHisto[iCent][iPtt][iAssoc]->Integral();
         rebin = GetRebin(counts,nBins,1);
         acceptanceHisto[iCent][iPtt][iAssoc]->Rebin(rebin);
         maxValue = acceptanceHisto[iCent][iPtt][iAssoc]->GetMaximum();
         if(maxValue > 0) acceptanceHisto[iCent][iPtt][iAssoc]->Scale(1.0/maxValue);
-        
+
       }
     }
   }
@@ -302,18 +302,18 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceTraditional(AliJTH1D &acceptan
  */
 void AliJAcceptanceCorrection::NormalizeAcceptanceInclusive(AliJTH2D &acceptanceHisto, corrType assocType, double peakValue){
   // Method for normalizing and rebinning the inclusive acceptance histograms from 3D near side
-  
+
   // Find the correct binning
   const int numCent    = fCard->GetNoOfBins(kCentrType);
   const int numPtt     = fCard->GetNoOfBins(kTriggType);
   const int numAssoc   = fCard->GetNoOfBins(assocType);
   const int numZvertex = fCard->GetNoOfBins(kZVertType);
-  
+
   // Loop over the input histograms and find the correct normalization
   for (int iCent = 0; iCent < numCent; iCent++) {
     for (int iPtt = 0; iPtt < numPtt; iPtt++){
       for (int iZVertex = 0; iZVertex < numZvertex; iZVertex++){
-        
+
         // xLong bins bias the deltaEta deltaPhi distribution, so we need to integrate over them
         // Also pTa bins are integrated over to get a good statistics
         for (int iAssoc = 1; iAssoc < numAssoc; iAssoc++){
@@ -321,20 +321,20 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceInclusive(AliJTH2D &acceptance
           if(assocType == kAssocType && fCard->Get(kTriggType,iPtt) < fCard->Get(kAssocType,iAssoc) && fLeadingParticleCorrelation) continue;
           acceptanceHisto[1][iCent][iZVertex][iPtt][0]->Add(acceptanceHisto[1][iCent][iZVertex][iPtt][iAssoc]);
         }
-        
+
         // Sum over z-vertex bins and put the histograms on first array index 0
         if(iZVertex == 0) acceptanceHisto[0][iCent][0][iPtt][1]->Reset();
         acceptanceHisto[0][iCent][0][iPtt][1]->Add(acceptanceHisto[1][iCent][iZVertex][iPtt][0]);
-        
+
         // Rebin and normalize the acceptance histograms to the interval [0,peakValue]
         RebinAndNormalize(acceptanceHisto[1][iCent][iZVertex][iPtt][0],peakValue);
-        
+
         // Note: The correction for away side effect for 3D near side done in GetAcceptanceCorrection3DNearSidelInclusive method
       } // z-vertex bins
-      
+
       // Rebin and normalize the acceptance histograms integrated over z-vertices to the interval [0,peakValue]
       RebinAndNormalize(acceptanceHisto[0][iCent][0][iPtt][1],peakValue);
-      
+
     } // Trigger pT bins
   } // Centrality bins
 }
@@ -349,7 +349,7 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceInclusive(AliJTH2D &acceptance
  */
 void AliJAcceptanceCorrection::NormalizeAcceptanceTraditionalInclusive(AliJTH2D &acceptanceHisto, corrType assocType){
   // Method for normalizing and rebinning the inclusive acceptance histograms from 3D near side
-  
+
   NormalizeAcceptanceInclusive(acceptanceHisto,assocType,1);
 }
 
@@ -364,14 +364,14 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceTraditionalInclusive(AliJTH2D 
  */
 void AliJAcceptanceCorrection::NormalizeAcceptance3DNearSideInclusive(AliJTH2D &acceptanceHisto, corrType assocType){
   // Method for normalizing and rebinning the inclusive acceptance histograms from 3D near side
-  
+
   // Find the acceptance eta range
   const double etaRange = fCard->Get("EtaRange");
 
   // Do the normalization
   const double peakValue = 2*sqrt(2)*etaRange;
   NormalizeAcceptanceInclusive(acceptanceHisto,assocType,peakValue);
-  
+
 }
 
 /*
@@ -386,17 +386,17 @@ void AliJAcceptanceCorrection::NormalizeAcceptance3DNearSideInclusive(AliJTH2D &
  */
 void AliJAcceptanceCorrection::NormalizeTrackMerge(AliJTH2D &trackMergeHisto, corrType assocType){
   // Method for normalizing and rebinning the track merge correction histograms
-  
+
   // Find the correct binning
   const int numCent    = fCard->GetNoOfBins(kCentrType);
   const int numPtt     = fCard->GetNoOfBins(kTriggType);
   const int numAssoc   = fCard->GetNoOfBins(assocType);
   const int numZvertex = fCard->GetNoOfBins(kZVertType);
-  
+
   // Temporary histogram to help in calculation
   TH2D *calculationHelper;
   TH2D *histogramReader;
-  
+
   // Bin rebin values found by trial and error. Should be good enough for a check.
   // Minimum rebin is 4, so that the region from where all the particles are removed
   // does not affect the correction too much (division by zero).
@@ -404,19 +404,19 @@ void AliJAcceptanceCorrection::NormalizeTrackMerge(AliJTH2D &trackMergeHisto, co
                            {4,4,4,4,4,4,4,8,8},
                            {4,4,4,4,4,4,8,16,16},
                            {4,4,4,4,8,16,16,16,16}};
-  
+
   // Loop over the input histograms and find the correct normalization
   for (int iCent = 0; iCent < numCent; iCent++) {
     for (int iPtt = 0; iPtt < numPtt; iPtt++){
       for (int iZVertex = 0; iZVertex < numZvertex; iZVertex++){
         for (int iAssoc = 0; iAssoc < numAssoc; iAssoc++){
-          
+
           // Note: iAssoc == 0 bin contains integrated distribution
           // This bin should not be used in the analysis, but in order to avoid problems
           // in other parts of the code the correction histogram is filled also for zeroth bin
           histogramReader = fDEtaDPhi3DNearAcceptance[1][iCent][iZVertex][iPtt][iAssoc];
           calculationHelper = (TH2D*) histogramReader->Clone();
-          
+
           // Note: Rebinning must be done before the calculation. Otherwise we run into
           // problems in case of low statistics. When there is a good fraction of bins that
           // are zero, if we rebin these after division gives too little content in the new
@@ -424,13 +424,13 @@ void AliJAcceptanceCorrection::NormalizeTrackMerge(AliJTH2D &trackMergeHisto, co
           calculationHelper->Rebin2D(rebinValues[iAssoc][iPtt],rebinValues[iAssoc][iPtt]);
           trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Rebin2D(rebinValues[iAssoc][iPtt],rebinValues[iAssoc][iPtt]);
           histogramReader->Rebin2D(rebinValues[iAssoc][iPtt],rebinValues[iAssoc][iPtt]);
-          
-          
+
+
           calculationHelper->Add(trackMergeHisto[iCent][iZVertex][iPtt][iAssoc],-1);
           calculationHelper->Divide(histogramReader);
           trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Reset();
           trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Add(calculationHelper);
-          
+
           // Normalize the rebinned histogram. GetMaximum is probably good enough for finding maximum value.
           const double maxValue = trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->GetMaximum();
           if(maxValue > 0) trackMergeHisto[iCent][iZVertex][iPtt][iAssoc]->Scale(1/maxValue);
@@ -454,16 +454,16 @@ void AliJAcceptanceCorrection::NormalizeTrackMerge(AliJTH2D &trackMergeHisto, co
  */
 double AliJAcceptanceCorrection::GetTrackMergeCorrection(double deltaEta, double deltaPhi, int iCent, int iZVertex, int iPtt, int iXlong){
   // return the track merge correction
-  
+
   // If track merge histograms are not loaded, no reliable track merge correction can be done
   if(!fDEtaDPhiTrackMergeLoaded) return 1;
-  
+
   // Track merging is only problem when two tracks are close to each other. In order to avoid rebinning effects
   // in the edges, do not correct if we are far away from the middle of deltaEta-deltaPhi plane
   if(TMath::Abs(deltaEta) > 0.2 || TMath::Abs(deltaPhi) > 0.6) return 1;
-  
+
   double denominator = fDEtaDPhiTrackMerge[iCent][iZVertex][iPtt][iXlong]->GetBinContent(fDEtaDPhiTrackMerge[iCent][iZVertex][iPtt][iXlong]->FindBin(deltaEta,deltaPhi));
-  
+
   if(denominator > 1e-6)
     return 1.0/denominator;
   else
@@ -479,7 +479,7 @@ double AliJAcceptanceCorrection::GetTrackMergeCorrection(double deltaEta, double
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrectionTriangle(double deltaEta){
   // calculate acceptance correction on pseudorapidity triangle
-  
+
   double absDEta = fabs(deltaEta);
   double etaRange = fCard->Get("EtaRange");
 
@@ -504,7 +504,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideCalculation(do
   // return the acceptance correction from the pre-calculated surface
 
   double denominator = fDEtaDPhi3DNearAcceptanceCalculation->GetBinContent(fDEtaDPhi3DNearAcceptanceCalculation->FindBin(deltaEta,deltaPhi));
-  
+
   if(denominator > 1e-6)
     return 1.0/denominator;
   else
@@ -521,22 +521,22 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideCalculation(do
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrectionTriangleInclusive(double deltaEta, int centralityBin, int triggerBin, int assocBin){
   // Inclusive acceptance correction
-  
+
   // If the inclusive histograms are not found from the file, return correction from triangle
   if(!fDEtaNearLoaded) return GetAcceptanceCorrectionTriangle(deltaEta);
-  
+
   // If the given bin is negative, return correction from triangle
   if(assocBin < 0) return GetAcceptanceCorrectionTriangle(deltaEta);
-  
+
   // The acceptance histogram comes always from pTa bins since 1D correction for 3D near side is meaningless
   TH1D *acceptanceHistogram = fDEtaNearAcceptance[centralityBin][triggerBin][assocBin];
-  
+
   // Get the number of bins in the histograms
   const int nBins = acceptanceHistogram->GetNbinsX();
-  
+
   // If there is less than defined number of entries per bin, just use triangle instead of inclusive
   if(acceptanceHistogram->GetEntries() < nBins*fMinCountsPerBinInclusive) return GetAcceptanceCorrectionTriangle(deltaEta);
-  
+
   // Use the value in the bin corresponding to deltaEta as acceptance correction
   int bin =  acceptanceHistogram->FindBin(deltaEta);
   double denominator  =  acceptanceHistogram->GetBinContent(bin);
@@ -544,7 +544,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTriangleInclusive(double
     return 1.0/denominator;
   else
     return 0;
-  
+
 }
 
 /*
@@ -559,28 +559,28 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTriangleInclusive(double
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusiveBin(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin, int firstBin){
   // Inclusive acceptance correction from two dimensional histogram
-  
+
   // If the inclusive histograms are not found from the file, return correction from triangle
   if(!fDEtaDPhiNearLoaded) return GetAcceptanceCorrectionTriangle(deltaEta);
 
   // The acceptance histogram comes always from 2D distribution
   // If z-vertex bin not specified in the argument list, return sum over z-vertex bins
   TH2D *acceptanceHistogram = fDEtaDPhiNearAcceptance[firstBin][centralityBin][zVertexBin][triggerBin][1-firstBin];
-  
+
   // If there are less than fMinCountsPerBinInclusive entries per bin use calculation instead of histogram
   const int nBinsEta = acceptanceHistogram->GetNbinsX();
   const int nBinsPhi = acceptanceHistogram->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
-  
+
   if(acceptanceHistogram->GetEntries() < nBins*fMinCountsPerBinInclusive) return GetAcceptanceCorrectionTriangle(deltaEta);
-  
+
   // Use the value in the bin corresponding to deltaEta as acceptance correction
   double denominator  =  acceptanceHistogram->GetBinContent(acceptanceHistogram->FindBin(deltaEta,deltaPhi));
   if(denominator > 1e-6)
     return 1.0/denominator;
   else
     return 0;
-  
+
 }
 
 /*
@@ -629,10 +629,10 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusive(dou
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusiveBin(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin, int firstBin){
   // Return the acceptance correction found from the inclusive near side deltaEta deltaPhi distributions
-  
+
   // If the inclusive histograms are not found from the file, return correction from calculation
   if(!fDEtaDPhi3DNearLoaded) return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
-  
+
   // If there are less than fMinCountsPerBinInclusive entries per bin use calculation instead of histogram
   // This can happen only if after rebin of 16 the entries per bin are still low
   // If z-vertex bin not specified in the argument list, return sum over z-vertex bins
@@ -640,26 +640,26 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusiveBin(d
   const int nBinsEta = acceptanceHistogram->GetNbinsX();
   const int nBinsPhi = acceptanceHistogram->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
-  
+
   if(acceptanceHistogram->GetEntries() < nBins*fMinCountsPerBinInclusive) return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
-  
+
   // First find the length of the deltaEta line in the near side
   double nearSideLength = acceptanceHistogram->GetBinContent(acceptanceHistogram->FindBin(deltaEta,deltaPhi));
-  
+
   // Then calculate the length of the deltaEta line outside of the acceptance
   double outsideAcceptance = sqrt(pow(deltaEta,2)+pow(deltaEta,2));
-  
+
   // Calculate the correction to histogram based on these results
   if(nearSideLength + outsideAcceptance < 1e-6) return 0;
   double denominator = nearSideLength / (nearSideLength + outsideAcceptance);
-  
+
   // For the test mode, do not do the proper correction here. Just normalize to interval [0,1]
   // This can be done also inside radius of Pi/2, since 3D near side distortions need to be taken into account only in the edges
   if(fTestMode || ( fUseSafeRadius && (deltaEta*deltaEta+deltaPhi*deltaPhi < TMath::Pi()*TMath::Pi()/4))){
     double etaRange = fCard->Get("EtaRange");
     denominator = nearSideLength / (2*sqrt(2)*etaRange);
   }
-  
+
   // Return the correction
   if(denominator > 1e-6)
     return 1.0/denominator;
@@ -709,13 +709,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusive(doub
  *  int triggerBin = bin index for trigger particle transverse momentum
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin){
-  
+
   if(samplingMethod == 0){
     return GetAcceptanceCorrectionTriangle(deltaEta);
   } else {
     return GetAcceptanceCorrectionTraditionalInclusive(deltaEta,deltaPhi,centralityBin,triggerBin);
   }
-  
+
 }
 
 /*
@@ -730,13 +730,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int sampling
  *  int triggerBin = bin index for trigger particle transverse momentum
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin){
-  
+
   if(samplingMethod == 0){
     return GetAcceptanceCorrectionTriangle(deltaEta);
   } else {
     return GetAcceptanceCorrectionTraditionalInclusive(deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
   }
-  
+
 }
 
 /*
@@ -750,13 +750,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int sampling
  *  int triggerBin = bin index for trigger particle transverse momentum
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin){
-  
+
   if(samplingMethod == 0){
     return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
   } else {
     return GetAcceptanceCorrection3DNearSideInclusive(deltaEta,deltaPhi,centralityBin,triggerBin);
   }
-  
+
 }
 
 /*
@@ -771,13 +771,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingM
  *  int triggerBin = bin index for trigger particle transverse momentum
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin){
-  
+
   if(samplingMethod == 0){
     return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
   } else {
     return GetAcceptanceCorrection3DNearSideInclusive(deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
   }
-  
+
 }
 
 /*
@@ -793,13 +793,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingM
  *  int triggerBin = bin index for trigger particle transverse momentum
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin){
-  
+
   if(nearSideDefinition == 0 || nearSideDefinition == 1){
     return GetAcceptanceCorrection3DNearSide(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin);
   } else {
     return GetAcceptanceCorrectionTraditional(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin);
   }
-  
+
 }
 
 /*
@@ -816,13 +816,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition,
  *  int triggerBin = bin index for trigger particle transverse momentum
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin){
-  
+
   if(nearSideDefinition == 0 || nearSideDefinition == 1){
     return GetAcceptanceCorrection3DNearSide(samplingMethod,deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
   } else {
     return GetAcceptanceCorrectionTraditional(samplingMethod,deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
   }
-  
+
 }
 
 /*
@@ -834,7 +834,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition,
  *  int dimension = dimension of the histogram
  */
 int AliJAcceptanceCorrection::GetRebin(double counts, int nBins, int dimension){
-  
+
   // Do rebinning requiring at least fMinCountsPerBinInclusive counts in every bin in the histogram.  Maximum rebin is 16
   int rebin = 1;
   if(counts<nBins*fMinCountsPerBinInclusive) rebin=2;
@@ -843,32 +843,32 @@ int AliJAcceptanceCorrection::GetRebin(double counts, int nBins, int dimension){
   if(counts<(nBins/pow(8.0,dimension))*fMinCountsPerBinInclusive) rebin=10;
   if(counts<(nBins/pow(10.0,dimension))*fMinCountsPerBinInclusive) rebin=16;
   return rebin;
-  
+
 }
 
 /*
  * Method for rebinning and normalizing two dimensional acceptance histograms
- * 
+ *
  *  TH2 *histogram = histogram to be rebinned and normalized
  *  double peakValue = maximum value of histogram after normalization
  */
 void AliJAcceptanceCorrection::RebinAndNormalize(TH2 *histogram, double peakValue){
-  
+
   // First, find out the number of bins in the histogram
   const int nBinsEta = histogram->GetNbinsX();
   const int nBinsPhi = histogram->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
-  
+
   // Find out the number of entries in the histogram. Before normalization, this can be obtained from the integral.
   const double counts  = histogram->Integral();
-  
+
   // Set the correct number of entries to histogram. This way the information is not lost when the histogram is normalized.
   histogram->SetEntries(counts);
-  
+
   // Do rebinning requiring at least fMinCountsPerBinInclusive counts in every bin in the histogram.  Maximum rebin is 16
   int rebin = GetRebin(counts,nBins,2);
   histogram->Rebin2D(rebin,rebin);
-  
+
   // Normalize the rebinned histogram. GetMaximum is probably good enough for finding maximum value.
   const double maxValue = histogram->GetMaximum();
   if(maxValue > 0) histogram->Scale(peakValue/maxValue);

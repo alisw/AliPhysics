@@ -410,7 +410,7 @@ Double_t AliMuonTrackSmearing::GenRndCrystalBall ( Double_t mean, Double_t sigma
 {
   /// generate a random number following a Crystal Ball distribution in the range mean +- max
   if ( ! fCrystalBall ) {
-    fCrystalBall = new TF1("CrystalBall2", this, &AliMuonTrackSmearing::CrystalBallSymmetric, -2., 2., 5, "AliMuonTrackSmearing", "CrystalBallSymmetric");
+    fCrystalBall = new TF1("CrystalBall2", this, &AliMuonTrackSmearing::CrystalBallSymmetric, -2., 2., 5);
     fCrystalBall->SetNpx(1000);
   }
 
@@ -634,4 +634,3 @@ Double_t AliMuonTrackSmearing::SlopeResVsP( const Double_t *x, const Double_t *p
     return TMath::Sqrt(sigmaMCSAbs2+sigmaMCSCh2+sigmaRes2);
   }
 }
-

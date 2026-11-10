@@ -2,14 +2,15 @@
 Author: Frederik Kehn Rømner
 Modified from AliCkContainer by Vytautas
 
-Container to store the terms required to calculate higher order moments of the pT spectrum, 
-with added sub-events inplementation. Generic m par correlation for 2-sub and up to six particle 
+Container to store the terms required to calculate higher order moments of the pT spectrum,
+with added sub-events inplementation. Generic m par correlation for 2-sub and up to six particle
 correlation for 3-sub. Stores all terms in expression for offline analysis.
 
 If used, modified, or distributed, please aknowledge the original author of this code.
 */
 
 #include "AliPtSubEventContainer.h"
+#include <cmath>
 
 double AliPtSubEventContainer::fFactorial[9] = {1.,1.,2.,6.,24.,120.,720.,5040.,40320.};
 int AliPtSubEventContainer::fSign[9] = {1,-1,1,-1,1,-1,1,-1,1};
@@ -90,7 +91,7 @@ void AliPtSubEventContainer::InitializeTwoSub(int nbinsx, double xlow, double xh
 
 void AliPtSubEventContainer::InitializeThreeSub(int nbinsx, double xlow, double xhigh){
   if(mpar < 3){ printf("Three subevent require 3 <= %i", mpar); return;}
-  
+
   if(fThreeSubAnalysisList) delete fThreeSubAnalysisList;
   fThreeSubAnalysisList = new TList();
   fThreeSubAnalysisList->SetOwner(kTRUE);
@@ -109,15 +110,15 @@ void AliPtSubEventContainer::InitializeThreeSub(int nbinsx, double xlow, double 
   // three-par correlation
   fThreeSubAnalysisList->Add( new TList() ); ((TList*)fThreeSubAnalysisList->At(3))->SetName("corr_terms_3par");
   ((TList*)fThreeSubAnalysisList->At(3))->Add(new TProfile("threesub_corr_3par_111"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
-  
-  // four-par correlation    
+
+  // four-par correlation
   if(mpar < 4) return;
   fThreeSubAnalysisList->Add( new TList() ); ((TList*)fThreeSubAnalysisList->At(4))->SetName("corr_terms_4par");
   ((TList*)fThreeSubAnalysisList->At(4))->Add(new TProfile("threesub_corr_4par_112"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
   ((TList*)fThreeSubAnalysisList->At(4))->Add(new TProfile("threesub_corr_4par_121"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
   ((TList*)fThreeSubAnalysisList->At(4))->Add(new TProfile("threesub_corr_4par_211"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
 
-  // five-par correlation    
+  // five-par correlation
   if(mpar < 5) return;
   fThreeSubAnalysisList->Add( new TList() ); ((TList*)fThreeSubAnalysisList->At(5))->SetName("corr_terms_5par");
   ((TList*)fThreeSubAnalysisList->At(5))->Add(new TProfile("threesub_corr_5par_113"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
@@ -127,7 +128,7 @@ void AliPtSubEventContainer::InitializeThreeSub(int nbinsx, double xlow, double 
   ((TList*)fThreeSubAnalysisList->At(5))->Add(new TProfile("threesub_corr_5par_212"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
   ((TList*)fThreeSubAnalysisList->At(5))->Add(new TProfile("threesub_corr_5par_221"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
 
-  // six-par correlation    
+  // six-par correlation
   if(mpar < 6) return;
   fThreeSubAnalysisList->Add( new TList() ); ((TList*)fThreeSubAnalysisList->At(6))->SetName("corr_terms_6par");
   ((TList*)fThreeSubAnalysisList->At(6))->Add(new TProfile("threesub_corr_6par_114"+fPostfix,this->GetTitle(),nbinsx,xlow,xhigh));
@@ -162,7 +163,7 @@ vector<vector<double>> AliPtSubEventContainer::getEventCorrelation(const vector<
     sumDenum = OrderedAddition(valDenum, m);
     valNum.clear();
     valDenum.clear();
-  
+
     corr[m] = sumNum;
     sumw[m] = sumDenum;
   }
@@ -188,7 +189,7 @@ vector<double> AliPtSubEventContainer::getEventCorrelation(const vector<vector<d
     sumDenum = OrderedAddition(valDenum, m);
     valNum.clear();
     valDenum.clear();
-  
+
     corr[m] = sumNum;
     sumw[m] = sumDenum;
   }
@@ -214,7 +215,7 @@ void AliPtSubEventContainer::FillRecursive(const vector<vector<double>> &inarr,c
     sumDenum = OrderedAddition(valDenum, m);
     valNum.clear();
     valDenum.clear();
-  
+
     corr[m] = sumNum;
     sumw[m] = sumDenum;
   }
@@ -225,7 +226,7 @@ void AliPtSubEventContainer::FillRecursive(const vector<vector<double>> &inarr,c
 void AliPtSubEventContainer::FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, TString sub) {
     for(int m=1;m<=mpar;++m)
     {
-      if(sumw[m]==0) continue; 
+      if(sumw[m]==0) continue;
       ((TProfile*)fCorrList->At(m-1))->Fill(lMult,corr[m]/sumw[m],(fEventWeight==WeightSpace::kOne)?1.0:sumw[m]);
     }
     return;
@@ -291,12 +292,12 @@ void AliPtSubEventContainer::FillThreeSubAnalsysis(const vector<vector<double>> 
 
 
 TH1* AliPtSubEventContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub) {
-  if(l_obs==kObs::kCum) 
+  if(l_obs==kObs::kCum)
   {
       if(!fCumulantList) CalculateRecursive(false);
       if(!fCumulantList) return 0;
       if(ind+1<fCumulantList->GetEntries()) return (TH1*)fCumulantList->At((ind+1)*mpar+m-1);
-  } 
+  }
   if(l_obs==kObs::kNorm)
   {
       if(!fNormList) CalculateRecursive(true);
@@ -306,16 +307,16 @@ TH1* AliPtSubEventContainer::getRecursiveHist(int ind, int m, unsigned int l_obs
   return 0;
 }
 
-void AliPtSubEventContainer::CalculateRecursive(bool normalized) { 
+void AliPtSubEventContainer::CalculateRecursive(bool normalized) {
     if(normalized)
     {
         if(fNormList) delete fNormList;
         fNormList = new TList();
-        fNormList->SetOwner(); 
+        fNormList->SetOwner();
         if(!fCumulantList)
         {
             fCumulantList = new TList();
-            fCumulantList->SetOwner(); 
+            fCumulantList->SetOwner();
             printf("cumulant list created!\n") ;
         }
     }
@@ -384,7 +385,7 @@ TH1* AliPtSubEventContainer::getPowerHist(TH1* inh, double p) {
             reth->SetBinError(i,0.000000001);
         }
 
-    }   
+    }
     return reth;
 }
 
