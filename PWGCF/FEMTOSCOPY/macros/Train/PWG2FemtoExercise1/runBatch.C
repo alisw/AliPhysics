@@ -6,7 +6,6 @@ void runBatch() {
   printf("*** Connect to AliEn ***\n");
 //   if (dataFromAlien)
   TGrid::Connect("alien://");
-  gSystem->Load("libProofPlayer");
 
   //____________________________________________________//
   //_____________Setting up STEERBase.par_______________//

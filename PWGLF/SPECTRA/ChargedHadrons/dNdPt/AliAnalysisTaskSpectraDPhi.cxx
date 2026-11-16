@@ -205,7 +205,7 @@ AliAnalysisTaskSpectraDPhi::~AliAnalysisTaskSpectraDPhi()
   // Destructor
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-  if (fListOfObjects && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if (fListOfObjects ){
     delete fListOfObjects;
     fListOfObjects = 0x0;
   }

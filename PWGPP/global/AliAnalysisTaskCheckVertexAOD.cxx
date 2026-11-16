@@ -122,7 +122,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
 //___________________________________________________________________________
 AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistAllVtxType;

@@ -636,12 +636,12 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       // For all TH1, 2, 3 HnSparse and CFContainer are in the fListCascade TList.
       // They will be deleted when fListCascade is deleted by the TSelector dtor
       // Because of TList::SetOwner()
-      if (fListHistCascade && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())              {delete fListHistCascade;              fListHistCascade = 0x0;}  
-      if (fCFContCascadePIDAsXiMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())    {delete fCFContCascadePIDAsXiMinus;    fCFContCascadePIDAsXiMinus = 0x0;}
-      if (fCFContCascadePIDAsXiPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())     {delete fCFContCascadePIDAsXiPlus;     fCFContCascadePIDAsXiPlus = 0x0;}
-      if (fCFContCascadePIDAsOmegaMinus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {delete fCFContCascadePIDAsOmegaMinus; fCFContCascadePIDAsOmegaMinus = 0x0;}
-      if (fCFContCascadePIDAsOmegaPlus && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())  {delete fCFContCascadePIDAsOmegaPlus;  fCFContCascadePIDAsOmegaPlus = 0x0;}
-      if (fCFContAsCascadeCuts && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())          {delete fCFContAsCascadeCuts;          fCFContAsCascadeCuts = 0x0;}
+      if (fListHistCascade )              {delete fListHistCascade;              fListHistCascade = 0x0;}
+      if (fCFContCascadePIDAsXiMinus )    {delete fCFContCascadePIDAsXiMinus;    fCFContCascadePIDAsXiMinus = 0x0;}
+      if (fCFContCascadePIDAsXiPlus )     {delete fCFContCascadePIDAsXiPlus;     fCFContCascadePIDAsXiPlus = 0x0;}
+      if (fCFContCascadePIDAsOmegaMinus ) {delete fCFContCascadePIDAsOmegaMinus; fCFContCascadePIDAsOmegaMinus = 0x0;}
+      if (fCFContCascadePIDAsOmegaPlus )  {delete fCFContCascadePIDAsOmegaPlus;  fCFContCascadePIDAsOmegaPlus = 0x0;}
+      if (fCFContAsCascadeCuts )          {delete fCFContAsCascadeCuts;          fCFContAsCascadeCuts = 0x0;}
       if (fESDtrackCuts)                                                                             {delete fESDtrackCuts;                 fESDtrackCuts = 0x0;}
     }
 

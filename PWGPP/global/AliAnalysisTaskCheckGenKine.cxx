@@ -121,7 +121,7 @@ AliAnalysisTaskCheckGenKine::AliAnalysisTaskCheckGenKine() :
 //___________________________________________________________________________
 AliAnalysisTaskCheckGenKine::~AliAnalysisTaskCheckGenKine(){
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if (fOutput) {
     delete fOutput;
     fOutput = 0;

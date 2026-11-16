@@ -5,7 +5,6 @@
 // Grid full mode as below (other modes: test, offline, submit, terminate)
 //    root[1] AnalysisTrainPWG-244Jets("grid", "full")
 // CAF mode (requires root v5-23-02 + aliroot v4-16-Rev08)
-//    root[2] AnalysisTrainPWG4Jets("proof")
 // Local mode requires AliESds.root or AliAOD.root in ./data directory
 //    root[3] AnalysisTrainPWG4Jets("local")
 // In proof and grid modes, a token is needed and sourcing the produced environment file.
@@ -155,16 +154,7 @@ TString     kFastEmbAODList    = "";
 // ### PROOF Steering varibales
 //==============================================================================
 //== proof setup variables
-TString     kProofCluster      = "alicecaf.cern.ch";
-Bool_t      kProofUseAFPAR     = kFALSE;  // use AF special par file
-TString     kProofAFversion          = "AF-v4-17";
 //== proof input and output variables
-TString     kProofDataSet      = "/COMMON/COMMON/LHC09a4_run8100X#/esdTree";
-Bool_t      kProofSaveToAlien   = kFALSE; // save proof outputs in AliEn train_[trainName]_ddMonthyyyy_time.C
-TString     kProofOutdir       = "";
-Bool_t      kProofClearPackages = kFALSE;
-Int_t       kProofEvents = 10000;
-Int_t       kProofOffset = 0;
 //== proof process variables
 
 
@@ -239,7 +229,6 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
   if (strlen(config_file) && !LoadConfig(config_file)) return;
   if(iTotal>0)kGridMaxRunsFromList = iTotal; // overwrites the settings from config file
   if(iOffset)kGridOffsetRunFromList = iOffset;
-  if(iOffset)kProofOffset = iOffset;
 
 
    TString smode(analysis_mode);
@@ -327,7 +316,7 @@ void AnalysisTrainPWGJets(const char *analysis_mode="local",
    // Make the analysis manager and connect event handlers
    AliAnalysisManager *mgr  = new AliAnalysisManager("PWG4Train", "pwg4 mini train");
    if (kCommonOutputFileName.Length()>0)mgr->SetCommonFileName(kCommonOutputFileName.Data());
-   if (kProofSaveToAlien) mgr->SetSpecialOutputLocation(kProofOutdir);
+
    mgr->SetNSysInfo(0);
    if (!strcmp(plugin_mode, "test")) mgr->SetNSysInfo(1);
    if (kUseSysInfo)mgr->SetNSysInfo(kUseSysInfo);
@@ -1418,7 +1407,6 @@ void StartAnalysis(const char *mode, TChain *chain) {
    Int_t imode = -1;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    switch (imode) {
       case 0:
@@ -1427,13 +1415,6 @@ void StartAnalysis(const char *mode, TChain *chain) {
             return;
          }   
          mgr->StartAnalysis(mode, chain,kNumberOfEvents);
-         return;
-      case 1:
-         if (!kProofDataSet.Length()) {
-            ::Error("AnalysisTrainPWG4Jets.C::StartAnalysis", "kProofDataSet is empty");
-            return;
-         }   
-         mgr->StartAnalysis(mode, kProofDataSet, kProofEvents,kProofOffset);
          return;
       case 2:
          if (kPluginUse) {
@@ -1459,7 +1440,6 @@ void CheckModuleFlags(const char *mode) {
 // Checks selected modules and insure compatibility
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
 
 
@@ -1467,12 +1447,7 @@ void CheckModuleFlags(const char *mode) {
      kPluginAliRootVersion    = ""; // NO aliroot if we use CPAR
    }
 
-   if (imode==1) {
-      if (!kUsePAR) {
-         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PAR files enabled due to PROOF analysis");
-         kUsePAR = kTRUE;
-      }   
-   }  
+
    if (imode != 2) {
       ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "AliEn plugin disabled since not in GRID mode");
       kPluginUse = kFALSE; 
@@ -1592,48 +1567,10 @@ Bool_t Connect(const char *mode) {
 // Connect <username> to the back-end system.
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString username = gSystem->Getenv("alien_API_USER");
    switch (imode) {
       case 0:
-         break;
-      case 1:
-         if  (!username.Length()) {
-            ::Error(Form("AnalysisTrainPWG4Jets.C::Connect <%s>", mode), "Make sure you:\n \
-                           1. Have called: alien-token-init <username>\n \
-                           2. Have called: >source /tmp/gclient_env_$UID");
-            return kFALSE;
-         }
-         ::Info("AnalysisTrainPWG4Jets.C::Connect", "Connecting user <%s> to PROOF cluster <%s>", 
-                username.Data(), kProofCluster.Data());
-         gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-//         TProof::Open(Form("%s@%s:31093", username.Data(), kProofCluster.Data()));       
-         TProof::Open(Form("%s@%s", username.Data(), kProofCluster.Data()));       
-         if (!gProof) {
-            if (strcmp(gSystem->Getenv("XrdSecGSISRVNAMES"), "lxfsrd0506.cern.ch"))
-               ::Error(Form("AnalysisTrainPWG4Jets.C::Connect <%s>", mode), "Environment XrdSecGSISRVNAMES different from lxfsrd0506.cern.ch");
-            return kFALSE;
-         }
-	 if(kProofClearPackages)gProof->ClearPackages();
-
-	 if(kProofSaveToAlien){
-	   TGrid::Connect("alien://");
-	   if (gGrid) {
-	     TString homedir = gGrid->GetHomeDirectory();
-	     TString workdir = homedir + kTrainName;
-	     if (!gGrid->Cd(workdir)) {
-               gGrid->Cd(homedir);
-               if (gGrid->Mkdir(workdir)) {
-		 gGrid->Cd(kTrainName);
-		 ::Info("AnalysisTrainPWG4Jets::Connect()", "Directory %s created", gGrid->Pwd());
-               }
-	     }
-	     gGrid->Mkdir("proof_output");
-	     gGrid->Cd("proof_output");
-	     kProofOutdir = Form("alien://%s", gGrid->Pwd());
-	   }   
-	 }
          break;
       case 2:      
          if  (!username.Length()) {
@@ -1672,7 +1609,6 @@ Bool_t LoadCommonLibraries(const char *mode)
    // Load common analysis libraries.
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    Bool_t success = kTRUE;
    // ROOT libraries
@@ -1708,23 +1644,6 @@ Bool_t LoadCommonLibraries(const char *mode)
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          }   
          break;
-      case 1:
-         Int_t ires = -1;
-         if (kProofUseAFPAR && !gSystem->AccessPathName(kProofAFversion)) ires = gProof->UploadPackage(kProofAFversion);
-         if (ires < 0) {
-            success &= LoadLibrary("STEERBase", mode);
-            success &= LoadLibrary("ESD", mode);
-            success &= LoadLibrary("AOD", mode);
-            success &= LoadLibrary("ANALYSIS", mode);
-            success &= LoadLibrary("ANALYSISalice", mode);
-            success &= LoadLibrary("EventMixing", mode);
-            success &= LoadLibrary("CORRFW", mode);
-         } else { 
-            ires = gProof->EnablePackage(kProofAFversion);
-            if (ires<0) success = kFALSE;
-            success &= LoadLibrary("CORRFW", mode);
-         }
-         break;         
       default:
          ::Error("AnalysisTrainPWG4Jets.C::LoadCommonLibraries", "Unknown run mode: %s", mode);
          return kFALSE;
@@ -1763,13 +1682,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 	   !LoadLibrary("PHOSUtils", mode, kTRUE)) return kFALSE;
      }
      if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
-     if (!strcmp(mode, "PROOF")){
-       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGAL.so\"\)", kTRUE); 
-       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libfastjet.so\"\)", kTRUE); 
-       // problem when loading siscone copiled with different gcc version??
-       // gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libsiscone.so\"\)", kTRUE); 
-       gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libSISConePlugin.so\"\)", kTRUE);      
-     }
+
      if(!kUsePAR){ 
        if (!LoadLibrary("CGAL", mode, kTRUE)) return kFALSE;
        if (!LoadLibrary("fastjet", mode, kTRUE)) return kFALSE;
@@ -1795,9 +1708,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 	   !LoadLibrary("PHOSUtils", mode, kTRUE)) return kFALSE;
      }
      if (!LoadLibrary("JETANdev", mode, kTRUE)) return kFALSE;
-     if (!strcmp(mode, "PROOF")){
-     if (!LoadLibrary("FASTJET", mode, kTRUE)) return kFALSE;  
-     }
+
      if(!kUsePAR){ 
        if (!LoadLibrary("CGAL", mode, kTRUE)) return kFALSE;
        if (!LoadLibrary("fastjet", mode, kTRUE)) return kFALSE;
@@ -1858,7 +1769,6 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
    Int_t result;
    TString smodule(module);
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString mod(module);
    if (!mod.Length()) {
@@ -1891,21 +1801,6 @@ Bool_t LoadLibrary(const char *module, const char *mode, Bool_t rec=kFALSE)
             if (rec) anaLibs += Form("lib%s.so ", module);
          }   
          break;
-      case 1:
-	if(!gSystem->AccessPathName(module)){
-	  ::Info("AnalysisTrainPWG4Jets.C::LoadLibrary", "Removing directory %s",module);
-	  gSystem->Exec(Form("rm -rf %s",module));
-	}
-         result = gProof->UploadPackage(module);
-         if (result<0) {
-            result = gProof->UploadPackage(gSystem->ExpandPathName(Form("$ALICE_ROOT/%s.par", module)));
-            if (result<0) {
-               ::Error("AnalysisTrainPWG4Jets.C::LoadLibrary", "Could not find module %s.par in current directory nor in $ALICE_ROOT", module);
-               return kFALSE;
-            }
-         }   
-         result = gProof->EnablePackage(module);
-         break;
       default:
          return kFALSE;
    }         
@@ -1925,7 +1820,6 @@ Bool_t LoadSource(const char *source, const char *mode, Bool_t rec=kFALSE)
    Int_t imode = -1;
    Int_t result = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TString ssource(source);
    TString basename = gSystem->BaseName(ssource.Data());
@@ -1951,9 +1845,6 @@ Bool_t LoadSource(const char *source, const char *mode, Bool_t rec=kFALSE)
      switch (imode) {
      case 0:
        result = gROOT->LoadMacro(Form("%s.cxx++g",basename.Data()));
-       break;
-     case 1:
-       result = gProof->LoadMacro(Form("%s.cxx++g",basename.Data()));
        break;
      case 2:
        result = gROOT->LoadMacro(Form("%s.cxx++g",basename.Data()));
@@ -1982,7 +1873,6 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
 // Create the input chain
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
-   if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
    TChain *chain = NULL;
    // Local chain
@@ -2025,8 +1915,6 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
                chain = CreateChainSingle(kLocalXMLDataset, "esdTree");
 	   }   
          }
-         break;
-      case 1:
          break;
       case 2:
          if (kPluginUse) {
@@ -2385,11 +2273,7 @@ void WriteConfig()
    }
    out << "{" << endl;
    out << "   kTrainName      = " << "\"" << kTrainName.Data() << "\";" << endl;
-   out << "   kProofCluster   = " << "\"" << kProofCluster.Data() << "\";" << endl;
-   out << "   kProofUseAFPAR        = " << kProofUseAFPAR << ";" << endl;
-   if (kProofUseAFPAR) 
-      out << "   kProofAFversion       = " << kProofAFversion.Data() << ";" << endl;
-   out << "   kProofDataSet   = " << "\"" << kProofDataSet.Data() << "\";" << endl;
+
    out << "   kPluginUse       = " << kPluginUse << ";" << endl;
    out << "   kUsePAR          = " << kUsePAR << ";" << endl;
    out << "   kUseCPAR         = " << kUseCPAR << ";" << endl;

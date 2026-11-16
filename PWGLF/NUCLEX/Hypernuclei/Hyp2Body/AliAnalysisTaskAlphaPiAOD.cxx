@@ -95,8 +95,7 @@ AliAnalysisTaskAlphaPiAOD::AliAnalysisTaskAlphaPiAOD(bool isMC,
 /// Standard destructor
 ///
 AliAnalysisTaskAlphaPiAOD::~AliAnalysisTaskAlphaPiAOD() {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
   if (fHistos)
     delete fHistos;
   if (fTree)

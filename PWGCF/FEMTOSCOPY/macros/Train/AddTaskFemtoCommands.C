@@ -8,8 +8,6 @@
 #include "AliAnalysisTaskFemto.h"
 
 #include <TString.h>
-#include <TProofMgr.h>
-#include <TProof.h>
 
 #endif
 
@@ -59,9 +57,7 @@ AddTaskFemtoSubtrains(TString commands,
   }
 
   // Create the task, add it to manager.
-  if (TProofMgr::GetListOfManagers()->GetEntries()) {
-    gProof->Load(macro);
-  }
+
 
   // forward subwagon identifier to the macro
   if (!subwagon.IsWhitespace()) {

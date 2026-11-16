@@ -10,11 +10,9 @@
 /// Note that you must take care of the default Root version your packages use.
 /// If you need to change it you must use (from a separate session) :
 ///
-/// TProof::Mgr(where)->SetROOTVersion("VO_ALICE@ROOT::[version]");
 ///
 /// the list of available versions can be found with :
 ///
-/// TProof::Mgr(where)->ShowROOTVersions();
 ///
 /// You have to do this only once, as this Root version will be
 /// remembered by the AF until you change it
@@ -32,41 +30,14 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug, const char* mainPackage)
   
  // packages.push_back("PWGmuon"); // uncomment this if you want to use your version of that package
   
-  if (!local)
-  {
-    TList list;
-    
-    list.Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
-    list.Add(new TNamed("ALIROOT_MODE","base"));
-    
-    TString extraLibs;
-    
-    if ( !packages.empty() )
-    {
-      for ( std::vector<std::string>::size_type i = 0; i < packages.size(); ++i )
-      {
-        extraLibs += packages[i];
-        extraLibs += ":";
-      }
-    }
-    
-    extraLibs.Remove(TString::kBoth,':');
-    
-    list.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
-    
-    if (gProof->EnablePackage(mainPackage,&list))
-    {
-      std::cout << "Enable of main package failed" << std::endl;
-      return kFALSE;
-    }
-  }
+
   
   for ( std::vector<std::string>::size_type i = 0; i < packages.size(); ++i )
   {
     const std::string& package = packages[i];
     
-    if (local)
     {
+
       if ( debug )
       {
         std::cout << "Loading local library lib" << package << std::endl;
@@ -75,33 +46,8 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug, const char* mainPackage)
       {
         return kFALSE;
       }
-    }
-    else
-    {
-      if ( debug )
-      {
-        std::cout << "Uploading PAR file " << package << std::endl;
-      }
-      
-      if (gProof->UploadPackage(package.c_str()))
-      {
-        std::cout << "Upload failed" << std::endl;
-        return kFALSE;
-      }
-      
-      if ( debug )
-      {
-        std::cout << "Enabling PAR file " << package << std::endl;
-      }
-      
-      Int_t rv = gProof->EnablePackage(package.c_str(),(TList*)(0x0),kFALSE);
-      
-      if (rv)
-      {
-        std::cout << "Enable failed" << std::endl;
-        return kFALSE;
-      }
-    }
+
+}
   }
   
   return kTRUE;
@@ -123,7 +69,7 @@ TChain* CreateLocalChain(const char* filelist, const char* treeName)
 }
 
 //______________________________________________________________________________
-TString GetInputType(const TString& sds, TProof* p)
+TString GetInputType(const TString& sds)
 {
   //
   // Get the input type (AOD or ESD) from the dataset type
@@ -154,23 +100,7 @@ TString GetInputType(const TString& sds, TProof* p)
   
   if ( gSystem->AccessPathName(gSystem->ExpandPathName(sds.Data())) )
   {
-    // dataset is not a local file so it must be a dataset name
-    if (!p) return "NOPROOF";
-    
-    TFileCollection* fc = p->GetDataSet(sds.Data());
-    if (!fc) return "NODATASET";
-    
-    TIter next(fc->GetList());
-    TFileInfo* fi;
-    while ( ( fi = static_cast<TFileInfo*>(next()) ) )
-    {
-      TUrl url(*(fi->GetFirstUrl()));
-      TString surl(url.GetUrl());
-      
-      if (surl.Contains("AOD")) return "AOD";
-      if (surl.Contains("AliESD")) return "ESD";
-    }
-    
+    return "NOINPUT";
   }
   else
   {
@@ -194,11 +124,11 @@ TString GetInputType(const TString& sds, TProof* p)
 }
 
 //______________________________________________________________________________
-AliInputEventHandler* GetInput(const TString& sds, TProof* p)
+AliInputEventHandler* GetInput(const TString& sds)
 {
   // Get the input event handler depending on the type of dataset
   
-  TString inputType = GetInputType(sds,p);
+  TString inputType = GetInputType(sds);
   
   AliInputEventHandler* input(0x0);
   
@@ -238,14 +168,7 @@ TString GetOutputName(const TString& sds)
   {
     TString af("local");
     
-    if ( gProof )
-    {
-      af="unknown";
-      TString master(gProof->GetSessionTag());
-      if (master.Contains("nansafmaster2")) af = "saf2";
-      if (master.Contains("nansafmaster3")) af = "saf3";
-      if (master.Contains("skaf")) af = "skaf";
-    }
+
     outputname = Form("%s.%s.root",gSystem->BaseName(sds.Data()),af.Data());
     outputname.ReplaceAll("|","-");
   }
@@ -290,10 +213,10 @@ void GetTriggerList(Bool_t simulations, TString& triggers, TString& inputs)
 }
 
 //______________________________________________________________________________
-AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC15i/000235839/muon_calo_pass1/AOD/;FileName=AliAOD.Muons.root;Tree=/aodTree",
+AliAnalysisTask* runMuMu(const char* dataset="",
                          Bool_t simulations=kFALSE,
                          const char* addtask="AddTaskMuMuMinv",
-                         const char* where="laphecet@nansafmaster2.in2p3.fr/?N")
+                         const char* /*legacyLocation*/="")
 {
   ///
   /// @param dataset the name of either a dataset or a text file containing dataset names
@@ -304,12 +227,8 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   // below a few parameters that should be changed less often
   TString workers;
   
-  if ( !TString(where).Contains("pod") )
-  {
-    workers = "workers=8x";
-  }
   
-  TString saf2Package("VO_ALICE@AliPhysics::vAN-20150908"); // only care about this if you run on SAF2
+
   
   TString sds(dataset);
   
@@ -317,45 +236,21 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   // without your analysis but with a baseline one (from the lego train)
   Bool_t debug(kFALSE);
   
-  Bool_t prooflite = (strlen(where)==0) || TString(where).Contains("workers");
   Bool_t local = (sds.Length()==0);
   
-  TProof* p(0x0);
   
-  if (prooflite)
-  {
-    std::cout << "************* Will work in LITE mode *************" << std::endl;
-  }
   
-  if ( local )
+
   {
+
     std::cout << "************* Will work in LOCAL mode *************" << std::endl;
-  }
   
-  TString mainPackage = saf2Package;
+}
   
-  if ( !local )
-  {
-    p = TProof::Open(where,workers.Data());
-    if (!p)
-    {
-      std::cout << "Cannot connect to Proof : " << where << std::endl;
-      return 0x0;
-    }
-    
-    TString master(gProof->GetSessionTag());
-    if (master.Contains("nansafmaster3") )
-    {
-      // dealing with a VAF, main package is the same regardless of the aliphysics version you asked
-      mainPackage = "/opt/SAF3/etc/vaf/AliceVaf.par";
-    }
-    if (master.Contains("alivaf") )
-    {
-      mainPackage = "/afs/cern.ch/alice/offline/vaf/AliceVaf.par";
-    }
-  }
   
-  if (!SetupLibraries(local,debug,mainPackage.Data()))
+
+
+  if (!SetupLibraries(local,debug,""))
   {
     std::cout << "Cannot setup libraries. Aborting" << std::endl;
     return 0x0;
@@ -363,7 +258,7 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   
   AliAnalysisManager* mgr = new AliAnalysisManager("MuMu");
   
-  AliInputEventHandler* input = GetInput(sds,p);
+  AliInputEventHandler* input = GetInput(sds);
   
   if (!input)
   {
@@ -405,14 +300,13 @@ AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC
   
   //  return task;
   
-  if ( !local )
-  {
-    mgr->StartAnalysis("proof",sds.Data());
-  }
-  else
   {
     TChain* c = 0x0;
-    if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
+    if (!sds.IsNull())
+    {
+      c = CreateLocalChain(sds.Data(), TString(input->GetDataType()) == "AOD" ? "aodTree" : "esdTree");
+    }
+    else if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
     {
       c = CreateLocalChain("list.esd.txt","esdTree");
     }

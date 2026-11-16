@@ -222,30 +222,7 @@ TFileCollection* MakeRootArchFileCollection(const char* collectionfileAOD,
     return proofColl;
 }
 //----------------------------------------------------------------------------
-void StageToCAF(TString xmlcoll="collAODLHC08x.xml",
-		TString datasetname="AODVertexingHF_LHC08x_10files",
-		Int_t nfiles=-1) {
-  //
-  // Staging a dataset to CAF
-  // andrea.dainese@pd.infn.it
-  //
 
-  //gROOT->LoadMacro("MakeAODInputChain.C");
-
-  TGrid::Connect("alien://");
-
-  // find -x collAODLHC08x -z /alice/cern.ch/user/r/rbala/newtrain/out_lhc08x/* AliAOD.root > collAODLHC08x.xml
-
-  TFileCollection *proofColl = MakeRootArchFileCollection(xmlcoll.Data(),nfiles,KTRUE);
-  proofColl->SetAnchor("AliAOD.root");
-
-  gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("dainesea:PWG3@alicecaf"); 
-  gProof->RegisterDataSet(datasetname.Data(),proofColl);
-  gProof->ShowDataSets();
-
-  return;
-}
 //---------------------------------------------------------------------------
 Bool_t CheckStdout(TString aodlfn) {
   

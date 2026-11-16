@@ -161,9 +161,7 @@ void AliEmcalPhysicsSelectionTask::Terminate(Option_t *)
     return;
 
   TDirectory::TContext context(file); 
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    fPhysicsSelection = dynamic_cast<AliPhysicsSelection*> (fOutput->FindObject("AliPhysicsSelection"));
-  }
+
   if (fPhysicsSelection) {
     //fPhysicsSelection->Print();
     fPhysicsSelection->SaveHistograms(Form("%sHists",ocont->GetName()));

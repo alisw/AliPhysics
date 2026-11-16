@@ -282,8 +282,7 @@ AliAnalysisTaskTOFqaID::~AliAnalysisTaskTOFqaID()
     delete fChannelArray;
   if (fCalib)
     delete fCalib;
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
-    return;
+
 
   if (fHlist) {
     delete fHlist;

@@ -183,10 +183,10 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
 AliAnalysisTaskZDCTreeMaker::~AliAnalysisTaskZDCTreeMaker()
 {
   // Destructor
-  if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if(fOutput ){
     delete fOutput; fOutput=0;
   } 
-  /*if(fCentralityTree && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  /*if(fCentralityTree ){
     delete fCentralityTree; fCentralityTree=0;
   } 
   */ 

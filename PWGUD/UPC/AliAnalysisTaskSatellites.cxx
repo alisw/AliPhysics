@@ -112,10 +112,12 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites(const char *name)
 AliAnalysisTaskSatellites::~AliAnalysisTaskSatellites()
 {
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+  {
+
      delete fOutputList;     fOutputList = 0x0;
      delete tOutput;     tOutput = 0x0;
-  }
+
+}
 
 }//~AliAnalysisTaskSatellites
 

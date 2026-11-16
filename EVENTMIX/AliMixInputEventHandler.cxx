@@ -139,11 +139,10 @@ Bool_t AliMixInputEventHandler::Notify(const char *path)
    //
    AliDebug(AliLog::kDebug + 5, Form("<- %s", path));
 
-   Bool_t doPrepareEntry=kTRUE;
-   TString anType = fAnalysisType;
+   Bool_t doPrepareEntry;
 
    // in case of local doPrepareEntry only first time
-   if (anType.CompareTo("proof")) doPrepareEntry = (fMixIntupHandlerInfoTmp->GetChain()->GetEntries()<=0);
+   doPrepareEntry = (fMixIntupHandlerInfoTmp->GetChain()->GetEntries()<=0);
 
    // adds current file
    fMixIntupHandlerInfoTmp->AddTreeToChain(path);

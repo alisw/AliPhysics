@@ -51,7 +51,7 @@ AliAnalysisTaskMixInfo::~AliAnalysisTaskMixInfo()
    //
    // Destructor
    //
-   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
+   if (fOutputList ) delete fOutputList;
 }
 
 //________________________________________________________________________

@@ -12,7 +12,6 @@
 #include "AliMCEventHandler.h"
 #include "AliPhysicsSelectionTask.h"
 #include "TRegexp.h"
-#include "TProof.h"
 #include "AliESDInputHandler.h"
 #include "AliOADBPhysicsSelection.h"
 #include "TGrid.h"
@@ -217,10 +216,7 @@ void runGridEsd(TString dataDir = "/alice/sim/2015/LHC15g3c2/",
   TString listOfGridSource = "";
   TString listOfGridAdditionalLibs ="";
   while (loadTaskStr[++itask]!="END"){
-    if (gProof != NULL) {
-      gProof->Load(loadTaskStr[itask]+"+g");
-    }
-    else {
+    {
       gROOT->LoadMacro(loadTaskStr[itask]+"+g"); 
     }
     // Prepare the lists of additional libs for the pugin

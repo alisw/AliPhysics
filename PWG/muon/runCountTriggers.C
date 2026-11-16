@@ -41,10 +41,7 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug)
 {
   std::vector<std::string> packages;
   
-  if (!local)
-  {
-    packages.push_back("VO_ALICE@AliPhysics::v5-06-31-01");
-  }
+
   packages.push_back("PWGmuon");
   
   Bool_t ok(kTRUE);
@@ -53,8 +50,8 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug)
   {
     const std::string& package = packages[i];
     
-    if (local)
     {
+
       if ( debug )
       {
         std::cout << "Loading local library lib" << package << std::endl;
@@ -63,24 +60,8 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug)
       {
         ok = kFALSE;
       }
-    }
-    else
-    {
-      if ( debug )
-      {
-        std::cout << "Uploading/enabling PAR file " << package << std::endl;
-      }
 
-      if ( gProof->UploadPackage(Form("$ALICE_PHYSICS/PARfiles/%s",package.c_str())) )
-      {
-        ok = kFALSE;
-      }
-      
-      if ( gProof->EnablePackage(package.c_str(),"",kFALSE) )
-      {
-        ok = kFALSE;
-      }
-    }
+}
     
     if (!ok)
     {
@@ -108,7 +89,7 @@ TChain* CreateLocalChain(const char* filelist, const char* treeName)
 }
 
 //______________________________________________________________________________
-TString GetInputType(const TString& sds, TProof* p)
+TString GetInputType(const TString& sds)
 {
   //
   // Get the input type (AOD or ESD) from the dataset type
@@ -139,24 +120,8 @@ TString GetInputType(const TString& sds, TProof* p)
    
    if ( gSystem->AccessPathName(gSystem->ExpandPathName(sds.Data())) )
    {
-   	// dataset is not a local file so it must be a dataset name
-   	if (!p) return "NOPROOF";
-   	
-   	TFileCollection* fc = p->GetDataSet(sds.Data());
-    if (!fc) return "NODATASET";
-    
-    TIter next(fc->GetList());
-    TFileInfo* fi;
-    while ( ( fi = static_cast<TFileInfo*>(next()) ) )
-    {
-      TUrl url(*(fi->GetFirstUrl()));
-	  TString surl(url.GetUrl());
-	  
-	  if (surl.Contains("AOD")) return "AOD";
-	  if (surl.Contains("AliESD")) return "ESD";      
-    }      
-
-   }
+    return "NOINPUT";
+  }
    else
    {
    std::cout << "Will use datasets from file " << sds.Data() << std::endl;
@@ -179,11 +144,11 @@ TString GetInputType(const TString& sds, TProof* p)
 }
 
 //______________________________________________________________________________
-AliInputEventHandler* GetInput(const TString& sds, TProof* p)
+AliInputEventHandler* GetInput(const TString& sds)
 {
   // Get the input event handler depending on the type of dataset
   
-  TString inputType = GetInputType(sds,p);
+  TString inputType = GetInputType(sds);
   
   AliInputEventHandler* input(0x0);
   
@@ -220,12 +185,7 @@ TString GetOutputName(const TString& sds)
   {
     TString af("local");
     
-    if ( gProof )
-    {
-      af="unknown";
-      TString master(gProof->GetSessionTag());
-      if (master.Contains("nansaf")) af = "saf";
-    }
+
     outputname = Form("%s.%s.root",gSystem->BaseName(sds.Data()),af.Data());
     outputname.ReplaceAll("|","-");
   }
@@ -239,40 +199,27 @@ TString GetOutputName(const TString& sds)
 }
 
 //______________________________________________________________________________
-void runCountTriggers(const char* dataset="ds.txt",
-                                  const char* where="laphecet@nansafmaster2.in2p3.fr/?N")
+void runCountTriggers(const char* dataset="",
+                                  const char* /*legacyLocation*/="")
 {
   // below a few parameters that should be changed less often
-  TString workers("workers=8x");
   TString sds(dataset);
   Bool_t baseline(kFALSE); // set to kTRUE in order to debug the AF and/or package list
   // without your analysis but with a baseline one (from the lego train)
   Bool_t debug(kFALSE);
   
-  Bool_t prooflite = (strlen(where)==0) || TString(where).Contains("workers");
   Bool_t local = (sds.Length()==0);
 
-  TProof* p(0x0);
 
-  if (prooflite)
-  {
-    std::cout << "************* Will work in LITE mode *************" << std::endl;
-  }
   
-  if ( local )
+
   {
+
     std::cout << "************* Will work in LOCAL mode *************" << std::endl;
-  }
   
-  if ( !local )
-  {
-    p = TProof::Open(where,workers.Data());
-    if (!p)
-    {
-      std::cerr << "Cannot connect to Proof : " << where << std::endl;
-      return 0x0;
-    }
-  }
+}
+
+
    
 	if (!SetupLibraries(local,debug))
   {
@@ -282,7 +229,7 @@ void runCountTriggers(const char* dataset="ds.txt",
   
   AliAnalysisManager* mgr = new AliAnalysisManager("MuMu");
   
-  AliInputEventHandler* input = GetInput(sds,p);
+  AliInputEventHandler* input = GetInput(sds);
 
   if (!input)
   {
@@ -302,14 +249,13 @@ void runCountTriggers(const char* dataset="ds.txt",
   
   mgr->PrintStatus();
 
-  if ( !local )
-  {
-    mgr->StartAnalysis("proof",sds.Data());
-  }
-  else
   {
     TChain* c = 0x0;
-    if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
+    if (!sds.IsNull())
+    {
+      c = CreateLocalChain(sds.Data(), TString(input->GetDataType()) == "AOD" ? "aodTree" : "esdTree");
+    }
+    else if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
     {
       c = CreateLocalChain("list.esd.txt","esdTree");      
     }

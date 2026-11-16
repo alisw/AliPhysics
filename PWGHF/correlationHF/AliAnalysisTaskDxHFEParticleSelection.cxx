@@ -93,7 +93,7 @@ AliAnalysisTaskDxHFEParticleSelection::~AliAnalysisTaskDxHFEParticleSelection()
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
     delete fOutput;
     fOutput = 0;
   }

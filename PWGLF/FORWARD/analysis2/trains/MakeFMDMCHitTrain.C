@@ -47,7 +47,6 @@ protected:
 
     // --- Load libraries/pars ---------------------------------------
     fRailway->LoadLibrary("PWGLFforward2");
-    fRailway->LoadLibrary("Proof");
     fRailway->LoadLibrary("Gui"); // Sigh! CDB depends on GUI!
     fRailway->LoadLibrary("CDB");
     fRailway->LoadLibrary("RAWDatabase");

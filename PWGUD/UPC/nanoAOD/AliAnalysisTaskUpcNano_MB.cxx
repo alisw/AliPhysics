@@ -250,10 +250,12 @@ AliAnalysisTaskUpcNano_MB::~AliAnalysisTaskUpcNano_MB()
   // Destructor
   
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+  {
+
      delete fOutputList;
      fOutputList = 0x0;
-  }
+
+}
 
 }//~AliAnalysisTaskUpcNano_MB
 

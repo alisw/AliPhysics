@@ -80,11 +80,13 @@ fcResVsP(0x0)
 AliTaskMuonTrackSmearingQA::~AliTaskMuonTrackSmearingQA()
 {
   /// Destructor
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fGenList;
     delete fRecList;
     delete fResList;
-  }
+
+}
   delete fMuonTrackCuts;
   delete fcGen;
   delete fcRec;

@@ -428,10 +428,7 @@ void AliAnalysisTaskCDskimESD::UserCreateOutputObjects()
 
 
 	// prevent the task from being run on proof
-	if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() ==
-	    AliAnalysisManager::kProofAnalysis) {
-		AliFatal("AliAnalysisTaskCDskimESD: cannot be run on PROOF!");
-	}
+
 
 	TFile *file = 0x0;
 	file = OpenFile(1); // open file for the first output slot

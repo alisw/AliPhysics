@@ -262,9 +262,11 @@ AliAnalysisTaskEMCALPi0PbPb::~AliAnalysisTaskEMCALPi0PbPb()
 {
   // Destructor.
 
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     delete fOutput; fOutput = 0;
-  }
+
+}
   delete fPtRanges; fPtRanges = 0;
   fGeom = 0; // do not delete geometry when using instance
   delete fReco; fReco = 0;

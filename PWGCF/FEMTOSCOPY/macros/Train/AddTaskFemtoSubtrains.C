@@ -8,8 +8,6 @@
 #include "AliAnalysisTaskFemto.h"
 
 #include <TString.h>
-#include <TProofMgr.h>
-#include <TProof.h>
 
 #endif
 
@@ -34,9 +32,7 @@ AddTaskFemtoSubtrains(TString configMacroName,
   }
 
   // Create the task, add it to manager.
-  if (TProofMgr::GetListOfManagers()->GetEntries()) {
-    gProof->Load(configMacroName);
-  }
+
 
   // forward subtrain identifier to the macro
   if (!subtrain.IsWhitespace()) {

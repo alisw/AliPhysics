@@ -63,7 +63,7 @@ AliAnalysisTaskLFefficiencies::AliAnalysisTaskLFefficiencies(TString taskname) :
 /// Standard destructor
 ///
 AliAnalysisTaskLFefficiencies::~AliAnalysisTaskLFefficiencies(){
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if (fOutputList) delete fOutputList;
 }
 

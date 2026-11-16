@@ -136,9 +136,11 @@ AliAnalysisTaskPileup::~AliAnalysisTaskPileup()
   /// Destructor
 
   // For proof: do not delete output containers
-  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  {
+
     delete fEventCounters;
-  }
+
+}
 
   delete fHistoEventsList;
   delete fTriggerClasses;

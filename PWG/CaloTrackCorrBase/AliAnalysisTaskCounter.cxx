@@ -90,7 +90,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
 //_______________________________________________
 AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
 {  
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   
   if(fOutputContainer)
   {

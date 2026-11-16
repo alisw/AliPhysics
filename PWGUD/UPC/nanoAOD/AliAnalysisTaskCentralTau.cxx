@@ -97,14 +97,16 @@ AliAnalysisTaskCentralTau::~AliAnalysisTaskCentralTau()
 	// Destructor
 
 	// Destructor
-	if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
+	{
+
 		delete fOutputList;
 		fOutputList = nullptr;
 		delete fOutputPID;
 		fOutputPID = nullptr;
 		delete fESDtracks;
 		fESDtracks = nullptr;
-	}
+
+}
 
 }//~AliAnalysisTaskCentralTau
 

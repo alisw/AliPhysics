@@ -17,9 +17,7 @@ void runMesonPWA(
 		const char *gridmode = "full", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
 		const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
 		const Long64_t nentries = 1234567890, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
-		const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-		const char *proofdataset = "/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
-		const char *proofcluster = "alice-caf.cern.ch", // which proof cluster to use in proof mode
+		const Long64_t firstentry = 0, // which proof cluster to use in proof mode
 		const char *taskname = "DATA_Tree_15g_Test1", // sets name of grid generated macros
 		const char *gridperiod = "/alice/data/2015/LHC15f", // Data period
 		const char *griddatapattern = "/pass2/*/AliESDs.root", // Data Pattern
@@ -28,7 +26,7 @@ void runMesonPWA(
 //______________________________________________________________________________
 {
 	// Check run type------------------------------------------------------------
-	if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+	if(runtype != "local" && runtype != "grid"){
 		Printf("\n\tIncorrect run option, check first argument of run macro");
 		Printf("\tint runtype = local, proof or grid\n");
 		return;
@@ -53,7 +51,7 @@ void runMesonPWA(
 
 	// Create the alien handler and attach it to the manager---------------------
 	AliAnalysisGrid *plugin =
-		CreateAlienHandler(taskname, gridmode, proofcluster, proofdataset, gridperiod, griddatapattern, option, bMCphyssel);
+		CreateAlienHandler(taskname, gridmode, gridperiod, griddatapattern, option, bMCphyssel);
 
 	Printf("========== Succesing Loading Plugin ==========");
 	//---------------------------------------------------------------------------
@@ -130,8 +128,6 @@ void runMesonPWA(
 //______________________________________________________________________________
 AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 		const char *gridmode,
-		const char *proofcluster,
-		const char *proofdataset,
 		const char *gridperiod,
 		const char *griddatapattern,
 		const char *option,
@@ -259,28 +255,17 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 	//---      PROOF MODE SPECIFIC SETTINGS         ------------
 	//----------------------------------------------------------
 	// Proof cluster
-	plugin->SetProofCluster(proofcluster);
 	// Dataset to be used
-	plugin->SetProofDataSet(proofdataset);
 	// May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-	plugin->SetProofReset(0);
 	// May limit number of workers
-	plugin->SetNproofWorkers(0);
 	// May limit the number of workers per slave
-	plugin->SetNproofWorkersPerSlave(1);
 	// May use a specific version of root installed in proof
-	//	plugin->SetRootVersionForProof("VO_ALICE@ROOT::v5-34-05");
 	// May set the aliroot mode. Check http://aaf.cern.ch/node/83
-	plugin->SetAliRootMode("default"); // Loads AF libs by default
 	// May request ClearPackages (individual ClearPackage not supported)
-	plugin->SetClearPackages(kFALSE);
 	// Plugin test mode works only providing a file containing test file locations, used in "local" mode also
 	plugin->SetFileForTestMode("file.txt"); // file should contain path name to a local directory containg *ESDs.root etc
 	// Request connection to alien upon connection to grid
-	plugin->SetProofConnectGrid(kFALSE);
 	// Other PROOF specific parameters
-	plugin->SetProofParameter("PROOF_UseMergers","-1");
-	printf("Using: PROOF_UseMergers   : %s\n", plugin->GetProofParameter("PROOF_UseMergers"));
 
 	return plugin;
 }

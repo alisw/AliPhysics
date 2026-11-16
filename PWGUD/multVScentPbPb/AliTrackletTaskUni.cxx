@@ -260,10 +260,12 @@ AliTrackletTaskUni::~AliTrackletTaskUni()
   // Destructor
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {  //RRR
+  {
+  //RRR
     printf("Deleteing output\n");
     delete fOutput;
-  }
+
+}
   //
   delete fMultReco;
   //

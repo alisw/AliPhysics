@@ -807,19 +807,13 @@ void MakeEvaluateTriggers(const char* esddir,
 			  UInt_t      vtx        = 0x2,
 			  UInt_t      trk        = 0x1,
 			  Int_t       vz         = 10,
-			  Int_t       proof      = 0)
+			  Int_t /*legacyMode*/=0)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (proof> 0) { 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadPars.C");
-    if (!LoadPars(proof)) { 
-      Error("MakeAOD", "Failed to load PARs");
-      return;
-    }
-  }
+
   
   // --- Our data chain ----------------------------------------------
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/MakeChain.C");
@@ -900,15 +894,15 @@ void MakeEvaluateTriggers(const char* esddir,
   mgr->SetSkipTerminate(false);
   // Some informative output 
   mgr->PrintStatus();
-  if (proof) mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && !proof) 
+
+  if (mgr->GetDebugLevel() < 1)
     mgr->SetUseProgressBar(kTRUE,100);
 
   // Run the train 
   t.Start();
   Printf("=== RUNNING ANALYSIS on %9d events ==========================",
 	 nEvents);
-  mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
+  mgr->StartAnalysis("local", chain, nEvents);
   t.Stop();
   t.Print();
 }

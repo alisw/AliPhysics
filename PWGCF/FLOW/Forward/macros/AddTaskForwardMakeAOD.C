@@ -44,7 +44,6 @@
  #include "AliVEventHandler.h"
  #include "AliForwardMCMultiplicityTask.h"
  #include "AliForwardCorrectionManager.h"
- #include "TProof.h"
  #include "TFile.h"
  #include "AliPhysicsSelectionTask.h"
  #include "AliCentralitySelectionTask.h"

@@ -212,13 +212,15 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
 AliAnalysisTaskMuonResolution::~AliAnalysisTaskMuonResolution()
 {
   /// Destructor
-  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  {
+
     SafeDelete(fResiduals);
     SafeDelete(fResidualsVsP);
     SafeDelete(fResidualsVsCent);
     SafeDelete(fResidualsVsAngle);
     SafeDelete(fTrackRes);
-  }
+
+}
   SafeDelete(fLocalChi2);
   SafeDelete(fChamberRes);
   SafeDelete(fCanvases);

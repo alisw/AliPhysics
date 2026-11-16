@@ -6,7 +6,7 @@ void Pi0SpectrumAOD12dGroup2(Bool_t recompile = true, Bool_t kTender=true, TStri
   TStopwatch timer;
   timer.Start();
   
-  TStringToken libs("Core,Tree,Geom,VMC,Physics,Minuit,Gui,XMLParser,Minuit2,Proof,STEERBase,ESD,AOD,OADB,ANALYSIS,ANALYSISalice,CDB,RAWDatabase,STEER,CORRFW,PHOSUtils,PHOSbase,PHOSpi0Calib,PHOSrec,PHOSshuttle,PHOSsim",",");
+  TStringToken libs("Core,Tree,Geom,VMC,Physics,Minuit,Gui,XMLParser,Minuit2,STEERBase,ESD,AOD,OADB,ANALYSIS,ANALYSISalice,CDB,RAWDatabase,STEER,CORRFW,PHOSUtils,PHOSbase,PHOSpi0Calib,PHOSrec,PHOSshuttle,PHOSsim",",");
   while( libs.NextToken() )
     gSystem->Load( Form("lib%s.so", libs.Data()) );
   

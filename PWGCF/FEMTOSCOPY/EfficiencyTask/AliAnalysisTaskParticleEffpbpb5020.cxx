@@ -82,8 +82,9 @@ AliAnalysisTaskParticleEffpbpb5020::AliAnalysisTaskParticleEffpbpb5020(const Cha
 AliAnalysisTaskParticleEffpbpb5020::~AliAnalysisTaskParticleEffpbpb5020()
 {
   // Destructor
-  if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

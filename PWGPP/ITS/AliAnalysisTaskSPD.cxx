@@ -116,7 +116,7 @@ AliAnalysisTaskSPD::~AliAnalysisTaskSPD() {
   //
  
   Info("~AliAnalysisTaskSPD","Calling Destructor");
- if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return; 
+
  if (fSegSPD) delete fSegSPD ;
    if (fOutput) {
     delete fOutput;

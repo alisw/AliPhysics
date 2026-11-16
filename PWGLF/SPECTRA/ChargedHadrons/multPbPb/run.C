@@ -3,7 +3,7 @@
 // 2. Run with many centrality bins at once
 #include <string.h>
 
-enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID, kMyRunModeProofLite};
+enum { kMyRunModeLocal = 0, kMyRunModeGRID = 2};
 
 TList * listToLoad = new TList();
 
@@ -202,12 +202,6 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     TChain * chain = GetAnalysisChain(data);
     chain->Print();
     mgr->StartAnalysis("local",chain,nev);
-  } else if (runMode == kMyRunModeProofLite) {
-    TChain * chain = GetAnalysisChain(data);
-    mgr->StartAnalysis("proof",chain,nev);
-  } 
-  else if (runMode == kMyRunModeCAF) {
-    mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
   } else if (runMode == kMyRunModeGRID) {
     mgr->StartAnalysis("grid");
   } else {
@@ -298,68 +292,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   // listToLoad->Add(new TObjString("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+"));
 
 
-  if (runMode == kMyRunModeCAF)
-    {
-      cout << "Init in CAF mode" << endl;
-    
-      gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-30-03-1");
-      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("current");
-      TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "1x");
-      //      TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
-      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
-
-      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-28-00f");
-      gProof->EnablePackage("VO_ALICE@AliRoot::v5-02-12-AN");
-      gSystem->Load("libCore");
-      gSystem->Load("libTree");
-      gSystem->Load("libGeom");
-      gSystem->Load("libVMC");
-      gSystem->Load("libPhysics");
-      gSystem->Load("libMinuit");
-      gSystem->Load("libSTEERBase");
-      gSystem->Load("libESD");
-      gSystem->Load("libAOD");
-      gSystem->Load("libANALYSIS");
-      gSystem->Load("libOADB");
-      gSystem->Load("libANALYSISalice");   
-
-      // Enable the needed package
-      // gProof->UploadPackage("$ALICE_ROOT/obj/STEERBase");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/STEERBase");
-      // gProof->UploadPackage("$ALICE_ROOT/obj/ESD");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/ESD");
-      // gProof->UploadPackage("$ALICE_ROOT/obj/AOD");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/AOD");
-      // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSIS");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSIS");
-      // gProof->UploadPackage("$ALICE_ROOT/obj/OADB");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/OADB");
-      // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSISalice");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
-      // gProof->UploadPackage("$ALICE_ROOT/obj/PWG0base");
-      // gProof->EnablePackage("$ALICE_ROOT/obj/PWG0base");
-      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/include"));
-      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
-    }
-  else if (runMode == kMyRunModeProofLite)
-    {
-      cout << "Init in CAF mode" << endl;
-    
-      gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-      TProof * p = TProof::Open("");
-      //      TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
-      //      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
-
-      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("VO_ALICE@ROOT::v5-28-00f");
-      //      TProof::Mgr("alice-caf.cern.ch")->SetROOTVersion("5.28/00f");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS/macros/AliRootProofLite.par");
-      gProof->EnablePackage("AliRootProofLite");
-
-    }
-  else
-    {
+  {
       cout << "Init in Local or Grid mode" << endl;
       gSystem->Load("libCore");
       gSystem->Load("libTree");
@@ -395,9 +328,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   while (name = (TObjString *)iter->Next()) {
     gSystem->ExpandPathName(name->String());
     cout << name->String().Data();
-    if (runMode == kMyRunModeCAF || runMode == kMyRunModeProofLite) {
-      gProof->Load(name->String()+(debug?"+g":""));   
-    } else {
+    {
       gROOT->LoadMacro(name->String()+(debug?"+g":""));   
     }
   }

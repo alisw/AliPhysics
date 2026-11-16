@@ -12,7 +12,6 @@
   gSystem->Load("libCDB");
   gSystem->Load("libMinuit");
   gSystem->Load("libMinuit2");
-  gSystem->Load("libProof");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libSTEER");
   gSystem->Load("libEVGEN");

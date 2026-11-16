@@ -197,7 +197,7 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   //
   // default distructor  
   // 
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return; // RS
+   // RS
   //
   if (fESDtrackCuts) {    delete fESDtrackCuts;  fESDtrackCuts = 0;  }
   if (fOutputitspureSARec)                      { delete fOutputitspureSARec; fOutputitspureSARec=0x0;}

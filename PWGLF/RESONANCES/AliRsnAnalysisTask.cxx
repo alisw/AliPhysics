@@ -91,7 +91,7 @@ AliRsnAnalysisTask::~AliRsnAnalysisTask()
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
 
-   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   if (fOutput ) {
       delete fOutput;
    }
 }

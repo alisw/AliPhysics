@@ -31,7 +31,7 @@ void MakeFlow(TString name    = "flow",
   
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/trains/RunTrain.C");
 
-  if (!datadir.EndsWith("/") && !mode.Contains("proof")) datadir.Append("/");
+  if (!datadir.EndsWith("/")) datadir.Append("/");
   
   TUrl url(datadir.Data());
   url.SetProtocol(mode.Data());

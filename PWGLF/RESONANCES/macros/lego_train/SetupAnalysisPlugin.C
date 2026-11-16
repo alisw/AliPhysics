@@ -18,7 +18,7 @@ AliAnalysisGrid *SetupAnalysisPlugin(TString analysisMode)
 //   alirootVersion="v5-02-05-AN";
    plugin->SetAliROOTVersion(alirootVersion.Data());
    // adds Proof setting
-   MySetupAnalysisPluginProof(plugin,analysisMode);
+   plugin->SetFileForTestMode("files.txt");
 
    // adds AliEn settings
    MySetupAnalysisPluginAliEn(plugin);
@@ -26,48 +26,7 @@ AliAnalysisGrid *SetupAnalysisPlugin(TString analysisMode)
    return plugin;
 }
 
-void MySetupAnalysisPluginProof(AliAnalysisAlien *plugin,TString analysisMode)
-{
 
-   plugin->SetProofParameter("PROOF_UseMergers", "-1");
-   if (!analysisMode.CompareTo("full")) plugin->SetProofParameter("PROOF_ForceLocal", "1");
-   plugin->SetProofCluster("alice-caf.cern.ch");
-//   plugin->SetProofCluster("alice-caf.cern.ch:1099");
-//    plugin->SetProofCluster("skaf.saske.sk");
-//    plugin->SetProofCluster("skaf.saske.sk:1099");
-   plugin->SetProofCluster("kiaf.sdfarm.kr");
-
-   // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
-   plugin->SetProofReset(0);
-// May limit the number of workers per slave. If used with SetNproofWorkers, SetParallel(nproofworkers) will be called after connection
-//   plugin->SetNproofWorkers(1);
-//    plugin->SetNproofWorkersPerSlave(1);
-// May request connection to alien upon connection to grid
-//    plugin->SetProofConnectGrid(kTRUE);
-
-//    plugin->SetNproofWorkers(10);
-// May use a specific version of root installed in proof
-//     plugin->SetRootVersionForProof("VO_ALICE@ROOT::v5-28-00d");
-//     plugin->SetRootVersionForProof("current");
-// May set the aliroot mode. Check http://aaf.cern.ch/node/83
-   plugin->SetAliRootMode("default"); // Loads AF libs by default
-//     plugin->SetAliRootMode("ALIROOT"); // Loads AF libs by default
-// May request ClearPackages (individual ClearPackage not supported)
-//    plugin->SetClearPackages();
-// Plugin test mode works only providing a file containing test file locations
-
-   // test file
-   plugin->SetFileForTestMode("files.txt");
-
-   // dataset
-   plugin->SetProofDataSet("/alice/sim/LHC11a10b_000137539_AOD048");
-
-   // list of datasets in txt file
-   plugin->SetProofDataSet("ds.txt");
-
-   //++++++++++++++ end PROOF ++++++++++++++++
-
-}
 
 void MySetupAnalysisPluginAliEn(AliAnalysisAlien *plugin)
 {

@@ -229,7 +229,7 @@ AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
 //---------------------------------------------------------------------------------------
 AliLeadingV0Correlation::~AliLeadingV0Correlation()
 {
-   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   if (fOutputList ) {
       delete fOutputList;
    }
 }

@@ -326,7 +326,9 @@ Int_t AliAnalysisTaskHFEBeautyMCTemplatesRun2::FindSource(AliMCParticle * mcple,
   if(pdgCode == 5 || (pdgCode >= 500 && pdgCode <= 599) || (pdgCode >= 5000 && pdgCode <= 5999)) return 1; // Beauty
   if(pdgCode == 4 || (pdgCode >= 400 && pdgCode <= 499) || (pdgCode >= 4000 && pdgCode <= 4999)) return 0; // Charm
   if(HasPhotonAncestor) return 2; // Conversion but not from charm, beauty or strangeness
-  if(true) return 3; // Dalitz !HasStrangeAncestor - 
+  {
+return 3;
+} // Dalitz !HasStrangeAncestor -
         
   return 7;
 }

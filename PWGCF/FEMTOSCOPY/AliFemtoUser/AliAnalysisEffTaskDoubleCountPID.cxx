@@ -125,8 +125,9 @@ AliAnalysisEffTaskDoubleCountPID::AliAnalysisEffTaskDoubleCountPID(TString name,
 AliAnalysisEffTaskDoubleCountPID::~AliAnalysisEffTaskDoubleCountPID()
 {
   // Destructor
-  if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
-    delete fHistoList;
+  {
+delete fHistoList;
+}
 }
 
 //_______________________________________________________

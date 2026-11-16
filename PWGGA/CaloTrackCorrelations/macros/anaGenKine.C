@@ -115,7 +115,6 @@ void  LoadLibraries()
   gSystem->Load("libESD"); // Root + libraries to if reclusterization is done
   gSystem->Load("libAOD");
   gSystem->Load("libRAWDatabase"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libProof"); 
   gSystem->Load("libOADB");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libSTEER"); // Root + libraries to if reclusterization is done

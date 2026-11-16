@@ -1,4 +1,4 @@
-enum anaModes {mLocal,mPROOF,mGrid};
+enum anaModes {mLocal=0,mGrid=2};
 Int_t binfirst = 0;  //where do we start numbering bins
 Int_t binlast = 8;  //where do we stop numbering bins
 const Int_t numberOfCentralityBins = 9;
@@ -156,10 +156,6 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mLocal,
   {
     mgr->StartAnalysis("local",chain);
   }
-  else if(mode == mPROOF)
-  {
-    mgr->StartAnalysis("proof",dataDir,nEvents,offset);
-  }
   else if(mode == mGrid)
   {
     mgr->StartAnalysis("grid");
@@ -197,7 +193,6 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
   gSystem->Load("libXMLParser");
-  gSystem->Load("libProof");
   gSystem->Load("libMinuit");
 
   if (mode==mLocal || mode==mGrid)
@@ -233,40 +228,7 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
       gSystem->Load("libPWGflowTasks");
     }
   }
-  else if (mode==mPROOF)
-  {
-    TList* list = new TList();
-    list->Add(new TNamed("ALIROOT_MODE", "ALIROOT"));
-    if (useFlowParFiles)
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies"));
-    else
-      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:Tender:TenderSupplies:PWGflowBase:PWGflowTasks"));
 
-    //list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","PWG/FLOW/Base:PWG/FLOW/Tasks"));
-
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    //TProof* proof = TProof::Open("alice-caf.cern.ch");
-    TProof* proof = TProof::Open("skaf.saske.sk");
-
-    // list the data available
-    //gProof->ShowDataSets("/*/*");
-    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
-    //gProof->ShowDataSets("/alice/data/"); //for REAL Data
-
-    proof->ClearPackages();
-    proof->EnablePackage("VO_ALICE@AliRoot::v4-21-14-AN",list);
-
-    if (useFlowParFiles)
-    {
-      gProof->UploadPackage("PWGflowBase.par");
-      gProof->UploadPackage("PWGflowTasks.par");
-    }
-
-    // Show enables Packages
-    gProof->ShowEnabledPackages();
-  }
 } // end of void LoadLibraries(const anaModes mode)
 
 //===============================================================================================

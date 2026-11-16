@@ -453,11 +453,13 @@ void AliAnalysisTaskMCSmearing::UserExec(Option_t* /*option*/)
       // its the mother hitting the fmd, but it might be
       // deflected from its original direction. If we are looking at a primary hitting
       // the FMD, we should compare its impact on the FMD with the true direction it had
-      if (true) {
+      {
+
 	this->GetTrackRefEtaPhi(p, etaPhi);
 	if (!etaPhi)
 	  cout << "NASTY ERROR!" << endl;
-      }
+
+}
 
       Double_t stuffing[] = {
 	mom->Eta(),

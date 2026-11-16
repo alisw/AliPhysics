@@ -16,7 +16,7 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS -g"); 
 
   //
-  TString analysisMode = "grid"; // "local", "grid", or "proof" (not yet)
+  TString analysisMode = "grid"; // "local", "grid"
 
   Long64_t nentries=1000000000000000,firstentry=0;
   Bool_t useAlienPlugin=kFALSE;
@@ -28,12 +28,6 @@ void RunAnalysisITS(TString pluginmode="",Int_t firstrun=177173,Int_t lastrun=17
   if(analysisMode=="grid") {
     // Connect to AliEn
     TGrid::Connect("alien://");
-  } else if(analysisMode=="proof") {
-    // Connect to the PROOF cluster
-    printf("PROOF mode not yet functional..\n");
-    return;
-    TProof::Open("alicecaf");
-    //TProof::Reset("alicecaf");
   }
 
   // Load analysis libraries
@@ -219,14 +213,14 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",
    }
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
+   //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS -g");
    if(!uselibPWGPP) {
-     //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
-     plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliAnalysisTaskITSTrackingCheck.h AliAnalysisTaskITSTrackingCheck.cxx AliAnalysisTaskSEImpParRes.h AliAnalysisTaskSEImpParRes.cxx AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libGui.so libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
-     //plugin->SetAdditionalLibs("AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libProof.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
+     //plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
+     plugin->SetAdditionalLibs("AliAlignmentDataFilterITS.h AliAlignmentDataFilterITS.cxx AliAnalysisTaskITSTrackingCheck.h AliAnalysisTaskITSTrackingCheck.cxx AliAnalysisTaskSEImpParRes.h AliAnalysisTaskSEImpParRes.cxx AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libGui.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
+     //plugin->SetAdditionalLibs("AliAnalysisTaskVertexESD.h AliAnalysisTaskVertexESD.cxx libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so");
    } else {
-     plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libTender.so libPWGPP.so");
+     plugin->SetAdditionalLibs("libGui.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEER.so libITSbase.so libITSrec.so libTPCbase.so libTPCrec.so libTRDbase.so libTRDrec.so libTender.so libPWGPP.so");
    }
    // Declare the output file names separated by blancs.
    // (can be like: file.root or file.root@ALICE::Niham::File)

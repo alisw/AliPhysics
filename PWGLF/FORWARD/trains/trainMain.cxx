@@ -16,12 +16,7 @@
 #include "Option.C"
 #include "Railway.C" 
 #include "LocalRailway.C" 
-#include "ProofRailway.C" 
-#include "LiteRailway.C"
-#include "VAFRailway.C"
-#include "AAFRailway.C" 
 #include "PluginRailway.C"
-#include "AAFPluginRailway.C" 
 #include "GridRailway.C"
 #include "TrainSetup.C"
 

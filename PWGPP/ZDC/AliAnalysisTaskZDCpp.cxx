@@ -156,7 +156,7 @@ AliAnalysisTaskZDCpp::AliAnalysisTaskZDCpp(const AliAnalysisTaskZDCpp& ana):
 AliAnalysisTaskZDCpp::~AliAnalysisTaskZDCpp()
 {
   // Destructor
-  if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if(fOutput ){
     delete fOutput; fOutput=0;
   }
 

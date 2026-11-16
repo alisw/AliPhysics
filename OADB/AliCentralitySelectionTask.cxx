@@ -896,7 +896,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
 AliCentralitySelectionTask::~AliCentralitySelectionTask()
 {
   // Destructor  
-  if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
+  if (fOutputList ) delete fOutputList;
   if (fTrackCuts) delete fTrackCuts;
   if (fEsdTrackCuts) delete fEsdTrackCuts;
   if (fEsdTrackCutsExtra1) delete fEsdTrackCutsExtra1;

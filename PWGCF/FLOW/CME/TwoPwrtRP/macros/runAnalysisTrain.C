@@ -26,7 +26,6 @@ void runAnalysisTrain(const Char_t* infile="")
 
    gSystem->Load("libTender");
    gSystem->Load("libTenderSupplies");
-   gSystem->Load("libProof.so");
    gSystem->Load("libRAWDatabase.so");
    gSystem->Load("libSTEER.so");
    gSystem->Load("libTOFbase.so");

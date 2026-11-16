@@ -30,15 +30,6 @@ AliAnalysisTaskEfficiencyFB128 *AddTaskEfficiencyFB128(TString containerName="fe
   //===========================================================================
 //  gSystem->SetIncludePath("-I$ROOTSYS/include  -I./PWG2AOD/AOD -I./PWG2femtoscopy/FEMTOSCOPY/AliFemto -I./PWG2femtoscopyUser/FEMTOSCOPY/AliFemtoUser -I$ALICE_ROOT/include");
 
-//   if (TProofMgr::GetListOfManagers()->GetEntries()) {
-// //     if (dynamic_cast<TProofLite *> gProof) {
-// //       char *macrocommand[10000];
-// //       sprintf(macrocommand, ".L %s", configMacroName);
-// //       gProof->Exec(macrocommand);
-// //     }
-// //     else
-//     gProof->Load(configMacroName);
-//   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskEfficiencyFB128 *taskEfficiencyFB128 = new AliAnalysisTaskEfficiencyFB128("EffTaskFB768",method,filterbit);

@@ -79,7 +79,7 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
   //
   // AliTRDCalPIDQRef destructor
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+
   if(fPDF){
     //fPDF->Write("PDF_LQ", TObject::kSingleKey);
     fPDF->Delete();

@@ -154,7 +154,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
   if(fDetsV) delete fDetsV; fDetsV=NULL;
   if(fTriggerList){fTriggerList->Delete(); delete fTriggerList;}
 
-  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
+  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && false)){
     if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
     fContainer = NULL;

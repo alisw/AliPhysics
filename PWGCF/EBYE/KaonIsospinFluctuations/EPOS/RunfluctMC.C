@@ -9,15 +9,13 @@ gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I\"/usr/local/CERN/root/include
   
   //
   TString trainName = "D2H";
-  TString analysisMode = "grid"; // "local", "grid", or "proof"
+  TString analysisMode = "grid"; // "local", "grid"
   TString inputMode    = "list"; // "list", "xml", or "dataset"
   Long64_t nentries=12356789,firstentry=0;
   //Long64_t nentries=1000,firstentry=0;
   Bool_t useParFiles=kFALSE;
   Bool_t useAlienPlugin=kTRUE;
   TString pluginmode="test"; //test, full , terminate
-  Bool_t saveProofToAlien=kFALSE;
-  TString proofOutdir = "";
   TString loadMacroPath="/afs/cern.ch/work/s/sbaidyan/nudyn_EPOS/EPOSGen/";
   
 
@@ -130,12 +128,11 @@ AliCentralitySelectionTask *centralityTask = AddTaskCentrality();
   if(!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   if(analysisMode=="grid" && !useAlienPlugin) analysisMode="local";
-   if(analysisMode!="proof") {
+   {
+
      mgr->StartAnalysis(analysisMode.Data(),nentries,firstentry);
-  } else {
-     // proof
-    mgr->StartAnalysis(analysisMode.Data(),dataset.Data(),nentries,firstentry);
-    }
+
+}
   
   return;
 }

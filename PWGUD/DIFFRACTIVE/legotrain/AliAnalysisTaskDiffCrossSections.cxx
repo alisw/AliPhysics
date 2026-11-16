@@ -687,8 +687,7 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
 AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 {
   const AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if (NULL != man && man->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
-    return;
+
 
   if (NULL != fTE)
     delete fTE;

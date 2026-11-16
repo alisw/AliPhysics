@@ -27,8 +27,7 @@ void runAnalysisTaskPtMothFromPtDaug(TH1F* histPtDaug=0x0,
   char *mode = "local"; // analysis mode (select local or proof) 
   char *dataset = "/COMMON/COMMON/LHC09a14_0.9TeV_0.5T"; // define dataset for proof
 
-  if(mode == "proof") loadLib();   
-  else{
+  {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWGHFbase");
@@ -86,7 +85,7 @@ void runAnalysisTaskPtMothFromPtDaug(TH1F* histPtDaug=0x0,
   }
   mgr->PrintStatus();
   if(mode=="local") mgr->StartAnalysis(mode,chain);
-  else if(mode=="proof") mgr->StartAnalysis(mode,dataset);
+
   if(readKineFromNtupla) mgr->Terminate();
   return;
  }
@@ -107,21 +106,3 @@ TChain *CreateChain(const char* galiceName)
      }
   return chain;
  }
-
-void loadLib(){
-printf("****** Connect to PROOF *******\n");
-gEnv->SetValue("XSec.GSI.DelegProxy","2");
-TProof::Open("alicecaf.cern.ch");
-gProof->UploadPackage("STEERBase.par");
-gProof->EnablePackage("STEERBase.par");
-gProof->UploadPackage("ESD.par");
-gProof->EnablePackage("ESD.par");
-gProof->UploadPackage("AOD.par");
-gProof->EnablePackage("AOD.par");
-gProof->UploadPackage("ANALYSIS.par");
-gProof->EnablePackage("ANALYSIS.par");
-gProof->UploadPackage("ANALYSISalice.par");
-gProof->EnablePackage("ANALYSISalice.par");
-gProof->UploadPackage("PWG3base.par");
-gProof->EnablePackage("PWG3base.par");
-}

@@ -23,7 +23,6 @@
 
 #include "TSystem.h"
 #include "TChain.h"
-#include "TProof.h"
 #include "TFile.h"
 #include "TCut.h"
 #include "TGraph.h"

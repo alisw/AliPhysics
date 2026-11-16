@@ -1,4 +1,4 @@
-enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID};
+enum { kMyRunModeLocal = 0, kMyRunModeGRID = 2};
 //#define TENDER
 TChain * GetAnalysisChain(const char * incollection);
 
@@ -108,8 +108,6 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
     TChain * chain = GetAnalysisChain(data);
     //    chain->Print();
     mgr->StartAnalysis("local",chain,nev);
-  } else if (runMode == kMyRunModeCAF) {
-    mgr->StartAnalysis("proof",TString(data)+"#esdTree",nev);
   } else if (runMode == kMyRunModeGRID) {
     mgr->StartAnalysis("grid");
   }else {
@@ -169,61 +167,6 @@ TChain * GetAnalysisChain(const char * incollection){
 
 void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug=0) {
 
-  if (runMode == kMyRunModeCAF)
-  {
-    cout << "Init in CAF mode" << endl;
-    
-    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-    // cout << workers>0 ? Form("workers=%d",workers) : "workers=1x" << endl;
-    // exit(1);
-    TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "workers=1x");
-    p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
-    //TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
-    
-    // Enable the needed package (par fileS)
-    // gProof->UploadPackage("$ALICE_ROOT/obj/STEERBase");
-    // gProof->EnablePackage("$ALICE_ROOT/obj/STEERBase");
-    // gProof->UploadPackage("$ALICE_ROOT/obj/ESD");
-    // gProof->EnablePackage("$ALICE_ROOT/obj/ESD");
-    // gProof->UploadPackage("$ALICE_ROOT/obj/AOD");
-    // gProof->EnablePackage("$ALICE_ROOT/obj/AOD");
-    // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSIS");
-    // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSIS");
-    // gProof->UploadPackage("$ALICE_ROOT/obj/OADB");
-    // gProof->EnablePackage("$ALICE_ROOT/obj/OADB");
-    // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSISalice");
-    // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
-    // gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-    // gProof->EnablePackage("$ALICE_ROOT/PWG0base");
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background"));
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/include "));
-    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/TOF "));
-
-    // Use a precompiled tag
-    TString alirootMode="";    // STEERBase,ESD,AOD,ANALYSIS,ANALYSISalice (default aliroot mode)
-    //alirootMode="ALIROOT";     // $ALICE_ROOT/macros/loadlibs.C
-    //  alirootMode="REC";     // $ALICE_ROOT/macros/loadlibsrec.C
-    //  alirootMode="SIM";     // $ALICE_ROOT/macros/loadlibssim.C
-    //  alirootMode="TRAIN";   // $ALICE_ROOT/macros/loadlibstrain.C (not working yet)
-    //  alirootMode="CUSTOM";  // nothing is loaded, but aliroot variables are set (not working yet)
- 
-    TString extraLibs;
-    extraLibs= ""; // not needed in default aliroot mode
-    extraLibs+="CDB:RAWDatabase:STEER:TENDER:TRDbase:STAT:TRDrec:VZERObase:VZEROsim:VZEROrec:RAWDatarec:TPCbase:TPCrec:TPCcalib:TENDERSupplies:RAWDatabase:RAWDatarec:RAWDatasim:TOFbase:TOFrec";
-    TList *list = new TList();
-    // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
-    list->Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));
-    // sets $ALIROOT_EXTRA_LIBS on each worker to let proof to know to load extra libs
-    list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
-#ifdef TENDER
-    list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
-#endif
-    // connect to proof
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-22-AN", list);
-    //    gProof->Exec("TGrid::Connect(\"alien://\");");
-  }
-  else
   {
     cout << "Init in Local or Grid mode" << endl;
 
@@ -232,7 +175,6 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     gSystem->Load("libPhysics");
     gSystem->Load("libVMC");
     gSystem->Load("libTree");
-    gSystem->Load("libProof");
     gSystem->Load("libTree");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
@@ -257,10 +199,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
 
 
   // Create, add task
-  if (runMode == kMyRunModeCAF) {
-    gProof->Load(listName+(debug?"+g":""));   
-    gProof->Load(taskName+(debug?"+g":""));
-  } else {
+  {
     gROOT->LoadMacro(listName+(debug?"+g":""));   
     gROOT->LoadMacro(taskName+(debug?"+g":""));    
   }

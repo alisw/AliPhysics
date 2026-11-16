@@ -32,7 +32,7 @@ AliAnalysisGrid* CreateAlienHandler()
   plugin->SetRunPrefix("000");   // real data
   plugin->AddRunNumber(170308);
 
-  plugin->SetAdditionalLibs("libANALYSIS.so libANALYSISalice.so libEMCALUtils.so libPHOSUtils.so libGui.so libCDB.so libRAWDatabase.so libRAWDatarec.so libProof.so libSTEER.so libTOFbase.so libTOFrec.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libAOD.so libCORRFW.so libPWGCFJCORRAN.so");
+  plugin->SetAdditionalLibs("libANALYSIS.so libANALYSISalice.so libEMCALUtils.so libPHOSUtils.so libGui.so libCDB.so libRAWDatabase.so libRAWDatarec.so libSTEER.so libTOFbase.so libTOFrec.so libMinuit.so libRAWDatabase.so libRAWDatarec.so libAOD.so libCORRFW.so libPWGCFJCORRAN.so");
 
 //  plugin->SetAdditionalLibs("PWG4JCORRAN.par libEMCALUtils.so libPHOSUtils.so");//AliCentralityBy1D_137161_GLAU.root AliCentralitySelectionTask.cxx");
 

@@ -12,7 +12,6 @@ void runBatch() {
   TGrid::Connect("alien://");
 
 
-  gSystem->Load("libProofPlayer");
   gSystem->Load("libVMC");
 
 

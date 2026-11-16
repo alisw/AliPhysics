@@ -1,14 +1,12 @@
 Dmitri Peressounko:
 This is class and set of macros for the PHOS calibration using pi0 peak.
 It uses ESDs dataset.
-Since you will need to make a lot of iterations (5-15), the best way is to use CAF or similar staff.
+The calibration typically needs 5-15 iterations.
 
 So the procedure is the following
 1. Produce file Calibration_pass1.root with initial calibration (these are _corrections_ so that all components are close to unit).
    See MultCalib.C for the structure of the file.
-2. Run scan on CAF
-   root -l runAAF.C
-   [0] .x Pi0Calib.C //Here one should choose proper dataset - see inside
+2. Configure AliAnalysisTaskPi0Calib in a local or grid analysis manager and run it on the ESD input.
 3. Analyze produced file histos.root:
    a. Copy its content from TList to set of histograms (TList does not work in mashines with limited memory)
       root -q -b cphisto.C ; mv sum.root histos_pass0.root

@@ -60,7 +60,7 @@ AliFMDMCHitHandler::Init(Option_t* opt)
   AliDebugF(10,"AliFMDMCHitHandler::Init(\"%s\")", opt);
 
   TString option(opt);
-  if (option.EqualTo("proof") || option.EqualTo("local")) return true;
+  if (option.EqualTo("local")) return true;
 
   TString t = "Tree";
   TString b = "";

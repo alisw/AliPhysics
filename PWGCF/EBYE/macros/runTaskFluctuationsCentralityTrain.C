@@ -1,7 +1,6 @@
-enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
+enum anaModes {mLocal=0,mLocalPAR=1,mGrid=3,mGridPAR=4};
 //mLocal: Analyze locally files in your computer using aliroot
 //mLocalPAR: Analyze locally files in your computer using root + PAR files
-//mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
 //mGridPAR: Analyze files on Grid via AliEn plug-in and using par files for FLOW package
 
@@ -18,7 +17,7 @@ Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,6
 //output file
 TString commonOutputFileName = "outputCentrality";
 
-//void runTaskFluctuationsCentralityTrain(Int_t mode = mPROOF, 
+//void runTaskFluctuationsCentralityTrain(Int_t mode = mLocal,
 //Int_t nRuns = 600000, 
 //Bool_t DATA = kTRUE, 
 //const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_4plus#esdTree", Int_t offset=0) {
@@ -65,10 +64,7 @@ void runTaskFluctuationsCentralityTrain(const char* runListFileName = "group4.tx
       TChain* chain = CreateAODChain(dataDir, nRuns, offset);
   }
   //Proof
-  if(mode == mPROOF) {
-    gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
-    gProof->Load("AliEbyEFluctuationAnalysisTaskTrain.cxx++");
-  }
+
 
   // Create analysis manager:
   AliAnalysisManager *mgr = new AliAnalysisManager("FluctuationsAnalysisManager");
@@ -129,8 +125,6 @@ void runTaskFluctuationsCentralityTrain(const char* runListFileName = "group4.tx
   mgr->PrintStatus(); 
   if(mode == mLocal || mode == mLocalPAR) 
     mgr->StartAnalysis("local",chain);
-  else if(mode == mPROOF) 
-    mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   else if(mode == mGrid || mode == mGridPAR) 
     mgr->StartAnalysis("grid");
 
@@ -191,45 +185,7 @@ void LoadLibraries(const anaModes mode) {
   //---------------------------------------------------------
   // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
   //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    // Put appropriate username here
-    TProof::Open("alice-caf.cern.ch");
-    //TProof::Open("skaf.saske.sk");
-    //TProof::Open("prf000-iep-grid.saske.sk");
-
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
- 
-    // Clear the Packages    
-    //gProof->ClearPackage("STEERBase.par");
-    //gProof->ClearPackage("ESD.par");
-    //gProof->ClearPackage("AOD.par");
-    //gProof->ClearPackage("ANALYSIS.par");
-    //gProof->ClearPackage("ANALYSISalice.par");    
-    //gProof->ClearPackage("PWGCFebye");
     
-    // Upload the Packages
-    //gProof->UploadPackage("STEERBase.par");
-    //gProof->UploadPackage("ESD.par");    
-    //gProof->UploadPackage("AOD.par");       
-    //gProof->UploadPackage("ANALYSIS.par"); 
-    //gProof->UploadPackage("ANALYSISalice.par");
-    //gProof->UploadPackage("CORRFW.par");
-    //gProof->UploadPackage("PWGCFebye");
-
-    // Enable the Packages 
-    //gProof->EnablePackage("STEERBase");
-    //gProof->EnablePackage("ESD");
-    //gProof->EnablePackage("AOD");
-    //gProof->EnablePackage("ANALYSIS");
-    //gProof->EnablePackage("ANALYSISalice");
-    //gProof->EnablePackage("PWGCFebye");
-
-    // Show enables Packages
-    //gProof->ShowEnabledPackages();
-  }  
   
 } // end of void LoadLibraries(const anaModes mode)
 

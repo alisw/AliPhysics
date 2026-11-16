@@ -120,7 +120,7 @@ AliAnalysisTaskLeadingTrackUE::~AliAnalysisTaskLeadingTrackUE()
 { 
   // destructor
   
-  if (fListOfHistos  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) 
+  if (fListOfHistos  )
     delete fListOfHistos;
 }
 

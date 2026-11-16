@@ -25,16 +25,15 @@
 # include <TTree.h>
 # include <TClonesArray.h>
 # include <TList.h>
-# include <TProof.h>
 # include <TChain.h>
 # include <TParticlePDG.h>
 # include <TStopwatch.h>
 # include <TFile.h>
-# include <TProofOutputFile.h>
 # include <TCanvas.h>
 # include <TTimer.h>
 # include <TRandom.h>
 # include <TUrl.h>
+# include <TObjString.h>
 # include <TMacro.h>
 # include <TSystemDirectory.h>
 # include <TFileCollection.h>
@@ -57,7 +56,6 @@ class TClonesArray;
 class TBrowser;
 class TList;
 class TFile;
-class TProofOutputFile;
 class TCanvas;
 class TVirtualPad;
 class TTimer;
@@ -101,7 +99,7 @@ struct FastSimMonitor : public FastMonitor
     Register("list/histograms/dNdy",    "",     0x18, false);
     Register("list/histograms/trigger", "e",    0x10, false);
     Register("list/estimators/rawV0MP", "e",    0x02, false);
-    if (gProof)  gProof->AddFeedback("list");      
+
   }
 };
 
@@ -155,9 +153,6 @@ struct FastSim : public TSelector
       fHTrig(0),
       fBEstimator(0),
       fCentEstimators(0),
-      fProofFile(0),
-      fAliceFile(0),
-      fKineFile(0),
       fFile(0),
       fFileName(""),
       fVerbose(true),
@@ -261,18 +256,7 @@ struct FastSim : public TSelector
 	   "========================================", FileName());
 
     if (fVerbose) Info("SetupOutput", "First the file");
-    Bool_t isProof = false;
-    if (fInput && fInput->FindObject("PROOF_Ordinal"))
-      isProof = true;
-    if (isProof) {
-      Info("SetupOutput", "Making Proof File");
-      fProofFile = new TProofOutputFile(FileName(), "M");
-      // TProofOutputFile::kMerge,
-      // TProofOutputFile::kRemote);
-      fFile = fProofFile->OpenFile("RECREATE");
-    }
-    else
-      fFile = TFile::Open(FileName(), "RECREATE");
+    fFile = TFile::Open(FileName(), "RECREATE");
 
     UShort_t sNN = GetSNN();
     TString  tit = GetEGTitle();
@@ -564,29 +548,9 @@ struct FastSim : public TSelector
     Printf("=== Run ================================\n"
 	   " Number of events: %lld\n"
 	   "========================================", nev);
-    TObject* ord      = (fInput ? fInput->FindObject("PROOF_Ordinal") : 0);
-    UShort_t saveMode = 0;
-    TString  post     = "";
-    TString  dir      = "";
-    if (ord) {
-      TObject* save = fInput->FindObject("PROOF_SaveGALICE");
-      if (save && fVerbose) {
-	Info("SetupRun", "Got save option:");
-	save->Print();
-      }
-      TString optSave(save ? save->GetTitle() : "split");
-      optSave.ToLower();
-      if       (optSave.EqualTo("none"))   saveMode = 0;
-      else if  (optSave.EqualTo("merge"))  saveMode = 1;
-      else if  (optSave.EqualTo("split"))  saveMode = 2;
-      if (fProofFile && saveMode > 0) 
-	dir  = fProofFile->GetDir(true);
-      if (saveMode > 1)
-	post = Form("_%s", ord->GetTitle());	
-    }
-    TString  galiceName(Form("%sgalice.root",dir.Data()));
-    TString  kineName(Form("%sKinematics.root",dir.Data()));
-    
+    TString galiceName("galice.root");
+    TString kineName("Kinematics.root");
+
     // --- Run-loader, stack, etc  -----------------------------------
     // Info("SetupRun", "Set-up run Loader");    
     fRunLoader = AliRunLoader::Open(galiceName, "FASTRUN", "RECREATE");
@@ -605,18 +569,6 @@ struct FastSim : public TSelector
     fGenerator->Init();
     fGenerator->SetStack(fStack);
 
-    if (saveMode < 1) {
-      if (ord) 
-	Info("SetupRun", "Not saving galice.root and Kinematics.root");
-      return true;
-    }
-    
-    TString aliceOut = Form("galice%s.root", post.Data());
-    fAliceFile = new TProofOutputFile(aliceOut, "M");
-
-    TString kineOut = Form("Kinematics%s.root", post.Data());
-    fKineFile = new TProofOutputFile(kineOut, "M");
-    
     return true;
   }
   /** 
@@ -706,8 +658,6 @@ struct FastSim : public TSelector
   virtual void Begin(TTree*)
   {
     // Make a monitor
-    // Info("Begin", "gProof=%p Nomonitor=%p",
-    //      gProof, (gProof ? gProof->GetParameter("NOMONITOR") : 0));
     if (fVerbose) Info("Begin", "Called for FastSim");
 
     if (fMonitor > 0 && !gROOT->IsBatch()) {
@@ -715,12 +665,7 @@ struct FastSim : public TSelector
       m->Connect(fMonitor);
     }
     gROOT->Macro(Form("GRP.C(%d)", fRunNo));
-    if (ReadGRPLine()) {
-      if(gProof) {
-	gProof->AddInput(fGRP);
-	if (fOverrides) gProof->AddInput(fOverrides);
-      }
-    }
+    ReadGRPLine();
     if (fVerbose) Info("Begin", "Perhaps override");
     OverrideGRP();
     if (fVerbose) Info("Begin", "Defining centrality estimators");
@@ -1147,11 +1092,7 @@ struct FastSim : public TSelector
   {
     FinishRun();
     if (fFile) {
-      if (fProofFile) {
-	if (fVerbose) fProofFile->Print();
-	fOutput->Add(fProofFile);
-	fOutput->Add(new TH1F("filename", fFileName.Data(),1,0,1));
-      }
+
       // Flush out tree 
       fFile->cd();
       fTree->Write(0, TObject::kOverwrite);
@@ -1159,26 +1100,8 @@ struct FastSim : public TSelector
       fFile->Delete();
       fFile = 0;
     }
-    if (fAliceFile) {
-      TFile* galice = GetGAlice();
-      if (galice) {
-	if (fVerbose) fAliceFile->Print();
-	fAliceFile->AdoptFile(galice);
-	fAliceFile->SetOutputFileName(fAliceFile->GetName());
-	fOutput->Add(fAliceFile);
-	galice->Write();
-      }
-    }
-    if (fKineFile) {
-      TFile* kine = GetKine();
-      if (kine) {
-	if (fVerbose) fKineFile->Print();
-	fKineFile->AdoptFile(kine);
-	fKineFile->SetOutputFileName(fKineFile->GetName());
-	fOutput->Add(fKineFile);
-	kine->Write();
-      }
-    }
+
+
 
     if (fVerbose) {
       Info("SlaveTerminate", "Content of output list");
@@ -1221,7 +1144,7 @@ struct FastSim : public TSelector
    */
   void Terminate()
   {
-    if (gProof) gProof->ClearFeedback();
+
 
     if (!fList)
       fList = static_cast<TList*>(fOutput->FindObject("histograms"));
@@ -1230,14 +1153,6 @@ struct FastSim : public TSelector
       return;
     }
     
-    if (!fProofFile) {
-      TObject* fn = fOutput->FindObject("filename");
-      if (fn) fFileName  = fn->GetTitle();
-      fProofFile =
-	static_cast<TProofOutputFile*>(fOutput->FindObject(FileName()));
-    }
-    if (fProofFile) 
-      fFile = fProofFile->OpenFile("UPDATE");
     if (!fFile)
       fFile = TFile::Open(FileName(),"UPDATE");
 
@@ -1289,7 +1204,6 @@ struct FastSim : public TSelector
     if (fVerbose) fFile->ls();
     fFile->Close();
 
-    MoveAliceFiles();
   }
   /** 
    * Retrieve the galice.root file from ROOT 
@@ -1331,70 +1245,7 @@ struct FastSim : public TSelector
     }
     return file;
   }
-  /** 
-   * Move retrieved ALICE files (galice.root and Kinematics.root) to
-   * separate su-directories, and create a collection of the TE tree
-   * stored in the galice.root files.
-   * 
-   */
-  void MoveAliceFiles()
-  {
-    if (!fInput) return;
 
-    TObject* save  = fInput->FindObject("PROOF_SaveGALICE");
-    if (!save) return;
-    
-    TString  sMode = save->GetTitle();
-    if (!sMode.EqualTo("split", TString::kIgnoreCase)) return;
-
-    TList*            lst   = new TList;
-    TSystemDirectory* dir   = new TSystemDirectory(".",
-						   gSystem->WorkingDirectory());
-    TList*            files = dir->GetListOfFiles();
-    TSystemFile*      file  = 0;
-    TIter             next(files);
-    while ((file = static_cast<TSystemFile*>(next()))) {
-      if (file->IsDirectory()) continue;
-      TString fn(file->GetName());
-      if (!fn.BeginsWith("galice") && !fn.BeginsWith("Kinematics"))
-	continue;
-
-      TPRegexp regex("(.*)_([^_]+)\\.root");
-      TObjArray* matches = regex.MatchS(fn);
-      if (matches->GetEntriesFast() < 3) {
-	delete matches;
-	continue;
-      }
-      TString ord = matches->At(2)->GetName();
-      TString bse = matches->At(1)->GetName();
-
-      if (gSystem->AccessPathName(ord,kFileExists))
-	gSystem->MakeDirectory(ord);
-
-      if (fVerbose) 
-	Info("MoveAliceFiles", "Moving %s to %s/%s.root",
-	     fn.Data(), ord.Data(), bse.Data());
-      file->Move(Form("%s/%s.root", ord.Data(), bse.Data()));
-
-      if (!bse.EqualTo("galice")) continue;
-      TObjString* url = new TObjString(Form("file://%s/%s/%s.root?#TE",
-					    file->GetTitle(),
-					    ord.Data(),
-					    bse.Data()));
-      if (fVerbose) 
-	Info("MoveAliceFiles", "Adding \"%s\" to file list",
-	     url->GetName());
-      lst->Add(url);
-    }
-    if (lst->GetEntries() <= 0) return;
-    if (fVerbose) lst->ls();
-    
-    TFile* out   = TFile::Open("index.root","RECREATE");
-    lst->Write("TE",TObject::kSingleKey);
-    out->Write();
-    out->Close();
-    
-  }
   /** 
    * Interface version used 
    * 
@@ -1457,9 +1308,6 @@ struct FastSim : public TSelector
    * @{ 
    * @name Output files 
    */
-  TProofOutputFile* fProofFile;   //! Proof output file
-  TProofOutputFile* fAliceFile;   //! 
-  TProofOutputFile* fKineFile;    //! 
   TFile*            fFile;        //! Output file
   mutable TString   fFileName;    //! Output file name 
   /* @} */
@@ -1509,98 +1357,8 @@ struct FastSim : public TSelector
 
     return true;
   }
-  /**
-   * Load needed libraries in a proof serssion 
-   */
-  static void ProofLoadLibs()
-  {
-    if (!gProof) return;
 
-    // Remember to copy changes to RunFast.C
-    TList clsLib;
-    clsLib.Add(new TNamed("TVirtualMC",              "libVMC"));
-    clsLib.Add(new TNamed("TLorentzVector",          "libPhysics"));
-    clsLib.Add(new TNamed("TLinearFitter",           "libMinuit"));
-    clsLib.Add(new TNamed("TTree",                   "libTree"));
-    clsLib.Add(new TNamed("TProof",                  "libProof"));
-    clsLib.Add(new TNamed("TGFrame",                 "libGui"));
-    clsLib.Add(new TNamed("TSAXParser",              "libXMLParser"));
-    clsLib.Add(new TNamed("AliVEvent",               "libSTEERBase"));
-    clsLib.Add(new TNamed("AliESDEvent",             "libESD"));
-    clsLib.Add(new TNamed("AliAODEvent",             "libAOD"));
-    clsLib.Add(new TNamed("AliAnalysisManager",      "libANALYSIS"));
-    clsLib.Add(new TNamed("AliCDBManager",           "libCDB"));
-    clsLib.Add(new TNamed("AliRawVEvent",            "libRAWDatabase"));
-    clsLib.Add(new TNamed("AliHit",                  "libSTEER"));
-    clsLib.Add(new TNamed("AliGenMC",                "libEVGEN"));
-    clsLib.Add(new TNamed("AliFastEvent",            "libFASTSIM"));
 
-    TIter next(&clsLib);
-    TObject* obj = 0;
-    while ((obj = next())) {
-      gProof->Exec(Form("gROOT->LoadClass(\"%s\",\"%s\");",
-			obj->GetName(), obj->GetTitle()));
-    }
-  }
-  /** 
-   * Run this selector in PROOF(Lite)
-   * 
-   * @param url        Proof URL
-   * @param nev        Number of events
-   * @param run        Run number to anchor in
-   * @param gen        Generator 
-   * @param bMin       Least impact parameter [fm]
-   * @param bMax       Largest impact parameter [fm]
-   * @param monitor    Monitor frequency [s]
-   * @param opt        Compilation options
-   * @param verbose    Be verbose 
-   * @param overrides  GRP overrides 
-   * @param save       Where to save
-   * 
-   * @return true on succes
-   */
-  static Bool_t ProofRun(const TUrl&    url,
-			 Long64_t       nev,
-			 UInt_t         run,
-			 const TString& gen,
-			 Double_t       bMin,
-			 Double_t       bMax,
-			 Int_t          monitor=-1,
-			 Bool_t         verbose=false,
-			 const TString& overrides="",
-			 const TString& save="none",
-			 const char*    opt="")
-  {
-    TProof::Reset(url.GetUrl());
-    TProof::Open(url.GetUrl());
-    gProof->ClearCache();
-
-    TString phy = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
-    TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
-    // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
-    TString fwd = phy + "/PWGLF/FORWARD/analysis2";
-
-    gProof->AddIncludePath(Form("%s/include", ali.Data()));
-    gProof->AddIncludePath(Form("%s/include", phy.Data()));
-    ProofLoadLibs();
-    gProof->Load(Form("%s/sim/GRP.C",fwd.Data()), true);
-    gProof->Load(Form("%s/sim/BaseConfig.C",fwd.Data()), true);
-    gProof->Load(Form("%s/sim/EGConfig.C",fwd.Data()), true);
-
-    // gROOT->ProcessLine("gProof->SetLogLevel(5);");
-    gProof->Load(Form("%s/sim/FastShortHeader.C", fwd.Data()));
-    gProof->Load(Form("%s/sim/FastCentEstimators.C+%s",fwd.Data(),opt));
-    gProof->Load(Form("%s/sim/FastMonitor.C+%s",fwd.Data(),opt));
-    gProof->Load(Form("%s/sim/FastSim.C+%s", fwd.Data(), opt),true);
-    gProof->SetParameter("PROOF_SaveGALICE", save);
-
-    FastSim* sim = new FastSim(gen,run,bMin,bMax,nev,monitor);
-    SetOverrides(sim, overrides);
-    sim->fVerbose = verbose;
-    gProof->Process(sim, nev, "");
-
-    return true; // status >= 0;
-  }
   /** 
    * Extract key value pair from string 
    * 
@@ -1678,10 +1436,9 @@ struct FastSim : public TSelector
    * Where PROTOCOL is one of 
    * 
    * - local for local (single thread) execution 
-   * - lite for Proof-Lite execution 
-   * - proof for Proof exection 
    * 
-   * HOST and PORT is only relevant for Proof. 
+   *
+   *
    *
    * Options is a list of & separated options 
    * 
@@ -1704,7 +1461,6 @@ struct FastSim : public TSelector
     UInt_t       run     = 0;
     TString      eg      = "default";
     TString      override= "";
-    TString      save    = "none";
     Double_t     bMin    = 0;
     Double_t     bMax    = 20;
     Int_t        monitor = -1;
@@ -1733,7 +1489,6 @@ struct FastSim : public TSelector
       else if (key.EqualTo("run"))      run      = val.Atoi();
       else if (key.EqualTo("eg"))       eg       = val;
       else if (key.EqualTo("override")) override = val;
-      else if (key.EqualTo("save"))     save     = val;
       else if (key.EqualTo("monitor"))  monitor  = val.Atoi();
       else if (key.EqualTo("b")) {
 	TString min, max;
@@ -1754,7 +1509,10 @@ struct FastSim : public TSelector
       return false;
     }
     
-    Bool_t isLocal = TString(u.GetProtocol()).EqualTo("local");
+    if (!TString(u.GetProtocol()).EqualTo("local")) {
+      ::Error("Run", "Unsupported execution protocol: %s", u.GetProtocol());
+      return false;
+    }
 
     Printf("Run %s for %lld events anchored at %d\n"
 	   "  Impact paramter range:  %5.1f-%5.1f fm\n"
@@ -1766,12 +1524,7 @@ struct FastSim : public TSelector
     TStopwatch timer;
     timer.Start();
 
-    Bool_t ret = false;
-    if (isLocal)
-      ret = LocalRun(nev, run, eg, bMin, bMax, monitor, verbose, override);
-    else 
-      ret = ProofRun(u, nev, run, eg, bMin, bMax,
-		     monitor, verbose, override, save, opt);
+    Bool_t ret = LocalRun(nev, run, eg, bMin, bMax, monitor, verbose, override);
     timer.Print();
 
     return ret;
@@ -2062,41 +1815,7 @@ struct EPosSim : public FastSim
 
     return true;
   }
-  /** 
-   * Run this selector in PROOF(Lite)
-   * 
-   * @param url        Proof URL
-   * @param opt        Compilation options
-   * 
-   * @return true on succes
-   */
-  static Bool_t SetupProof(const TUrl&    url,
-			   const char*    opt="")
-  {
-    TProof::Reset(url.GetUrl());
-    TProof::Open(url.GetUrl());
-    gProof->ClearCache();
 
-    TString phy = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
-    TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
-    // TString fwd = gSystem->ExpandPathName("$ANA_SRC");
-    TString fwd = phy + "/PWGLF/FORWARD/analysis2";
-
-    gProof->AddIncludePath(Form("%s/include", ali.Data()));
-    gProof->AddIncludePath(Form("%s/include", phy.Data()));
-    ProofLoadLibs();
-    gProof->Load(Form("%s/sim/GRP.C",fwd.Data()), true);
-    gProof->Load(Form("%s/sim/BaseConfig.C",fwd.Data()), true);
-    gProof->Load(Form("%s/sim/EGConfig.C",fwd.Data()), true);
-
-    // gROOT->ProcessLine("gProof->SetLogLevel(5);");
-    gProof->Load(Form("%s/sim/FastMonitor.C+%s",fwd.Data(),opt));
-    gProof->Load(Form("%s/sim/FastShortHeader.C", fwd.Data()));
-    gProof->Load(Form("%s/sim/FastCentEstimators.C+%s",fwd.Data(),opt));
-    gProof->Load(Form("%s/sim/FastSim.C+%s", fwd.Data(), opt),true);
-
-    return true; // status >= 0;
-  }
   /** 
    * Run a simulation. 
    * 
@@ -2109,10 +1828,9 @@ struct EPosSim : public FastSim
    * Where PROTOCOL is one of 
    * 
    * - local for local (single thread) execution 
-   * - lite for Proof-Lite execution 
-   * - proof for Proof exection 
    * 
-   * HOST and PORT is only relevant for Proof. 
+   *
+   *
    *
    * Options is a list of & separated options 
    * 
@@ -2208,12 +1926,7 @@ struct EPosSim : public FastSim
       return false;
     }
 
-    TString       proto    = u.GetProtocol();
-    Bool_t        isProof  = (proto.EqualTo("proof") || proto.EqualTo("lite"));
-    if (isProof) {
-      if (!SetupProof(u,opt)) return false;
-      chain->SetProof();
-    }
+
 
     EPosSim* sim = new EPosSim(run, monitor);
     sim->fVerbose = verbose;

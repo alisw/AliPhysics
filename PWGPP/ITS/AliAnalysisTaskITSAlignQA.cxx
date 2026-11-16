@@ -99,7 +99,7 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
 //___________________________________________________________________________
 AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
   //
-  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+  if (fOutput ) {
     delete fOutput;
     delete fITSSumTP;
   }

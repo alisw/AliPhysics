@@ -351,8 +351,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
 AliAnalysisTaskDG::~AliAnalysisTaskDG()
 {
   const AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if (man && man->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
-    return;
+
 
   fTriggerIRs.Delete();
   fTrackData.Delete();

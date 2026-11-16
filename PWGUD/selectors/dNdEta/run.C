@@ -5,10 +5,7 @@ void Load(const char* taskName, Bool_t debug)
   if (debug)
     compileTaskName += "g";
 
-  if (gProof) {
-    gProof->Load(compileTaskName);
-  } else
-    gROOT->Macro(compileTaskName);
+  gROOT->Macro(compileTaskName);
 
   // Enable debug printouts
   if (debug)
@@ -19,13 +16,13 @@ void Load(const char* taskName, Bool_t debug)
     AliLog::SetClassDebugLevel(taskName, AliLog::kWarning);
 }
 
-void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Int_t requiredData = 1, const char* option = "")
+void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t inputMode = kFALSE, Int_t requiredData = 1, const char* option = "")
 {
   // runWhat options: 0 = AlidNdEtaTask
   //                  1 = AlidNdEtaCorrectionTask
   //                  2 = both
   //
-  // aProof option: 0 no proof
+  // inputMode option: 0 no proof
   //                1 proof with chain
   //                2 proof with dataset
   //
@@ -55,51 +52,10 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   if (nRuns < 0)
     nRuns = 1234567890;
 
-  if (aProof)
-  {
-    TProof::Open("alice-caf"); 
-
-    Bool_t fullAliroot = kFALSE;
-    // Enable the needed package
-    if (1)
-    {
-      gProof->UploadPackage("$ALICE_ROOT/STEERBase");
-      gProof->EnablePackage("$ALICE_ROOT/STEERBase");
-      gProof->UploadPackage("$ALICE_ROOT/ESD");
-      gProof->EnablePackage("$ALICE_ROOT/ESD");
-      gProof->UploadPackage("$ALICE_ROOT/AOD");
-      gProof->EnablePackage("$ALICE_ROOT/AOD");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
-      gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
-      gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
-    }
-    else if (!fullAliroot)
-    {
-      gProof->UploadPackage("$ALICE_ROOT/AF-v4-18-12-AN.par");
-      gProof->EnablePackage("AF-v4-18-12-AN");
-    }
-    else
-    {
-      // needed if ITS recpoints are accessed, see AlidNdEtaTask, FULLALIROOT define statement
-      gProof->UploadPackage("$ALICE_ROOT/v4-18-15-AN-all.par");
-      gProof->EnablePackage("v4-18-15-AN-all");
-    
-      gProof->Exec("TGrid::Connect(\"alien://\")", kTRUE);
-      
-      // TODO add this to loadlibs.C
-      gProof->Exec("gSystem->Load(\"libXMLParser\")", kTRUE);
-    }
-
-    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
-  }
-  else
   {
     gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/"); 
     gSystem->Load("libVMC");
     gSystem->Load("libTree");
-    gSystem->Load("libProof");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
@@ -320,82 +276,6 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   mgr->InitAnalysis();
   mgr->PrintStatus();
 
-  if (aProof == 2)
-  {
-    // process dataset
-
-    mgr->StartAnalysis("proof", data, nRuns, offset);
-    
-    if (save)
-    {
-      TString path("maps/");
-      path += TString(data).Tokenize("/")->Last()->GetName();
-      
-      UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) AliTriggerAnalysis::kStartOfFlags;
-      switch (triggerNoFlags)
-      {
-        case AliTriggerAnalysis::kMB1: path += "/mb1"; break;
-        case AliTriggerAnalysis::kMB2: path += "/mb2"; break;
-        case AliTriggerAnalysis::kMB3: path += "/mb3"; break;
-        case AliTriggerAnalysis::kSPDGFO: path += "/spdgfo"; break;
-        case AliTriggerAnalysis::kSPDGFOBits: path += "/spdgfobits"; break;
-        case AliTriggerAnalysis::kAcceptAll: path += "/all"; break;
-        case AliTriggerAnalysis::kV0AND: path += "/v0and"; break;
-        case AliTriggerAnalysis::kV0OR: path += "/v0or"; break;
-        case AliTriggerAnalysis::kNSD1: path += "/nsd1"; break;
-        case AliTriggerAnalysis::kMB1Prime: path += "/mb1prime"; break;
-        default: Printf("ERROR: Trigger undefined for path to files"); return;
-      }
-      
-      if (trigger & AliTriggerAnalysis::kOneParticle)
-        path += "-onepart";
-      
-      if (strlen(requireClass) > 0 && strlen(rejectClass) == 0)
-      {
-        path += Form("/%s", requireClass);
-      }
-      else if (strlen(rejectClass) > 0)
-        path += Form("/%s--%s", requireClass, rejectClass);
-      
-      if (analysisMode & AliPWG0Helper::kSPD)
-        path += "/spd";
-      
-      if (analysisMode & AliPWG0Helper::kSPDOnlyL0)
-        path += "onlyL0";
-      
-      if (analysisMode & AliPWG0Helper::kTPC)
-        path += "/tpc";
-        
-      if (analysisMode & AliPWG0Helper::kTPCITS)
-        path += "/tpcits";
-
-      gSystem->mkdir(path, kTRUE);
-      if (runWhat == 0 || runWhat == 2)
-      {
-        gSystem->Rename("analysis_esd_raw.root", path + "/analysis_esd_raw.root");
-        if (requiredData == 1)
-          gSystem->Rename("analysis_mc.root", path + "/analysis_mc.root");
-      }
-      if (runWhat == 1 || runWhat == 2)
-      {
-        if (optStr.Contains("process-types"))
-          gSystem->Rename("correction_mapprocess-types.root", path + "/correction_mapprocess-types.root");
-        else
-          gSystem->Rename("correction_map.root", path + "/correction_map.root");
-      }
-      gSystem->Rename("event_stat.root", path + "/event_stat.root");
-      
-      Printf(">>>>> Moved files to %s", path.Data());
-    }
-  }
-  else if (aProof == 3)
-  {
-    gROOT->ProcessLine(".L CreateChainFromDataSet.C");
-    ds = gProof->GetDataSet(data)->GetStagedSubset();
-    chain = CreateChainFromDataSet(ds, "esdTree", nRuns);
-    mgr->StartAnalysis("local", chain, 1234567890, offset);
-  }
-  else
   {
     // Create chain of input files
     gROOT->LoadMacro("../CreateESDChain.C");
@@ -403,7 +283,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     chain = CreateESDChain(data, nRuns, offset);
     //chain = CreateChain("TE", data, nRuns, offset);
 
-    mgr->StartAnalysis((aProof > 0) ? "proof" : "local", chain);
+    mgr->StartAnalysis("local", chain);
   }
 }
 

@@ -165,7 +165,7 @@ AliAnalysisTaskLukeV0::~AliAnalysisTaskLukeV0()
 {
     // Destructor. Clean-up the output list, but not the histograms that are put inside
     // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-    if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    if (fOutputList ) {
         delete fOutputList;
     }
     if (fTrackCuts) delete fTrackCuts;

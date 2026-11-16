@@ -19,15 +19,14 @@
  *
  * @code 
  void
- Run(Bool_t proof=true, Long64_t maxEvents=-1)
+ Run(Long64_t maxEvents=-1)
  {
    const char* fwd = "${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2";
    gSystem->AddIncludePath("-I${ALICE_PHYSICS}/include");
    gROOT->Macro(Form("%s/scripts/LoadLibs.C"));
    gROOT->LoadMacro(Form("%s/TupleSelector.C++g",fwd));
 
-   if (proof) TupleSelector::Proof(maxEvents);
-   else       TupleSelector::Run(maxEvents);
+   TupleSelector::Run(maxEvents);
  }
  * @endcode 
  * 
@@ -62,11 +61,10 @@
 # include <TRegexp.h>
 # include <TKey.h>
 # include <TFileCollection.h>
+# include <TObjString.h>
 # include <THashList.h>
-# include <TDSet.h>
 # include <TQConnection.h>
 # include <iostream>
-# include <TProof.h>
 # include <TStopwatch.h>
 # include "AliFMDMCTrackELoss.h"
 #else
@@ -83,8 +81,6 @@ class TString;
 class TDirectory;
 class TSystemDirectory;
 class TRegexp;
-class TDSet;
-class TProof;
 class AliFMDMCTrackELoss;
 class AliFMDMCTrackELoss::Hit;
 #endif
@@ -611,37 +607,7 @@ struct Ring : public TObject
 };
 
 //====================================================================
-struct Monitor : public TObject, public TQObject 
-{
-  Monitor()
-  {
-    if (!gProof) return;
 
-    fName = gProof->GetSessionTag();
-    gDirectory->Add(this);
-    // _must_ specify signal _exactly_ like below, or we won't be called
-    Bool_t ret = gProof->Connect("Feedback(TList *objs)", "Monitor", this, 
-				 "Feedback(TList *objs)");
-    if (!ret) 
-      Warning("Monitor", "Failed to connect to Proof");
-  }
-  virtual ~Monitor() 
-  {
-    if (!gProof) return;
-    gProof->Disconnect("Feedback(TList *objs)",this, 
-		       "Feedback(TList* objs)");
-  }
-  void SetName(const char* name) { fName = name; }
-  const char* GetName() const { return fName.Data(); }
-  void Feedback(TList* objs)
-  {
-    Info("Feedback", "Got a list of objects (%p)", objs);
-    if (!objs) return;
-    objs->ls();
-  }
-  TString fName;
-  ClassDef(Monitor,1);
-};
 
 
 //====================================================================
@@ -707,7 +673,6 @@ struct TupleSelector : public TSelector
   {
     Info("Begin", "Called w/tree @ %p", tree);
     // if (tree) SlaveBegin(tree);
-    new Monitor;
   }
   /** 
    * Begin on slave 
@@ -994,8 +959,6 @@ struct TupleSelector : public TSelector
     
     if (ret->IsA()->InheritsFrom(TChain::Class())) 
       static_cast<TChain*>(ret)->SetDirectory(0);
-    else if (ret->IsA()->InheritsFrom(TDSet::Class())) 
-      static_cast<TDSet*>(ret)->SetDirectory(0);
     else { 
       ::Warning("GetChainOrDataSet", "Found object is a %s", 
 		ret->IsA()->GetName());
@@ -1005,45 +968,7 @@ struct TupleSelector : public TSelector
     return ret;
   }
   //------------------------------------------------------------------
-  /** 
-   * make our data set
-   * 
-   * @param src        Source directory 
-   * @param recursive  Whether to scan recursively 
-   * @param verbose    Be verbose
-   * 
-   * @return Data set or null
-   */
-  static TDSet* MakeDataSet(const TString& src=".", 
-			    Bool_t recursive=false, 
-			    Bool_t verbose=false)
-  {
-    TString dsFile(Form("%s/dataset.root", src.Data()));
-    TDSet* dataset = static_cast<TDSet*>(GetChainOrDataSet(dsFile));
-    if (dataset) {
-      /// dataset->Print("a");
-      return dataset;
-    }
 
-    TChain* c = DoMakeChain(src, recursive, verbose);
-    if (!c) return 0;
-    
-    dataset = new TDSet(*c, false);
-    dataset->SetName("tree");
-    dataset->SetLookedUp();
-    dataset->Validate();
-    
-    delete c;
-    if (dataset) { 
-      TFile* out = TFile::Open(dsFile, "RECREATE");
-      dataset->Write();
-      dataset->SetDirectory(0);
-      out->Close();
-    }
-      
-    return dataset;
-    
-  }
   //------------------------------------------------------------------
   /** 
    * Create our chain 
@@ -1323,44 +1248,7 @@ struct TupleSelector : public TSelector
     timer.Print();
     return status >= 0;
   }
-  /** 
-   * Run this selector on a chain in Proof 
-   * 
-   * @param maxEvents Maximum number of events 
-   * @param title     Optional title 
-   * @param opt       Options
-   * 
-   * @return true on sucess 
-   */
-  static Bool_t Proof(Long64_t    maxEvents, 
-		      const char* opt="",
-		      const char* title="")
-  {
-    TStopwatch timer;
-    timer.Start();
-    TProof::Reset("lite:///?workers=8");
-    TProof::Open("lite:///?workers=8");
-    gProof->ClearCache();
-    TString ali = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
-    TString fwd = ali + "/PWGLF/FORWARD/analysis2";
-    gProof->AddIncludePath(Form("%s/include", ali.Data()));
-    gProof->Load(Form("%s/scripts/LoadLibs.C",fwd.Data()), true);
-    gProof->Exec("LoadLibs()");
-    // gROOT->ProcessLine("gProof->SetLogLevel(5);");
-    gProof->Load(Form("%s/scripts/TupleSelector.C+%s", fwd.Data(), opt),true);
 
-    TDSet* dataset = MakeDataSet("tuple");
-    if (!dataset) { 
-      ::Error("Proof", "No dataset");
-      return false;
-    }
-    
-    TupleSelector* s = new TupleSelector(title);
-    gProof->AddFeedback("rings");
-    gProof->Process(dataset, s, "", maxEvents);
-    timer.Print();
-    return true; // status >= 0;
-  }    
 
   /* @} */
   ClassDef(TupleSelector,2);

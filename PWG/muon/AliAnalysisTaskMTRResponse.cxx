@@ -82,9 +82,11 @@ AliAnalysisTaskMTRResponse::~AliAnalysisTaskMTRResponse()
   //
 
   // For proof: do not delete output containers
-  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  {
+
     delete fMergeableCollection;
-  }
+
+}
   delete fMatchTrigKeys;
 }
 

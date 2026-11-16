@@ -285,8 +285,6 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   AliGenHerwigEventHeader* GetHerwigHeader();
   AliGenHepMCEventHeader*  GetHepMCEventHeader();
   Bool_t IsOutlier(AliGenPythiaEventHeader * const header);
-  bool       IsProof() {return AliAnalysisManager::GetAnalysisManager()->IsProofMode();}  
-  const char* ProofClearOpt() { if(IsProof()) {return "nodelete";} else { return "";}} 
   fastjet::PseudoJet           join_with_area(const vector <fastjet::PseudoJet> & pieces,
                                               const fastjet::PseudoJet & area_4vector,
                                               const double area,
