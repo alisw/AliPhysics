@@ -3563,6 +3563,24 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 1.;
     fAlphaInTaskMode = 3;
     break;
+  case 22:  // m: pT-dep, plateau 0.60 (tight variation of case 1: 0.65*tanh(1.8*pT))
+    if( fFAlphaCut ) delete fFAlphaCut;
+    fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+    fFAlphaCut->SetParameter(0,0.60);
+    fFAlphaCut->SetParameter(1,1.8);
+    fAlphaMinCutMeson =  0.0;
+    fAlphaCutMeson    = -1.0;
+    fAlphaPtDepCut    = kTRUE;
+    break;
+  case 23:  // n: pT-dep, plateau 0.70 (loose variation of case 1: 0.65*tanh(1.8*pT))
+    if( fFAlphaCut ) delete fFAlphaCut;
+    fFAlphaCut        = new TF1("fFAlphaCut","[0]*tanh([1]*x)",0.,100.);
+    fFAlphaCut->SetParameter(0,0.70);
+    fFAlphaCut->SetParameter(1,1.8);
+    fAlphaMinCutMeson =  0.0;
+    fAlphaCutMeson    = -1.0;
+    fAlphaPtDepCut    = kTRUE;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;

@@ -4729,8 +4729,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130e03", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3234){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("10130e03", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("10130e03", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ------------------------------------------------------------------------
     // Semi-Central (30-50%): 3235-3239
@@ -4748,8 +4748,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530e03", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3239){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("13530e03", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("13530e03", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ========================================================================
     // MC (MINIMUM BIAS): 3330-3339
@@ -4771,8 +4771,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130053", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3334){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("10130053", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("10130053", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ------------------------------------------------------------------------
     // Semi-Central (30-50%): 3335-3339
@@ -4790,8 +4790,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530053", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3339){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("13530053", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("13530053", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ========================================================================
     // PI0 (ADDED-SIGNAL MC): 3430-3439
@@ -4813,8 +4813,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3434){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("10130023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ------------------------------------------------------------------------
     // Semi-Central (30-50%): 3435-3439
@@ -4832,8 +4832,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3439){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("13530023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ========================================================================
     // ETA (ADDED-SIGNAL MC): 3530-3539
@@ -4855,8 +4855,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3534){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("10130023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("10130023", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     // ------------------------------------------------------------------------
     // Semi-Central (30-50%): 3535-3539
@@ -4874,8 +4874,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530023", "0dq00018100000001100404000", "0152101500000000"); // Minimum daughter-electron pT > 0.100 GeV/c
     } else if (trainConfig == 3539){ // Close-V0 + meson energy asymmetry variations; nominal FMLR
       cuts.AddCutPCM("13530023", "0dq00008100000001100400000", "0152101500000000"); // Close-V0 / double-counting rejection off
-      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152105500000000"); // Meson energy asymmetry alpha < 0.75
-      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "0152103500000000"); // Meson energy asymmetry: full physical range, alpha <= 1.0
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "015210m500000000"); // Meson energy asymmetry alpha < 0.60*tanh(1.8*pT) (tight)
+      cuts.AddCutPCM("13530023", "0dq00008100000001100404000", "015210n500000000"); // Meson energy asymmetry alpha < 0.70*tanh(1.8*pT) (loose)
 
     //  LHC18qr_pass3 std. gamma cut: copy paste from 993(data) + MBMC, AS1, AS2, AS3: 
     //    Two full copies for more testing of pt-weights
